@@ -1,0 +1,9 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M15,5 H65 L85,25 V95 H15 Z" fill="white" stroke="black" stroke-width="5"/>
+  <path d="M63,7 V28 H83" fill="white" stroke="black" stroke-width="5"/>
+  <rect x="5" y="15" width="40" height="30" fill="red"/>
+  <rect x="55" y="55" width="40" height="30" fill="blue"/>
+  <text x="25" y="37" font-size="21" font-weight="bold" fill="white" text-anchor="middle">PDF</text>
+  <text x="75" y="78" font-size="21" font-weight="bold" fill="white" text-anchor="middle">CBT</text>
+  <text x="50" y="61" font-size="34" font-weight="bold" fill="black" text-anchor="middle">2</text>
+</svg>

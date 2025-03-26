@@ -1,0 +1,93 @@
+@reference "./main.css";
+
+.pdf-cropper-img {
+  width: var(--pdf-page-scaled-width);
+  height: var(--pdf-page-scaled-height);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.box-selection {
+  position: absolute;
+  outline: 2px solid var(--crop-selection-guide-color);
+  outline-offset: -1px;
+  background: rgba(0, 0, 255, 0.05);
+  pointer-events: none;
+}
+
+.line-selection {
+  position: absolute;
+  pointer-events: none;
+  outline: 1px solid var(--crop-selection-guide-color);
+}
+
+.line-selection.x {
+  top: 0px;
+  width: 0px;
+  left: var(--line-selection-x);
+  height: var(--pdf-page-scaled-height);
+}
+.line-selection.y {
+  left: 0px;
+  height: 0px;
+  top: var(--line-selection-y);
+  width: var(--pdf-page-scaled-width);
+}
+
+.line-selected {
+  position: absolute;
+  pointer-events: none;
+  outline: 1px solid var(--crop-selected-region-color);
+}
+
+.line-selected.x1 {
+  top: 0px;
+  width: 0px;
+  left: var(--line-selected-x1);
+  height: var(--pdf-page-scaled-height);
+}
+
+.line-selected.x2 {
+  top: 0px;
+  width: 0px;
+  left: var(--line-selected-x2);
+  height: var(--pdf-page-scaled-height);
+}
+
+.line-selected.y1 {
+  left: 0px;
+  height: 0px;
+  top: var(--line-selected-y1);
+  width: var(--pdf-page-scaled-width);
+}
+
+.final-rectangle {
+  position: absolute;
+  outline: 2px solid var(--crop-selected-region-color);
+  outline-offset: -1px;
+  background: rgba(0, 255, 0, 0.05);
+  pointer-events: none;
+}
+
+.p-floatlabel-on:has(.p-inputwrapper-filled) label,
+.p-floatlabel-on:has(input:focus) label,
+.p-floatlabel-on:has(input.p-filled) label,
+.p-floatlabel-on:has(.p-inputwrapper-focus) label {
+  @apply dark:bg-surface-900 font-bold start-0.5
+}
+
+.label-selecter .p-floatlabel-on:has(.p-inputwrapper-filled) label,
+.p-floatlabel-on:has(.p-inputwrapper-focus) label {
+  @apply start-3
+}
+
+.p-floatlabel:has(input.p-filled) label,
+.p-floatlabel:has(textarea.p-filled) label,
+.p-floatlabel:has(.p-inputwrapper-filled) label {
+    @apply text-surface-950 dark:text-surface-0
+}
