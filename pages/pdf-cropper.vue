@@ -362,6 +362,7 @@ import * as Comlink from 'comlink'
 import { zip, strToU8, type AsyncZippable } from 'fflate'
 import mupdfWorkerFile from '~/src/worker/mupdf.worker?worker'
 import type { MuPdfProcessor } from '~/src/worker/mupdf.worker'
+import { DataFileNames } from '~/src/types/enums'
 
 import type {
   CurrentQuestionData,
@@ -1245,10 +1246,10 @@ async function generatePdfCropperOutput() {
     const pdfU8Array = new Uint8Array(await pdfFile.arrayBuffer())
     const jsonU8Array = strToU8(jsonString)
 
-    const zipFiles: AsyncZippable = {
-      'questions.pdf': pdfU8Array,
-      'data.json': [jsonU8Array, { level: 6 }],
-    }
+    const zipFiles: AsyncZippable = {}
+
+    zipFiles[DataFileNames.questionsPdf] = pdfU8Array
+    zipFiles[DataFileNames.dataJson] = [jsonU8Array, { level: 6 }]
 
     zip(zipFiles, { level: 0 }, (err, compressedZip) => {
       if (err) {

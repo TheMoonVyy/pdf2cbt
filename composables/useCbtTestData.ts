@@ -10,68 +10,59 @@ import type {
   QuestionStatus,
   TestSectionsImgUrls,
 } from '~/src/types'
+import { CbtUseState } from '~/src/types/enums'
 
 export default () => {
-  const testSectionsList = useState<TestSectionListItem[]>('CBT-TestSectionsList', () => {
-    const dummyData = []
-    for (const subjectNum of utilRange(1, 4)) {
-      const subject = 'Subject' + subjectNum
+  const testSectionsList = useState<TestSectionListItem[]>(
+    CbtUseState.TestSectionsList,
+    () => {
+      const dummyData = []
+      for (const subjectNum of utilRange(1, 4)) {
+        const subject = 'Subject' + subjectNum
 
-      for (const sectionNum of utilRange(1, 3)) {
-        const name = subject + ' Section ' + sectionNum
-        const sectionsItem: TestSectionListItem = { name, subject }
+        for (const sectionNum of utilRange(1, 3)) {
+          const name = subject + ' Section ' + sectionNum
+          const sectionsItem: TestSectionListItem = { name, subject }
 
-        dummyData.push(sectionsItem)
-      }
-    }
-
-    return dummyData
-  })
-
-  const cropperSectionsData = useState<CropperSectionsData>('CBT-CropperSectionsData', () => {
-    let questionNum = 1
-    const dummyData: CropperSectionsData = {}
-    for (const subjectNum of utilRange(1, 4)) {
-      const subject = 'Subject' + subjectNum
-
-      for (const sectionNum of utilRange(1, 3)) {
-        const section = subject + ' Section ' + sectionNum
-        dummyData[section] = {}
-        const questionsRange = sectionNum === 1 ? 20 : 5
-
-        for (const _ of utilRange(1, questionsRange + 1)) {
-          dummyData[section][questionNum] = {
-            que: questionNum,
-            type: sectionNum === 1 ? 'mcq' : 'nat',
-            marks: {
-              cm: 4,
-              im: -1,
-            },
-            pdfData: [
-              {
-                page: 1,
-                x1: 22,
-                y1: 97,
-                x2: 577,
-                y2: 368,
-              },
-              {
-                page: 1,
-                x1: 22,
-                y1: 409,
-                x2: 577,
-                y2: 558,
-              },
-            ],
-          }
-
-          questionNum++
+          dummyData.push(sectionsItem)
         }
       }
-    }
 
-    return dummyData
-  })
+      return dummyData
+    },
+  )
+
+  const cropperSectionsData = useState<CropperSectionsData>(
+    CbtUseState.CropperSectionsData,
+    () => {
+      let questionNum = 1
+      const dummyData: CropperSectionsData = {}
+      for (const subjectNum of utilRange(1, 4)) {
+        const subject = 'Subject' + subjectNum
+
+        for (const sectionNum of utilRange(1, 3)) {
+          const section = subject + ' Section ' + sectionNum
+          dummyData[section] = {}
+          const questionsRange = sectionNum === 1 ? 20 : 5
+
+          for (const _ of utilRange(1, questionsRange + 1)) {
+            dummyData[section][questionNum] = {
+              que: questionNum,
+              type: sectionNum === 1 ? 'mcq' : 'nat',
+              marks: { cm: 4, im: -1 },
+              pdfData: [
+                { page: 1, x1: 0, y1: 0, x2: 0, y2: 0 },
+              ],
+            }
+
+            questionNum++
+          }
+        }
+      }
+
+      return dummyData
+    },
+  )
 
   const sectionsPrevQuestion: Record<TestSectionKey, number> = {}
 
@@ -128,20 +119,22 @@ export default () => {
   const { testQuestionsDummyData, testSectionsdummyData } = getTestDummyData()
 
   const testSectionsData = useState<TestSectionsData>(
-    'CBT-TestSectionsData',
+    CbtUseState.TestSectionsData,
     () => testSectionsdummyData,
   )
 
   const testQuestionsData = useState<Map<number, TestQuestionData>>(
-    'CBT-TestQuestionsData',
+    CbtUseState.TestQuestionsData,
     () => testQuestionsDummyData,
   )
 
-  const testSectionsSummary = useState<TestSectionsSummary>('CBT-TestSectionsSummary',
+  const testSectionsSummary = useState<TestSectionsSummary>(
+    CbtUseState.TestSectionsSummary,
     () => new Map(),
   )
 
-  const currentTestState = useState<CurrentTestState>('CBT-CurrentTestState',
+  const currentTestState = useState<CurrentTestState>(
+    CbtUseState.CurrentTestState,
     () => {
       return {
         section: 'Subject1 Section 1',
@@ -160,9 +153,15 @@ export default () => {
     },
   )
 
-  const testSectionsImgUrls = useState<TestSectionsImgUrls>('CBT-TestSectionsImgUrls', () => ({}))
+  const testSectionsImgUrls = useState<TestSectionsImgUrls>(
+    CbtUseState.TestSectionsImgUrls,
+    () => ({}),
+  )
 
-  const lastLoggedAnswer = useState<QuestionAnswer>('CBT-LastLoggedAnswer', () => null)
+  const lastLoggedAnswer = useState<QuestionAnswer>(
+    CbtUseState.LastLoggedAnswer,
+    () => null,
+  )
 
   return {
     testSectionsList,

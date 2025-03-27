@@ -3,6 +3,7 @@ import type {
   MiscSettings,
   CbtTestSettings,
 } from '~/src/types'
+import { CbtUseState } from '~/src/types/enums'
 
 export default () => {
   const defaultUiSettings: CbtUiSettings = {
@@ -114,9 +115,18 @@ export default () => {
     imgHeight: 85,
   }
 
-  const uiSettings = useState<CbtUiSettings>('CBT-UiSettings', () => structuredClone(defaultUiSettings))
-  const testSettings = useState<CbtTestSettings>('CBT-TestSettings', () => structuredClone(defaultTestSettings))
-  const miscSettings = useState<MiscSettings>('CBT-MiscSettings', () => structuredClone(defaultMiscSettings))
+  const uiSettings = useState<CbtUiSettings>(
+    CbtUseState.UiSettings,
+    () => structuredClone(defaultUiSettings),
+  )
+  const testSettings = useState<CbtTestSettings>(
+    CbtUseState.TestSettings,
+    () => structuredClone(defaultTestSettings),
+  )
+  const miscSettings = useState<MiscSettings>(
+    CbtUseState.MiscSettings,
+    () => structuredClone(defaultMiscSettings),
+  )
 
   return {
     uiSettings,
