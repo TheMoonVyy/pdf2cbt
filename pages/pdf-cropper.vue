@@ -1312,7 +1312,7 @@ onMounted(() => {
         renderPage(pdfState.currentPageNum, false)
       }
     },
-    { debounce: 750, maxWait: 3000 },
+    { debounce: 500, maxWait: 3000 },
   )
 
   window.addEventListener('keydown', keydownCallback)
