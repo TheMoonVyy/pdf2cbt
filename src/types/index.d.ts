@@ -152,6 +152,7 @@ export interface CurrentTestState {
   section: TestSectionKey
   question: number
   queId: number
+  testName: string
   remainingSeconds: number | null
   testDuration: number
   currentQuestionStartTime: number

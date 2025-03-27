@@ -149,6 +149,7 @@ export default () => {
         queId: 1,
         testDuration: 180 * 60,
         remainingSeconds: null,
+        testName: 'Mock Test 1',
         currentQuestionStartTime: 180 * 60,
         testStatus: 'notStarted',
         currentAnswerBuffer: null,
