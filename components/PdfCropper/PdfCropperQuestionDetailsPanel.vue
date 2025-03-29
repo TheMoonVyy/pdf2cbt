@@ -3,36 +3,46 @@
     :header="`Question Details ( #${currentQuestionData.questionNum} )`"
     toggleable
     class="w-full"
-    :pt="{ content: 'px-4' }"
+    pt:content:class="px-4"
   >
-    <InputGroup>
-      <FloatLabel variant="on">
+    <div class="flex w-full mt-2 bg-surface-950 border border-surface-700 rounded-md">
+      <BaseFloatLabel
+        label="Subject Name"
+        label-id="subject_name"
+      >
         <InputText
           id="subject_name"
           v-model.trim="currentQuestionData.subjectName"
           :maxlength="20"
-          :disabled="!props.isPdfLoaded"
+          :disabled="!isPdfLoaded"
         />
-        <label for="subject_name">Subject Name</label>
-      </FloatLabel>
-      <InputGroupAddon>{{ currentQuestionData.subjectName?.length }}/20</InputGroupAddon>
-    </InputGroup>
-    <InputGroup class="mt-4">
-      <FloatLabel variant="on">
+      </BaseFloatLabel>
+      <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
+        {{ currentQuestionData.subjectName?.length }}/20
+      </span>
+    </div>
+    <div class="flex w-full mt-4 bg-surface-950 border border-surface-700 rounded-md">
+      <BaseFloatLabel
+        label="Section Name"
+        label-id="section_name"
+      >
         <InputText
           id="section_name"
-          v-model="currentQuestionData.sectionName"
+          v-model.trim="currentQuestionData.sectionName"
           :maxlength="30"
-          :disabled="!props.isPdfLoaded"
+          :disabled="!isPdfLoaded"
         />
-        <label for="section_name">Section Name</label>
-      </FloatLabel>
-      <InputGroupAddon>{{ currentQuestionData.sectionName?.length }}/30</InputGroupAddon>
-    </InputGroup>
-    <div class="flex flex-wrap gap-3 mt-4">
-      <FloatLabel
+      </BaseFloatLabel>
+      <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
+        {{ currentQuestionData.sectionName?.length }}/30
+      </span>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-4">
+      <BaseFloatLabel
         class="min-w-24 flex-1"
-        variant="on"
+        label="Question Type"
+        label-id="question_type"
+        label-class="text-xs"
       >
         <Select
           v-model="currentQuestionData.questionType"
@@ -53,11 +63,12 @@
             </div>
           </template>
         </Select>
-        <label for="question_type">Question Type</label>
-      </FloatLabel>
-      <FloatLabel
+      </BaseFloatLabel>
+      <BaseFloatLabel
         class="min-w-24 flex-1"
-        variant="on"
+        label="Answer Options"
+        label-id="answer_options"
+        label-class="text-xs"
       >
         <InputNumber
           v-model="currentQuestionData.totalOptions"
@@ -70,88 +81,78 @@
           show-buttons
           :step="1"
         />
-        <label for="answer_options">Answer Options</label>
-      </FloatLabel>
+      </BaseFloatLabel>
     </div>
-    <FloatLabel
+    <BaseFloatLabel
       class="w-full mt-4"
-      variant="on"
+      label="Question Number"
+      label-id="question_num"
+      label-class="start-1/2! -translate-x-1/2"
     >
-      <InputNumber
+      <BaseInputNumber
         v-model="currentQuestionData.questionNum"
         :disabled="!props.isPdfLoaded"
         :min="1"
         :max="99"
-        :fluid="true"
         label-id="question_num"
-        size="small"
-        show-buttons
         :step="1"
       />
-      <label for="question_num">Question Num</label>
-    </FloatLabel>
+    </BaseFloatLabel>
     <Panel
       header="Marking Scheme"
       toggleable
-      class="w-full mt-4"
+      pt:root:class="w-full mt-3"
     >
-      <div class="flex flex-col gap-2">
-        <FloatLabel
+      <div class="flex flex-col gap-4 mt-2">
+        <BaseFloatLabel
           class="w-full"
-          variant="on"
+          label="Correct"
+          label-id="marks_correct"
+          label-class="start-1/2! -translate-x-1/2 text-xs"
         >
-          <InputNumber
+          <BaseInputNumber
             v-model="currentQuestionData.correctMarks"
             :disabled="!props.isPdfLoaded"
             :min="1"
             :max="99"
             prefix="+"
-            :fluid="true"
-            label-id="marks_correct"
             size="small"
-            show-buttons
-            :step="1"
+            label-id="marks_correct"
           />
-          <label for="marks_correct">Correct</label>
-        </FloatLabel>
-
-        <FloatLabel
+        </BaseFloatLabel>
+        <BaseFloatLabel
           v-if="currentQuestionData.questionType === 'msq'"
           class="w-full"
-          variant="on"
+          label="Partial"
+          label-id="marks_partial"
+          label-class="start-1/2! -translate-x-1/2 text-xs"
         >
-          <InputNumber
+          <BaseInputNumber
             v-model="currentQuestionData.partialMarks"
             :disabled="!props.isPdfLoaded"
             :min="0"
             :max="99"
             prefix="+"
-            :fluid="true"
-            label-id="marks_partial"
             size="small"
-            show-buttons
-            :step="1"
+            label-id="marks_partial"
           />
-          <label for="marks_partial">Partial</label>
-        </FloatLabel>
-
-        <FloatLabel
+        </BaseFloatLabel>
+        <BaseFloatLabel
           class="w-full"
-          variant="on"
+          label="Incorrect"
+          label-id="marks_incorrect"
+          label-class="start-1/2! -translate-x-1/2 text-xs"
         >
-          <InputNumber
+          <BaseInputNumber
             v-model="currentQuestionData.incorrectMarks"
             :disabled="!props.isPdfLoaded"
             :min="-99"
             :max="0"
-            :fluid="true"
-            label-id="marks_incorrect"
+            prefix="-"
             size="small"
-            show-buttons
-            :step="1"
+            label-id="marks_incorrect"
           />
-          <label for="marks_incorrect">Incorrect</label>
-        </FloatLabel>
+        </BaseFloatLabel>
       </div>
     </Panel>
   </Panel>

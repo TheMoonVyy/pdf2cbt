@@ -73,21 +73,3 @@
   background: rgba(0, 255, 0, 0.05);
   pointer-events: none;
 }
-
-.p-floatlabel-on:has(.p-inputwrapper-filled) label,
-.p-floatlabel-on:has(input:focus) label,
-.p-floatlabel-on:has(input.p-filled) label,
-.p-floatlabel-on:has(.p-inputwrapper-focus) label {
-  @apply dark:bg-surface-900 font-bold start-0.5
-}
-
-.label-selecter .p-floatlabel-on:has(.p-inputwrapper-filled) label,
-.p-floatlabel-on:has(.p-inputwrapper-focus) label {
-  @apply start-3
-}
-
-.p-floatlabel:has(input.p-filled) label,
-.p-floatlabel:has(textarea.p-filled) label,
-.p-floatlabel:has(.p-inputwrapper-filled) label {
-    @apply text-surface-950 dark:text-surface-0
-}

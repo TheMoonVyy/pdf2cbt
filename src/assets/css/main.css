@@ -1,38 +1,7 @@
-@layer tailwind-theme, tailwind-base, primevue, tailwind-utilities;
-
-@import 'tailwindcss/theme.css' layer(tailwind-theme);
-@import "tailwindcss/preflight.css" layer(tailwind-base);
-@import "./primevue/tailwind.css" layer(primevue);
-@import 'tailwindcss/utilities.css' layer(tailwind-utilities);
-
-@plugin 'tailwindcss-primeui';
+@import "tailwindcss";
+@import "tailwindcss-primeui";
 
 @custom-variant dark (&:where(.dark, .dark *));
-
-@theme {
-  --color-brillant-azure: #3399ff;
-
-  --text-2xs: 0.5rem;
-  --text-3xs: 0.25rem;
-
-  --container-1_5xs: 18rem;
-  --container-2xs: 16rem;
-  --container-2_5xs: 14rem;
-  --container-3xs: 12rem;
-  --container-4xs: 10rem;
-  --container-5xs: 8rem;
-  --container-6xs: 6rem;
-}
-
-@layer tailwind-base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
-}
 
 :root {
   --p-primary-50: var(--color-emerald-50);

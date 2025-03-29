@@ -4,9 +4,9 @@
       v-model:settings="settings"
       v-model:advance-settings-visible="visibilityState.advanceSettings"
     />
-    <Splitter class="flex-1 min-h-0 min-w-0 rounded-none select-none">
+    <Splitter pt:root:class="flex-1 min-h-0 min-w-0 rounded-none select-none">
       <SplitterPanel
-        class="flex flex-col items-center overflow-y-auto"
+        pt:root:class="flex flex-col items-center overflow-y-auto!"
         :size="settings.splitterPanelSize"
         :min-size="15"
       >
@@ -15,10 +15,12 @@
           toggleable
           class="w-full gap-2"
         >
-          <div class="flex flex-wrap gap-x-2 gap-y-3">
-            <FloatLabel
+          <div class="flex flex-wrap gap-x-2 gap-y-3 mt-2">
+            <BaseFloatLabel
               class="flex-[1_1_60%] min-w-[55%]"
-              variant="on"
+              label="Cropper Mode"
+              label-id="cropperModeDD"
+              label-class="text-xs"
             >
               <Select
                 v-model="settings.cropperMode"
@@ -29,11 +31,12 @@
                 :fluid="true"
                 size="small"
               />
-              <label for="cropperModeDD">Cropper Mode</label>
-            </FloatLabel>
-            <FloatLabel
+            </BaseFloatLabel>
+            <BaseFloatLabel
               class="flex-[1_1_35%] min-w-[30%]"
-              variant="on"
+              label="Zoom"
+              label-id="settings_scale"
+              label-class="text-xs"
             >
               <InputNumber
                 v-model="settings.scale"
@@ -43,18 +46,16 @@
                 :fluid="true"
                 label-id="settings_scale"
                 size="small"
-                prefix="  "
                 show-buttons
                 :step="0.1"
               />
-              <label for="settings_scale">Zoom</label>
-            </FloatLabel>
+            </BaseFloatLabel>
           </div>
           <div class="flex items-center justify-center mt-3">
-            <Button
+            <BaseButton
               label="Advance settings"
-              size="small"
               severity="help"
+              size="small"
               @click="visibilityState.advanceSettings = true"
             />
           </div>
@@ -66,7 +67,7 @@
           class="w-full"
         >
           <div class="flex gap-3 text-nowrap justify-center">
-            <Button
+            <BaseButton
               label="Prev Page"
               severity="help"
               :disabled="pdfState.currentPageNum <= 1 || !isCurrentPageClean || !isPdfLoaded"
@@ -75,8 +76,8 @@
               <template #icon>
                 <Icon name="material-symbols:arrow-back-ios-new-rounded" />
               </template>
-            </Button>
-            <Button
+            </BaseButton>
+            <BaseButton
               class="flex flex-row-reverse"
               label="Next Page"
               icon-pos="right"
@@ -87,13 +88,13 @@
               <template #icon>
                 <Icon name="material-symbols:arrow-forward-ios-rounded" />
               </template>
-            </Button>
+            </BaseButton>
           </div>
           <div
             v-if="cropperMode.isLine"
             class="flex mt-3 justify-center items-center"
           >
-            <Button
+            <BaseButton
               :label="cropperLineState.skipNext ? 'Skipping Next coordinate...' : 'Skip Next (y2) coordinate'"
               :disabled="cropperLineState.currentCoord !== 'y2' || !cropperMode.isLine"
               severity="warn"
@@ -101,10 +102,10 @@
             />
           </div>
           <div class="flex gap-5 text-nowrap justify-center mt-3">
-            <Button
+            <BaseButton
               label="Undo"
-              severity="warn"
               :disabled="isCurrentPageClean || !isPdfLoaded"
+              severity="warn"
               @click="clearCurrentPageLastQuestion()"
             >
               <template #icon>
@@ -113,8 +114,8 @@
                   size="1.3rem"
                 />
               </template>
-            </Button>
-            <Button
+            </BaseButton>
+            <BaseButton
               label="Clear All"
               severity="danger"
               :disabled="isCurrentPageClean || !isPdfLoaded"
@@ -123,7 +124,7 @@
               <template #icon>
                 <Icon name="material-symbols:refresh" />
               </template>
-            </Button>
+            </BaseButton>
           </div>
         </Panel>
         <Panel
@@ -131,14 +132,16 @@
           toggleable
           :collapsed="true"
           class="w-full"
-          :pt="{ content: 'flex gap-2 px-2' }"
+          pt:content:class="flex gap-2 px-2"
         >
-          <div class="grid grid-cols-2 col-span-3 gap-2 label-selecter">
-            <FloatLabel
+          <div class="grid grid-cols-2 col-span-3 gap-3 mt-2 label-selecter">
+            <BaseFloatLabel
               v-for="key in Object.keys(coords)"
               :key="key"
               class="w-full"
-              variant="on"
+              :label="key.toUpperCase()"
+              :label-id="`coords_${key}`"
+              label-class="text-xs"
             >
               <InputNumber
                 v-model="coords[key as keyof CropCoordinates]"
@@ -154,13 +157,13 @@
                 @focus="updateInputFocusState(true)"
                 @blur="updateInputFocusState(false)"
               />
-              <label :for="`coords_${key}`">{{ key.toUpperCase() }}</label>
-            </FloatLabel>
+            </BaseFloatLabel>
           </div>
           <div class="flex justify-center items-center">
-            <Button
+            <BaseButton
               label="Set Crop"
-              severity="info"
+              severity="help"
+              :disabled="!isPdfLoaded"
               size="small"
               @click="handleCropperCoordinates()"
             />
@@ -170,9 +173,8 @@
           v-model="currentQuestionData"
           :is-pdf-loaded="isPdfLoaded"
         />
-        <Button
+        <BaseButton
           label="Generate Output"
-          severity="warn"
           class="my-3 mb-5 shrink-0"
           :disabled="!hasQuestionsData"
           @click="() => {
@@ -182,32 +184,21 @@
         />
       </SplitterPanel>
       <SplitterPanel
-        class="flex flex-col overflow-auto focus-visible:outline-hidden"
+        pt:root:class="flex flex-col overflow-auto! focus-visible:outline-hidden"
         :size="75"
       >
         <div
           v-if="!isPdfLoaded"
-          class="card mt-4"
+          class="flex justify-center mt-4"
         >
-          <FileUpload
-            mode="basic"
-            accept="application/pdf"
-            custom-upload
-            :auto="true"
-            :choose-label="visibilityState.isLoadingPdf ? 'Please wait, loading PDF...' : 'Select a PDF'"
-            :pt="{
-              root: 'flex flex-col-reverse',
-            }"
-            :choose-icon="visibilityState.isLoadingPdf ? 'pi pi-loading' : undefined"
-            @select="handlePdfFileUpload"
-          >
-            <template #chooseicon>
-              <Icon
-                size="1.5rem"
-                :name="visibilityState.isLoadingPdf ? 'line-md:loading-twotone-loop' : 'prime:plus'"
-              />
-            </template>
-          </FileUpload>
+          <BaseSimpleFileUpload
+            accept="application/pdf,.pdf"
+            :label="visibilityState.isLoadingPdf ? 'Please wait, loading PDF...' : 'Select a PDF'"
+            :icon-name="visibilityState.isLoadingPdf ? 'line-md:loading-twotone-loop' : 'prime:plus'"
+            icon-size="1.5rem"
+            invalid-file-type-message="Invalid file. Please select a valid PDF"
+            @upload="handlePdfFileUpload"
+          />
         </div>
         <div
           class="flex"
@@ -238,7 +229,11 @@
               <div
                 ref="boxSelectionElem"
                 class="box-selection"
-                :class="{ hidden: !cropperMode.isBox || (!pointerAndInputState.isPointerDown && !pointerAndInputState.isInputInFocus) }"
+                :class="{
+                  hidden: !cropperMode.isBox || (
+                    !pointerAndInputState.isPointerDown && !pointerAndInputState.isInputInFocus
+                  ),
+                }"
               />
               <div
                 class="line-selection"
@@ -278,18 +273,18 @@
       header="Invalid Question Details"
       :modal="true"
       :closable="false"
-      :pt="{ content: 'p-0', title: 'mx-auto' }"
+      pt:content:class="p-0"
     >
-      <span class="text-center text-surface-500 dark:text-surface-400 block mb-2">Make sure all fields are
-        filled</span>
+      <span class="text-center text-surface-500 dark:text-surface-400 block mb-2">
+        Make sure all fields are filled
+      </span>
       <PdfCropperQuestionDetailsPanel
         v-model="currentQuestionData"
         :is-pdf-loaded="isPdfLoaded"
       />
       <div class="flex justify-center my-3">
-        <Button
+        <BaseButton
           label="Done"
-          severity="primary"
           @click="visibilityState.questionDetailsDialog = false"
         />
       </div>
@@ -298,7 +293,8 @@
       v-model:visible="visibilityState.generateOutputDialog"
       header="Download Output"
       :modal="true"
-      :pt="{ content: 'p-0 px-3', title: 'mx-auto', headerActions: 'ml-5' }"
+      pt:headerActions:class="ml-5"
+      pt:content:class="p-0 px-3"
     >
       <div class="grid grid-cols-3 w-full gap-2">
         <div class="flex flex-col col-span-2">
@@ -333,14 +329,12 @@
             v-model="generateOutputState.fileType"
             label-id="generate_output_file_type"
             :options="selectOptions.outputFileType"
-            :pt="{ label: 'text-center' }"
           />
         </div>
       </div>
       <div class="flex justify-center py-3">
-        <Button
+        <BaseButton
           label="Download"
-          severity="primary"
           @click="generatePdfCropperOutput()"
         />
       </div>
@@ -1102,10 +1096,7 @@ const selectionWatchHandle = watch(
 
 selectionWatchHandle.pause() // as not required on initial webpage load
 
-const handlePdfFileUpload = (e: { files: File[] }) => {
-  if (!e.files || e.files.length === 0) return
-
-  const file = e.files[0]
+const handlePdfFileUpload = (file: File) => {
   pdfState.file = file
   visibilityState.isLoadingPdf = true
   loadPdfFile()

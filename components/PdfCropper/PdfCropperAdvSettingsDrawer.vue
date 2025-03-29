@@ -3,29 +3,30 @@
     <Drawer
       v-model:visible="advanceSettingsVisible"
       header="Advance Settings"
-      :pt="{ content: 'px-0', header: 'p-3' }"
+      pt:header:class="p-3"
+      pt:content:class="px-0"
     >
       <Panel
         header="Colors"
         toggleable
         class="w-full"
-        :pt="{ content: 'px-2' }"
+        pt:content:class="px-2"
       >
         <div class="grid grid-cols-5 mt-4 gap-2">
-          <FloatLabel
+          <BaseFloatLabel
             class="w-full col-start-1 col-span-3"
-            variant="on"
+            label="PDF Background Color"
+            label-id="page_bg_color"
+            label-class="text-xs"
           >
             <InputText
               v-model="settings.pageBGColor"
-              type="text"
               label-id="page_bg_color"
-              disabled
-              :fluid="true"
               size="small"
+              readonly
+              pt:root:class="pr-0!"
             />
-            <label for="page_bg_color">PDF Background Color</label>
-          </FloatLabel>
+          </BaseFloatLabel>
           <div class="card flex w-full col-start-4 col-span-1 items-center justify-center">
             <ColorPicker
               v-model="settings.pageBGColor"
@@ -36,20 +37,20 @@
           <IconWithTooltip :tooltip-content="tooltipContent.pageBGColor" />
         </div>
         <div class="grid grid-cols-5 mt-4 gap-2">
-          <FloatLabel
+          <BaseFloatLabel
             class="w-full col-start-1 col-span-3"
-            variant="on"
+            label="Crop Selection Guide Color"
+            label-id="crop_selection_guide_color"
+            label-class="text-xs"
           >
             <InputText
               v-model="settings.cropSelectionGuideColor"
-              type="text"
               label-id="crop_selection_guide_color"
-              disabled
-              :fluid="true"
+              readonly
               size="small"
+              pt:root:class="pr-0!"
             />
-            <label for="crop_selection_guide_color">Crop Selection Guide Color</label>
-          </FloatLabel>
+          </BaseFloatLabel>
           <div class="card flex w-full col-start-4 col-span-1 items-center justify-center">
             <ColorPicker
               v-model="settings.cropSelectionGuideColor"
@@ -60,20 +61,20 @@
           <IconWithTooltip :tooltip-content="tooltipContent.cropSelectionGuideColor" />
         </div>
         <div class="grid grid-cols-5 mt-4 gap-2">
-          <FloatLabel
+          <BaseFloatLabel
             class="w-full col-start-1 col-span-3"
-            variant="on"
+            label="Crop Selected Region Color"
+            label-id="crop_selected_region_color"
+            label-class="text-xs"
           >
             <InputText
               v-model="settings.cropSelectedRegionColor"
-              type="text"
               label-id="crop_selected_region_color"
-              disabled
-              :fluid="true"
+              readonly
               size="small"
+              pt:root:class="pr-0!"
             />
-            <label for="crop_selected_region_color">Crop Selected Region Color</label>
-          </FloatLabel>
+          </BaseFloatLabel>
           <div class="card flex w-full col-start-4 col-span-1 items-center justify-center">
             <ColorPicker
               v-model="settings.cropSelectedRegionColor"
@@ -84,20 +85,20 @@
           <IconWithTooltip :tooltip-content="tooltipContent.cropSelectedRegionColor" />
         </div>
         <div class="grid grid-cols-5 mt-4 gap-2">
-          <FloatLabel
+          <BaseFloatLabel
             class="w-full col-start-1 col-span-3"
-            variant="on"
+            label="Crop Skip Selection Color"
+            label-id="crop_selection_skip_color"
+            label-class="text-xs"
           >
             <InputText
               v-model="settings.cropSelectionSkipColor"
-              type="text"
               label-id="crop_selection_skip_color"
-              disabled
-              :fluid="true"
+              readonly
               size="small"
+              pt:root:class="pr-0!"
             />
-            <label for="crop_selection_skip_color">Crop Skip Selection Color</label>
-          </FloatLabel>
+          </BaseFloatLabel>
           <div class="card flex w-full col-start-4 col-span-1 items-center justify-center">
             <ColorPicker
               v-model="settings.cropSelectionSkipColor"
@@ -112,61 +113,30 @@
         header="Rendering & Input"
         toggleable
         class="w-full"
-        :pt="{ content: 'px-2' }"
+        pt:content:class="px-2"
       >
-        <div class="grid grid-cols-4 mt-4 gap-2">
-          <FloatLabel
+        <div
+          v-for="(item, index) in inputSettings"
+          :key="index"
+          class="grid grid-cols-4 mt-4 gap-3"
+        >
+          <BaseFloatLabel
             class="w-full col-start-1 col-span-3"
-            variant="on"
+            :label="item.label"
+            :label-id="item.labelId"
+            label-class="text-xs"
           >
             <InputNumber
-              v-model="settings.qualityFactor"
-              :min="0.1"
-              :max="5"
-              :step="0.1"
+              v-model="settings[item.model]"
+              :min="item.min"
+              :max="item.max"
+              :step="item.step"
               :fluid="true"
-              label-id="quality_factor"
+              :label-id="item.labelId"
               show-buttons
             />
-            <label for="quality_factor">PDF Viewer Quality</label>
-          </FloatLabel>
-          <IconWithTooltip :tooltip-content="tooltipContent.qualityFactor" />
-        </div>
-        <div class="grid grid-cols-4 mt-4 gap-2">
-          <FloatLabel
-            class="w-full col-start-1 col-span-3"
-            variant="on"
-          >
-            <InputNumber
-              v-model="settings.selectionThrottleInterval"
-              :min="0"
-              :max="500"
-              :step="1"
-              :fluid="true"
-              label-id="selection_throttle_interval"
-              show-buttons
-            />
-            <label for="selection_throttle_interval">Selection Update Interval (ms)</label>
-          </FloatLabel>
-          <IconWithTooltip :tooltip-content="tooltipContent.selectionThrottleInterval" />
-        </div>
-        <div class="grid grid-cols-4 mt-4 gap-2">
-          <FloatLabel
-            class="w-full col-start-1 col-span-3"
-            variant="on"
-          >
-            <InputNumber
-              v-model="settings.minCropDimension"
-              :min="0"
-              :max="50"
-              :step="1"
-              :fluid="true"
-              label-id="min_crop_dimension"
-              show-buttons
-            />
-            <label for="min_crop_dimension">Minimum Crop Dimension</label>
-          </FloatLabel>
-          <IconWithTooltip :tooltip-content="tooltipContent.minCropDimension" />
+          </BaseFloatLabel>
+          <IconWithTooltip :tooltip-content="tooltipContent[item.model]" />
         </div>
       </Panel>
     </Drawer>
@@ -183,7 +153,11 @@ const advanceSettingsVisible = defineModel('advanceSettingsVisible', {
   required: true,
 })
 
-const tooltipContent = {
+type ToolTipContent = {
+  [name: string]: string
+}
+
+const tooltipContent: ToolTipContent = {
   pageBGColor:
     'Background color of the PDF viewer. This change is only for visual purposes while cropping the PDF and does not apply to the CBT.',
   cropSelectionGuideColor:
@@ -199,4 +173,31 @@ const tooltipContent = {
   minCropDimension:
     'Minimum allowed width and height (in same units as coordinates section) for a valid crop selection. Ensures that the selected crop area is not too small, preventing accidental or invalid selections.',
 }
+
+const inputSettings = [
+  {
+    model: 'qualityFactor',
+    min: 0.1,
+    max: 5,
+    step: 0.1,
+    labelId: 'quality_factor',
+    label: 'PDF Viewer Quality',
+  },
+  {
+    model: 'selectionThrottleInterval',
+    min: 0,
+    max: 500,
+    step: 1,
+    labelId: 'selection_throttle_interval',
+    label: 'Selection Update Interval (ms)',
+  },
+  {
+    model: 'minCropDimension',
+    min: 0,
+    max: 50,
+    step: 1,
+    labelId: 'min_crop_dimension',
+    label: 'Minimum Crop Dimension',
+  },
+]
 </script>

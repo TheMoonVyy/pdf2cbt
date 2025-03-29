@@ -6,14 +6,17 @@
     :closable="true"
     :draggable="false"
     maximizable
-    :pt="{ root: 'min-w-[50%]', title: 'mx-auto', content: 'p-0' }"
+    pt:root:class="mx-auto"
+    pt:title:class="p-0 mx-auto"
+    pt:content:class="p-0"
+    pt:header:class="gap-4"
   >
     <div class="flex mb-3">
-      <Button
+      <BaseButton
         :label="dialogLabel"
         class="ml-5"
-        :disabled="!Object.keys(selectionKeys).length"
         severity="warn"
+        :disabled="!Object.keys(selectionKeys).length"
         @click="processData()"
       />
     </div>

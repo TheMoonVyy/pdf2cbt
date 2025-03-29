@@ -89,14 +89,14 @@
             >
               <Icon
                 name="prime:github"
-                size="1.4rem"
+                size="1.5rem"
               />
               <span class="hidden sm:block">Source</span>
             </NuxtLink>
-            <Button
+            <BaseButton
               label="Fullscreen"
-              variant="link"
-              :pt="{ label: 'hidden sm:block' }"
+              variant="text"
+              pt:label:class="hidden sm:block"
               @click="toggleFullscreen()"
             >
               <template #icon>
@@ -105,7 +105,7 @@
                   size="1.4rem"
                 />
               </template>
-            </Button>
+            </BaseButton>
           </div>
         </div>
       </div>

@@ -2,7 +2,6 @@ import tailwindVitePlugin from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   modules: [
-    '@primevue/nuxt-module',
     '@vueuse/nuxt',
     '@nuxt/icon',
     '@nuxt/eslint',
@@ -47,18 +46,5 @@ export default defineNuxtConfig({
         normalizeIconName: false,
       },
     ],
-  },
-  primevue: {
-    options: {
-      theme: 'none',
-      pt: {
-        select: {
-          option: 'justify-center',
-        },
-      },
-    },
-    components: {
-      exclude: ['Chart', 'Editor', 'Form', 'FormField'],
-    },
   },
 })
