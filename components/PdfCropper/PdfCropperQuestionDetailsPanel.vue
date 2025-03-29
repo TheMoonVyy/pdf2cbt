@@ -148,7 +148,6 @@
             :disabled="!props.isPdfLoaded"
             :min="-99"
             :max="0"
-            prefix="-"
             size="small"
             label-id="marks_incorrect"
           />
