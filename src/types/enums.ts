@@ -16,3 +16,7 @@ export enum DataFileNames {
   questionsPdf = 'questions.pdf',
   dataJson = 'data.json',
 }
+
+export enum MiscConsts {
+  BackupNoticeDismissedKey = 'backupNoticeDismissed',
+}

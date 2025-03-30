@@ -16,6 +16,11 @@ export default defineNuxtConfig({
     },
   },
   css: ['./src/assets/css/main.css'],
+  runtimeConfig: {
+    public: {
+      isBackupWebsite: process.env.IS_NETLIFY_BUILD === 'true',
+    },
+  },
   routeRules: {
     '/cbt': { redirect: { to: '/cbt/interface', statusCode: 301 } },
   },
