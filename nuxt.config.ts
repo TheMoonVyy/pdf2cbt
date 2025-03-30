@@ -36,6 +36,7 @@ export default defineNuxtConfig({
           comments: false,
         },
       },
+      cssMinify: 'lightningcss',
     },
   },
   eslint: {
