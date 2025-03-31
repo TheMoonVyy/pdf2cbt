@@ -11,9 +11,6 @@
       :question-type="currentQuestionDetails.questionType"
       :total-options="currentQuestionDetails.totalOptions"
       class="ml-4 mt-1"
-      :class="{
-        hidden: currentQuestionDetails.questionType === 'nat',
-      }"
       @update:model-value="logCurrentAnswer()"
     />
     <CbtInterfaceAnswerNumericDiv

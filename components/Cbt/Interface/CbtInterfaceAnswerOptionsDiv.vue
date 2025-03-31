@@ -1,30 +1,57 @@
 <template>
   <div
+    v-if="props.questionType !== 'nat'"
     class="flex flex-col"
     :style="optionsStyle"
   >
-    <div
-      v-for="n in props.totalOptions"
-      :key="n"
-      class="flex"
-    >
-      <input
-        :id="'answer-option-' + n"
-        v-model.number="questionAnswer"
-        class="cursor-pointer"
-        :type="props.questionType === 'msq' ? 'checkbox' : 'radio'"
-        :name="props.questionType === 'msq' ? 'msq-options' : 'mcq-options'"
-        :value="n"
-        :style="{ zoom: 'var(--options-zoom-size)' }"
+    <template v-if="props.questionType === 'msq'">
+      <div
+        v-for="n in props.totalOptions"
+        :key="n"
+        class="flex"
       >
-      <label
-        class="option-content text-2xl inline-block cursor-pointer pl-4"
-        :for="'answer-option-' + n"
-        :style="{
-          fontSize: 'var(--options-font-size)',
-        }"
-      />
-    </div>
+        <input
+          :id="'msq-answer-option-' + n"
+          v-model="questionAnswer"
+          class="cursor-pointer"
+          type="checkbox"
+          name="msq-options"
+          :value="n"
+          :style="{ zoom: 'var(--options-zoom-size)' }"
+        >
+        <label
+          class="option-content text-2xl inline-block cursor-pointer pl-4"
+          :for="'msq-answer-option-' + n"
+          :style="{
+            fontSize: 'var(--options-font-size)',
+          }"
+        />
+      </div>
+    </template>
+    <template v-else>
+      <div
+        v-for="n in props.totalOptions"
+        :key="n"
+        class="flex"
+      >
+        <input
+          :id="'mcq-answer-option-' + n"
+          v-model.number="questionAnswer"
+          class="cursor-pointer"
+          type="radio"
+          name="mcq-options"
+          :value="n"
+          :style="{ zoom: 'var(--options-zoom-size)' }"
+        >
+        <label
+          class="option-content text-2xl inline-block cursor-pointer pl-4"
+          :for="'mcq-answer-option-' + n"
+          :style="{
+            fontSize: 'var(--options-font-size)',
+          }"
+        />
+      </div>
+    </template>
   </div>
 </template>
 
