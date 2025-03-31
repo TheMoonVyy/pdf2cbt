@@ -126,7 +126,7 @@ export interface TestLog {
     status: QuestionStatus
     timeSpent: number
   }
-  actionDetails?: UnknownRecord
+  actionDetails?: Record<string, unknown>
 }
 
 export type TestSectionData = {
@@ -147,6 +147,11 @@ export type TestSectionSummary = {
 }
 
 export type TestSectionsSummary = Map<TestSectionKey, ComputedRef<TestSectionSummary>>
+
+export type TestSummaryDataTableRow = TestSectionSummary & {
+  section: TestSectionKey
+  totalQuestions: number
+}
 
 export interface CurrentTestState {
   section: TestSectionKey
@@ -169,6 +174,35 @@ export type TestSectionsImgUrls = {
   [section: TestSectionKey]: {
     [question: number | string]: string[]
   }
+}
+
+export interface TestOutputData {
+  testConfig: {
+    testName: string
+    testDurationInSeconds: number
+  }
+  testData: {
+    [subject: string]: {
+      [section: TestSectionKey]: {
+        [question: number | string]: {
+          queId: number
+          secQueId: number
+          type: QuestionType
+          status: QuestionStatus
+          answer: QuestionAnswer
+          timeSpent: number
+          totalOptions?: number
+          marks: {
+            cm: number
+            pm?: number
+            im: number
+          }
+        }
+      }
+    }
+  }
+  testSummary: TestSummaryDataTableRow[]
+  testLogs: TestLog[]
 }
 
 export interface TestState {

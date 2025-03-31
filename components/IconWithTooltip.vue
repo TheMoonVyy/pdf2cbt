@@ -73,9 +73,3 @@ const unfocus = (e: PointerEvent) => {
   (e.target as HTMLElement).blur()
 }
 </script>
-
-<style>
-.p-tooltip > .p-tooltip-text {
-  width: 20rem;
-}
-</style>

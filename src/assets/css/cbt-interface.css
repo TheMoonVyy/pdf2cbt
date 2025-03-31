@@ -1,0 +1,82 @@
+html {
+  font-size: var(--main-layout-size);
+}
+
+.bg-image {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.bg-image.answered {
+  background-image: var(--bg-answered-image-url);
+  color: var(--text-answered-image-color);
+}
+.bg-image.notAnswered {
+  background-image: var(--bg-notAnswered-image-url);
+  color: var(--text-notAnswered-image-color);
+}
+.bg-image.marked {
+  background-image: var(--bg-marked-image-url);
+  color: var(--text-marked-image-color);
+}
+.bg-image.notVisited {
+  background-image: var(--bg-notVisited-image-url);
+  color: var(--text-notVisited-image-color);
+}
+.bg-image.markedAnswered {
+  background-image: var(--bg-markedAnswered-image-url);
+  color: var(--text-markedAnswered-image-color);
+}
+
+.bg-size.answered {
+  font-size: var(--bg-answered-image-size);
+}
+.bg-size.notAnswered {
+  font-size: var(--bg-notAnswered-image-size);
+}
+.bg-size.marked {
+  font-size: var(--bg-marked-image-size);
+}
+.bg-size.notVisited {
+  font-size: var(--bg-notVisited-image-size);
+}
+.bg-size.markedAnswered {
+  font-size: var(--bg-markedAnswered-image-size);
+}
+
+.bg-size.answered span {
+  font-size: var(--text-answered-number-size);
+}
+.bg-size.notAnswered span {
+  font-size: var(--text-notAnswered-number-size);
+}
+.bg-size.marked span {
+  font-size: var(--text-marked-number-size);
+}
+.bg-size.notVisited span {
+  font-size: var(--text-notVisited-number-size);
+}
+.bg-size.markedAnswered span {
+  font-size: var(--text-markedAnswered-number-size);
+}
+
+.primary-theme,
+.primary-theme-btn-hover:hover,
+.primary-theme-btn {
+  background-color: var(--bg-primary-theme-color);
+  color: var(--text-primary-theme-color);
+}
+.primary-theme-btn:hover {
+  background-color: color-mix(in srgb, var(--bg-primary-theme-color) 65%, black);
+}
+.primary-theme-btn:disabled {
+  background-color: color-mix(in srgb, var(--bg-primary-theme-color) 70%, white);
+  opacity: 80%;
+}
+.secondary-theme {
+  background-color: var(--bg-secondary-theme-color);
+  color: var(--text-secondary-theme-color);
+}

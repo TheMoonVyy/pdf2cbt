@@ -5,10 +5,17 @@ import type {
   QuestionAnswer,
   TestLog,
   QuestionStatus,
+  TestQuestionData,
 } from '~/src/types/'
 import { db } from '~/src/db/cbt-db'
 
-type TestLogType = 'currentQuestion' | 'answerSaved' | 'currentAnswer' | 'answerCleared'
+type LogTestStateViaType = 'testStarted' | 'testResumed' | 'testFinished'
+type AnswerSavedViaType = 'save&next' | 'mfr'
+type CurrentQuestionViaType = LogTestStateViaType | AnswerSavedViaType
+  | 'previous' | 'palette' | 'sectionBtn'
+
+type TestLogType = LogTestStateViaType | 'currentQuestion'
+  | 'answerSaved' | 'currentAnswer' | 'answerCleared'
 
 type UnknownRecord = Record<string, unknown>
 
@@ -18,15 +25,18 @@ class TestLogger {
   logs: TestLog[] = []
   logId: number = 1
   testSectionsData: Ref<TestSectionsData>
+  testQuestionsData: Ref<Map<number, TestQuestionData>>
   currentTestState: Ref<CurrentTestState>
   lastLoggedAnswer: Ref<QuestionAnswer>
 
   constructor(
     testSectionsData: Ref<TestSectionsData>,
+    testQuestionsData: Ref<Map<number, TestQuestionData>>,
     currentTestState: Ref<CurrentTestState>,
     lastLoggedAnswer: Ref<QuestionAnswer>,
   ) {
     this.testSectionsData = testSectionsData
+    this.testQuestionsData = testQuestionsData
     this.currentTestState = currentTestState
     this.lastLoggedAnswer = lastLoggedAnswer
   }
@@ -36,12 +46,12 @@ class TestLogger {
     details: Record<string, unknown> | null = null,
     lastLoggedAnswerValue: QuestionAnswer | undefined = undefined,
   ) {
-    const timestamp = Date.now()
+    const timestamp = Date.now() // in unix time
     const testTime = this.currentTestState.value.remainingSeconds!
 
-    const section = this.currentTestState.value.section
-    const question = this.currentTestState.value.question
-    const currentQuestionData = this.testSectionsData.value[section][question]
+    const currentQueId = this.currentTestState.value.queId
+
+    const currentQuestionData = this.testQuestionsData.value.get(currentQueId)!
     const currentAnswer = currentQuestionData.answer
 
     const answer = Array.isArray(currentAnswer) ? [...currentAnswer] : currentAnswer
@@ -53,7 +63,7 @@ class TestLogger {
       type,
       current: {
         queId: currentQuestionData.queId,
-        section,
+        section: currentQuestionData.section,
         question: currentQuestionData.que,
         answer,
         status: currentQuestionData.status,
@@ -82,17 +92,62 @@ class TestLogger {
     this.logs = newLogArray
   }
 
+  logTestState(
+    logType: LogTestStateViaType,
+    submittedVia: 'Auto' | 'Manual' = 'Auto',
+  ) {
+    if (logType === 'testFinished') {
+      const currentQueId = this.currentTestState.value.queId
+      this.currentQuestion('testFinished', currentQueId)
+      this.#createLog(logType, { submittedVia })
+    }
+    else {
+      this.#createLog(logType)
+      this.currentQuestion(logType, 0)
+
+      const ogCurrentTestState = this.currentTestState.value
+      const currentTestState = toRaw(ogCurrentTestState)
+      return db.updateCurrentTestState(currentTestState, true)
+        .catch('DataCloneError',
+          () => db.updateCurrentTestState(JSON.parse(JSON.stringify(currentTestState)), true),
+        )
+    }
+  }
+
   currentQuestion(
-    via: 'save&next' | 'previous' | 'mfr' | 'palette' | 'sectionBtn' | 'testStart',
+    via: CurrentQuestionViaType,
     prevQueId: number,
     prevSection: TestSectionKey | null = null,
   ) {
     const details: UnknownRecord = { via }
 
     if (prevSection) details.prevSection = prevSection
-    if (via !== 'testStart') details.prevQueId = prevQueId
+    if (via !== 'testStarted' && via !== 'testResumed') {
+      details.prevQueId = prevQueId
+    }
 
-    this.#createLog('currentQuestion', details)
+    if (via !== 'testFinished') this.#createLog('currentQuestion', details)
+
+    if (typeof details.prevQueId === 'number') {
+      const prevQueId = details.prevQueId
+      const prevQuestionData = this.testQuestionsData.value.get(prevQueId)
+      if (prevQuestionData) db.updateQuestionData(prevQuestionData)
+
+      const ogCurrentTestState = this.currentTestState.value
+      const currentTestState = toRaw(ogCurrentTestState)
+
+      return db.updateCurrentTestState(
+        currentTestState,
+        via === 'testFinished',
+        Boolean(details.prevSection),
+      ).catch('DataCloneError',
+        () => db.updateCurrentTestState(
+          JSON.parse(JSON.stringify(currentTestState)),
+          via === 'testFinished',
+          Boolean(details.prevSection),
+        ),
+      )
+    }
   }
 
   currentAnswer(answer: QuestionAnswer) {
@@ -103,7 +158,7 @@ class TestLogger {
   }
 
   answeredSaved(
-    via: 'save&next' | 'mfr',
+    via: AnswerSavedViaType,
     prevAnswer: QuestionAnswer,
     prevStatus: QuestionStatus,
   ) {
@@ -113,12 +168,27 @@ class TestLogger {
   answerCleared(prevAnswer: QuestionAnswer, prevStatus: QuestionStatus) {
     this.#createLog('answerCleared', { prevAnswer, prevStatus })
   }
+
+  getLogs() {
+    return this.logs
+  }
 }
 
 export default (freshInit: boolean = false): TestLogger => {
   if (!testLoggerInstance || freshInit) {
-    const { testSectionsData, currentTestState, lastLoggedAnswer } = useCbtTestData()
-    testLoggerInstance = new TestLogger(testSectionsData, currentTestState, lastLoggedAnswer)
+    const {
+      testSectionsData,
+      testQuestionsData,
+      currentTestState,
+      lastLoggedAnswer,
+    } = useCbtTestData()
+
+    testLoggerInstance = new TestLogger(
+      testSectionsData,
+      testQuestionsData,
+      currentTestState,
+      lastLoggedAnswer,
+    )
   }
   return testLoggerInstance
 }
