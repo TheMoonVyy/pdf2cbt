@@ -67,3 +67,8 @@
     min-height: 100vh;
   }
 }
+
+/* safelist workaround */
+.start-1\/2\! {
+  inset-inline-start: calc(1/2 * 100%) !important;
+}
