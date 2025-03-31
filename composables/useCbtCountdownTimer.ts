@@ -9,8 +9,6 @@ interface TimerState {
 export default () => {
   const { currentTestState } = useCbtTestData()
 
-  const countdownTimerStatus = shallowRef<'not-started' | 'ongoing' | 'finished'>('not-started')
-
   const timerState: TimerState = {
     pausedAt: null,
     pausedMs: 0,
@@ -33,14 +31,13 @@ export default () => {
       clearInterval(timerState.timer)
       timerState.timer = null
     }
-    currentTestState.value.remainingSeconds = 0
-    countdownTimerStatus.value = 'finished'
+    currentTestState.value.testStatus = 'finished'
   }
 
   const startCountdown = (durationInSeconds: number, intervalMs: number = 250) => {
     if (!timerState.timer) {
       timerState.endTime = Date.now() + (durationInSeconds * 1000)
-      countdownTimerStatus.value = 'ongoing'
+      currentTestState.value.testStatus = 'ongoing'
       timerState.intervalMs = intervalMs
       updateCountdownSeconds()
       timerState.timer = setInterval(updateCountdownSeconds, timerState.intervalMs)
@@ -50,6 +47,5 @@ export default () => {
   return {
     startCountdown,
     stopCountdown,
-    countdownTimerStatus,
   }
 }

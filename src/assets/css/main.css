@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:is(.dark *):not(.light *));
 
 :root {
   --p-primary-50: var(--color-emerald-50);
