@@ -216,6 +216,7 @@
               ref="imgElem"
               :src="currentPageDetails.url"
               class="border border-gray-500 pdf-cropper-img"
+              draggable="false"
               :style="{
                 backgroundColor: `#${settings.pageBGColor}`,
               }"
@@ -444,7 +445,7 @@ const tooltipContent = {
 }
 
 const generateOutputState = shallowReactive({
-  filename: 'pdf_cropper_pdf2cbt',
+  filename: 'pdf2cbt_cropperdata',
   fileType: '.zip',
   preparingDownload: false,
   downloaded: false,
@@ -1146,8 +1147,6 @@ async function renderPage(pageNum: number, refreshOverlays: boolean = true) {
         height: pageData.dimensions.h,
         pageScale,
       }
-
-      console.log(pageImgData)
     }
     if (refreshOverlays) {
       renderCurrentPageCroppedOverlays(false)
