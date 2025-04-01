@@ -1,7 +1,7 @@
 <template>
   <div
     id="main-layout"
-    class="contents"
+    class="max-h-dvh min-h-dvh w-full flex flex-col"
   >
     <MainNavBar />
     <slot />
