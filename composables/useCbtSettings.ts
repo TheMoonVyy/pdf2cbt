@@ -41,6 +41,10 @@ export default () => {
         zoomSize: 1.2,
         rowGap: 0.8,
       },
+      questionImgMaxWidth: {
+        maxWidthWhenQuestionPaletteOpened: 95,
+        maxWidthWhenQuestionPaletteClosed: 100,
+      },
     },
 
     questionPalette: {

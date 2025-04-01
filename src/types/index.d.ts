@@ -47,6 +47,10 @@ export interface CbtUiSettings {
       zoomSize: number
       rowGap: number
     }
+    questionImgMaxWidth: {
+      maxWidthWhenQuestionPaletteOpened: number
+      maxWidthWhenQuestionPaletteClosed: number
+    }
   }
 
   questionPalette: {

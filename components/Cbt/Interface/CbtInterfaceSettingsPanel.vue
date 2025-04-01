@@ -446,7 +446,7 @@
             pt:header:class="justify-center p-5"
             pt:content:class="flex flex-col px-4"
           >
-            <div class="flex w-full justify-center gap-2 mt-2 mb-0.5">
+            <div class="flex w-full justify-center gap-2 mb-0.5">
               <label
                 class="text-center text-base text-nowrap font-semibold"
               >
@@ -548,6 +548,47 @@
                   :step="item.step || 1"
                   :label-id="item.id"
                   :size="('size' in item ? (item.size as string) : null)"
+                />
+              </div>
+            </div>
+            <div
+              class="grid grid-cols-2 mt-4 gap-3"
+            >
+              <label
+                class="col-span-2 text-center text-base text-nowrap font-semibold"
+              >
+                Question Img Max Width
+              </label>
+              <div class="flex flex-col">
+                <label
+                  for="ques_img_max_width_qp_opened"
+                  class="text-center"
+                >
+                  When Question Palette Opened
+                </label>
+                <BaseInputNumber
+                  v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteOpened"
+                  :min="10"
+                  :max="100"
+                  :step="5"
+                  label-id="ques_img_max_width_qp_opened"
+                  size="small"
+                />
+              </div>
+              <div class="flex flex-col">
+                <label
+                  for="ques_img_max_width_qp_closed"
+                  class="text-center"
+                >
+                  When Question Palette Closed
+                </label>
+                <BaseInputNumber
+                  v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed"
+                  :min="10"
+                  :max="100"
+                  :step="5"
+                  label-id="ques_img_max_width_qp_closed"
+                  size="small"
                 />
               </div>
             </div>

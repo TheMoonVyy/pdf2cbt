@@ -83,6 +83,7 @@
           </div>
         </div>
         <div
+          ref="profileDetailsContainerElem"
           class="flex flex-1 gap-3 border-l-2 border-b-2 border-slate-500"
           :class="isFullscreen ? 'cursor-zoom-out' : 'cursor-zoom-in'"
           @click="toggleFullScreen()"
@@ -175,6 +176,7 @@
             :class="{
               hidden: testState.currentProcess !== 'test-started',
             }"
+            :is-question-pallete-collapsed="isQuestionPalleteCollapsed"
           />
           <div
             class="flex absolute py-3 cursor-pointer right-0 top-1/2 z-10 bg-black"
@@ -319,6 +321,9 @@
         </div>
       </div>
     </div>
+    <CbtInterfaceHiddenSettings
+      v-model="hiddenSettingsVisibility"
+    />
     <div
       v-show="submitState.isSubmitBtnClicked
         || submitState.isSubmitting
@@ -588,6 +593,10 @@ const pageCssVars = computed(() => {
     '--text-markedAnswered-number-size': `${icons.markedAnswered.numberTextFontSize}rem`,
   }
 })
+
+const profileDetailsContainerElem = templateRef('profileDetailsContainerElem')
+
+const hiddenSettingsVisibility = shallowRef(false)
 
 let testOutputData: TestOutputData | null = null
 
@@ -959,6 +968,17 @@ watch(testState,
     })
   },
   { once: true, deep: false },
+)
+
+onLongPress(
+  profileDetailsContainerElem,
+  () => hiddenSettingsVisibility.value = true,
+  {
+    modifiers: {
+      prevent: true,
+    },
+    delay: 1250,
+  },
 )
 
 const testStatusWatchHandle = watch(

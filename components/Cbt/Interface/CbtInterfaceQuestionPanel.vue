@@ -5,6 +5,9 @@
       :key="index"
       :src="url"
       draggable="false"
+      :style="{
+        maxWidth: questionImgMaxSize,
+      }"
     >
     <CbtInterfaceAnswerOptionsDiv
       v-model="currentQuestionOptionsAnswer"
@@ -27,7 +30,22 @@
 </template>
 
 <script lang="ts" setup>
+const props = defineProps<{
+  isQuestionPalleteCollapsed: boolean
+}>()
+
 const { testQuestionsData, currentTestState, testSectionsImgUrls, lastLoggedAnswer } = useCbtTestData()
+
+const { uiSettings } = useCbtSettings()
+
+const questionImgMaxSize = computed(() => {
+  if (props.isQuestionPalleteCollapsed) {
+    return uiSettings.value.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed + '%'
+  }
+  else {
+    return uiSettings.value.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteOpened + '%'
+  }
+})
 
 const currentQuestionImgUrls = computed(() => {
   const section = currentTestState.value.section
