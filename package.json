@@ -1,6 +1,6 @@
 {
   "name": "pdf2cbt",
-  "version": "0.1.0-alpha",
+  "version": "0.1.0-beta",
   "private": true,
   "description": "Turn PDF of questions into CBT (Computer-Based Test)",
   "license": "AGPL-3.0-or-later",
