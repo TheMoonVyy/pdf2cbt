@@ -1481,27 +1481,28 @@ watchDebounced(testSectionsList,
 onMounted(() => {
   db.getSettings()
     .then((storedSettings) => {
-      if (!storedSettings) {
-        throw new Error('No stored settings found')
-      }
-      const data = {
-        testSettings: testSettings.value,
-        uiSettings: uiSettings.value,
-      }
-      utilSelectiveMergeObj(data, storedSettings)
-    })
-    .catch((e: unknown) => {
-      console.info('Unable to load settings from db', e)
-      const widthInRange = window.innerWidth >= 320 && window.innerWidth <= 480
-      const heightInRange = window.innerHeight >= 320 && window.innerHeight <= 480
-
-      if (widthInRange || heightInRange) {
-        settings.value.mainLayout.size = 9
+      if (storedSettings) {
+        const data = {
+          testSettings: testSettings.value,
+          uiSettings: uiSettings.value,
+        }
+        utilSelectiveMergeObj(data, storedSettings)
       }
       else {
-        const fontSize = parseInt(getComputedStyle(document.documentElement).fontSize)
-        if (!Number.isNaN(fontSize)) {
-          settings.value.mainLayout.size = fontSize
+        console.info('Unable to load settings from db, either does not exists or unable to access it')
+
+        // simple method to reduce layout size for small screens
+        const widthInRange = window.innerWidth >= 250 && window.innerWidth <= 480
+        const heightInRange = window.innerHeight >= 250 && window.innerHeight <= 480
+
+        if (widthInRange || heightInRange) {
+          settings.value.mainLayout.size = 9
+        }
+        else {
+          const fontSize = parseInt(getComputedStyle(document.documentElement).fontSize)
+          if (!Number.isNaN(fontSize)) {
+            settings.value.mainLayout.size = fontSize
+          }
         }
       }
     })
