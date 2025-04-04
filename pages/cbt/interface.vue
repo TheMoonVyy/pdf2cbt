@@ -532,6 +532,8 @@ definePageMeta({
   layout: false,
 })
 
+import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
+
 const testSummaryDataTableKeys: (keyof TestSummaryDataTableRow)[] = [
   'section', 'totalQuestions',
   'answered', 'notAnswered', 'marked', 'markedAnswered', 'notVisited',
@@ -594,7 +596,7 @@ const pageCssVars = computed(() => {
   }
 })
 
-const profileDetailsContainerElem = templateRef('profileDetailsContainerElem')
+const profileDetailsContainerElem = ref<HTMLElement | null>(null)
 
 const hiddenSettingsVisibility = shallowRef(false)
 
@@ -955,7 +957,7 @@ watch(testState,
   () => {
     window.addEventListener('beforeunload', onBeforeUnloadCallback)
     const router = useRouter()
-    removeNagivationGuard = router.beforeEach((to, from, next) => {
+    removeNagivationGuard = router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
       const confirmLeave = confirm(
         'Are you sure you want to go back?\nCurrent Test State may be lost if you do!',
       )
