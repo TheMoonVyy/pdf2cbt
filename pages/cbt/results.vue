@@ -14,55 +14,58 @@
         <div class="flex flex-col lg:flex-row w-full h-screen lg:h-auto justify-evenly">
           <div class="px-2 flex-1 min-w-0 h-96 items-center justify-center">
             <!-- Here goes the pie chart for the test summary -->
-            <v-chart class="h-screen" :option="{
-              backgroundColor: 'transparent',
-              title: {
-                text: 'Attempt Type',
-                left: 'center',
-                top: '0%',
-                textStyle: {
-                  color: isDarkMode() ? '#FFFFFF' : '#000000',
-                },
-              },
-              legend: {
-                top: '7%',
-                textStyle: {
-                  color: isDarkMode() ? '#FFFFFF' : '#000000',
-                }
-              },
-              tooltip: {
-                trigger: 'item',
-              },
-              series: [
-                {
-                  name: 'Attempts',
-                  type: 'pie',
-                  radius: '80%',
-                  center: ['50%', '55%'],
-                  data: [
-                    { value: getTestSummaryData('answered'), name: 'Answered', itemStyle: { color: '#00FF00' } },
-                    { value: getTestSummaryData('notAnswered'), name: 'Not Answered', itemStyle: { color: '#FF0000' } },
-                    { value: getTestSummaryData('notVisited'), name: 'Not Visited', itemStyle: { color: '#D3D3D3' } },
-                    { value: getTestSummaryData('marked'), name: 'Marked for Review', itemStyle: { color: '#8F00FF' } },
-                    { value: getTestSummaryData('markedAnswered'), name: 'Marked for Review and Answered', itemStyle: { color: '#0000FF' } },
-                  ],
-                  label: {
-                    show: false,
+            <client-only>
+              <v-chart class="h-screen" :option="{
+                backgroundColor: 'transparent',
+                title: {
+                  text: 'Attempt Type',
+                  left: 'center',
+                  top: '0%',
+                  textStyle: {
+                    color: isDarkMode() ? '#FFFFFF' : '#000000',
                   },
-                  emphasis: {
-                    itemStyle: {
-                      shadowBlur: 10,
-                      shadowOffsetX: 0,
-                      shadowColor: 'rgba(0, 0, 0, 0.5)',
+                },
+                legend: {
+                  top: '7%',
+                  textStyle: {
+                    color: isDarkMode() ? '#FFFFFF' : '#000000',
+                  }
+                },
+                tooltip: {
+                  trigger: 'item',
+                },
+                series: [
+                  {
+                    name: 'Attempts',
+                    type: 'pie',
+                    radius: '80%',
+                    center: ['50%', '60%'],
+                    data: [
+                      { value: getTestSummaryData('answered'), name: 'Answered', itemStyle: { color: '#00FF00' } },
+                      { value: getTestSummaryData('notAnswered'), name: 'Not Answered', itemStyle: { color: '#FF0000' } },
+                      { value: getTestSummaryData('notVisited'), name: 'Not Visited', itemStyle: { color: '#D3D3D3' } },
+                      { value: getTestSummaryData('marked'), name: 'Marked for Review', itemStyle: { color: '#8F00FF' } },
+                      { value: getTestSummaryData('markedAnswered'), name: 'Marked for Review and Answered', itemStyle: { color: '#0000FF' } },
+                    ],
+                    label: {
+                      show: false,
+                    },
+                    emphasis: {
+                      itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)',
+                      },
                     },
                   },
-                },
-              ],
-            }
-              " autoresize />
+                ],
+              }
+                " autoresize />
+            </client-only>
           </div>
           <div class="px-2 items-center min-w-0 h-96 flex-1 justify-center">
             <!-- Here goes the pie chart for the time spent on each section -->
+            <client-only>
             <v-chart class="h-screen" :option="{
               backgroundColor: 'transparent',
               title: {
@@ -90,7 +93,7 @@
                   name: 'Attempts',
                   type: 'pie',
                   radius: '80%',
-                  center: ['50%', '55%'],
+                  center: ['50%', '60%'],
                   data: getTestTimebySection().map((item) => ({ value: Math.round(item.timeSpent / 0.6) / 100, name: item.label })),
                   label: {
                     show: false,
@@ -106,10 +109,12 @@
               ],
             }
               " autoresize />
+              </client-only>
           </div>
         </div>
         <div class="pb-24 px-5" style="height: 400px;">
           <!-- Here goes the line chart for the test journey -->
+          <client-only>
           <v-chart class="h-screen" :option="{
             title: {
               text: 'Test Journey',
@@ -158,6 +163,7 @@
               }
             ]
           }" autoresize />
+          </client-only>
         </div>
         <!-- <div class="grid"> -->
         <!-- Here goes the Question Journey based on testLogs -->
