@@ -77,6 +77,16 @@
                     />
                     <span class="text-base text-nowrap">Test Results</span>
                   </NuxtLink>
+                  <NuxtLink
+                    to="/cbt/generate-answer-key"
+                    class="flex items-center gap-2 p-2 pl-8 md:pl-2 hover:bg-surface-200 dark:hover:bg-surface-800"
+                  >
+                    <Icon
+                      name="mdi:script-text-key-outline"
+                      size="1.3rem"
+                    />
+                    <span class="text-base text-nowrap">Generate Answer Key</span>
+                  </NuxtLink>
                 </div>
               </div>
             </div>

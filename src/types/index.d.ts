@@ -180,33 +180,43 @@ export type TestSectionsImgUrls = {
   }
 }
 
+export type TestOutputDataQuestion = Omit<TestQuestionData, 'section' | 'que'>
+  & Pick<CropperQuestionData, 'marks'>
+
+export type TestOutputDataSection = {
+  [question: number | string]: TestOutputDataQuestion
+}
+
+export type TestOutputDataSubject = {
+  [section: TestSectionKey]: TestOutputDataSection
+}
+
+export type TestOutputDataSubjects = {
+  [subject: keyof CropperOutputData]: TestOutputDataSubject
+}
+
 export interface TestOutputData {
   testConfig: {
     testName: string
     testDurationInSeconds: number
   }
-  testData: {
-    [subject: string]: {
-      [section: TestSectionKey]: {
-        [question: number | string]: {
-          queId: number
-          secQueId: number
-          type: QuestionType
-          status: QuestionStatus
-          answer: QuestionAnswer
-          timeSpent: number
-          totalOptions?: number
-          marks: {
-            cm: number
-            pm?: number
-            im: number
-          }
-        }
-      }
-    }
-  }
+  testData: TestOutputDataSubjects
   testSummary: TestSummaryDataTableRow[]
   testLogs: TestLog[]
+}
+
+export type TestQuestionAnswerKeyData = QuestionAnswer | 'DROPPED' | 'BONUS'
+
+export type TestSectionAnswerKeyData = {
+  [question: number | string]: TestQuestionAnswerKeyData
+}
+
+export type TestSubjectAnswerKeyData = {
+  [section: TestSectionKey]: TestSectionAnswerKeyData
+}
+
+export type TestAnswerKeyData = {
+  [subject: keyof CropperOutputData]: TestSubjectAnswerKeyData
 }
 
 export interface TestState {

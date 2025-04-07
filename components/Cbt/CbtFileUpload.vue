@@ -4,11 +4,12 @@
     :custom-upload="true"
     :multiple="computedValue.maxFilesSelect > 1"
     :invalid-file-type-message="computedValue.errorMsg"
-    pt:root:class="w-full"
+    :pt:root:class="'flex flex-col [&>input[type=file]]:hidden w-full ' + (rootClass ?? '')"
     pt:header:class="p-4"
-    pt:content:class="grow m-2 px-4 py-2 gap-3
-          border border-dashed rounded-lg transition-colors border-gray-300
-          data-[p-highlight=true]:border-2 data-[p-highlight=true]:border-green-500"
+    :pt:content:class="`flex flex-col grow m-2 px-4 py-2 gap-3
+      border border-dashed rounded-lg transition-colors border-gray-300
+      data-[p-highlight=true]:border-2 data-[p-highlight=true]:border-green-500 `
+      + (contentClass ?? '')"
     @uploader="(e) => handleUpload(e.files)"
   >
     <template #header="scope">
@@ -94,7 +95,7 @@
     </template>
     <template #empty>
       <div
-        class="flex w-full h-full relative"
+        class="flex grow relative"
         :class="props.emptySlotContainerClass"
       >
         <span
@@ -125,6 +126,9 @@ const props = defineProps<{
   fileTypes: 'zip-or-pdfjson' | 'zip-or-json'
   emptySlotContainerClass?: string
   emptySlotTextClass?: string
+  rootClass?: string
+  contentClass?: string
+  validationFunction?: (data: EmitData) => Promise<boolean>
 }>()
 
 const selectedFileType = defineModel<string>({ required: true })
@@ -235,7 +239,14 @@ async function unzipFile(zipFile: File | Blob) {
 const emitData = async (
   data: EmitData,
 ) => {
-  emit('onUploaded', data)
+  if (props.validationFunction) {
+    props.validationFunction(data)
+      .then(() => emit('onUploaded', data))
+      .catch(errMsg => invalidFilesErrorHandler(errMsg))
+  }
+  else {
+    emit('onUploaded', data)
+  }
 }
 
 const handleUpload = async (uploadedFiles: File[] | File) => {

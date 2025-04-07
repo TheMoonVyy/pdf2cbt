@@ -146,7 +146,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         pcProgressBar: { root: 'hidden' },
         fileactions: 'ml-auto mr-4',
         content: `flex flex-col`,
-        empty: 'grow',
+        empty: 'flex grow',
       },
       dialog: {
         title: 'mx-auto',
