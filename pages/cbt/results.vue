@@ -21,52 +21,7 @@
             <client-only>
               <v-chart
                 class="h-screen"
-                :option="{
-                  backgroundColor: 'transparent',
-                  title: {
-                    text: 'Attempt Type',
-                    left: 'center',
-                    top: '0%',
-                    textStyle: {
-                      color: isDarkMode() ? '#FFFFFF' : '#000000',
-                    },
-                  },
-                  legend: {
-                    top: '7%',
-                    textStyle: {
-                      color: isDarkMode() ? '#FFFFFF' : '#000000',
-                    },
-                  },
-                  tooltip: {
-                    trigger: 'item',
-                  },
-                  series: [
-                    {
-                      name: 'Attempts',
-                      type: 'pie',
-                      radius: '80%',
-                      center: ['50%', '60%'],
-                      data: [
-                        { value: getTestSummaryData('answered'), name: 'Answered', itemStyle: { color: '#00FF00' } },
-                        { value: getTestSummaryData('notAnswered'), name: 'Not Answered', itemStyle: { color: '#FF0000' } },
-                        { value: getTestSummaryData('notVisited'), name: 'Not Visited', itemStyle: { color: '#D3D3D3' } },
-                        { value: getTestSummaryData('marked'), name: 'Marked for Review', itemStyle: { color: '#8F00FF' } },
-                        { value: getTestSummaryData('markedAnswered'), name: 'Marked for Review and Answered', itemStyle: { color: '#0000FF' } },
-                      ],
-                      label: {
-                        show: false,
-                      },
-                      emphasis: {
-                        itemStyle: {
-                          shadowBlur: 10,
-                          shadowOffsetX: 0,
-                          shadowColor: 'rgba(0, 0, 0, 0.5)',
-                        },
-                      },
-                    },
-                  ],
-                }
-                "
+                :option="attemptTypeChartOption"
                 autoresize
               />
             </client-only>
@@ -76,49 +31,7 @@
             <client-only>
               <v-chart
                 class="h-screen"
-                :option="{
-                  backgroundColor: 'transparent',
-                  title: {
-                    text: 'Time Spent per Section',
-                    left: 'center',
-                    top: '0%',
-                    textStyle: {
-                      color: isDarkMode() ? '#FFFFFF' : '#000000',
-                    },
-                  },
-                  legend: {
-                    top: '7%',
-                    textStyle: {
-                      color: isDarkMode() ? '#FFFFFF' : '#000000',
-                    },
-                  },
-                  tooltip: {
-                    trigger: 'item',
-                    formatter: function (params: any) {
-                      return `${params.marker} ${params.name} <br/>${params.value} min`;
-                    },
-                  },
-                  series: [
-                    {
-                      name: 'Attempts',
-                      type: 'pie',
-                      radius: '80%',
-                      center: ['50%', '60%'],
-                      data: getTestTimebySection().map((item) => ({ value: Math.round(item.timeSpent / 0.6) / 100, name: item.label })),
-                      label: {
-                        show: false,
-                      },
-                      emphasis: {
-                        itemStyle: {
-                          shadowBlur: 10,
-                          shadowOffsetX: 0,
-                          shadowColor: 'rgba(0, 0, 0, 0.5)',
-                        },
-                      },
-                    },
-                  ],
-                }
-                "
+                :option="timeSpentPerSectionChartOption"
                 autoresize
               />
             </client-only>
@@ -132,54 +45,7 @@
           <client-only>
             <v-chart
               class="h-screen"
-              :option="{
-                title: {
-                  text: 'Test Journey',
-                  left: 'center',
-                  top: '0%',
-                  textStyle: {
-                    color: isDarkMode() ? '#FFFFFF' : '#000000',
-                  },
-                },
-                tooltip: {
-                  trigger: 'axis',
-                  axisPointer: {
-                    type: 'cross',
-                    label: {
-                      backgroundColor: '#6a7985',
-                    },
-                  },
-                },
-
-                legend: {
-                  top: '8%',
-                  textStyle: {
-                    color: isDarkMode() ? '#FFFFFF' : '#000000',
-                  },
-                },
-                xAxis: {
-                  type: 'category',
-                  data: Array.from({ length: 6 }, (_, i) => {
-                    const testTime = jsonData?.testLogs
-                      ? (getStartEndTimestamp(jsonData.testLogs).end - getStartEndTimestamp(jsonData.testLogs).start) / 60000
-                      : 0;
-                    const start = Math.round((i * testTime / 6) * 10) / 10;
-                    const end = Math.round(((i + 1) * testTime / 6) * 10) / 10;
-                    return `${start}-${end} min`;
-                  }),
-                },
-                yAxis: {
-                  type: 'value',
-                },
-                series: [
-                  {
-                    name: 'Questions Attempted',
-                    data: getAttemptedQuestionsbyInveral(getLatestLogsByQueId(jsonData?.testLogs ?? []), 6),
-                    type: 'line',
-                    smooth: true,
-                  },
-                ],
-              }"
+              :option="testJourneyChartOption"
               autoresize
             />
           </client-only>
@@ -193,22 +59,141 @@
 </template>
 
 <script lang="ts" setup>
-// Importing necessary components and modules from the ECharts library
-import { use } from 'echarts/core'
-import { PieChart, LineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent, TitleComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import VChart from 'vue-echarts'
+import type { CallbackDataParams } from 'echarts/types/dist/shared'
 import type { TestLog, TestOutputData } from '~/src/types'
 
-use([GridComponent, TooltipComponent, LegendComponent, TitleComponent, PieChart, LineChart, CanvasRenderer])
+provide(THEME_KEY, 'dark')
 
-// This ref holds the loading state of the file upload process.
-const isLoading = ref(false)
-const isUploaded = ref(false)
+// These holds the loading state of the file upload process.
+const isLoading = shallowRef(false)
+const isUploaded = shallowRef(false)
 
 // This ref holds the parsed JSON data from the uploaded file.
 const jsonData = ref<TestOutputData | null>(null)
+
+const attemptTypeChartOption = computed<ECOption>(() => ({
+  backgroundColor: 'transparent',
+  title: {
+    text: 'Attempt Type',
+    left: 'center',
+    top: '0%',
+  },
+  legend: {
+    top: '7%',
+    textStyle: {
+      color: '#ffffff',
+    },
+  },
+  tooltip: {
+    trigger: 'item',
+  },
+  series: [
+    {
+      name: 'Attempts',
+      type: 'pie',
+      radius: '80%',
+      center: ['50%', '60%'],
+      data: [
+        { value: getTestSummaryData('answered'), name: 'Answered', itemStyle: { color: '#00FF00' } },
+        { value: getTestSummaryData('notAnswered'), name: 'Not Answered', itemStyle: { color: '#FF0000' } },
+        { value: getTestSummaryData('notVisited'), name: 'Not Visited', itemStyle: { color: '#BDBDBD' } },
+        { value: getTestSummaryData('marked'), name: 'Marked for Review', itemStyle: { color: '#8F00FF' } },
+        { value: getTestSummaryData('markedAnswered'), name: 'Marked for Review and Answered', itemStyle: { color: '#0000FF' } },
+      ],
+      label: {
+        show: false,
+      },
+    },
+  ],
+}))
+
+const timeSpentPerSectionChartOption = computed<ECOption>(() => ({
+  backgroundColor: 'transparent',
+  title: {
+    text: 'Time Spent per Section',
+    left: 'center',
+    top: '0%',
+  },
+  legend: {
+    top: '7%',
+    textStyle: {
+      color: '#ffffff',
+    },
+  },
+  tooltip: {
+    trigger: 'item',
+    formatter: (params) => {
+      const p = params as CallbackDataParams
+      return `${p.marker} ${p.name} <br/>${p.value} min`
+    },
+  },
+  series: [
+    {
+      name: 'Attempts',
+      type: 'pie',
+      radius: '80%',
+      center: ['50%', '60%'],
+      data: getTestTimebySection().map(item => ({ value: Math.round(item.timeSpent / 0.6) / 100, name: item.label })),
+      label: {
+        show: false,
+      },
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+        },
+      },
+    },
+  ],
+}))
+
+const testJourneyChartOption = computed<ECOption>(() => ({
+  backgroundColor: 'transparent',
+  title: {
+    text: 'Test Journey',
+    left: 'center',
+    top: '0%',
+  },
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'cross',
+      label: {
+        backgroundColor: '#6a7985',
+      },
+    },
+  },
+
+  legend: {
+    top: '8%',
+    textStyle: {
+      color: '#ffffff',
+    },
+  },
+  xAxis: {
+    type: 'category',
+    data: Array.from({ length: 6 }, (_, i) => {
+      const testTime = jsonData.value?.testLogs
+        ? (getStartEndTimestamp(jsonData.value.testLogs).end - getStartEndTimestamp(jsonData.value.testLogs).start) / 60000
+        : 0
+      const start = Math.round((i * testTime / 6) * 10) / 10
+      const end = Math.round(((i + 1) * testTime / 6) * 10) / 10
+      return `${start}-${end} min`
+    }),
+  },
+  yAxis: {
+    type: 'value',
+  },
+  series: [
+    {
+      name: 'Questions Attempted',
+      data: getAttemptedQuestionsbyInveral(getLatestLogsByQueId(jsonData.value?.testLogs ?? []), 6),
+      type: 'line',
+      smooth: true,
+    },
+  ],
+}))
 
 // This function handles the file upload and parsing of the JSON data.
 // It sets the isLoading state to true while the file is being processed.
@@ -237,7 +222,9 @@ function handleAnalysisFileUpload(files: File | File[]) {
 
 // This function calculates the total number of questions for each type
 // by iterating through the test summary data of each section and summing up the values.
-function getTestSummaryData(data: 'answered' | 'notAnswered' | 'notVisited' | 'marked' | 'markedAnswered'): number {
+function getTestSummaryData(
+  data: 'answered' | 'notAnswered' | 'notVisited' | 'marked' | 'markedAnswered',
+): number {
   let num = 0
   if (jsonData.value) {
     jsonData.value.testSummary.forEach((section) => {
@@ -321,9 +308,5 @@ function getAttemptedQuestionsbyInveral(uniqueTestLog: TestLog[], interval: numb
     }
   })
   return attemptedQuestions
-}
-
-function isDarkMode(): boolean {
-  return document.documentElement.classList.contains('dark')
 }
 </script>

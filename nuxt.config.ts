@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxt/eslint',
     '@nuxt/fonts',
+    'nuxt-echarts',
   ],
   devtools: { enabled: false },
   app: {
@@ -38,6 +39,10 @@ export default defineNuxtConfig({
       },
       cssMinify: 'lightningcss',
     },
+  },
+  echarts: {
+    charts: ['LineChart', 'PieChart'],
+    components: ['LegendComponent', 'TitleComponent', 'GridComponent', 'TooltipComponent'],
   },
   eslint: {
     config: {
