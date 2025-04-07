@@ -4,7 +4,7 @@
   >
     <div class="m-4">
       <h4 class="text-xl text-center mb-4">
-        This Page is currently under devlopment.
+        This Page is currently under development.
       </h4>
       <!-- This is the file upload component for uploading the analysis file -->
       <BaseSimpleFileUpload
