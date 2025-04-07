@@ -138,14 +138,6 @@
                   )"
                 />
               </td>
-              <!-- <td class="p-2 sm:p-3 md:px-4">
-                {{
-                  getParsedAnswerPreviewText(
-                    subjectsAnswerKeysData[currentPageData.subject][currentPageData.section][quesNum],
-                    questionData.type,
-                  )
-                }}
-              </td> -->
               <td
                 :data-answer="
                   getParsedAnswerPreviewText(
