@@ -677,7 +677,7 @@ async function downloadOutput() {
 
   const uploadedData = toValue(uploadedFileData)!
 
-  uploadedData.jsonData.answerKeyData = testAnswerKeyData
+  uploadedData.jsonData.testAnswerKey = testAnswerKeyData
 
   const filename = generateOutputState.filename
   let fileExtension: '.zip' | '.json' = '.json'
@@ -685,7 +685,7 @@ async function downloadOutput() {
   const selectedFileType = generateOutputState.selectedFileType
 
   if (selectedFileType === 'json-separate') {
-    outputJsonString = JSON.stringify({ answerKeyData: testAnswerKeyData }, null, 2)
+    outputJsonString = JSON.stringify({ testAnswerKey: testAnswerKeyData }, null, 2)
   }
   else {
     outputJsonString = JSON.stringify(uploadedData.jsonData, null, 2)
