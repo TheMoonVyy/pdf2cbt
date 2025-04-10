@@ -68,12 +68,12 @@ import type {
 
 import type {
   QuestionResult,
-  QuestionStatus,
   TestLog,
   TestOutputData,
   TestOutputDataQuestion,
   TestAnswerKeyQuestionData,
   TestSectionKey,
+  TestSectionSummary,
 } from '~/src/types'
 
 interface ChartTemplates {
@@ -526,29 +526,32 @@ function loadTestResultToChartDataState() {
 }
 
 function loadQuestionsSummaryToChartDataState() {
+  const summary: TestSectionSummary = {
+    answered: 0,
+    notAnswered: 0,
+    notVisited: 0,
+    marked: 0,
+    markedAnswered: 0,
+  }
+
+  const testSummary = jsonData.value?.testSummary
+  if (testSummary) {
+    for (const row of testSummary) {
+      for (const summaryType of Object.keys(summary) as (keyof TestSectionSummary)[]) {
+        summary[summaryType] += row[summaryType]
+      }
+    }
+  }
+
   const seriesData = [
-    { name: 'Answered', value: getTestSummaryData('answered'), itemStyle: { color: '#00cc00' } },
-    { name: 'Not Answered', value: getTestSummaryData('notAnswered'), itemStyle: { color: '#FF0000' } },
-    { name: 'Not Visited', value: getTestSummaryData('notVisited'), itemStyle: { color: '#BDBDBD' } },
-    { name: 'Marked for Review', value: getTestSummaryData('marked'), itemStyle: { color: '#8F00FF' } },
-    { name: 'Marked for Review & Answered', value: getTestSummaryData('markedAnswered'), itemStyle: { color: '#0000FF' } },
+    { name: 'Answered', value: summary.answered, itemStyle: { color: '#00cc00' } },
+    { name: 'Not Answered', value: summary.notAnswered, itemStyle: { color: '#FF0000' } },
+    { name: 'Not Visited', value: summary.notVisited, itemStyle: { color: '#BDBDBD' } },
+    { name: 'Marked for Review', value: summary.marked, itemStyle: { color: '#8F00FF' } },
+    { name: 'Marked for Review & Answered', value: summary.markedAnswered, itemStyle: { color: '#0000FF' } },
   ]
 
   chartDataState.testQuestionsSummary = seriesData
-}
-
-// This function calculates the total number of questions for each type
-// by iterating through the test summary data of each section and summing up the values.
-function getTestSummaryData(
-  questionStatus: QuestionStatus,
-): number {
-  let num = 0
-  if (jsonData.value) {
-    jsonData.value.testSummary.forEach((section) => {
-      num += section[questionStatus]
-    })
-  }
-  return num // Ensure a number is always returned
 }
 
 // This function calculates the time spent on each section of the test
