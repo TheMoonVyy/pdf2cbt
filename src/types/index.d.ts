@@ -117,11 +117,21 @@ export type TestQuestionData = Pick<CropperQuestionData, 'que' | 'type'> & {
   totalOptions?: number
 }
 
+export type LogTestStateViaType = 'testStarted' | 'testResumed' | 'testFinished'
+
+export type AnswerSavedViaType = 'save&next' | 'mfr'
+
+export type CurrentQuestionViaType = LogTestStateViaType | AnswerSavedViaType
+  | 'previous' | 'palette' | 'sectionBtn'
+
+export type TestLogType = LogTestStateViaType | 'currentQuestion'
+  | 'answerSaved' | 'currentAnswer' | 'answerCleared'
+
 export interface TestLog {
   id: number
   timestamp: number
   testTime: number
-  type: TesLogType
+  type: TestLogType
   current: {
     queId: number
     section: TestSectionKey
@@ -190,9 +200,6 @@ export type QuestionResult = {
 
 export type TestOutputDataQuestion = Omit<TestQuestionData, 'section' | 'que'>
   & Pick<CropperQuestionData, 'marks'>
-  & {
-    result?: QuestionResult
-  }
 
 export type TestOutputDataSection = {
   [question: number | string]: TestOutputDataQuestion
@@ -218,6 +225,25 @@ export type TestAnswerKeyData = {
   [subject: keyof CropperOutputData]: TestAnswerKeySubjectData
 }
 
+export type TestResultDataQuestion = TestOutputDataQuestion & {
+  subject: keyof CropperOutputData
+  section: TestSectionKey
+  oriQueId: number
+  result: QuestionResult
+}
+
+export type TestResultDataSection = {
+  [question: number | string]: TestResultDataQuestion
+}
+
+export type TestResultDataSubject = {
+  [section: TestSectionKey]: TestResultDataSection
+}
+
+export type TestResultData = {
+  [subject: keyof CropperOutputData]: TestResultDataSubject
+}
+
 export interface TestOutputData {
   testConfig: {
     testName: string
@@ -227,7 +253,7 @@ export interface TestOutputData {
   testSummary: TestSummaryDataTableRow[]
   testLogs: TestLog[]
   testAnswerKey?: TestAnswerKeyData
-  isResult?: boolean
+  testResultData?: TestResultData
 }
 
 export interface TestState {
