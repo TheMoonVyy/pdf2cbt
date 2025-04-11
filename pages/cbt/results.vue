@@ -18,22 +18,22 @@
     </div>
     <div :class="{ hidden: !isUploaded }">
       <div>
-        <div class="flex flex-col h-[84rem] sm:h-auto sm:flex-row w-full justify-evenly">
-          <div class="px-2 flex-1 min-w-0 h-[28rem] items-center justify-center">
+        <div class="flex flex-col w-full gap-2 px-2 h-[84rem] sm:h-auto sm:px-4 sm:flex-row justify-evenly">
+          <div class="flex-1 min-w-0 h-[28rem]">
             <!-- Here goes the pie chart for the test result summary -->
             <v-chart
               :option="testResultSummaryChartOption"
               autoresize
             />
           </div>
-          <div class="px-2 items-center min-w-0 h-[28rem] flex-1 justify-center">
+          <div class="flex-1 min-w-0 h-[28rem]">
             <!-- Here goes the pie chart for the time spent on each section -->
             <v-chart
               :option="testQuestionsSummaryChartOption"
               autoresize
             />
           </div>
-          <div class="px-2 items-center min-w-0 h-[28rem] flex-1 justify-center">
+          <div class="flex-1 min-w-0 h-[28rem]">
             <!-- Here goes the pie chart for the time spent on each section -->
             <v-chart
               :option="timeSpentPerSectionChartOption"
@@ -42,7 +42,7 @@
           </div>
         </div>
         <div
-          class="px-5 h-[28rem]"
+          class="px-2 md:px-5 h-[90dvh] mb-20"
         >
           <!-- Here goes the line chart for the test journey -->
           <v-chart
@@ -74,6 +74,8 @@ import type {
   TestAnswerKeyQuestionData,
   TestSectionKey,
   TestSectionSummary,
+  TestResultDataQuestion,
+  QuestionStatus,
 } from '~/src/types'
 
 interface ChartTemplates {
@@ -85,7 +87,11 @@ interface ChartTemplates {
 interface ChartDataState {
   testQuestionsSummary: PieSeriesOption['data']
   timeSpentPerSection: PieSeriesOption['data']
-  testJourney: unknown
+  testJourney: {
+    legendData: string[]
+    yAxisData: string[]
+    series: LineSeriesOption[]
+  }
   testResultSummary: {
     data: PieSeriesOption['data']
     centerText: string
@@ -116,6 +122,32 @@ const isUploaded = shallowRef(false)
 // This ref holds the parsed JSON data from the uploaded file.
 const jsonData = shallowRef<TestOutputData | null>(null)
 
+// This contains a reduced version of testResultData,
+// with queId as the key and questionData as the value
+const testResultQuestionsData: Record<number | string, TestResultDataQuestion> = {}
+
+const testJourneyColors: {
+  qStatus: Record<QuestionStatus, string>
+  resultStatus: Record<QuestionResult['status'], string>
+} = {
+  qStatus: {
+    answered: '#BFFF00', // lime
+    notAnswered: '#FF5252', // radical red
+    marked: '#e879f9', // fuchsia-400
+    markedAnswered: '#00ffff', // cyan
+    notVisited: '#eee', // gray
+  },
+  resultStatus: {
+    // aside from partial, all colors are same as above
+    correct: '#BFFF00',
+    incorrect: '#FF5252',
+    partial: '#ffff00', // yellow
+    dropped: '#e879f9',
+    bonus: '#00ffff',
+    notAnswered: '#eee',
+  },
+}
+
 const pieChartTemplate: ECOption = {
   backgroundColor: 'transparent',
   title: {
@@ -137,7 +169,7 @@ const pieChartTemplate: ECOption = {
     },
   },
   tooltip: {
-    backgroundColor: '#222222',
+    backgroundColor: '#1E1E1E',
     textStyle: {
       color: '#fff',
     },
@@ -171,17 +203,25 @@ const pieChartTemplate: ECOption = {
 // base template for charts
 const chartTemplates: ChartTemplates = {
   pie: {
-    ...pieChartTemplate as ECOption,
+    ...pieChartTemplate,
   },
 
   line: {
     backgroundColor: 'transparent',
     title: {
-      text: 'Test Journey',
+      text: 'Title',
       left: 'center',
+      textStyle: {
+        fontSize: 23,
+        color: '#fff',
+      },
       top: 0,
     },
     tooltip: {
+      backgroundColor: '#1E1E1E',
+      textStyle: {
+        color: '#fff',
+      },
       trigger: 'axis',
       axisPointer: {
         type: 'cross',
@@ -193,10 +233,18 @@ const chartTemplates: ChartTemplates = {
       },
     },
     legend: {
-      top: 35,
+      top: 40,
       textStyle: {
         color: '#ffffff',
+        fontSize: 13,
       },
+      type: 'scroll',
+      pageIconColor: '#00FF00',
+      pageIconInactiveColor: '#eeeeee',
+      pageTextStyle: {
+        color: '#00cc00',
+      },
+      icon: 'rect',
     },
     xAxis: {
       type: 'category',
@@ -205,9 +253,13 @@ const chartTemplates: ChartTemplates = {
     yAxis: {
       type: 'value',
     },
+    grid: {
+      top: 85,
+      containLabel: true,
+    },
     series: [
       {
-        name: 'Questions Attempted',
+        name: 'seriesName',
         data: [],
         type: 'line',
         smooth: true,
@@ -222,6 +274,10 @@ const chartTemplates: ChartTemplates = {
       radius: ['30%', '60%'],
     }],
   },
+}
+
+const chartTooltipCache = {
+  testJourney: new Map<string, string>(),
 }
 
 const chartOptions = {
@@ -275,22 +331,218 @@ const chartOptions = {
       formatter: (params: TopLevelFormatterParams) => {
         const p = params as CallbackDataParams
         const data = p.data as TestResultSeriesDataItem
-        const marksWithSign = data.marks >= 0 ? '+' + data.marks : data.marks
-        const header = `<p>${p.marker} <strong>${p.name}: </strong>${p.value} (${marksWithSign}) (${p.percent}%)</p>`
+
+        let color = ''
+        if (data.marks > 0) {
+          color = testJourneyColors.resultStatus.correct
+        }
+        else if (data.marks < 0) {
+          color = testJourneyColors.resultStatus.incorrect
+        }
+
+        const headerMarksContent = color
+          ? `<span style="color: ${color};">${data.marks}</span>`
+          : `${data.marks}`
+
+        const header = `<strong>
+          <p style="font-size: 1rem; line-height: 1.5rem;">
+            ${p.marker}${p.name}: ${p.value} (${headerMarksContent}) (${p.percent}%)
+          </p>
+          `
 
         let body = ''
         for (const [section, sectionData] of Object.entries(data.sections)) {
-          const sectionMarksWithSign = sectionData.marks >= 0 ? '+' + sectionData.marks : sectionData.marks
-          body += `<p>${section}: ${sectionData.count} (${sectionMarksWithSign})</p>`
+          let color = ''
+          if (sectionData.marks > 0) {
+            color = testJourneyColors.resultStatus.correct
+          }
+          else if (sectionData.marks < 0) {
+            color = testJourneyColors.resultStatus.incorrect
+          }
+          const marksContent = color
+            ? `<span style="color: ${color};">${sectionData.marks}</span>`
+            : `${sectionData.marks}`
+
+          body += `
+              <p>${section}: ${sectionData.count}
+                (${marksContent})
+              </p>
+            `
         }
 
-        return header + body
+        return header + body + '</strong>'
       },
     },
     series: [{
       ...(chartTemplates.donut.series as PieSeriesOption[])[0],
       name: 'Test Result',
     }],
+  },
+
+  testJourney: {
+    ...chartTemplates.line,
+    title: {
+      ...chartTemplates.line.title,
+      text: 'Test Journey',
+    },
+    legend: {
+      ...chartTemplates.line.legend,
+    },
+    tooltip: {
+      ...chartTemplates.line.tooltip,
+      formatter: (params: TopLevelFormatterParams) => {
+        const p = Array.isArray(params) ? params[0] : params
+        const queIdString = (p.value as [unknown, string])[1]
+
+        if (chartTooltipCache.testJourney.has(queIdString)) {
+          return chartTooltipCache.testJourney.get(queIdString)
+        }
+
+        const questionData = testResultQuestionsData[queIdString]
+        if (!questionData) return ''
+
+        const {
+          oriQueId, secQueId, subject, section,
+          status, answer, marks, result, timeSpent,
+        } = questionData
+
+        const { correctAnswer, status: resultStatus, marks: resultMarks } = result
+
+        // don't show subject if section string starts with subject
+        const subjectContentText = (section + '').startsWith(subject + '')
+          ? null
+          : `<p>Subject: ${subject}</p>`
+
+        // user answer won't be shown if it is null
+        let yourAnswerContentText = ''
+        if (answer !== null) {
+          yourAnswerContentText = '<p>Your Answer: '
+
+          if (Array.isArray(answer)) {
+            const sortedAnswer = answer.toSorted()
+            if (resultStatus === 'incorrect') {
+              sortedAnswer.forEach((ans) => {
+                let color = testJourneyColors.resultStatus.incorrect
+
+                if ((correctAnswer as number[]).includes(ans)) {
+                  color = testJourneyColors.resultStatus.partial
+                }
+                yourAnswerContentText += `
+                    <span style="color: ${color};">${utilStringifyAnswer(ans)}&nbsp</span>
+                  `
+              })
+              yourAnswerContentText += '</p>'
+            }
+            else {
+              yourAnswerContentText += `
+                  <span style="color: ${testJourneyColors.resultStatus[resultStatus]};">
+                    ${utilStringifyAnswer(sortedAnswer, ' ')}
+                  </span></p>
+                `
+            }
+          }
+          else {
+            yourAnswerContentText += `
+                <span style="color: ${testJourneyColors.resultStatus[resultStatus]};">
+                  ${utilStringifyAnswer(answer)}
+                </span></p>
+              `
+          }
+        }
+
+        const tooltipContent = `
+            <strong style="line-height: 1.5rem;">
+            <p style="margin-bottom: 0.5rem;">Question ID: ${secQueId}-${oriQueId}-${queIdString}</p>
+            ${subjectContentText || ''}
+            <p>Section: ${section}</p>
+            <p>Q. Status:
+              <span style="color: ${testJourneyColors.qStatus[status]};">${utilKeyToLabel(status)}</span>
+            </p>
+            ${yourAnswerContentText || ''}
+            <p>Correct Answer:
+              <span style="color: ${testJourneyColors.resultStatus.correct};">
+                ${utilStringifyAnswer(correctAnswer, ' ', true)}
+              </span>
+            </p>
+            <p>Result:
+              <span style="color: ${testJourneyColors.resultStatus[resultStatus]};">
+                ${resultStatus === 'partial' ? 'Partially Correct' : utilKeyToLabel(resultStatus)}
+              </span>
+            </p>
+            <p>Marks:
+              <span style="color: ${testJourneyColors.resultStatus[resultStatus]};">${resultMarks}</span>
+              <span style="color: ${testJourneyColors.resultStatus.partial};"> / ${marks.cm}</span>
+            </p>
+            <p>Time Spent: <span>${utilSecondsToTime(timeSpent, 'mmm:ss')}</span></p>
+            </strong>
+          `
+
+        chartTooltipCache.testJourney.set(queIdString, tooltipContent)
+        return tooltipContent
+      },
+    },
+    xAxis: {
+      name: 'Time (in minutes)',
+      nameLocation: 'middle',
+      nameGap: 50,
+      nameTextStyle: {
+        align: 'center',
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: 'cyan',
+      },
+      type: 'value',
+      min: 0,
+      axisLabel: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 15,
+        formatter: (val: number) => Number.isInteger(val) ? val.toString() : val.toFixed(1),
+      },
+      axisTick: {
+        show: true,
+        lineStyle: {
+          color: '#ffffff',
+        },
+      },
+      splitLine: {
+        show: true,
+      },
+      axisLine: {
+        show: false,
+      },
+    },
+    yAxis: {
+      name: 'Question ID',
+      nameLocation: 'middle',
+      nameGap: 50,
+      nameRotate: 90,
+      nameTextStyle: {
+        align: 'center',
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: 'cyan',
+      },
+      type: 'category',
+      boundaryGap: false,
+      axisLabel: {
+        color: '#ffffff',
+        fontWeight: 'bold',
+        fontSize: 15,
+      },
+      axisTick: {
+        lineStyle: {
+          color: '#ffffff',
+        },
+      },
+      splitLine: {
+        show: true,
+      },
+      axisLine: {
+        show: false,
+      },
+      data: [],
+    },
   },
 }
 
@@ -299,12 +551,13 @@ const chartDataState = reactive<ChartDataState>({
   testQuestionsSummary: [],
   timeSpentPerSection: [],
   testJourney: {
-    xAxisData: [],
-    data: [],
+    legendData: [],
+    yAxisData: [],
+    series: [],
   },
   testResultSummary: {
     data: [],
-    centerText: '123/600',
+    centerText: '',
   },
 })
 
@@ -353,35 +606,20 @@ const timeSpentPerSectionChartOption = computed(() => {
 })
 
 const testJourneyChartOption = computed<ECOption>(() => {
-  const xAxisData = Array.from({ length: 6 }, (_, i) => {
-    let testTime = 0
-    if (jsonData.value?.testLogs) {
-      const { start, end } = getStartEndTimestamp(jsonData.value.testLogs)
-      testTime = (end - start) / 60000
-    }
+  chartTooltipCache.testJourney.clear() // clear tooltip cache
 
-    const start = Math.round((i * testTime / 6) * 10) / 10
-    const end = Math.round(((i + 1) * testTime / 6) * 10) / 10
-    return `${start}-${end} min`
-  })
-
-  const seriesData = getAttemptedQuestionsbyInveral(
-    getLatestLogsByQueId(jsonData.value?.testLogs ?? []),
-    6,
-  )
-
-  const series = (chartTemplates.line.series as LineSeriesOption[])[0]
   return {
-    ...chartTemplates.line,
-    xAxis: {
-      ...chartTemplates.line.xAxis,
-      data: xAxisData,
+    ...chartOptions.testJourney,
+    legend: {
+      ...chartOptions.testJourney.legend,
+      data: chartDataState.testJourney.legendData,
     },
-    series: [{
-      ...series,
-      data: seriesData,
-    }],
-  }
+    yAxis: {
+      ...chartOptions.testJourney.yAxis,
+      data: chartDataState.testJourney.yAxisData,
+    },
+    series: chartDataState.testJourney.series,
+  } as ECOption
 })
 
 // This function handles the file upload and parsing of the JSON data.
@@ -406,11 +644,13 @@ function handleAnalysisFileUpload(files: File | File[]) {
 function loadDataToChartDataState() {
   loadQuestionsSummaryToChartDataState()
 
+  if (jsonData.value && !jsonData.value.testResultData) generateTestResult()
+
   chartDataState.timeSpentPerSection = getTestTimebySection()
     .map(item => ({ value: item.timeSpent, name: item.label }))
 
-  generateTestResult()
   loadTestResultToChartDataState()
+  loadTestJourneyToChartDataState()
 }
 
 function loadTestResultToChartDataState() {
@@ -423,8 +663,8 @@ function loadTestResultToChartDataState() {
     }
   }
 
-  const testData = jsonData.value?.testData
-  if (!testData) return
+  const testResultData = jsonData.value?.testResultData
+  if (!testResultData) return
 
   const colors: Record<QuestionResult['status'], string> = {
     correct: '#00CC00', // Green
@@ -447,7 +687,7 @@ function loadTestResultToChartDataState() {
   let totalMaxMarks = 0
   let totalQuestionsAnswered = 0
   let totalQuestionsAnsweredCorrect = 0
-  for (const subjectData of Object.values(testData)) {
+  for (const subjectData of Object.values(testResultData)) {
     for (const [section, sectionData] of Object.entries(subjectData)) {
       // add section (name): { count and marks } to each value of "initialData"
       for (const resultStatusData of Object.values(initialData)) {
@@ -548,7 +788,7 @@ function loadQuestionsSummaryToChartDataState() {
     { name: 'Not Answered', value: summary.notAnswered, itemStyle: { color: '#FF0000' } },
     { name: 'Not Visited', value: summary.notVisited, itemStyle: { color: '#BDBDBD' } },
     { name: 'Marked for Review', value: summary.marked, itemStyle: { color: '#8F00FF' } },
-    { name: 'Marked for Review & Answered', value: summary.markedAnswered, itemStyle: { color: '#0000FF' } },
+    { name: 'Marked for Review & Answered', value: summary.markedAnswered, itemStyle: { color: '#00BABA' } },
   ]
 
   chartDataState.testQuestionsSummary = seriesData
@@ -563,70 +803,218 @@ function getTestTimebySection() {
     label: string
   }
   const time: timebySection[] = []
-  if (jsonData.value) {
-    Object.keys(jsonData.value.testData).forEach(
-      (subject: string) => {
-        Object.keys(jsonData.value?.testData[subject] ?? {}).forEach((section) => {
-          let sectionTime = 0
-          Object.values(jsonData.value?.testData[subject][section] ?? {}).forEach((q) => {
-            sectionTime += q.timeSpent
-          })
-          time.push({
-            subject: subject,
-            timeSpent: sectionTime,
-            label: section,
-          })
+  if (jsonData.value?.testResultData) {
+    for (const [subject, subjectData] of Object.entries(jsonData.value.testResultData)) {
+      for (const [section, sectionData] of Object.entries(subjectData)) {
+        let sectionTime = 0
+        for (const q of Object.values(sectionData)) {
+          sectionTime += q.timeSpent
+        }
+        time.push({
+          subject: subject,
+          timeSpent: sectionTime,
+          label: section,
         })
-      },
-    )
+      }
+    }
   }
   return time
 }
 
-// This function filters the test logs to get the latest log for each question ID (queId).
-function getLatestLogsByQueId(testLogs: TestLog[]) {
-  const latestLogsMap = new Map()
+function loadTestJourneyToChartDataState() {
+  type SeriesDataObj = {
+    value: [string | number, string]
+    symbol?: 'roundRect'
+    itemStyle?: { color: string }
+  }
 
-  // Iterate through the logs
-  for (const log of testLogs) {
-    const queId = log.current?.queId // Extract queId from the log
-    if (queId !== undefined) {
-      // Check if the queId exists in the map or if the current log has a later timestamp
-      if (!latestLogsMap.has(queId) || log.timestamp > latestLogsMap.get(queId).timestamp) {
-        latestLogsMap.set(queId, log) // Update the map with the latest log
+  type SeriesDataValues = {
+    [resultStatus in QuestionResult['status']]: SeriesDataObj[]
+  }
+
+  const testResultData = jsonData.value?.testResultData
+  const testLogs = jsonData.value?.testLogs
+  if (!testResultData || !testLogs) return
+
+  for (const subjectData of Object.values(testResultData)) {
+    for (const sectionData of Object.values(subjectData)) {
+      for (const questionData of Object.values(sectionData)) {
+        testResultQuestionsData[questionData.queId] = questionData
       }
     }
   }
-  // Convert the Map values to an array
-  return Array.from(latestLogsMap.values())
-}
 
-// This function retrieves the start and end timestamps from the test logs.
-function getStartEndTimestamp(testLogs: TestLog[]): { start: number, end: number } {
-  const start = testLogs.find(log => log.type === 'testStarted')?.timestamp || 0
-  const end = testLogs.find(log => log.type === 'testFinished')?.timestamp || 0
-  return { start, end }
-}
+  const startCountdownTime = getTestStartedCountdownTime(testLogs)
+  const finishedCountdownTime = getTestFinishedCountdownTime(testLogs)
 
-// This function calculates the number of attempted questions in each time interval.
-function getAttemptedQuestionsbyInveral(uniqueTestLog: TestLog[], interval: number): number[] {
-  const attemptedQuestions: number[] = Array(interval).fill(0)
-  const { start, end } = getStartEndTimestamp(jsonData.value?.testLogs ?? [])
-  const totalDuration = end - start
-  const intervalDuration = totalDuration / interval
-  uniqueTestLog.forEach((log) => {
-    const attemptedTime = log.timestamp - start
-    const intervalIndex = Math.floor(attemptedTime / intervalDuration)
-    if (intervalIndex >= 0) {
-      if (intervalIndex < interval) {
-        attemptedQuestions[intervalIndex] += 1 // Increment the count for the corresponding interval
+  const currentQuestionLogs: { queId: number, startTime: number }[] = []
+  for (const log of testLogs) {
+    if (log.type === 'currentQuestion') {
+      currentQuestionLogs.push({
+        queId: log.current.queId,
+        startTime: Math.round((Math.abs(startCountdownTime - log.testTime) / 60) * 100) / 100,
+      })
+    }
+  }
+
+  const seriesDataValues: SeriesDataValues = {
+    correct: [],
+    incorrect: [],
+    partial: [],
+    dropped: [],
+    bonus: [],
+    notAnswered: [],
+  }
+
+  const symbolItemStyle = { color: '#0ff' }
+  const attemptedQueIds: string[] = []
+
+  let lastQueId = 0
+  let lastStartTime = 0
+  let lastResultStatus: QuestionResult['status'] | null = null
+  let lastSeriesDataValuesArray: SeriesDataObj[] = []
+
+  for (let i = 0; i < currentQuestionLogs.length; i++) {
+    const { queId, startTime } = currentQuestionLogs[i]
+
+    const questionData = testResultQuestionsData[queId]
+    const resultStatus = questionData.result.status
+    const currentSeriesDataValuesArray = seriesDataValues[resultStatus]
+    attemptedQueIds.push(queId + '')
+
+    if (i === 0) {
+      currentSeriesDataValuesArray.push({
+        value: [lastStartTime, lastQueId + ''],
+      })
+      currentSeriesDataValuesArray.push({
+        value: [startTime, queId + ''],
+        symbol: 'roundRect',
+        itemStyle: symbolItemStyle,
+      })
+    }
+    else {
+      if (lastResultStatus === resultStatus) {
+        currentSeriesDataValuesArray.push({
+          value: [startTime, lastQueId + ''],
+          symbol: 'roundRect',
+          itemStyle: symbolItemStyle,
+        })
+        currentSeriesDataValuesArray.push({
+          value: [startTime, queId + ''],
+          symbol: 'roundRect',
+          itemStyle: symbolItemStyle,
+        })
       }
       else {
-        attemptedQuestions[interval - 1] += 1 // Increment the last interval if it exceeds
+        lastSeriesDataValuesArray.push({
+          value: [startTime, lastQueId + ''],
+          symbol: 'roundRect',
+          itemStyle: symbolItemStyle,
+
+        })
+        lastSeriesDataValuesArray.push({
+          value: ['-', lastQueId + ''],
+        })
+
+        if (currentSeriesDataValuesArray.length > 0) {
+          currentSeriesDataValuesArray.push({
+            value: ['-', queId + ''],
+          })
+        }
+        currentSeriesDataValuesArray.push({
+          value: [startTime, lastQueId + ''],
+        })
+        currentSeriesDataValuesArray.push({
+          value: [startTime, queId + ''],
+          symbol: 'roundRect',
+          itemStyle: symbolItemStyle,
+        })
       }
     }
+
+    lastResultStatus = resultStatus
+    lastQueId = queId
+    lastStartTime = startTime
+    lastSeriesDataValuesArray = currentSeriesDataValuesArray
+  }
+
+  lastSeriesDataValuesArray.push({
+    value: [
+      Math.round((Math.abs(startCountdownTime - finishedCountdownTime) / 60) * 100) / 100,
+      lastQueId + '',
+    ],
+    symbol: 'roundRect',
+    itemStyle: symbolItemStyle,
   })
-  return attemptedQuestions
+  lastSeriesDataValuesArray.push({
+    value: ['-', lastQueId + ''],
+  })
+
+  const legendData: string[] = []
+  const series: LineSeriesOption[] = []
+  for (const [resultStatus, seriesData] of Object.entries(seriesDataValues)) {
+    if (seriesData.length > 0) { // filter out empty ones
+      const seriesName = utilKeyToLabel(resultStatus)
+      const color = testJourneyColors.resultStatus[resultStatus as QuestionResult['status']]
+
+      const seriesItem: LineSeriesOption = {
+        name: seriesName,
+        type: 'line',
+        step: 'start',
+        symbol: 'none',
+        symbolSize: 5,
+        itemStyle: {
+          color,
+        },
+        lineStyle: { color, width: 3 },
+        data: seriesData,
+      }
+      series.push(seriesItem)
+      legendData.push(seriesName)
+    }
+  }
+
+  const questionQueIds = Object.keys(testResultQuestionsData)
+  const unattemptedQueIds = questionQueIds.filter(id => !attemptedQueIds.includes(id))
+
+  const seriesItem: LineSeriesOption = {
+    name: 'notVisited',
+    type: 'line',
+    step: 'start',
+    lineStyle: { opacity: 0 },
+    symbol: 'none',
+    data: [],
+  }
+
+  unattemptedQueIds.forEach(queId => seriesItem.data!.push(['-', queId]))
+  series.push(seriesItem)
+
+  chartDataState.testJourney.series = series
+  chartDataState.testJourney.yAxisData = ['0'].concat(questionQueIds)
+  chartDataState.testJourney.legendData = legendData
+
+  console.log(series)
+}
+
+// returns the testTime (countdown seconds) of testFinished log from the test logs.
+function getTestFinishedCountdownTime(testLogs: TestLog[]) {
+  for (const log of testLogs) {
+    if (log.type === 'testFinished') {
+      return log.testTime
+    }
+  }
+  return 0
+}
+
+// returns the testTime (countdown seconds) of testStarted log from the test logs.
+function getTestStartedCountdownTime(testLogs: TestLog[]) {
+  let testTime = testLogs.find(log => log.type === 'testStarted')?.testTime
+  if (testTime === undefined) {
+    const testDuration = jsonData.value?.testConfig.testDurationInSeconds
+    testTime = testDuration ? testDuration : 0
+  }
+
+  return testTime
 }
 
 // function to evaluate a question and return QuestionResult
@@ -701,11 +1089,18 @@ function generateTestResult() {
   const testData = jsonData.value?.testData
   const testAnswerKey = jsonData.value?.testAnswerKey
 
-  if (!testData || !testAnswerKey) return
+  if (!jsonData.value || !testData || !testAnswerKey) return
 
   try {
+    jsonData.value.testResultData = {}
+
     for (const [subject, subjectData] of Object.entries(testData)) {
+      jsonData.value.testResultData[subject] = {}
+
       for (const [section, sectionData] of Object.entries(subjectData)) {
+        jsonData.value.testResultData[subject][section] = {}
+        const testResultDataSection = jsonData.value.testResultData[subject][section]
+
         for (const [question, questionData] of Object.entries(sectionData)) {
           const correctAnswer = testAnswerKey[subject]?.[section]?.[question] ?? null
 
@@ -715,14 +1110,19 @@ function generateTestResult() {
             )
           }
 
-          questionData.result = getQuestionResult(questionData, correctAnswer)
+          testResultDataSection[question] = JSON.parse(JSON.stringify(questionData))
+
+          testResultDataSection[question].result = getQuestionResult(questionData, correctAnswer)
+          testResultDataSection[question].oriQueId = parseInt(question)
+          testResultDataSection[question].subject = subject
+          testResultDataSection[question].section = section
         }
       }
     }
-    jsonData.value!.isResult = true
   }
   catch (err) {
     console.error(err)
+    jsonData.value.testResultData = undefined
   }
 }
 </script>
