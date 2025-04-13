@@ -7,7 +7,10 @@ import type {
   TestSectionsData,
   TestQuestionData,
   TestLog,
+  TestOutputData,
+  TestResultOverviewDB,
 } from '~/src/types'
+import { utilGetTestResultOverview, utilCreateError, utilCloneJson } from '~/utils/utils'
 
 interface SettingsData {
   id: number
@@ -23,22 +26,31 @@ type TestSectionListItemDB = TestSectionListItem & {
   id: number
 }
 
+type TestOutputDataDB = {
+  id?: number
+  testOutputData: TestOutputData
+}
+
 class CBTDatabase extends Dexie {
   settingsData!: EntityTable<SettingsData, 'id'>
   testSectionsList!: EntityTable<TestSectionListItemDB, 'id'>
   currentTestState!: EntityTable<CurrentTestStateDB, 'id'>
   testQuestionsData!: EntityTable<TestQuestionData, 'queId'>
   testLog!: EntityTable<TestLog, 'id'>
+  testResultOverviews!: EntityTable<TestResultOverviewDB, 'id'>
+  testOutputDatas!: EntityTable<TestOutputDataDB, 'id'>
 
   constructor() {
     super('CBT-Interface')
 
-    this.version(1).stores({
+    this.version(2).stores({
       settingsData: 'id',
       testSectionsList: 'id++',
       currentTestState: 'id',
       testQuestionsData: 'queId',
       testLog: 'id',
+      testResultOverviews: 'id,testName,testStartTime,testFinishedTime,[testName+testStartTime+testFinishedTime]',
+      testOutputDatas: 'id++',
     })
   }
 
@@ -193,6 +205,114 @@ class CBTDatabase extends Dexie {
 
       return this.currentTestState.update(1, data)
     }
+  }
+
+  // return a test output data by id
+  async getTestOutputData(id: number) {
+    return this.testOutputDatas.get(id)
+  }
+
+  // return a test result overview by id if provided,
+  // if id is not provided then get last test result overview
+  // if getAll is true, will return all test result overview
+  async getTestResultOverview(id: number | null, getAll: true): Promise<TestResultOverviewDB[]>
+  async getTestResultOverview(id?: number | null, getAll?: false): Promise<TestResultOverviewDB | undefined>
+  async getTestResultOverview(
+  id: number | null = null,
+  getAll: boolean = false,
+  ): Promise<TestResultOverviewDB[] | TestResultOverviewDB | undefined> {
+    if (getAll) {
+      return this.testResultOverviews.toArray()
+    }
+    if (id !== null) {
+      return this.testResultOverviews.get(id)
+    }
+    return this.testResultOverviews.orderBy('id').last()
+  }
+
+  /**
+   * Adds test output data and its overview to the database.
+   *
+   * This function does the following:
+   * 1. gets testOverview from utilGetTestResultOverview(testOutputData).
+   * 2. Validates that a test result with the same name and timestamps doesn't already exist.
+   * 3. Adds the test output data to the testOutputDatas store.
+   * 4. Adds the testResultOverview to testResultOverviews store with id of testOutputDatas
+   *
+   * @param testOutputData - The testOutputData.
+   * @param overviewData - Optional additional test overview data.
+   * @returns Promise of Dexie saving testOverview.
+   * @throws DuplicateTestResultError if a test with the same name and timestamps already exists.
+   */
+
+  async addTestOutputData(
+    testOutputData: TestOutputData,
+    viaJson: boolean = true,
+  ) {
+    testOutputData.testResultOverview = utilGetTestResultOverview(testOutputData)
+    const testOverview = testOutputData.testResultOverview
+
+    const { testName, testStartTime, testEndTime } = testOverview
+
+    const existing = await this.testResultOverviews
+      .where('[testName+testStartTime+testFinishedTime]')
+      .equals([testName, testStartTime, testEndTime])
+      .first()
+
+    // if (existing) {
+    //   throw utilCreateError(
+    //     'DuplicateTestResultError',
+    //     'Test result already exists with same name and timestamps',
+    //   )
+    // }
+
+    if (existing) {
+      return existing.id
+    }
+
+    const dataToSave = viaJson ? utilCloneJson(testOutputData) : testOutputData
+    const id = await this.testOutputDatas.add({ testOutputData: dataToSave })
+
+    return this.testResultOverviews.put({
+      id: id!,
+      ...dataToSave.testResultOverview,
+    })
+  }
+
+  async replaceTestResultOverview(data: TestResultOverviewDB, viaJson: boolean = true) {
+    const dataToSave = viaJson ? utilCloneJson(data) : data
+    return this.testResultOverviews.put(dataToSave)
+  }
+
+  async replaceTestOutputData(
+    data: TestOutputDataDB,
+    viaJson: boolean = true,
+  ) {
+    const dataToSave = viaJson ? utilCloneJson(data) : data
+    return this.testOutputDatas.put(dataToSave)
+  }
+
+  async getTestOutputDatas(ids: number[]) {
+    return this.testOutputDatas.bulkGet(ids)
+  }
+
+  async removeTestOutputDataAndResultOverview(id: number) {
+  // Attempt to delete the test output data
+    await this.testOutputDatas.delete(id)
+
+    // Attempt to delete the test result overview
+    await this.testResultOverviews.delete(id)
+
+    return true
+  }
+
+  async replaceTestOutputDataAndResultOverview(id: number, data: TestOutputData) {
+    const dataToReplace = { id, testOutputData: data }
+    const status = await this.replaceTestOutputData(dataToReplace)
+    if (status) return this.replaceTestResultOverview({
+      id: dataToReplace.id,
+      ...data.testResultOverview,
+    })
   }
 }
 

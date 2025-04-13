@@ -1,0 +1,1731 @@
+{
+  "testConfig": {
+    "testName": "Demo Mock Test",
+    "testDurationInSeconds": 10800
+  },
+  "testData": {
+    "Physics": {
+      "Physics Section 1": {
+        "1": {
+          "queId": 1,
+          "secQueId": 1,
+          "type": "msq",
+          "status": "answered",
+          "answer": [
+            1
+          ],
+          "timeSpent": 9,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        },
+        "2": {
+          "queId": 2,
+          "secQueId": 2,
+          "type": "msq",
+          "status": "marked",
+          "answer": null,
+          "timeSpent": 5,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        },
+        "3": {
+          "queId": 3,
+          "secQueId": 3,
+          "type": "msq",
+          "status": "markedAnswered",
+          "answer": [
+            1,
+            2,
+            3
+          ],
+          "timeSpent": 6,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        }
+      },
+      "Physics Section 2": {
+        "4": {
+          "queId": 4,
+          "secQueId": 1,
+          "type": "mcq",
+          "status": "answered",
+          "answer": 1,
+          "timeSpent": 7,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "5": {
+          "queId": 5,
+          "secQueId": 2,
+          "type": "mcq",
+          "status": "notAnswered",
+          "answer": null,
+          "timeSpent": 3,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "6": {
+          "queId": 6,
+          "secQueId": 3,
+          "type": "mcq",
+          "status": "markedAnswered",
+          "answer": 3,
+          "timeSpent": 5,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "7": {
+          "queId": 7,
+          "secQueId": 4,
+          "type": "mcq",
+          "status": "marked",
+          "answer": null,
+          "timeSpent": 4,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        }
+      },
+      "Physics Section 3": {
+        "8": {
+          "queId": 8,
+          "secQueId": 1,
+          "type": "nat",
+          "status": "answered",
+          "answer": "14",
+          "timeSpent": 14,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "9": {
+          "queId": 9,
+          "secQueId": 2,
+          "type": "nat",
+          "status": "notAnswered",
+          "answer": null,
+          "timeSpent": 3,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "10": {
+          "queId": 10,
+          "secQueId": 3,
+          "type": "nat",
+          "status": "notAnswered",
+          "answer": null,
+          "timeSpent": 3,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "11": {
+          "queId": 11,
+          "secQueId": 4,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "12": {
+          "queId": 12,
+          "secQueId": 5,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "13": {
+          "queId": 13,
+          "secQueId": 6,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        }
+      },
+      "Physics Section 4": {
+        "14": {
+          "queId": 14,
+          "secQueId": 1,
+          "type": "mcq",
+          "status": "answered",
+          "answer": 1,
+          "timeSpent": 6,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "15": {
+          "queId": 15,
+          "secQueId": 2,
+          "type": "mcq",
+          "status": "notAnswered",
+          "answer": null,
+          "timeSpent": 1,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "16": {
+          "queId": 16,
+          "secQueId": 3,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "17": {
+          "queId": 17,
+          "secQueId": 4,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        }
+      }
+    },
+    "Maths": {
+      "Maths Section 1": {
+        "1": {
+          "queId": 18,
+          "secQueId": 1,
+          "type": "msq",
+          "status": "answered",
+          "answer": [
+            3,
+            2,
+            1
+          ],
+          "timeSpent": 3,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        },
+        "2": {
+          "queId": 19,
+          "secQueId": 2,
+          "type": "msq",
+          "status": "notAnswered",
+          "answer": null,
+          "timeSpent": 7,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        },
+        "3": {
+          "queId": 20,
+          "secQueId": 3,
+          "type": "msq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        }
+      },
+      "Maths Section 2": {
+        "4": {
+          "queId": 21,
+          "secQueId": 1,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "5": {
+          "queId": 22,
+          "secQueId": 2,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "6": {
+          "queId": 23,
+          "secQueId": 3,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "7": {
+          "queId": 24,
+          "secQueId": 4,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        }
+      },
+      "Maths Section 3": {
+        "8": {
+          "queId": 25,
+          "secQueId": 1,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "9": {
+          "queId": 26,
+          "secQueId": 2,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "10": {
+          "queId": 27,
+          "secQueId": 3,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "11": {
+          "queId": 28,
+          "secQueId": 4,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "12": {
+          "queId": 29,
+          "secQueId": 5,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "13": {
+          "queId": 30,
+          "secQueId": 6,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        }
+      },
+      "Maths Section 4": {
+        "14": {
+          "queId": 31,
+          "secQueId": 1,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "15": {
+          "queId": 32,
+          "secQueId": 2,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "16": {
+          "queId": 33,
+          "secQueId": 3,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "17": {
+          "queId": 34,
+          "secQueId": 4,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        }
+      }
+    },
+    "Chemistry": {
+      "Chemistry Section 1": {
+        "1": {
+          "queId": 35,
+          "secQueId": 1,
+          "type": "msq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        },
+        "2": {
+          "queId": 36,
+          "secQueId": 2,
+          "type": "msq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        },
+        "3": {
+          "queId": 37,
+          "secQueId": 3,
+          "type": "msq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "pm": 1,
+            "im": -2
+          }
+        }
+      },
+      "Chemistry Section 2": {
+        "4": {
+          "queId": 38,
+          "secQueId": 1,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "5": {
+          "queId": 39,
+          "secQueId": 2,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "6": {
+          "queId": 40,
+          "secQueId": 3,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "7": {
+          "queId": 41,
+          "secQueId": 4,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        }
+      },
+      "Chemistry Section 3": {
+        "8": {
+          "queId": 42,
+          "secQueId": 1,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "9": {
+          "queId": 43,
+          "secQueId": 2,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "10": {
+          "queId": 44,
+          "secQueId": 3,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "11": {
+          "queId": 45,
+          "secQueId": 4,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "12": {
+          "queId": 46,
+          "secQueId": 5,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        },
+        "13": {
+          "queId": 47,
+          "secQueId": 6,
+          "type": "nat",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 4,
+            "im": 0
+          }
+        }
+      },
+      "Chemistry Section 4": {
+        "14": {
+          "queId": 48,
+          "secQueId": 1,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "15": {
+          "queId": 49,
+          "secQueId": 2,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "16": {
+          "queId": 50,
+          "secQueId": 3,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        },
+        "17": {
+          "queId": 51,
+          "secQueId": 4,
+          "type": "mcq",
+          "status": "notVisited",
+          "answer": null,
+          "timeSpent": 0,
+          "marks": {
+            "cm": 3,
+            "im": -1
+          }
+        }
+      }
+    }
+  },
+  "testSummary": [
+    {
+      "section": "Physics Section 1",
+      "totalQuestions": 3,
+      "answered": 1,
+      "notAnswered": 0,
+      "notVisited": 0,
+      "marked": 1,
+      "markedAnswered": 1
+    },
+    {
+      "section": "Physics Section 2",
+      "totalQuestions": 4,
+      "answered": 1,
+      "notAnswered": 1,
+      "notVisited": 0,
+      "marked": 1,
+      "markedAnswered": 1
+    },
+    {
+      "section": "Physics Section 3",
+      "totalQuestions": 6,
+      "answered": 1,
+      "notAnswered": 2,
+      "notVisited": 3,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Physics Section 4",
+      "totalQuestions": 4,
+      "answered": 1,
+      "notAnswered": 1,
+      "notVisited": 2,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Maths Section 1",
+      "totalQuestions": 3,
+      "answered": 1,
+      "notAnswered": 1,
+      "notVisited": 1,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Maths Section 2",
+      "totalQuestions": 4,
+      "answered": 0,
+      "notAnswered": 0,
+      "notVisited": 4,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Maths Section 3",
+      "totalQuestions": 6,
+      "answered": 0,
+      "notAnswered": 0,
+      "notVisited": 6,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Maths Section 4",
+      "totalQuestions": 4,
+      "answered": 0,
+      "notAnswered": 0,
+      "notVisited": 4,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Chemistry Section 1",
+      "totalQuestions": 3,
+      "answered": 0,
+      "notAnswered": 0,
+      "notVisited": 3,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Chemistry Section 2",
+      "totalQuestions": 4,
+      "answered": 0,
+      "notAnswered": 0,
+      "notVisited": 4,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Chemistry Section 3",
+      "totalQuestions": 6,
+      "answered": 0,
+      "notAnswered": 0,
+      "notVisited": 6,
+      "marked": 0,
+      "markedAnswered": 0
+    },
+    {
+      "section": "Chemistry Section 4",
+      "totalQuestions": 4,
+      "answered": 0,
+      "notAnswered": 0,
+      "notVisited": 4,
+      "marked": 0,
+      "markedAnswered": 0
+    }
+  ],
+  "testLogs": [
+    {
+      "id": 1,
+      "timestamp": 1743475678266,
+      "testTime": 10800,
+      "type": "testStarted",
+      "current": {
+        "queId": 1,
+        "section": "Physics Section 1",
+        "question": 1,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      }
+    },
+    {
+      "id": 2,
+      "timestamp": 1743475678267,
+      "testTime": 10800,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 1,
+        "section": "Physics Section 1",
+        "question": 1,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "testStarted"
+      }
+    },
+    {
+      "id": 3,
+      "timestamp": 1743475685596,
+      "testTime": 10792,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 1,
+        "section": "Physics Section 1",
+        "question": 1,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": null,
+        "currentAnswer": [
+          1
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "timestamp": 1743475687082,
+      "testTime": 10791,
+      "type": "answerSaved",
+      "current": {
+        "queId": 1,
+        "section": "Physics Section 1",
+        "question": 1,
+        "answer": [
+          1
+        ],
+        "status": "answered",
+        "timeSpent": 9
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 5,
+      "timestamp": 1743475687083,
+      "testTime": 10791,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 2,
+        "section": "Physics Section 1",
+        "question": 2,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevQueId": 1
+      }
+    },
+    {
+      "id": 6,
+      "timestamp": 1743475692355,
+      "testTime": 10786,
+      "type": "answerSaved",
+      "current": {
+        "queId": 2,
+        "section": "Physics Section 1",
+        "question": 2,
+        "answer": null,
+        "status": "marked",
+        "timeSpent": 5
+      },
+      "actionDetails": {
+        "via": "mfr",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 7,
+      "timestamp": 1743475692356,
+      "testTime": 10786,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 3,
+        "section": "Physics Section 1",
+        "question": 3,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "mfr",
+        "prevQueId": 2
+      }
+    },
+    {
+      "id": 8,
+      "timestamp": 1743475694572,
+      "testTime": 10783,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 3,
+        "section": "Physics Section 1",
+        "question": 3,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": null,
+        "currentAnswer": [
+          1
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "timestamp": 1743475695155,
+      "testTime": 10783,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 3,
+        "section": "Physics Section 1",
+        "question": 3,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": [
+          1
+        ],
+        "currentAnswer": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "timestamp": 1743475696115,
+      "testTime": 10782,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 3,
+        "section": "Physics Section 1",
+        "question": 3,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": [
+          1,
+          2
+        ],
+        "currentAnswer": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "timestamp": 1743475697899,
+      "testTime": 10780,
+      "type": "answerSaved",
+      "current": {
+        "queId": 3,
+        "section": "Physics Section 1",
+        "question": 3,
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "status": "markedAnswered",
+        "timeSpent": 6
+      },
+      "actionDetails": {
+        "via": "mfr",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 12,
+      "timestamp": 1743475697900,
+      "testTime": 10780,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 4,
+        "section": "Physics Section 2",
+        "question": 4,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "mfr",
+        "prevSection": "Physics Section 1",
+        "prevQueId": 3
+      }
+    },
+    {
+      "id": 13,
+      "timestamp": 1743475700351,
+      "testTime": 10778,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 4,
+        "section": "Physics Section 2",
+        "question": 4,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": null,
+        "currentAnswer": 1
+      }
+    },
+    {
+      "id": 14,
+      "timestamp": 1743475702455,
+      "testTime": 10775,
+      "type": "answerSaved",
+      "current": {
+        "queId": 4,
+        "section": "Physics Section 2",
+        "question": 4,
+        "answer": 1,
+        "status": "answered",
+        "timeSpent": 5
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 15,
+      "timestamp": 1743475702456,
+      "testTime": 10775,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 5,
+        "section": "Physics Section 2",
+        "question": 5,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevQueId": 4
+      }
+    },
+    {
+      "id": 16,
+      "timestamp": 1743475704754,
+      "testTime": 10773,
+      "type": "answerSaved",
+      "current": {
+        "queId": 5,
+        "section": "Physics Section 2",
+        "question": 5,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 2
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 17,
+      "timestamp": 1743475704755,
+      "testTime": 10773,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 6,
+        "section": "Physics Section 2",
+        "question": 6,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevQueId": 5
+      }
+    },
+    {
+      "id": 18,
+      "timestamp": 1743475707187,
+      "testTime": 10771,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 6,
+        "section": "Physics Section 2",
+        "question": 6,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": null,
+        "currentAnswer": 3
+      }
+    },
+    {
+      "id": 19,
+      "timestamp": 1743475708874,
+      "testTime": 10769,
+      "type": "answerSaved",
+      "current": {
+        "queId": 6,
+        "section": "Physics Section 2",
+        "question": 6,
+        "answer": 3,
+        "status": "markedAnswered",
+        "timeSpent": 4
+      },
+      "actionDetails": {
+        "via": "mfr",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 20,
+      "timestamp": 1743475708876,
+      "testTime": 10769,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 7,
+        "section": "Physics Section 2",
+        "question": 7,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "mfr",
+        "prevQueId": 6
+      }
+    },
+    {
+      "id": 21,
+      "timestamp": 1743475711162,
+      "testTime": 10767,
+      "type": "answerSaved",
+      "current": {
+        "queId": 7,
+        "section": "Physics Section 2",
+        "question": 7,
+        "answer": null,
+        "status": "marked",
+        "timeSpent": 2
+      },
+      "actionDetails": {
+        "via": "mfr",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 22,
+      "timestamp": 1743475711163,
+      "testTime": 10767,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 8,
+        "section": "Physics Section 3",
+        "question": 8,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "mfr",
+        "prevSection": "Physics Section 2",
+        "prevQueId": 7
+      }
+    },
+    {
+      "id": 23,
+      "timestamp": 1743475720147,
+      "testTime": 10758,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 8,
+        "section": "Physics Section 3",
+        "question": 8,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": null,
+        "currentAnswer": "14"
+      }
+    },
+    {
+      "id": 24,
+      "timestamp": 1743475720242,
+      "testTime": 10758,
+      "type": "answerSaved",
+      "current": {
+        "queId": 8,
+        "section": "Physics Section 3",
+        "question": 8,
+        "answer": "14",
+        "status": "answered",
+        "timeSpent": 9
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 25,
+      "timestamp": 1743475720243,
+      "testTime": 10758,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 9,
+        "section": "Physics Section 3",
+        "question": 9,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevQueId": 8
+      }
+    },
+    {
+      "id": 26,
+      "timestamp": 1743475722355,
+      "testTime": 10755,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 8,
+        "section": "Physics Section 3",
+        "question": 8,
+        "answer": "14",
+        "status": "answered",
+        "timeSpent": 9
+      },
+      "actionDetails": {
+        "via": "palette",
+        "prevQueId": 9
+      }
+    },
+    {
+      "id": 27,
+      "timestamp": 1743475723932,
+      "testTime": 10754,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 7,
+        "section": "Physics Section 2",
+        "question": 7,
+        "answer": null,
+        "status": "marked",
+        "timeSpent": 2
+      },
+      "actionDetails": {
+        "via": "sectionBtn",
+        "prevSection": "Physics Section 3",
+        "prevQueId": 8
+      }
+    },
+    {
+      "id": 28,
+      "timestamp": 1743475725121,
+      "testTime": 10753,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 4,
+        "section": "Physics Section 2",
+        "question": 4,
+        "answer": 1,
+        "status": "answered",
+        "timeSpent": 5
+      },
+      "actionDetails": {
+        "via": "palette",
+        "prevQueId": 7
+      }
+    },
+    {
+      "id": 29,
+      "timestamp": 1743475726650,
+      "testTime": 10751,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 5,
+        "section": "Physics Section 2",
+        "question": 5,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 2
+      },
+      "actionDetails": {
+        "via": "palette",
+        "prevQueId": 4
+      }
+    },
+    {
+      "id": 30,
+      "timestamp": 1743475727570,
+      "testTime": 10750,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 6,
+        "section": "Physics Section 2",
+        "question": 6,
+        "answer": 3,
+        "status": "markedAnswered",
+        "timeSpent": 4
+      },
+      "actionDetails": {
+        "via": "palette",
+        "prevQueId": 5
+      }
+    },
+    {
+      "id": 31,
+      "timestamp": 1743475729002,
+      "testTime": 10749,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 7,
+        "section": "Physics Section 2",
+        "question": 7,
+        "answer": null,
+        "status": "marked",
+        "timeSpent": 3
+      },
+      "actionDetails": {
+        "via": "palette",
+        "prevQueId": 6
+      }
+    },
+    {
+      "id": 32,
+      "timestamp": 1743475730226,
+      "testTime": 10748,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 8,
+        "section": "Physics Section 3",
+        "question": 8,
+        "answer": "14",
+        "status": "answered",
+        "timeSpent": 10
+      },
+      "actionDetails": {
+        "via": "sectionBtn",
+        "prevSection": "Physics Section 2",
+        "prevQueId": 7
+      }
+    },
+    {
+      "id": 33,
+      "timestamp": 1743475733858,
+      "testTime": 10744,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 10,
+        "section": "Physics Section 3",
+        "question": 10,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "palette",
+        "prevQueId": 8
+      }
+    },
+    {
+      "id": 34,
+      "timestamp": 1743475737148,
+      "testTime": 10741,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 14,
+        "section": "Physics Section 4",
+        "question": 14,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "sectionBtn",
+        "prevSection": "Physics Section 3",
+        "prevQueId": 10
+      }
+    },
+    {
+      "id": 35,
+      "timestamp": 1743475741315,
+      "testTime": 10737,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 14,
+        "section": "Physics Section 4",
+        "question": 14,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": null,
+        "currentAnswer": 1
+      }
+    },
+    {
+      "id": 36,
+      "timestamp": 1743475742379,
+      "testTime": 10735,
+      "type": "answerSaved",
+      "current": {
+        "queId": 14,
+        "section": "Physics Section 4",
+        "question": 14,
+        "answer": 1,
+        "status": "answered",
+        "timeSpent": 6
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 37,
+      "timestamp": 1743475742381,
+      "testTime": 10735,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 15,
+        "section": "Physics Section 4",
+        "question": 15,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevQueId": 14
+      }
+    },
+    {
+      "id": 38,
+      "timestamp": 1743475743643,
+      "testTime": 10734,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 18,
+        "section": "Maths Section 1",
+        "question": 1,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "sectionBtn",
+        "prevSection": "Physics Section 4",
+        "prevQueId": 15
+      }
+    },
+    {
+      "id": 39,
+      "timestamp": 1743475744787,
+      "testTime": 10733,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 18,
+        "section": "Maths Section 1",
+        "question": 1,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": null,
+        "currentAnswer": [
+          3
+        ]
+      }
+    },
+    {
+      "id": 40,
+      "timestamp": 1743475745285,
+      "testTime": 10733,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 18,
+        "section": "Maths Section 1",
+        "question": 1,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": [
+          3
+        ],
+        "currentAnswer": [
+          3,
+          2
+        ]
+      }
+    },
+    {
+      "id": 41,
+      "timestamp": 1743475745668,
+      "testTime": 10732,
+      "type": "currentAnswer",
+      "current": {
+        "queId": 18,
+        "section": "Maths Section 1",
+        "question": 1,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "prevAnswer": [
+          3,
+          2
+        ],
+        "currentAnswer": [
+          3,
+          2,
+          1
+        ]
+      }
+    },
+    {
+      "id": 42,
+      "timestamp": 1743475747034,
+      "testTime": 10731,
+      "type": "answerSaved",
+      "current": {
+        "queId": 18,
+        "section": "Maths Section 1",
+        "question": 1,
+        "answer": [
+          3,
+          2,
+          1
+        ],
+        "status": "answered",
+        "timeSpent": 3
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevAnswer": null,
+        "prevStatus": "notAnswered"
+      }
+    },
+    {
+      "id": 43,
+      "timestamp": 1743475747034,
+      "testTime": 10731,
+      "type": "currentQuestion",
+      "current": {
+        "queId": 19,
+        "section": "Maths Section 1",
+        "question": 2,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 0
+      },
+      "actionDetails": {
+        "via": "save&next",
+        "prevQueId": 18
+      }
+    },
+    {
+      "id": 44,
+      "timestamp": 1743475753716,
+      "testTime": 10724,
+      "type": "testFinished",
+      "current": {
+        "queId": 19,
+        "section": "Maths Section 1",
+        "question": 2,
+        "answer": null,
+        "status": "notAnswered",
+        "timeSpent": 7
+      },
+      "actionDetails": {
+        "submittedVia": "Manual"
+      }
+    }
+  ],
+  "testAnswerKey": {
+    "Physics": {
+      "Physics Section 1": {
+        "1": [
+          1
+        ],
+        "2": [
+          2
+        ],
+        "3": [
+          3
+        ]
+      },
+      "Physics Section 2": {
+        "4": 1,
+        "5": 2,
+        "6": 3,
+        "7": 1
+      },
+      "Physics Section 3": {
+        "8": "12",
+        "9": "1",
+        "10": "21",
+        "11": "21",
+        "12": "211",
+        "13": "-41"
+      },
+      "Physics Section 4": {
+        "14": 2,
+        "15": 4,
+        "16": 2,
+        "17": 1
+      }
+    },
+    "Maths": {
+      "Maths Section 1": {
+        "1": [
+          4
+        ],
+        "2": [
+          1
+        ],
+        "3": [
+          1,
+          2,
+          3
+        ]
+      },
+      "Maths Section 2": {
+        "4": 1,
+        "5": 2,
+        "6": 3,
+        "7": 1
+      },
+      "Maths Section 3": {
+        "8": "12",
+        "9": "31",
+        "10": "25",
+        "11": "123",
+        "12": "15",
+        "13": "312"
+      },
+      "Maths Section 4": {
+        "14": 1,
+        "15": 2,
+        "16": 3,
+        "17": 1
+      }
+    },
+    "Chemistry": {
+      "Chemistry Section 1": {
+        "1": [
+          1,
+          2
+        ],
+        "2": [
+          1,
+          2,
+          3
+        ],
+        "3": [
+          1,
+          2,
+          3
+        ]
+      },
+      "Chemistry Section 2": {
+        "4": 1,
+        "5": 2,
+        "6": 3,
+        "7": 1
+      },
+      "Chemistry Section 3": {
+        "8": "123",
+        "9": "2132",
+        "10": "2",
+        "11": "32",
+        "12": "3",
+        "13": "1"
+      },
+      "Chemistry Section 4": {
+        "14": 1,
+        "15": 1,
+        "16": 1,
+        "17": 1
+      }
+    }
+  }
+}

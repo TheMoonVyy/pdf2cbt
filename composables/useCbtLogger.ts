@@ -6,16 +6,13 @@ import type {
   TestLog,
   QuestionStatus,
   TestQuestionData,
+  LogTestStateViaType,
+  AnswerSavedViaType,
+  TestLogType,
+  CurrentQuestionViaType,
+
 } from '~/src/types/'
 import { db } from '~/src/db/cbt-db'
-
-type LogTestStateViaType = 'testStarted' | 'testResumed' | 'testFinished'
-type AnswerSavedViaType = 'save&next' | 'mfr'
-type CurrentQuestionViaType = LogTestStateViaType | AnswerSavedViaType
-  | 'previous' | 'palette' | 'sectionBtn'
-
-type TestLogType = LogTestStateViaType | 'currentQuestion'
-  | 'answerSaved' | 'currentAnswer' | 'answerCleared'
 
 type UnknownRecord = Record<string, unknown>
 

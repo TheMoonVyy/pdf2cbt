@@ -140,9 +140,8 @@
               </td>
               <td
                 :data-answer="
-                  getParsedAnswerPreviewText(
-                    subjectsAnswerKeysData[currentPageData.subject][currentPageData.section][quesNum],
-                    questionData.type,
+                  utilStringifyAnswer(
+                    subjectsAnswerKeysData[currentPageData.subject][currentPageData.section][quesNum].savedAnswer,
                   )"
                 class="relative p-2 sm:p-3 md:px-4
                   before:content-[attr(data-answer)]
@@ -532,28 +531,6 @@ const parseMsqInputText = (text: string, totalOptions: number) => {
   const uniqueNumbers = [...uniqueValues as Set<number>].sort((a, b) => a - b)
 
   return uniqueNumbers.length ? uniqueNumbers : null
-}
-
-const convertNumberToChar = (num: number) => String.fromCharCode(64 + num)
-
-// for "Parsed Answer" column
-const getParsedAnswerPreviewText = (
-  questionData: QuestionAnswerKeyData,
-  questionType: QuestionType,
-) => {
-  const savedAnswer = questionData.savedAnswer
-  if (savedAnswer === null) return 'null'
-
-  if (questionType === 'mcq' && typeof savedAnswer === 'number') {
-    return convertNumberToChar(savedAnswer)
-  }
-  else if (questionType === 'msq') {
-    if (Array.isArray(savedAnswer)) {
-      return savedAnswer.map(convertNumberToChar).join(', ')
-    }
-  }
-
-  return `${savedAnswer}`
 }
 
 // for parsing Input Answer and then storing it to savedAnswer

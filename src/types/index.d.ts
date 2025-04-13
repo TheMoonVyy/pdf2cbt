@@ -117,11 +117,21 @@ export type TestQuestionData = Pick<CropperQuestionData, 'que' | 'type'> & {
   totalOptions?: number
 }
 
+export type LogTestStateViaType = 'testStarted' | 'testResumed' | 'testFinished'
+
+export type AnswerSavedViaType = 'save&next' | 'mfr'
+
+export type CurrentQuestionViaType = LogTestStateViaType | AnswerSavedViaType
+  | 'previous' | 'palette' | 'sectionBtn'
+
+export type TestLogType = LogTestStateViaType | 'currentQuestion'
+  | 'answerSaved' | 'currentAnswer' | 'answerCleared'
+
 export interface TestLog {
   id: number
   timestamp: number
   testTime: number
-  type: TesLogType
+  type: TestLogType
   current: {
     queId: number
     section: TestSectionKey
@@ -190,9 +200,6 @@ export type QuestionResult = {
 
 export type TestOutputDataQuestion = Omit<TestQuestionData, 'section' | 'que'>
   & Pick<CropperQuestionData, 'marks'>
-  & {
-    result?: QuestionResult
-  }
 
 export type TestOutputDataSection = {
   [question: number | string]: TestOutputDataQuestion
@@ -218,6 +225,44 @@ export type TestAnswerKeyData = {
   [subject: keyof CropperOutputData]: TestAnswerKeySubjectData
 }
 
+export type TestResultDataQuestion = TestOutputDataQuestion & {
+  subject: keyof CropperOutputData
+  section: TestSectionKey
+  oriQueId: number
+  result: QuestionResult
+}
+
+export type TestResultDataSection = {
+  [question: number | string]: TestResultDataQuestion
+}
+
+export type TestResultDataSubject = {
+  [section: TestSectionKey]: TestResultDataSection
+}
+
+export type TestResultData = {
+  [subject: keyof CropperOutputData]: TestResultDataSubject
+}
+
+type TestResultOverview = {
+  testName: string
+  testStartTime: number // of Date.now()
+  testEndTime: number // of Date.now()
+  overview: {
+    marksObtained?: number
+    maxMarks?: number
+    accuracy?: number // in %
+    timeSpent?: number // seconds
+    testDuration?: number // seconds
+    questionsAttempted?: number
+    totalQuestions?: number
+  }
+}
+
+type TestResultOverviewDB = TestResultOverview & {
+  id: number // this will be the id of testOutputData as a binding link between both
+}
+
 export interface TestOutputData {
   testConfig: {
     testName: string
@@ -226,9 +271,13 @@ export interface TestOutputData {
   testData: TestOutputDataSubjects
   testSummary: TestSummaryDataTableRow[]
   testLogs: TestLog[]
+  testResultOverview: TestResultOverview
+  testResultData?: TestResultData
   testAnswerKey?: TestAnswerKeyData
-  isResult?: boolean
 }
+
+type TestResultsOutputData = Omit<TestOutputData, 'testData' | 'testAnswerKey'>
+  & Required<Pick<TestOutputData, 'testResultData'>>
 
 export interface TestState {
   pdfFile: null | Uint8Array
