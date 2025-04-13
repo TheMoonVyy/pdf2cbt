@@ -37,7 +37,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { TestOutputData } from '~/src/types'
+import type {
+  TestOutputData,
+  TestResultsOutputData,
+} from '~/src/types'
 
 const selectedKeys = ref(new Set<number>())
 
@@ -46,16 +49,16 @@ const visibility = defineModel<boolean>('visibility', {
 })
 
 const emit = defineEmits<{
-  processed: [type: string, data: TestOutputData[]]
+  processed: [type: 'Import' | 'Export', data: (TestOutputData | TestResultsOutputData)[]]
 }>()
 
 const props = defineProps<{
-  type: string
-  data: TestOutputData[]
+  type: 'Import' | 'Export'
+  data: (TestOutputData | TestResultsOutputData)[]
 }>()
 
 const processData = () => {
-  const processedData: TestOutputData[] = []
+  const processedData: (TestOutputData | TestResultsOutputData)[] = []
 
   for (const i of selectedKeys.value.values()) {
     processedData.push(props.data[i])

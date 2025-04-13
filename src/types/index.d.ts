@@ -244,6 +244,25 @@ export type TestResultData = {
   [subject: keyof CropperOutputData]: TestResultDataSubject
 }
 
+type TestResultOverview = {
+  testName: string
+  testStartTime: number // of Date.now()
+  testEndTime: number // of Date.now()
+  overview: {
+    marksObtained?: number
+    maxMarks?: number
+    accuracy?: number // in %
+    timeSpent?: number // seconds
+    testDuration?: number // seconds
+    questionsAttempted?: number
+    totalQuestions?: number
+  }
+}
+
+type TestResultOverviewDB = TestResultOverview & {
+  id: number // this will be the id of testOutputData as a binding link between both
+}
+
 export interface TestOutputData {
   testConfig: {
     testName: string
@@ -252,9 +271,13 @@ export interface TestOutputData {
   testData: TestOutputDataSubjects
   testSummary: TestSummaryDataTableRow[]
   testLogs: TestLog[]
-  testAnswerKey?: TestAnswerKeyData
+  testResultOverview: TestResultOverview
   testResultData?: TestResultData
+  testAnswerKey?: TestAnswerKeyData
 }
+
+type TestResultsOutputData = Omit<TestOutputData, 'testData' | 'testAnswerKey'>
+  & Required<Pick<TestOutputData, 'testResultData'>>
 
 export interface TestState {
   pdfFile: null | Uint8Array

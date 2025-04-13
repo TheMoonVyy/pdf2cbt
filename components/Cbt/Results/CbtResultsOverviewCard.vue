@@ -13,10 +13,10 @@
           {{ testResultOverview.testName }}
         </h4>
         <h5 class="text-sm text-left">
-          {{ formatUnixMsToReadableTime(testResultOverview.testStartTime) }}
+          {{ utilFormatUnixMsToReadableTime(testResultOverview.testStartTime) }}
         </h5>
         <h5 class="text-sm text-left">
-          {{ formatUnixMsToReadableTime(testResultOverview.testEndTime) }}
+          {{ utilFormatUnixMsToReadableTime(testResultOverview.testEndTime) }}
         </h5>
       </div>
     </div>
@@ -59,7 +59,7 @@
           Attempted
         </div>
         <div>
-          {{ testResultOverview.overview?.questionAttempted ?? '--' }}/{{ testResultOverview.overview?.totalQuestion ?? '--' }}
+          {{ testResultOverview.overview?.questionsAttempted ?? '--' }}/{{ testResultOverview.overview?.totalQuestions ?? '--' }}
         </div>
       </div>
     </div>

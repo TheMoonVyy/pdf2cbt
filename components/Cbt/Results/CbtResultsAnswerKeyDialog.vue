@@ -15,7 +15,7 @@
     <h4>Test Answer Key Data was not found for this test:</h4>
     <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
       <CbtResultsOverviewCard
-        :test-result-overview="testOutputData.testResultOverview!"
+        :test-result-overview="testResultOverview!"
         read-only
       />
     </div>
@@ -44,7 +44,7 @@
 
 <script lang="ts" setup>
 import { unzip, strFromU8 } from 'fflate'
-import type { TestAnswerKeyData, TestOutputData } from '~/src/types'
+import type { TestAnswerKeyData, TestResultOverview } from '~/src/types'
 import { DataFileNames } from '~/src/types/enums'
 
 type TestAnswerKeyJsonData = {
@@ -60,7 +60,7 @@ const emit = defineEmits<{
 }>()
 
 defineProps<{
-  testOutputData: TestOutputData
+  testResultOverview: TestResultOverview
 }>()
 
 const emitData = (data: TestAnswerKeyJsonData) => {

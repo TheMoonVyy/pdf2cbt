@@ -14,7 +14,7 @@
             :label="isScreenWidthSmOrAbove ? 'Import Test Data' : 'Import Data'"
             invalid-file-type-message="Invalid file. Please select a valid JSON file"
             :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:download'"
-            @upload="(files) => console.log('import', files)"
+            @upload="(file) => showImportExportDialog('Import', file)"
           />
         </div>
         <!-- Export Button -->
@@ -22,7 +22,8 @@
           <BaseButton
             :label="isScreenWidthSmOrAbove ? 'Export Test Data' : 'Export Data'"
             severity="help"
-            @click="(e) => console.log('export', e)"
+            :disabled="disableExportDataBtn"
+            @click="() => showImportExportDialog('Export')"
           >
             <template #icon>
               <Icon
@@ -38,21 +39,13 @@
             text-xl text-center flex flex-col sm:flex-row justify-center items-center"
         >
           <span>Showing Results for&nbsp;</span>
-          <span class="font-bold">{{ jsonData?.testConfig.testName ?? 'Demo Mock Test' }}</span>
+          <span class="font-bold">{{ testResultsOutputData?.testConfig.testName ?? 'Demo Mock Test' }}</span>
         </h4>
       </div>
-      <!-- This is the file upload component for uploading the analysis file -->
-      <BaseSimpleFileUpload
-        accept="application/json,.json"
-        :label="isLoading ? 'Please wait, loading File...' : 'Select the Analysis File'"
-        :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:plus'"
-        icon-size="1.5rem"
-        invalid-file-type-message="Invalid file. Please select a valid JSON Analysis File."
-        @upload="handleAnalysisFileUpload"
-      />
     </div>
-    <div v-if="!isUploaded">
+    <div v-if="showChart">
       <CbtResultsChartsPanel
+        class="mt-4"
         :chart-data-state="chartDataState"
         :test-result-questions-data="testResultQuestionsData"
         :chart-colors="chartColors"
@@ -63,9 +56,18 @@
         :type="importExportDialogState.type"
         :visibility="importExportDialogState.isVisible"
         :data="importExportDialogState.data"
-        @processed="(_, e) => { console.log(e); importExportDialogState.isVisible = false }"
+        @processed="processImportExport"
       />
     </template>
+    <CbtResultsAnswerKeyDialog
+      v-if="showAnswerKeyMissingDialog && testOutputData?.testResultOverview"
+      :visibility="showAnswerKeyMissingDialog"
+      :test-result-overview="testOutputData.testResultOverview"
+      @upload="(data) => {
+        testOutputData!.testAnswerKey = data.testAnswerKey
+        generateTestResults()
+      }"
+    />
   </div>
 </template>
 
@@ -76,6 +78,7 @@ import type {
 } from 'echarts/types/dist/shared'
 
 import type {
+  TestResultsOutputData,
   QuestionResult,
   TestLog,
   TestOutputData,
@@ -85,7 +88,11 @@ import type {
   TestSectionSummary,
   TestResultDataQuestion,
   QuestionStatus,
+  TestResultData,
+  TestResultOverviewDB,
 } from '~/src/types'
+
+import { db } from '~/src/db/cbt-db'
 
 interface ChartDataState {
   testQuestionsSummary: PieSeriesOption['data']
@@ -138,9 +145,12 @@ const chartColors: {
   },
 }
 
-const isScreenWidthSmOrAbove = useBreakpoints({
-  sm: 640,
-}).greaterOrEqual('sm')
+const isScreenWidthSmOrAbove = useBreakpoints(
+  { sm: 640 },
+  { ssrWidth: 640 },
+).greaterOrEqual('sm')
+
+const showAnswerKeyMissingDialog = shallowRef(false)
 
 const importExportDialogState = shallowReactive<{
   isVisible: boolean
@@ -152,12 +162,20 @@ const importExportDialogState = shallowReactive<{
   data: null,
 })
 
-// These holds the loading state of the file upload process.
+// This holds the loading state of the file upload process.
 const isLoading = shallowRef(false)
-const isUploaded = shallowRef(false)
+// toggle for v-if of CbtResultsChartsPanel component
+const showChart = shallowRef(false)
 
-// This ref holds the parsed JSON data from the uploaded file.
-const jsonData = shallowRef<TestOutputData | null>(null)
+// disable export btn if no data is found in db
+const disableExportDataBtn = shallowRef(false)
+
+// This holds the output of cbt interface for current results.
+const testOutputData = shallowRef<TestOutputData | null>(null)
+
+// This holds output of cbt interface but with results generated
+// This is the data this page will mainly be using.
+const testResultsOutputData = ref<TestResultsOutputData | null>(null)
 
 // This contains a reduced version of testResultData,
 // with queId as the key and questionData as the value
@@ -178,34 +196,16 @@ const chartDataState = reactive<ChartDataState>({
   },
 })
 
-// This function handles the file upload and parsing of the JSON data.
-// It sets the isLoading state to true while the file is being processed.
-function handleAnalysisFileUpload(file: File) {
-  isLoading.value = true
-  utilParseJsonFile(file)
-    .then((parsedData) => {
-      if (parsedData) {
-        jsonData.value = parsedData
-        isUploaded.value = true
-        loadDataToChartDataState()
-      }
-    })
-    .catch(err => console.error('Error parsing JSON:', err))
-    .finally(() => {
-      isLoading.value = false
-    })
-}
-
 function loadDataToChartDataState() {
   loadQuestionsSummaryToChartDataState()
-
-  if (jsonData.value && !jsonData.value.testResultData) generateTestResult()
 
   chartDataState.timeSpentPerSection = getTestTimebySection()
     .map(item => ({ value: item.timeSpent, name: item.label }))
 
   loadTestResultToChartDataState()
   loadTestJourneyToChartDataState()
+
+  showChart.value = true
 }
 
 function loadTestResultToChartDataState() {
@@ -218,8 +218,8 @@ function loadTestResultToChartDataState() {
     }
   }
 
-  const testResultData = jsonData.value?.testResultData
-  if (!testResultData) return
+  const testResultData = testResultsOutputData.value?.testResultData
+  if (!testResultsOutputData.value || !testResultData) return
 
   const colors: Record<QuestionResult['status'], string> = {
     correct: '#00CC00', // Green
@@ -239,9 +239,6 @@ function loadTestResultToChartDataState() {
     notAnswered: {},
   }
 
-  let totalMaxMarks = 0
-  let totalQuestionsAnswered = 0
-  let totalQuestionsAnsweredCorrect = 0
   for (const subjectData of Object.values(testResultData)) {
     for (const [section, sectionData] of Object.entries(subjectData)) {
       // add section (name): { count and marks } to each value of "initialData"
@@ -250,36 +247,17 @@ function loadTestResultToChartDataState() {
       }
 
       for (const questionData of Object.values(sectionData)) {
-        const { result, marks } = questionData
+        const { result } = questionData
 
         if (result) {
           initialData[result.status][section].marks += result.marks
           initialData[result.status][section].count++
-
-          const resultStatus = result.status
-          if (resultStatus === 'correct') {
-            totalQuestionsAnsweredCorrect++
-            totalQuestionsAnswered++
-          }
-          else if (resultStatus === 'partial') {
-            // result.marks was obtained by count * marks.pm
-            // so deviding by marks.pm to get count back
-            const count = result.marks / (marks.pm || 1)
-            // fraction count
-            totalQuestionsAnsweredCorrect += count / (questionData.totalOptions || 4)
-            totalQuestionsAnswered++
-          }
-          else if (resultStatus === 'incorrect') {
-            totalQuestionsAnswered++
-          }
         }
-        totalMaxMarks += marks.cm
       }
     }
   }
 
   const seriesData: TestResultSeriesDataItem[] = []
-  let totalMarksObtained = 0
 
   for (const [resultStatus, resultStatusData] of Object.entries(initialData)) {
     const filteredSections: Record<TestSectionKey, { count: number, marks: number }> = {}
@@ -309,12 +287,15 @@ function loadTestResultToChartDataState() {
 
       seriesData.push(seriesDataItem)
     }
-
-    totalMarksObtained += resultStatusMarks
   }
 
-  const accuracy = Math.round((totalQuestionsAnsweredCorrect / (totalQuestionsAnswered || 1)) * 10000) / 100
-  const centerText = `${totalMarksObtained}/${totalMaxMarks}\n${accuracy}%`
+  const {
+    accuracy,
+    marksObtained,
+    maxMarks,
+  } = testResultsOutputData.value.testResultOverview.overview
+
+  const centerText = `${marksObtained}/${maxMarks}\n${accuracy}%`
 
   chartDataState.testResultSummary.data = seriesData
   chartDataState.testResultSummary.centerText = centerText
@@ -329,7 +310,7 @@ function loadQuestionsSummaryToChartDataState() {
     markedAnswered: 0,
   }
 
-  const testSummary = jsonData.value?.testSummary
+  const testSummary = testResultsOutputData.value?.testSummary
   if (testSummary) {
     for (const row of testSummary) {
       for (const summaryType of Object.keys(summary) as (keyof TestSectionSummary)[]) {
@@ -358,8 +339,9 @@ function getTestTimebySection() {
     label: string
   }
   const time: timebySection[] = []
-  if (jsonData.value?.testResultData) {
-    for (const [subject, subjectData] of Object.entries(jsonData.value.testResultData)) {
+  const testResultData = testResultsOutputData.value?.testResultData
+  if (testResultData) {
+    for (const [subject, subjectData] of Object.entries(testResultData)) {
       for (const [section, sectionData] of Object.entries(subjectData)) {
         let sectionTime = 0
         for (const q of Object.values(sectionData)) {
@@ -387,9 +369,9 @@ function loadTestJourneyToChartDataState() {
     [resultStatus in QuestionResult['status']]: SeriesDataObj[]
   }
 
-  const testResultData = jsonData.value?.testResultData
-  const testLogs = jsonData.value?.testLogs
-  if (!testResultData || !testLogs) return
+  if (!testResultsOutputData.value) return
+
+  const { testResultData, testLogs } = testResultsOutputData.value
 
   for (const subjectData of Object.values(testResultData)) {
     for (const sectionData of Object.values(subjectData)) {
@@ -547,8 +529,6 @@ function loadTestJourneyToChartDataState() {
   chartDataState.testJourney.series = series
   chartDataState.testJourney.yAxisData = ['0'].concat(questionQueIds)
   chartDataState.testJourney.legendData = legendData
-
-  console.log(series)
 }
 
 // returns the testTime (countdown seconds) of testFinished log from the test logs.
@@ -566,7 +546,7 @@ function getTestFinishedCountdownTime(testLogs: TestLog[]) {
 function getTestStartedCountdownTime(testLogs: TestLog[]) {
   let testTime = testLogs.find(log => log.type === 'testStarted')?.testTime
   if (testTime === undefined) {
-    const testDuration = jsonData.value?.testConfig.testDurationInSeconds
+    const testDuration = testResultsOutputData.value?.testConfig.testDurationInSeconds
     testTime = testDuration ? testDuration : 0
   }
 
@@ -641,44 +621,253 @@ function getQuestionResult(
   return result
 }
 
-function generateTestResult() {
-  const testData = jsonData.value?.testData
-  const testAnswerKey = jsonData.value?.testAnswerKey
+function generateTestResults() {
+  if (!testOutputData.value) return
 
-  if (!jsonData.value || !testData || !testAnswerKey) return
+  const { testConfig, testData, testSummary, testLogs, testAnswerKey } = testOutputData.value
+
+  if (!testConfig || !testData || !testSummary || !testLogs) return
 
   try {
-    jsonData.value.testResultData = {}
+    testOutputData.value.testResultOverview = utilGetTestResultOverview(testOutputData.value)
+  }
+  catch (err) {
+    console.error(err)
+  }
 
-    for (const [subject, subjectData] of Object.entries(testData)) {
-      jsonData.value.testResultData[subject] = {}
+  if (!testOutputData.value.testResultOverview) return
 
-      for (const [section, sectionData] of Object.entries(subjectData)) {
-        jsonData.value.testResultData[subject][section] = {}
-        const testResultDataSection = jsonData.value.testResultData[subject][section]
+  if (!testAnswerKey) {
+    showAnswerKeyMissingDialog.value = true
+  }
+  else {
+    try {
+      const testResultData: TestResultData = {}
 
-        for (const [question, questionData] of Object.entries(sectionData)) {
-          const correctAnswer = testAnswerKey[subject]?.[section]?.[question] ?? null
+      let marksObtained = 0
+      let maxMarks = 0
+      let totalCorrect = 0
+      let totalAnswered = 0
+      let totalQuestions = 0
+      let questionsAttempted = 0
 
-          if (correctAnswer === null) {
-            throw new Error(
-              `Answer for (${subject}) ${section}: ${question} is not present/valid in Test Answer Key`,
-            )
+      for (const [subject, subjectData] of Object.entries(testData)) {
+        testResultData[subject] = {}
+
+        for (const [section, sectionData] of Object.entries(subjectData)) {
+          testResultData[subject][section] = {}
+          const testResultDataSection = testResultData[subject][section]
+
+          for (const [question, questionData] of Object.entries(sectionData)) {
+            const correctAnswer = testAnswerKey[subject]?.[section]?.[question] ?? null
+
+            if (correctAnswer === null) {
+              throw new Error(
+                `Answer for (${subject}) ${section}: ${question} is not present/valid in Test Answer Key`,
+              )
+            }
+
+            testResultDataSection[question] = JSON.parse(JSON.stringify(questionData))
+
+            testResultDataSection[question].result = getQuestionResult(questionData, correctAnswer)
+            testResultDataSection[question].oriQueId = parseInt(question)
+            testResultDataSection[question].subject = subject
+            testResultDataSection[question].section = section
+
+            const currentQuestionData = testResultDataSection[question]
+
+            maxMarks += currentQuestionData.marks.cm
+            marksObtained += currentQuestionData.result.marks
+            if (currentQuestionData.status === 'answered' || currentQuestionData.status === 'markedAnswered') {
+              questionsAttempted++
+            }
+            const resultStatus = currentQuestionData.result.status
+            if (resultStatus === 'correct') {
+              totalCorrect++
+              totalAnswered++
+            }
+            else if (resultStatus === 'partial') {
+            // result.marks was obtained by count * marks.pm
+            // so dividing by marks.pm to get count back
+              const count = currentQuestionData.result.marks / (currentQuestionData.marks.pm || 1)
+              // fraction count
+              totalCorrect += count / (currentQuestionData.totalOptions || 4)
+              totalAnswered++
+            }
+            else if (resultStatus === 'incorrect') {
+              totalAnswered++
+            }
+
+            totalQuestions++
           }
-
-          testResultDataSection[question] = JSON.parse(JSON.stringify(questionData))
-
-          testResultDataSection[question].result = getQuestionResult(questionData, correctAnswer)
-          testResultDataSection[question].oriQueId = parseInt(question)
-          testResultDataSection[question].subject = subject
-          testResultDataSection[question].section = section
         }
+      }
+
+      const testResultOverview = testOutputData.value.testResultOverview
+      testResultOverview.overview = {
+        maxMarks,
+        marksObtained,
+        timeSpent: Math.abs(getTestStartedCountdownTime(testLogs) - getTestFinishedCountdownTime(testLogs)),
+        testDuration: testOutputData.value.testConfig.testDurationInSeconds,
+        totalQuestions,
+        questionsAttempted,
+        accuracy: Math.round((totalCorrect / (totalAnswered || 1)) * 10000) / 100,
+      }
+
+      testResultsOutputData.value = {
+        testConfig,
+        testSummary,
+        testLogs,
+        testResultData,
+        testResultOverview,
+      }
+
+      testOutputData.value = null // not required anymore
+      return true // success flag
+    }
+    catch (err) {
+      console.error(err)
+    }
+  }
+}
+
+async function loadTestOutputData(id: number | null = null): Promise<boolean> {
+  let data: TestOutputData | null = null
+
+  try {
+    const testOverview = await db.getTestResultOverview(id ? id : null)
+    if (testOverview?.id) {
+      const outputData = await db.getTestOutputData(testOverview.id)
+      if (outputData?.testOutputData) {
+        data = outputData.testOutputData
+      }
+    }
+    else if (!testOverview && id === null) {
+      disableExportDataBtn.value = true
+    }
+  }
+  catch (err) {
+    console.error('Error while loading test results from db:', err)
+  }
+
+  // either there is no data in db or there was an error
+  // so load demo data
+  if (!data) {
+    const demoData = await import('~/src/assets/json/results_demo_data.json').then(m => m.default)
+    if (demoData) {
+      data = demoData as unknown as TestOutputData
+    }
+  }
+
+  if (data) {
+    testOutputData.value = data
+    return true
+  }
+
+  return false
+}
+
+async function showImportExportDialog(
+  type: 'Import' | 'Export',
+  importDataFile: File | null = null,
+) {
+  try {
+    if (type === 'Export') {
+      const data = await db.getTestResultOverview(null, true)
+      if (Array.isArray(data) && data.length > 0) {
+        const testResultOverviews: Partial<TestOutputData>[] = []
+        data.forEach(data => testResultOverviews.push({ testResultOverview: data }))
+
+        importExportDialogState.type = type
+        importExportDialogState.data = testResultOverviews as TestOutputData[]
+        importExportDialogState.isVisible = true
+      }
+    }
+    else if (importDataFile && type === 'Import') {
+      importExportDialogState.data = null
+
+      const importedData = await utilParseJsonFile(importDataFile)
+
+      if (importedData.testOutputDatas) {
+        importExportDialogState.data = importedData.testOutputDatas as TestOutputData[]
+      }
+      else if (importedData.testConfig
+        && (importedData.testData || importedData.testResultData)
+        && importedData.testSummary
+        && importedData.testLogs
+      ) {
+        importedData.testResultOverview = utilGetTestResultOverview(importedData)
+        importExportDialogState.data = [importedData] as TestOutputData[]
+      }
+
+      if (importExportDialogState.data !== null) {
+        importExportDialogState.type = type
+        importExportDialogState.isVisible = true
       }
     }
   }
   catch (err) {
-    console.error(err)
-    jsonData.value.testResultData = undefined
+    console.error(`Error while ${type}ing Test Data`, err)
   }
 }
+
+async function processImportExport(
+  type: 'Import' | 'Export',
+  data: (TestOutputData | TestResultsOutputData)[],
+) {
+  if (type === 'Import') {
+    try {
+      const dataItem = data[0]
+      if (dataItem) {
+        db.addTestOutputData(dataItem as TestOutputData)
+          .then(id => onMountedCallback(id))
+      }
+    }
+    catch (err) {
+      console.error('Error while trying to save Imported Test Data to DB:', err)
+    }
+  }
+  else {
+    try {
+      const ids: number[] = []
+      for (const outputData of data) {
+        const id = (outputData.testResultOverview as TestResultOverviewDB).id
+        if (id) ids.push(id)
+      }
+
+      const testOutputDataDBList = await db.getTestOutputDatas(ids)
+      const testOutputDatas: (TestOutputData | TestResultsOutputData)[] = []
+
+      for (const outputData of testOutputDataDBList) {
+        if (outputData?.testOutputData) testOutputDatas.push(outputData.testOutputData)
+      }
+
+      if (testOutputDatas.length > 0) {
+        const outputBlob = new Blob([JSON.stringify({ testOutputDatas })], { type: 'application/json' })
+        utilSaveFile('pdf2cbt_test_results.json', outputBlob)
+      }
+    }
+    catch (err) {
+      console.error(err)
+    }
+  }
+
+  importExportDialogState.isVisible = false
+  importExportDialogState.data = null
+}
+
+function onMountedCallback(id: number | null = null) {
+  loadTestOutputData(id).then((status) => {
+    if (status) {
+      let isReadyToLoad = true
+      if (!testOutputData.value?.testResultData) {
+        isReadyToLoad = generateTestResults() || false
+      }
+
+      if (isReadyToLoad) loadDataToChartDataState()
+    }
+  })
+}
+
+onMounted(() => onMountedCallback())
 </script>
