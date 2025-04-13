@@ -49,7 +49,7 @@ class CBTDatabase extends Dexie {
       currentTestState: 'id',
       testQuestionsData: 'queId',
       testLog: 'id',
-      testResultOverviews: 'id,testName,testStartTime,testFinishedTime',
+      testResultOverviews: 'id,testName,testStartTime,testFinishedTime,[testName+testStartTime+testFinishedTime]',
       testOutputDatas: 'id++',
     })
   }
@@ -255,7 +255,8 @@ class CBTDatabase extends Dexie {
     const { testName, testStartTime, testEndTime } = testOverview
 
     const existing = await this.testResultOverviews
-      .where({ testName, testStartTime, testEndTime })
+      .where('[testName+testStartTime+testFinishedTime]')
+      .equals([testName, testStartTime, testEndTime])
       .first()
 
     // if (existing) {
