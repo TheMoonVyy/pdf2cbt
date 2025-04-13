@@ -2,10 +2,45 @@
   <div
     class="max-h-dvh min-h-dvh w-full border-t-2 overflow-y-auto border-surface-700 dark:bg-surface-900 dark:text-surface-0"
   >
-    <div class="m-4">
-      <h4 class="text-xl text-center mb-4">
+    <div class="p-2">
+      <!-- <h4 class="text-xl text-center mb-4">
         This Page is currently under development.
-      </h4>
+      </h4> -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:mx-4 sm:items-center sm:gap-6 p-2">
+        <!-- Import Button -->
+        <div class="row-start-1 col-start-1 sm:row-start-1 sm:col-start-1 flex justify-start">
+          <BaseSimpleFileUpload
+            accept="application/json,.json"
+            :label="isScreenWidthSmOrAbove ? 'Import Test Data' : 'Import Data'"
+            invalid-file-type-message="Invalid file. Please select a valid JSON file"
+            :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:download'"
+            @upload="(files) => console.log('import', files)"
+          />
+        </div>
+        <!-- Export Button -->
+        <div class="row-start-1 col-start-1 sm:row-start-1 sm:col-start-3 flex justify-end">
+          <BaseButton
+            :label="isScreenWidthSmOrAbove ? 'Export Test Data' : 'Export Data'"
+            severity="help"
+            @click="(e) => console.log('export', e)"
+          >
+            <template #icon>
+              <Icon
+                name="prime:upload"
+                size="1.4rem"
+              />
+            </template>
+          </BaseButton>
+        </div>
+        <!-- Title -->
+        <h4
+          class="row-start-2 col-start-1 sm:row-start-1 sm:col-start-2
+            text-xl text-center flex flex-col sm:flex-row justify-center items-center"
+        >
+          <span>Showing Results for&nbsp;</span>
+          <span class="font-bold">{{ jsonData?.testConfig.testName ?? 'Demo Mock Test' }}</span>
+        </h4>
+      </div>
       <!-- This is the file upload component for uploading the analysis file -->
       <BaseSimpleFileUpload
         accept="application/json,.json"
@@ -13,57 +48,31 @@
         :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:plus'"
         icon-size="1.5rem"
         invalid-file-type-message="Invalid file. Please select a valid JSON Analysis File."
-        @uploader="(e: any) => handleAnalysisFileUpload(e.files)"
+        @upload="handleAnalysisFileUpload"
       />
     </div>
-    <div :class="{ hidden: !isUploaded }">
-      <div>
-        <div class="flex flex-col w-full gap-2 px-2 h-[84rem] sm:h-auto sm:px-4 sm:flex-row justify-evenly">
-          <div class="flex-1 min-w-0 h-[28rem]">
-            <!-- Here goes the pie chart for the test result summary -->
-            <v-chart
-              :option="testResultSummaryChartOption"
-              autoresize
-            />
-          </div>
-          <div class="flex-1 min-w-0 h-[28rem]">
-            <!-- Here goes the pie chart for the time spent on each section -->
-            <v-chart
-              :option="testQuestionsSummaryChartOption"
-              autoresize
-            />
-          </div>
-          <div class="flex-1 min-w-0 h-[28rem]">
-            <!-- Here goes the pie chart for the time spent on each section -->
-            <v-chart
-              :option="timeSpentPerSectionChartOption"
-              autoresize
-            />
-          </div>
-        </div>
-        <div
-          class="px-2 md:px-5 h-[90dvh] mb-20"
-        >
-          <!-- Here goes the line chart for the test journey -->
-          <v-chart
-            :option="testJourneyChartOption"
-            autoresize
-          />
-        </div>
-        <!-- <div class="grid"> -->
-        <!-- Here goes the Question Journey based on testLogs -->
-        <!-- </div> -->
-      </div>
+    <div v-if="!isUploaded">
+      <CbtResultsChartsPanel
+        :chart-data-state="chartDataState"
+        :test-result-questions-data="testResultQuestionsData"
+        :chart-colors="chartColors"
+      />
     </div>
+    <template v-if="importExportDialogState.isVisible && importExportDialogState.data">
+      <CbtResultsImportExportDialog
+        :type="importExportDialogState.type"
+        :visibility="importExportDialogState.isVisible"
+        :data="importExportDialogState.data"
+        @processed="(_, e) => { console.log(e); importExportDialogState.isVisible = false }"
+      />
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
 import type {
-  CallbackDataParams,
   LineSeriesOption,
   PieSeriesOption,
-  TopLevelFormatterParams,
 } from 'echarts/types/dist/shared'
 
 import type {
@@ -77,12 +86,6 @@ import type {
   TestResultDataQuestion,
   QuestionStatus,
 } from '~/src/types'
-
-interface ChartTemplates {
-  pie: ECOption
-  line: ECOption
-  donut: ECOption
-}
 
 interface ChartDataState {
   testQuestionsSummary: PieSeriesOption['data']
@@ -113,20 +116,7 @@ type TestResultSeriesDataItem = {
   }
 }
 
-provide(THEME_KEY, 'dark')
-
-// These holds the loading state of the file upload process.
-const isLoading = shallowRef(false)
-const isUploaded = shallowRef(false)
-
-// This ref holds the parsed JSON data from the uploaded file.
-const jsonData = shallowRef<TestOutputData | null>(null)
-
-// This contains a reduced version of testResultData,
-// with queId as the key and questionData as the value
-const testResultQuestionsData: Record<number | string, TestResultDataQuestion> = {}
-
-const testJourneyColors: {
+const chartColors: {
   qStatus: Record<QuestionStatus, string>
   resultStatus: Record<QuestionResult['status'], string>
 } = {
@@ -148,403 +138,30 @@ const testJourneyColors: {
   },
 }
 
-const pieChartTemplate: ECOption = {
-  backgroundColor: 'transparent',
-  title: {
-    text: 'Title',
-    left: 'center',
-    top: 0,
-  },
-  legend: {
-    top: 35,
-    textStyle: {
-      color: '#ffffff',
-      fontSize: 13,
-    },
-    type: 'scroll',
-    pageIconColor: '#00FF00',
-    pageIconInactiveColor: '#eeeeee',
-    pageTextStyle: {
-      color: '#00cc00',
-    },
-  },
-  tooltip: {
-    backgroundColor: '#1E1E1E',
-    textStyle: {
-      color: '#fff',
-    },
-    formatter: (params: TopLevelFormatterParams) => {
-      const p = params as CallbackDataParams
-      return `<p><strong>${p.seriesName}</strong></p>${p.marker} ${p.name}: ${p.value} (${p.percent}%)`
-    },
-  },
-  series: [
-    {
-      name: 'SeriesName',
-      type: 'pie',
-      radius: '60%',
-      center: ['50%', '50%'],
-      data: [],
-      label: {
-        show: true,
-        color: '#fff',
-        fontSize: 15,
-        formatter: '{c} ({d}%)',
-      },
-      labelLine: {
-        lineStyle: {
-          width: 2,
-        },
-      },
-    },
-  ],
-}
+const isScreenWidthSmOrAbove = useBreakpoints({
+  sm: 640,
+}).greaterOrEqual('sm')
 
-// base template for charts
-const chartTemplates: ChartTemplates = {
-  pie: {
-    ...pieChartTemplate,
-  },
+const importExportDialogState = shallowReactive<{
+  isVisible: boolean
+  type: 'Import' | 'Export'
+  data: TestOutputData[] | null
+}>({
+  isVisible: false,
+  type: 'Import',
+  data: null,
+})
 
-  line: {
-    backgroundColor: 'transparent',
-    title: {
-      text: 'Title',
-      left: 'center',
-      textStyle: {
-        fontSize: 23,
-        color: '#fff',
-      },
-      top: 0,
-    },
-    tooltip: {
-      backgroundColor: '#1E1E1E',
-      textStyle: {
-        color: '#fff',
-      },
-      trigger: 'axis',
-      axisPointer: {
-        type: 'cross',
-        label: {
-          color: '#000000',
-          backgroundColor: '#ffffff',
-          fontSize: 13,
-        },
-      },
-    },
-    legend: {
-      top: 40,
-      textStyle: {
-        color: '#ffffff',
-        fontSize: 13,
-      },
-      type: 'scroll',
-      pageIconColor: '#00FF00',
-      pageIconInactiveColor: '#eeeeee',
-      pageTextStyle: {
-        color: '#00cc00',
-      },
-      icon: 'rect',
-    },
-    xAxis: {
-      type: 'category',
-      data: [],
-    },
-    yAxis: {
-      type: 'value',
-    },
-    grid: {
-      top: 85,
-      containLabel: true,
-    },
-    series: [
-      {
-        name: 'seriesName',
-        data: [],
-        type: 'line',
-        smooth: true,
-      },
-    ],
-  },
+// These holds the loading state of the file upload process.
+const isLoading = shallowRef(false)
+const isUploaded = shallowRef(false)
 
-  donut: {
-    ...pieChartTemplate,
-    series: [{
-      ...(pieChartTemplate.series as PieSeriesOption[])[0],
-      radius: ['30%', '60%'],
-    }],
-  },
-}
+// This ref holds the parsed JSON data from the uploaded file.
+const jsonData = shallowRef<TestOutputData | null>(null)
 
-const chartTooltipCache = {
-  testJourney: new Map<string, string>(),
-}
-
-const chartOptions = {
-  testQuestionsSummary: {
-    ...chartTemplates.pie,
-    title: {
-      ...chartTemplates.pie.title,
-      text: 'Question Status Summary',
-    },
-    series: [{
-      ...(chartTemplates.pie.series as PieSeriesOption[])[0],
-      name: 'Questions',
-    }],
-  },
-
-  timeSpentPerSection: {
-    ...chartTemplates.pie,
-    title: {
-      ...chartTemplates.pie.title,
-      text: 'Time Spent per Section',
-    },
-    tooltip: {
-      ...chartTemplates.pie.tooltip,
-      formatter: (params: TopLevelFormatterParams) => {
-        const p = params as CallbackDataParams
-        const body = `${p.marker} ${p.name}: ${utilSecondsToTime(p.value as number, 'mmm:ss')} (${p.percent}%)`
-        return `<p><strong>${p.seriesName}</strong></p>${body}`
-      },
-    },
-    series: [{
-      ...(chartTemplates.pie.series as PieSeriesOption[])[0],
-      name: 'Time Spent',
-      label: {
-        ...(chartTemplates.pie.series as PieSeriesOption[])[0].label,
-        formatter: (params: TopLevelFormatterParams) => {
-          const p = params as CallbackDataParams
-          return `${utilSecondsToTime(p.value as number, 'mmm:ss')} (${p.percent}%)`
-        },
-      },
-    }],
-  },
-
-  testResultSummary: {
-    ...chartTemplates.donut,
-    title: {
-      ...chartTemplates.donut.title,
-      text: 'Test Result Summary',
-    },
-    tooltip: {
-      ...chartTemplates.donut.tooltip,
-      formatter: (params: TopLevelFormatterParams) => {
-        const p = params as CallbackDataParams
-        const data = p.data as TestResultSeriesDataItem
-
-        let color = ''
-        if (data.marks > 0) {
-          color = testJourneyColors.resultStatus.correct
-        }
-        else if (data.marks < 0) {
-          color = testJourneyColors.resultStatus.incorrect
-        }
-
-        const headerMarksContent = color
-          ? `<span style="color: ${color};">${data.marks}</span>`
-          : `${data.marks}`
-
-        const header = `<strong>
-          <p style="font-size: 1rem; line-height: 1.5rem;">
-            ${p.marker}${p.name}: ${p.value} (${headerMarksContent}) (${p.percent}%)
-          </p>
-          `
-
-        let body = ''
-        for (const [section, sectionData] of Object.entries(data.sections)) {
-          let color = ''
-          if (sectionData.marks > 0) {
-            color = testJourneyColors.resultStatus.correct
-          }
-          else if (sectionData.marks < 0) {
-            color = testJourneyColors.resultStatus.incorrect
-          }
-          const marksContent = color
-            ? `<span style="color: ${color};">${sectionData.marks}</span>`
-            : `${sectionData.marks}`
-
-          body += `
-              <p>${section}: ${sectionData.count}
-                (${marksContent})
-              </p>
-            `
-        }
-
-        return header + body + '</strong>'
-      },
-    },
-    series: [{
-      ...(chartTemplates.donut.series as PieSeriesOption[])[0],
-      name: 'Test Result',
-    }],
-  },
-
-  testJourney: {
-    ...chartTemplates.line,
-    title: {
-      ...chartTemplates.line.title,
-      text: 'Test Journey',
-    },
-    legend: {
-      ...chartTemplates.line.legend,
-    },
-    tooltip: {
-      ...chartTemplates.line.tooltip,
-      formatter: (params: TopLevelFormatterParams) => {
-        const p = Array.isArray(params) ? params[0] : params
-        const queIdString = (p.value as [unknown, string])[1]
-
-        if (chartTooltipCache.testJourney.has(queIdString)) {
-          return chartTooltipCache.testJourney.get(queIdString)
-        }
-
-        const questionData = testResultQuestionsData[queIdString]
-        if (!questionData) return ''
-
-        const {
-          oriQueId, secQueId, subject, section,
-          status, answer, marks, result, timeSpent,
-        } = questionData
-
-        const { correctAnswer, status: resultStatus, marks: resultMarks } = result
-
-        // don't show subject if section string starts with subject
-        const subjectContentText = (section + '').startsWith(subject + '')
-          ? null
-          : `<p>Subject: ${subject}</p>`
-
-        // user answer won't be shown if it is null
-        let yourAnswerContentText = ''
-        if (answer !== null) {
-          yourAnswerContentText = '<p>Your Answer: '
-
-          if (Array.isArray(answer)) {
-            const sortedAnswer = answer.toSorted()
-            if (resultStatus === 'incorrect') {
-              sortedAnswer.forEach((ans) => {
-                let color = testJourneyColors.resultStatus.incorrect
-
-                if ((correctAnswer as number[]).includes(ans)) {
-                  color = testJourneyColors.resultStatus.partial
-                }
-                yourAnswerContentText += `
-                    <span style="color: ${color};">${utilStringifyAnswer(ans)}&nbsp</span>
-                  `
-              })
-              yourAnswerContentText += '</p>'
-            }
-            else {
-              yourAnswerContentText += `
-                  <span style="color: ${testJourneyColors.resultStatus[resultStatus]};">
-                    ${utilStringifyAnswer(sortedAnswer, ' ')}
-                  </span></p>
-                `
-            }
-          }
-          else {
-            yourAnswerContentText += `
-                <span style="color: ${testJourneyColors.resultStatus[resultStatus]};">
-                  ${utilStringifyAnswer(answer)}
-                </span></p>
-              `
-          }
-        }
-
-        const tooltipContent = `
-            <strong style="line-height: 1.5rem;">
-            <p style="margin-bottom: 0.5rem;">Question ID: ${secQueId}-${oriQueId}-${queIdString}</p>
-            ${subjectContentText || ''}
-            <p>Section: ${section}</p>
-            <p>Q. Status:
-              <span style="color: ${testJourneyColors.qStatus[status]};">${utilKeyToLabel(status)}</span>
-            </p>
-            ${yourAnswerContentText || ''}
-            <p>Correct Answer:
-              <span style="color: ${testJourneyColors.resultStatus.correct};">
-                ${utilStringifyAnswer(correctAnswer, ' ', true)}
-              </span>
-            </p>
-            <p>Result:
-              <span style="color: ${testJourneyColors.resultStatus[resultStatus]};">
-                ${resultStatus === 'partial' ? 'Partially Correct' : utilKeyToLabel(resultStatus)}
-              </span>
-            </p>
-            <p>Marks:
-              <span style="color: ${testJourneyColors.resultStatus[resultStatus]};">${resultMarks}</span>
-              <span style="color: ${testJourneyColors.resultStatus.partial};"> / ${marks.cm}</span>
-            </p>
-            <p>Time Spent: <span>${utilSecondsToTime(timeSpent, 'mmm:ss')}</span></p>
-            </strong>
-          `
-
-        chartTooltipCache.testJourney.set(queIdString, tooltipContent)
-        return tooltipContent
-      },
-    },
-    xAxis: {
-      name: 'Time (in minutes)',
-      nameLocation: 'middle',
-      nameGap: 50,
-      nameTextStyle: {
-        align: 'center',
-        fontSize: 23,
-        fontWeight: 'bold',
-        color: 'cyan',
-      },
-      type: 'value',
-      min: 0,
-      axisLabel: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 15,
-        formatter: (val: number) => Number.isInteger(val) ? val.toString() : val.toFixed(1),
-      },
-      axisTick: {
-        show: true,
-        lineStyle: {
-          color: '#ffffff',
-        },
-      },
-      splitLine: {
-        show: true,
-      },
-      axisLine: {
-        show: false,
-      },
-    },
-    yAxis: {
-      name: 'Question ID',
-      nameLocation: 'middle',
-      nameGap: 50,
-      nameRotate: 90,
-      nameTextStyle: {
-        align: 'center',
-        fontSize: 23,
-        fontWeight: 'bold',
-        color: 'cyan',
-      },
-      type: 'category',
-      boundaryGap: false,
-      axisLabel: {
-        color: '#ffffff',
-        fontWeight: 'bold',
-        fontSize: 15,
-      },
-      axisTick: {
-        lineStyle: {
-          color: '#ffffff',
-        },
-      },
-      splitLine: {
-        show: true,
-      },
-      axisLine: {
-        show: false,
-      },
-      data: [],
-    },
-  },
-}
+// This contains a reduced version of testResultData,
+// with queId as the key and questionData as the value
+const testResultQuestionsData = shallowRef<Record<number | string, TestResultDataQuestion>>({})
 
 // stores data that computed is using for charts option
 const chartDataState = reactive<ChartDataState>({
@@ -561,72 +178,10 @@ const chartDataState = reactive<ChartDataState>({
   },
 })
 
-const testResultSummaryChartOption = computed(() => {
-  return {
-    ...chartOptions.testResultSummary,
-    series: [{
-      ...chartOptions.testResultSummary.series[0],
-      data: chartDataState.testResultSummary.data,
-    }],
-    graphic: [{
-      type: 'text',
-      left: 'center',
-      top: 'middle',
-      style: {
-        text: chartDataState.testResultSummary.centerText,
-        fill: '#ffffff',
-        fontSize: 24,
-        fontWeight: 'bold',
-        lineHeight: 34,
-        textAlign: 'center',
-        textVerticalAlign: 'middle',
-      },
-    }],
-  }
-})
-
-const testQuestionsSummaryChartOption = computed(() => {
-  return {
-    ...chartOptions.testQuestionsSummary,
-    series: [{
-      ...chartOptions.testQuestionsSummary.series[0],
-      data: chartDataState.testQuestionsSummary,
-    }],
-  }
-})
-
-const timeSpentPerSectionChartOption = computed(() => {
-  return {
-    ...chartOptions.timeSpentPerSection,
-    series: [{
-      ...chartOptions.timeSpentPerSection.series[0],
-      data: chartDataState.timeSpentPerSection,
-    }],
-  }
-})
-
-const testJourneyChartOption = computed<ECOption>(() => {
-  chartTooltipCache.testJourney.clear() // clear tooltip cache
-
-  return {
-    ...chartOptions.testJourney,
-    legend: {
-      ...chartOptions.testJourney.legend,
-      data: chartDataState.testJourney.legendData,
-    },
-    yAxis: {
-      ...chartOptions.testJourney.yAxis,
-      data: chartDataState.testJourney.yAxisData,
-    },
-    series: chartDataState.testJourney.series,
-  } as ECOption
-})
-
 // This function handles the file upload and parsing of the JSON data.
 // It sets the isLoading state to true while the file is being processed.
-function handleAnalysisFileUpload(files: File | File[]) {
+function handleAnalysisFileUpload(file: File) {
   isLoading.value = true
-  const file = Array.isArray(files) ? files[0] : files
   utilParseJsonFile(file)
     .then((parsedData) => {
       if (parsedData) {
@@ -839,7 +394,7 @@ function loadTestJourneyToChartDataState() {
   for (const subjectData of Object.values(testResultData)) {
     for (const sectionData of Object.values(subjectData)) {
       for (const questionData of Object.values(sectionData)) {
-        testResultQuestionsData[questionData.queId] = questionData
+        testResultQuestionsData.value[questionData.queId] = questionData
       }
     }
   }
@@ -877,7 +432,7 @@ function loadTestJourneyToChartDataState() {
   for (let i = 0; i < currentQuestionLogs.length; i++) {
     const { queId, startTime } = currentQuestionLogs[i]
 
-    const questionData = testResultQuestionsData[queId]
+    const questionData = testResultQuestionsData.value[queId]
     const resultStatus = questionData.result.status
     const currentSeriesDataValuesArray = seriesDataValues[resultStatus]
     attemptedQueIds.push(queId + '')
@@ -955,7 +510,7 @@ function loadTestJourneyToChartDataState() {
   for (const [resultStatus, seriesData] of Object.entries(seriesDataValues)) {
     if (seriesData.length > 0) { // filter out empty ones
       const seriesName = utilKeyToLabel(resultStatus)
-      const color = testJourneyColors.resultStatus[resultStatus as QuestionResult['status']]
+      const color = chartColors.resultStatus[resultStatus as QuestionResult['status']]
 
       const seriesItem: LineSeriesOption = {
         name: seriesName,
@@ -974,7 +529,7 @@ function loadTestJourneyToChartDataState() {
     }
   }
 
-  const questionQueIds = Object.keys(testResultQuestionsData)
+  const questionQueIds = Object.keys(testResultQuestionsData.value)
   const unattemptedQueIds = questionQueIds.filter(id => !attemptedQueIds.includes(id))
 
   const seriesItem: LineSeriesOption = {
@@ -998,9 +553,10 @@ function loadTestJourneyToChartDataState() {
 
 // returns the testTime (countdown seconds) of testFinished log from the test logs.
 function getTestFinishedCountdownTime(testLogs: TestLog[]) {
-  for (const log of testLogs) {
-    if (log.type === 'testFinished') {
-      return log.testTime
+  // loop backwards
+  for (let i = testLogs.length - 1; i >= 0; i--) {
+    if (testLogs[i].type === 'testFinished') {
+      return testLogs[i].testTime
     }
   }
   return 0
