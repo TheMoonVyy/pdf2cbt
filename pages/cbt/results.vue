@@ -731,7 +731,7 @@ function generateTestResults() {
   }
 }
 
-async function loadTestOutputData(id: number | null = null): Promise<boolean> {
+async function loadTestOutputData(id: number | null = null) {
   let data: TestOutputData | null = null
 
   try {
@@ -740,6 +740,7 @@ async function loadTestOutputData(id: number | null = null): Promise<boolean> {
       const outputData = await db.getTestOutputData(testOverview.id)
       if (outputData?.testOutputData) {
         data = outputData.testOutputData
+        id = testOverview.id
       }
     }
     else if (!testOverview && id === null) {
@@ -761,10 +762,10 @@ async function loadTestOutputData(id: number | null = null): Promise<boolean> {
 
   if (data) {
     testOutputData.value = data
-    return true
+    return { id, status: true }
   }
 
-  return false
+  return { id, status: false }
 }
 
 async function showImportExportDialog(
@@ -857,11 +858,14 @@ async function processImportExport(
 }
 
 function onMountedCallback(id: number | null = null) {
-  loadTestOutputData(id).then((status) => {
-    if (status) {
+  loadTestOutputData(id).then((statusObj) => {
+    if (statusObj.status) {
       let isReadyToLoad = true
       if (!testOutputData.value?.testResultData) {
         isReadyToLoad = generateTestResults() || false
+        if (isReadyToLoad && id && testResultsOutputData.value) {
+          db.replaceTestOutputDataAndResultOverview(id, testResultsOutputData.value as TestOutputData)
+        }
       }
 
       if (isReadyToLoad) loadDataToChartDataState()

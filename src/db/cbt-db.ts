@@ -288,7 +288,7 @@ class CBTDatabase extends Dexie {
     viaJson: boolean = true,
   ) {
     const dataToSave = viaJson ? utilCloneJson(data) : data
-    return this.testOutputDatas.update(dataToSave.id, { testOutputData: dataToSave.testOutputData })
+    return this.testOutputDatas.put(dataToSave)
   }
 
   async getTestOutputDatas(ids: number[]) {
@@ -303,6 +303,15 @@ class CBTDatabase extends Dexie {
     await this.testResultOverviews.delete(id)
 
     return true
+  }
+
+  async replaceTestOutputDataAndResultOverview(id: number, data: TestOutputData) {
+    const dataToReplace = { id, testOutputData: data }
+    const status = await this.replaceTestOutputData(dataToReplace)
+    if (status) return this.replaceTestResultOverview({
+      id: dataToReplace.id,
+      ...data.testResultOverview,
+    })
   }
 }
 
