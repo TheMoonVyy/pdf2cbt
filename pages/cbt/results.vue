@@ -51,17 +51,16 @@
         :chart-colors="chartColors"
       />
     </div>
-    <template v-if="importExportDialogState.isVisible && importExportDialogState.data">
-      <CbtResultsImportExportDialog
-        :type="importExportDialogState.type"
-        :visibility="importExportDialogState.isVisible"
-        :data="importExportDialogState.data"
-        @processed="processImportExport"
-      />
-    </template>
+    <CbtResultsImportExportDialog
+      v-if="importExportDialogState.isVisible && importExportDialogState.data"
+      v-model:visibility="importExportDialogState.isVisible"
+      :type="importExportDialogState.type"
+      :data="importExportDialogState.data"
+      @processed="processImportExport"
+    />
     <CbtResultsAnswerKeyDialog
       v-if="showAnswerKeyMissingDialog && testOutputData?.testResultOverview"
-      :visibility="showAnswerKeyMissingDialog"
+      v-model:visibility="showAnswerKeyMissingDialog"
       :test-result-overview="testOutputData.testResultOverview"
       @upload="(data) => loadAnswerKeyToData(data.testAnswerKey)"
     />
