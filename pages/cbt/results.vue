@@ -867,6 +867,9 @@ function onMountedCallback(id: number | null = null) {
           db.replaceTestOutputDataAndResultOverview(id, testResultsOutputData.value as TestOutputData)
         }
       }
+      else {
+        testResultsOutputData.value = testOutputData.value as TestResultsOutputData
+      }
 
       if (isReadyToLoad) loadDataToChartDataState()
     }
