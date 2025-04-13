@@ -9,6 +9,7 @@ import type {
   TestLog,
   TestOutputData,
   TestResultOverviewDB,
+  TestResultsOutputData,
 } from '~/src/types'
 import { utilGetTestResultOverview, utilCreateError, utilCloneJson } from '~/utils/utils'
 
@@ -49,7 +50,7 @@ class CBTDatabase extends Dexie {
       currentTestState: 'id',
       testQuestionsData: 'queId',
       testLog: 'id',
-      testResultOverviews: 'id,testName,testStartTime,testFinishedTime,[testName+testStartTime+testFinishedTime]',
+      testResultOverviews: 'id,testName,testStartTime,testEndTime,[testName+testStartTime+testEndTime]',
       testOutputDatas: 'id++',
     })
   }
@@ -230,6 +231,15 @@ class CBTDatabase extends Dexie {
     return this.testResultOverviews.orderBy('id').last()
   }
 
+  async getTestResultOverviewByCompoundIndex(data: TestOutputData | TestResultsOutputData) {
+    const { testName, testStartTime, testEndTime } = data.testResultOverview
+
+    return this.testResultOverviews
+      .where('[testName+testStartTime+testEndTime]')
+      .equals([testName, testStartTime, testEndTime])
+      .first()
+  }
+
   /**
    * Adds test output data and its overview to the database.
    *
@@ -250,14 +260,8 @@ class CBTDatabase extends Dexie {
     viaJson: boolean = true,
   ) {
     testOutputData.testResultOverview = utilGetTestResultOverview(testOutputData)
-    const testOverview = testOutputData.testResultOverview
 
-    const { testName, testStartTime, testEndTime } = testOverview
-
-    const existing = await this.testResultOverviews
-      .where('[testName+testStartTime+testFinishedTime]')
-      .equals([testName, testStartTime, testEndTime])
-      .first()
+    const existing = await this.getTestResultOverviewByCompoundIndex(testOutputData)
 
     // if (existing) {
     //   throw utilCreateError(

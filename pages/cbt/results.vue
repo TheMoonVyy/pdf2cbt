@@ -63,10 +63,7 @@
       v-if="showAnswerKeyMissingDialog && testOutputData?.testResultOverview"
       :visibility="showAnswerKeyMissingDialog"
       :test-result-overview="testOutputData.testResultOverview"
-      @upload="(data) => {
-        testOutputData!.testAnswerKey = data.testAnswerKey
-        generateTestResults()
-      }"
+      @upload="(data) => loadAnswerKeyToData(data.testAnswerKey)"
     />
   </div>
 </template>
@@ -90,6 +87,7 @@ import type {
   QuestionStatus,
   TestResultData,
   TestResultOverviewDB,
+  TestAnswerKeyData,
 } from '~/src/types'
 
 import { db } from '~/src/db/cbt-db'
@@ -766,6 +764,25 @@ async function loadTestOutputData(id: number | null = null) {
   }
 
   return { id, status: false }
+}
+
+async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
+  if (answerKeyData && testOutputData.value) {
+    testOutputData.value.testAnswerKey = answerKeyData
+    testOutputData.value.testResultOverview = utilGetTestResultOverview(testOutputData.value)
+    const testResultOverviewDB = await db.getTestResultOverviewByCompoundIndex(testOutputData.value)
+    console.log(testResultOverviewDB)
+    if (testResultOverviewDB && testResultOverviewDB.id) {
+      const status = generateTestResults()
+      if (status) {
+        db.replaceTestOutputDataAndResultOverview(
+          testResultOverviewDB.id,
+          testResultsOutputData.value as TestOutputData,
+        )
+        loadDataToChartDataState()
+      }
+    }
+  }
 }
 
 async function showImportExportDialog(
