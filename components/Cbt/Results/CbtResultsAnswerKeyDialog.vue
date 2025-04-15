@@ -2,11 +2,7 @@
   <Dialog
     v-model:visible="visibility"
     header="Test Answer Key Data is Not Found!"
-    :modal="true"
     :draggable="false"
-    :closable="false"
-    :close-on-escape="false"
-    :block-scroll="true"
     pt:root:class="mx-auto"
     pt:title:class="p-0 mx-auto"
     pt:content:class="px-4"

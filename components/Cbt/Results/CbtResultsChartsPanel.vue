@@ -1,21 +1,21 @@
 <template>
   <div>
-    <div class="flex flex-col w-full gap-2 px-2 h-[84rem] sm:h-auto sm:px-4 sm:flex-row justify-evenly">
-      <div class="flex-1 min-w-0 h-[28rem]">
+    <div class="grid grid-cols-6 w-full gap-2 px-2 h-auto sm:px-4">
+      <div class="flex-1 mx-4 sm:mx-0 col-span-6 sm:col-span-3 md:col-span-2 h-[28rem]">
         <!-- Here goes the pie chart for the test result summary -->
         <v-chart
           :option="testResultSummaryChartOption"
           autoresize
         />
       </div>
-      <div class="flex-1 min-w-0 h-[28rem]">
+      <div class="flex-1 mx-4 sm:mx-0 col-span-6 sm:col-span-3 md:col-span-2 h-[28rem]">
         <!-- Here goes the pie chart for the time spent on each section -->
         <v-chart
           :option="testQuestionsSummaryChartOption"
           autoresize
         />
       </div>
-      <div class="flex-1 min-w-0 h-[28rem]">
+      <div class="flex-1 mx-4 sm:mx-0 col-span-6 sm:col-span-4 md:col-span-2 h-[28rem]">
         <!-- Here goes the pie chart for the time spent on each section -->
         <v-chart
           :option="timeSpentPerSectionChartOption"
@@ -24,7 +24,7 @@
       </div>
     </div>
     <div
-      class="px-2 md:px-5 h-[90dvh] mb-20"
+      class="px-2 md:px-5 h-[90dvh] col-span-6 mb-20"
     >
       <!-- Here goes the line chart for the test journey -->
       <v-chart

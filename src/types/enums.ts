@@ -20,3 +20,11 @@ export enum DataFileNames {
 export enum MiscConsts {
   BackupNoticeDismissedKey = 'backupNoticeDismissed',
 }
+
+export enum ResultsPagePanels {
+  Summary = 'summary',
+  SubjectsWise = 'subjectsWise',
+  SectionsWise = 'sectionsWise',
+  QuestionsWise = 'questionsWise',
+  MyTests = 'myTests',
+}

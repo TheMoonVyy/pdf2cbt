@@ -7,11 +7,11 @@ import type {
   TestSectionsData,
   TestQuestionData,
   TestLog,
-  TestOutputData,
   TestResultOverviewDB,
-  TestResultsOutputData,
+  TestResultOverviewsDBSortByOption,
+  TestResultCommonOutput,
 } from '~/src/types'
-import { utilGetTestResultOverview, utilCreateError, utilCloneJson } from '~/utils/utils'
+import { utilGetTestResultOverview, utilCloneJson } from '~/utils/utils'
 
 interface SettingsData {
   id: number
@@ -29,7 +29,7 @@ type TestSectionListItemDB = TestSectionListItem & {
 
 type TestOutputDataDB = {
   id?: number
-  testOutputData: TestOutputData
+  testOutputData: TestResultCommonOutput
 }
 
 class CBTDatabase extends Dexie {
@@ -231,13 +231,47 @@ class CBTDatabase extends Dexie {
     return this.testResultOverviews.orderBy('id').last()
   }
 
-  async getTestResultOverviewByCompoundIndex(data: TestOutputData | TestResultsOutputData) {
+  async getTestResultOverviewByCompoundIndex(data: TestResultCommonOutput) {
     const { testName, testStartTime, testEndTime } = data.testResultOverview
 
     return this.testResultOverviews
       .where('[testName+testStartTime+testEndTime]')
       .equals([testName, testStartTime, testEndTime])
       .first()
+  }
+
+  async getTestResultOverviews(sortBy: TestResultOverviewsDBSortByOption): Promise<TestResultOverviewDB[]> {
+    switch (sortBy) {
+      case 'addedAscending':
+        return this.testResultOverviews
+          .orderBy('id')
+          .toArray()
+      case 'addedDescending':
+        return this.testResultOverviews
+          .orderBy('id')
+          .reverse()
+          .toArray()
+      case 'startTimeAscending':
+        return this.testResultOverviews
+          .orderBy('testStartTime')
+          .toArray()
+      case 'startTimeDescending':
+        return this.testResultOverviews
+          .orderBy('testStartTime')
+          .reverse()
+          .toArray()
+      case 'endTimeAscending':
+        return this.testResultOverviews
+          .orderBy('testEndTime')
+          .toArray()
+      case 'endTimeDescending':
+        return this.testResultOverviews
+          .orderBy('testEndTime')
+          .reverse()
+          .toArray()
+      default:
+        return []
+    }
   }
 
   /**
@@ -256,19 +290,12 @@ class CBTDatabase extends Dexie {
    */
 
   async addTestOutputData(
-    testOutputData: TestOutputData,
+    testOutputData: TestResultCommonOutput,
     viaJson: boolean = true,
   ) {
     testOutputData.testResultOverview = utilGetTestResultOverview(testOutputData)
 
     const existing = await this.getTestResultOverviewByCompoundIndex(testOutputData)
-
-    // if (existing) {
-    //   throw utilCreateError(
-    //     'DuplicateTestResultError',
-    //     'Test result already exists with same name and timestamps',
-    //   )
-    // }
 
     if (existing) {
       return existing.id
@@ -281,6 +308,48 @@ class CBTDatabase extends Dexie {
       id: id!,
       ...dataToSave.testResultOverview,
     })
+  }
+
+  async bulkAddTestOutputData(
+    testOutputDatas: TestResultCommonOutput[],
+    viaJson: boolean = true,
+    checkAndSkipExisting: boolean = false,
+  ) {
+    const newTestOutputDatas: { testOutputData: TestResultCommonOutput }[] = []
+    const newTestResultOverviews: TestResultOverviewDB[] = []
+
+    testOutputDatas = (viaJson && !checkAndSkipExisting)
+      ? utilCloneJson(testOutputDatas)
+      : testOutputDatas
+
+    for (const testOutputData of testOutputDatas) {
+      testOutputData.testResultOverview = utilGetTestResultOverview(testOutputData)
+
+      if (checkAndSkipExisting) {
+        const existing = await this.getTestResultOverviewByCompoundIndex(testOutputData)
+        if (existing) continue
+      }
+
+      const dataToSave = (viaJson && checkAndSkipExisting)
+        ? utilCloneJson(testOutputData)
+        : testOutputData
+
+      newTestOutputDatas.push({ testOutputData: dataToSave })
+    }
+
+    const ids = await this.testOutputDatas.bulkAdd(newTestOutputDatas, { allKeys: true })
+
+    newTestOutputDatas.forEach((item, idx) => {
+      const id = ids?.[idx] ?? undefined
+      if (id !== undefined) {
+        newTestResultOverviews.push({
+          id,
+          ...item.testOutputData.testResultOverview,
+        })
+      }
+    })
+
+    return this.testResultOverviews.bulkPut(newTestResultOverviews, { allKeys: true })
   }
 
   async replaceTestResultOverview(data: TestResultOverviewDB, viaJson: boolean = true) {
@@ -301,16 +370,16 @@ class CBTDatabase extends Dexie {
   }
 
   async removeTestOutputDataAndResultOverview(id: number) {
-  // Attempt to delete the test output data
-    await this.testOutputDatas.delete(id)
-
     // Attempt to delete the test result overview
     await this.testResultOverviews.delete(id)
+
+    // Attempt to delete the test output data
+    await this.testOutputDatas.delete(id)
 
     return true
   }
 
-  async replaceTestOutputDataAndResultOverview(id: number, data: TestOutputData) {
+  async replaceTestOutputDataAndResultOverview(id: number, data: TestResultCommonOutput) {
     const dataToReplace = { id, testOutputData: data }
     const status = await this.replaceTestOutputData(dataToReplace)
     if (status) return this.replaceTestResultOverview({
