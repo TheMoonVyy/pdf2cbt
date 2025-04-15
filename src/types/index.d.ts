@@ -244,7 +244,7 @@ export type TestResultData = {
   [subject: keyof CropperOutputData]: TestResultDataSubject
 }
 
-type TestResultOverview = {
+export type TestResultOverview = {
   testName: string
   testStartTime: number // of Date.now()
   testEndTime: number // of Date.now()
@@ -259,9 +259,17 @@ type TestResultOverview = {
   }
 }
 
-type TestResultOverviewDB = TestResultOverview & {
+export type TestResultOverviewDB = TestResultOverview & {
   id: number // this will be the id of testOutputData as a binding link between both
 }
+
+export type TestResultOverviewsDBSortByOption =
+  | 'addedAscending'
+  | 'addedDescending'
+  | 'startTimeAscending'
+  | 'startTimeDescending'
+  | 'endTimeAscending'
+  | 'endTimeDescending'
 
 export interface TestOutputData {
   testConfig: {
@@ -276,7 +284,9 @@ export interface TestOutputData {
   testAnswerKey?: TestAnswerKeyData
 }
 
-type TestResultsOutputData = Omit<TestOutputData, 'testData' | 'testAnswerKey'>
+export type TestResultCommonOutput = TestResultsOutputData | TestOutputData
+
+export type TestResultsOutputData = Omit<TestOutputData, 'testData' | 'testAnswerKey'>
   & Required<Pick<TestOutputData, 'testResultData'>>
 
 export interface TestState {

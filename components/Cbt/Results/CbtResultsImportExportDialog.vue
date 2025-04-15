@@ -27,7 +27,7 @@
         <CbtResultsOverviewCard
           :test-result-overview="testOutputData.testResultOverview!"
           read-only
-          class="cursor-pointer select-none"
+          class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-[15rem] cursor-pointer select-none"
           :selected="selectedKeys.has(index)"
           @click="() => selectedKeys.has(index) ? selectedKeys.delete(index) : selectedKeys.add(index)"
         />
@@ -49,16 +49,16 @@ const visibility = defineModel<boolean>('visibility', {
 })
 
 const emit = defineEmits<{
-  processed: [type: 'Import' | 'Export', data: (TestOutputData | TestResultsOutputData)[]]
+  processed: [type: 'Import' | 'Export', data: (TestResultCommonOutput)[]]
 }>()
 
 const props = defineProps<{
   type: 'Import' | 'Export'
-  data: (TestOutputData | TestResultsOutputData)[]
+  data: (TestResultCommonOutput)[]
 }>()
 
 const processData = () => {
-  const processedData: (TestOutputData | TestResultsOutputData)[] = []
+  const processedData: (TestResultCommonOutput)[] = []
 
   for (const i of selectedKeys.value.values()) {
     processedData.push(props.data[i])

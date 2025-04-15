@@ -1,4 +1,4 @@
-import type { TestLog, TestOutputData, TestResultOverview } from '~/src/types'
+import type { TestLog, TestOutputData, TestResultOverview, TestResultsOutputData } from '~/src/types'
 
 export const utilFindTestLog = (
   logs: TestLog[],
@@ -67,7 +67,7 @@ export function utilCloneJson<T>(data: T, returnString: boolean = false): T | st
  */
 
 export const utilGetTestResultOverview = (
-  testOutputData: TestOutputData,
+  testOutputData: TestResultCommonOutput,
   fresh: boolean = false,
 ): TestResultOverview => {
   // first try to obtain testOutputData.testResultOverview, if it is invalid then create fresh one
