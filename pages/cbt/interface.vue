@@ -1032,7 +1032,7 @@ function generateTestOutputData() {
     testData[subject][section] = {}
 
     for (const [question, testQuestionData] of Object.entries(testSectionsData.value[section])) {
-      const { marks } = cropperSectionsData.value[section][question]
+      const { marks, pdfData } = cropperSectionsData.value[section][question]
       const {
         queId, secQueId,
         type, status,
@@ -1046,6 +1046,7 @@ function generateTestOutputData() {
         answer, timeSpent,
         totalOptions,
         marks,
+        pdfData,
       }
 
       if (type === 'nat') delete data.totalOptions
@@ -1056,7 +1057,12 @@ function generateTestOutputData() {
   }
 
   const testSummary = testSummaryDataTable.value
-  testOutputData = { testConfig, testData, testSummary, testLogs }
+  const outputData = { testConfig, testData, testSummary, testLogs }
+  const testResultOverview = utilGetTestResultOverview(outputData)
+  testOutputData = {
+    ...outputData,
+    testResultOverview,
+  }
 }
 
 const downloadTestData = () => {

@@ -77,6 +77,14 @@ export interface CurrentQuestionData {
 
 export type TestSectionKey = string | number
 
+export type CropperPdfCoords = {
+  page: number
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
+
 export interface CropperQuestionData {
   que: number
   type: QuestionType
@@ -86,13 +94,7 @@ export interface CropperQuestionData {
     pm?: number
     im: number
   }
-  pdfData: {
-    page: number
-    x1: number
-    y1: number
-    x2: number
-    y2: number
-  }[]
+  pdfData: CropperPdfCoords[]
 }
 
 export type CropperSectionsData = {
@@ -199,7 +201,7 @@ export type QuestionResult = {
 }
 
 export type TestOutputDataQuestion = Omit<TestQuestionData, 'section' | 'que'>
-  & Pick<CropperQuestionData, 'marks'>
+  & Pick<CropperQuestionData, 'marks' | 'pdfData'>
 
 export type TestOutputDataSection = {
   [question: number | string]: TestOutputDataQuestion
