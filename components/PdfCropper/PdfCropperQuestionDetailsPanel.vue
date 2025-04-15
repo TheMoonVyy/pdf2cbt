@@ -65,6 +65,7 @@
         </Select>
       </BaseFloatLabel>
       <BaseFloatLabel
+        v-show="currentQuestionData.questionType !== 'nat'"
         class="min-w-24 flex-1"
         label="Answer Options"
         label-id="answer_options"
