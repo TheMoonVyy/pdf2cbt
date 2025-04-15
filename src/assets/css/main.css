@@ -3,6 +3,18 @@
 
 @custom-variant dark (&:is(.dark *):not(.light *));
 
+@custom-variant has-data-selected {
+  &:has([data-selected="true"]) {
+    @slot;
+  }
+}
+
+@custom-variant has-data-unselected {
+  &:has([data-selected="false"]) {
+    @slot;
+  }
+}
+
 :root {
   --p-primary-50: var(--color-emerald-50);
   --p-primary-100: var(--color-emerald-100);
