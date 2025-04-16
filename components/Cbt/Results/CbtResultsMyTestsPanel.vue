@@ -28,6 +28,7 @@
       :key="testResultOverview.id"
     >
       <CbtResultsOverviewCard
+        :is-current-results-id="testResultOverview.id === currentResultsID"
         :test-result-overview="testResultOverview"
         class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-[15rem]"
         @menu-btn-click="(e: Event) => cardMenuToggleHandler(testResultOverview.id, e)"
@@ -73,6 +74,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   viewOrGenerateResultsClicked: [id: number, btnType: 'generate' | 'view']
 }>()
+
+const currentResultsID = useCbtResultsCurrentID()
 
 const menuPopOverElem = ref()
 

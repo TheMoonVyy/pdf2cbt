@@ -10,6 +10,7 @@ export enum CbtUseState {
   CurrentTestState = 'CBT-CurrentTestState',
   TestSectionsImgUrls = 'CBT-TestSectionsImgUrls',
   LastLoggedAnswer = 'CBT-LastLoggedAnswer',
+  CurrentResultsID = 'CBT-CurrentResultsID',
 }
 
 export enum DataFileNames {
