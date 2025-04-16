@@ -3,7 +3,7 @@
     v-model:visible="visibility"
     header="Test Answer Key Data is Not Found!"
     :draggable="false"
-    pt:root:class="mx-auto"
+    pt:root:class="mx-auto max-w-md"
     pt:title:class="p-0 mx-auto"
     pt:content:class="px-4"
     pt:header:class="gap-4"
@@ -16,14 +16,14 @@
       />
     </div>
     <h4 class="m-2">
-      You can load it now or if you don't have it then<br>go to
+      You can load it now or if you don't have it then go to
       <span class="text-green-500 font-bold underline">
         <NuxtLink to="/cbt/generate-answer-key">Generate Answer Key</NuxtLink>
       </span>
       page to generate one.
     </h4>
     <h4 class="m-2">
-      After that you can come back here<br>just to be greeted by this same message again and<br>
+      After that you can come back here just to be greeted by this same message again and
       then load the file to check results for your test!
     </h4>
     <div class="flex my-5 mx-auto justify-center">
