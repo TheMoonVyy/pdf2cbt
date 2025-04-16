@@ -38,8 +38,7 @@
 
 <script lang="ts" setup>
 import type {
-  TestOutputData,
-  TestResultsOutputData,
+  TestResultCommonOutput,
 } from '~/src/types'
 
 const selectedKeys = ref(new Set<number>())
