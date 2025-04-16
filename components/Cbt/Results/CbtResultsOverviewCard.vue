@@ -89,13 +89,14 @@
     <div v-if="!readOnly">
       <BaseButton
         class="px-6 py-1.5 disabled:cursor-not-allowed! disabled:pointer-events-auto!"
-        :label="isCurrentResultsId
-          ? 'Showing Results'
-          : (isResultsGenerated ? 'View Results' : 'Generate Results')"
-        :severity="isCurrentResultsId
-          ? 'warn'
-          : (isResultsGenerated ? 'help' : undefined)"
-        :disabled="isCurrentResultsId"
+
+        :label="isResultsGenerated
+          ? (isCurrentResultsId ? 'Showing Results' : 'View Results')
+          : 'Generate Results'"
+        :severity="isResultsGenerated
+          ? (isCurrentResultsId ? 'warn' : 'help')
+          : undefined"
+        :disabled="isCurrentResultsId && isResultsGenerated"
         rounded
         @click="viewResultsBtnClickHandler"
       />
