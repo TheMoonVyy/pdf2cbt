@@ -12,6 +12,60 @@ import type {
 } from '~/src/types'
 import { CbtUseState } from '~/src/types/enums'
 
+const sectionsPrevQuestion: Record<TestSectionKey, number> = {}
+
+const getTestDummyData = () => {
+  let questionNum = 1
+  const testSectionsdummyData: TestSectionsData = {}
+  const testQuestionsDummyData: Map<number, TestQuestionData> = new Map()
+
+  for (const subjectNum of utilRange(1, 4)) {
+    const subject = 'Subject' + subjectNum
+
+    for (const sectionNum of utilRange(1, 3)) {
+      const section: TestSectionKey = `${subject} Section ${sectionNum}`
+
+      testSectionsdummyData[section] = {}
+      const questionsRange = sectionNum === 1 ? 20 : 5
+      const recentQuestion = questionNum
+      sectionsPrevQuestion[section] = recentQuestion
+
+      for (const secQueId of utilRange(1, questionsRange + 1)) {
+        const questionData = {
+          secQueId,
+          queId: questionNum,
+          que: questionNum,
+          section,
+          type: sectionNum === 1 ? 'mcq' : 'nat',
+          answer: null,
+          status: 'notVisited',
+          timeSpent: 0,
+        } as TestQuestionData
+
+        testSectionsdummyData[section][questionNum] = questionData
+        testQuestionsDummyData.set(questionNum, questionData)
+        questionNum++
+      }
+
+      if (subjectNum === 1 && sectionNum === 1) {
+        testSectionsdummyData[section][recentQuestion].status = 'notAnswered'
+      }
+    }
+  }
+
+  const statusArray: QuestionStatus[] = ['answered', 'notAnswered', 'marked', 'markedAnswered']
+  const dummyStatusArray = [...statusArray, ...statusArray] // Duplicate the statuses
+
+  for (const status of dummyStatusArray) {
+    const randomQuestion = 1 + Math.max(1, Math.floor(Math.random() * 20)) // random from 2 to 20
+    testSectionsdummyData['Subject1 Section 1'][randomQuestion].status = status
+  }
+
+  return { testSectionsdummyData, testQuestionsDummyData }
+}
+
+const { testQuestionsDummyData, testSectionsdummyData } = getTestDummyData()
+
 export default () => {
   const testSectionsList = useState<TestSectionListItem[]>(
     CbtUseState.TestSectionsList,
@@ -63,60 +117,6 @@ export default () => {
       return dummyData
     },
   )
-
-  const sectionsPrevQuestion: Record<TestSectionKey, number> = {}
-
-  const getTestDummyData = () => {
-    let questionNum = 1
-    const testSectionsdummyData: TestSectionsData = {}
-    const testQuestionsDummyData: Map<number, TestQuestionData> = new Map()
-
-    for (const subjectNum of utilRange(1, 4)) {
-      const subject = 'Subject' + subjectNum
-
-      for (const sectionNum of utilRange(1, 3)) {
-        const section: TestSectionKey = `${subject} Section ${sectionNum}`
-
-        testSectionsdummyData[section] = {}
-        const questionsRange = sectionNum === 1 ? 20 : 5
-        const recentQuestion = questionNum
-        sectionsPrevQuestion[section] = recentQuestion
-
-        for (const secQueId of utilRange(1, questionsRange + 1)) {
-          const questionData = {
-            secQueId,
-            queId: questionNum,
-            que: questionNum,
-            section,
-            type: sectionNum === 1 ? 'mcq' : 'nat',
-            answer: null,
-            status: 'notVisited',
-            timeSpent: 0,
-          } as TestQuestionData
-
-          testSectionsdummyData[section][questionNum] = questionData
-          testQuestionsDummyData.set(questionNum, questionData)
-          questionNum++
-        }
-
-        if (subjectNum === 1 && sectionNum === 1) {
-          testSectionsdummyData[section][recentQuestion].status = 'notAnswered'
-        }
-      }
-    }
-
-    const statusArray: QuestionStatus[] = ['answered', 'notAnswered', 'marked', 'markedAnswered']
-    const dummyStatusArray = [...statusArray, ...statusArray] // Duplicate the statuses
-
-    for (const status of dummyStatusArray) {
-      const randomQuestion = 1 + Math.max(1, Math.floor(Math.random() * 20)) // random from 2 to 20
-      testSectionsdummyData['Subject1 Section 1'][randomQuestion].status = status
-    }
-
-    return { testSectionsdummyData, testQuestionsDummyData }
-  }
-
-  const { testQuestionsDummyData, testSectionsdummyData } = getTestDummyData()
 
   const testSectionsData = useState<TestSectionsData>(
     CbtUseState.TestSectionsData,
