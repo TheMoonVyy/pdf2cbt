@@ -11,7 +11,7 @@
     pt:content:class="p-0"
     pt:header:class="gap-4"
   >
-    <div class="flex mb-5">
+    <div class="flex">
       <BaseButton
         :label="dialogLabel"
         class="mx-auto"
@@ -19,6 +19,9 @@
         @click="processData()"
       />
     </div>
+    <h4 class="m-4 text-center font-bold">
+      Select the test(s) you want to {{ type.toLowerCase() }}
+    </h4>
     <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
       <div
         v-for="(testOutputData, index) in data"
