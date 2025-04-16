@@ -22,7 +22,16 @@
             class="text-xl text-center flex flex-col sm:flex-row justify-center items-center"
           >
             <span>Showing Results for&nbsp;</span>
-            <span class="font-bold">{{ testResultsOutputData?.testConfig.testName ?? 'Demo Mock Test' }}</span>
+            <ClientOnly>
+              <span class="font-bold">
+                {{
+                  testResultsOutputData?.testConfig.testName
+                    ?? (currentResultsID
+                      ? ''
+                      : 'Demo Mock Test')
+                }}
+              </span>
+            </ClientOnly>
           </h4>
           <!-- Title for My Tests PagePanel -->
           <div
@@ -174,6 +183,8 @@ const screenBreakpoints = useBreakpoints(
   { ssrWidth: 1024 },
 )
 
+const currentResultsID = useCbtResultsCurrentID()
+
 // for sidebar
 const mainContainerElem = templateRef('mainContainerElem')
 
@@ -232,7 +243,7 @@ const chartDataState = reactive<ChartDataState>({
   },
 })
 
-function loadDataToChartDataState() {
+function loadDataToChartDataState(id: number) {
   loadQuestionsSummaryToChartDataState()
 
   chartDataState.timeSpentPerSection = getTestTimebySection()
@@ -241,6 +252,7 @@ function loadDataToChartDataState() {
   loadTestResultToChartDataState()
   loadTestJourneyToChartDataState()
 
+  if (id) currentResultsID.value = id
   showChart.value = true
 }
 
@@ -829,7 +841,7 @@ async function myTestsPanelViewOrGenerateHandler(id: number, btnType: 'generate'
     if (btnType === 'view' && testOutputData.value?.testResultData) {
       testResultsOutputData.value = testOutputData.value as TestResultsOutputData
       currentPanelName.value = ResultsPagePanels.Summary
-      loadDataToChartDataState()
+      loadDataToChartDataState(id)
       return
     }
 
@@ -849,11 +861,18 @@ async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
     if (testResultOverviewDB && testResultOverviewDB.id) {
       const status = generateTestResults()
       if (status) {
-        db.replaceTestOutputDataAndResultOverview(
-          testResultOverviewDB.id,
-          testResultsOutputData.value as TestOutputData,
-        )
-        loadDataToChartDataState()
+        let id = 0
+        try {
+          await db.replaceTestOutputDataAndResultOverview(
+            testResultOverviewDB.id,
+            testResultsOutputData.value as TestOutputData,
+          )
+          id = testResultOverviewDB.id
+        }
+        catch (err) {
+          console.error('Error while replacing test data with generated results after loading answer key data', err)
+        }
+        loadDataToChartDataState(id)
       }
     }
   }
@@ -981,10 +1000,10 @@ function onMountedCallback(id: number | null = null) {
         testOutputData.value = null
       }
 
-      if (isReadyToLoad) loadDataToChartDataState()
+      if (isReadyToLoad) loadDataToChartDataState(statusObj.id || 0)
     }
   })
 }
 
-onMounted(() => onMountedCallback())
+onMounted(() => onMountedCallback(currentResultsID.value || null))
 </script>

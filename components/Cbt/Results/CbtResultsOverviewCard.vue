@@ -88,9 +88,14 @@
     <!-- Row 3 -->
     <div v-if="!readOnly">
       <BaseButton
-        class="px-6 py-1.5"
-        :label="isResultsGenerated ? 'View Results' : 'Generate Results'"
-        :severity="isResultsGenerated ? 'help' : undefined"
+        class="px-6 py-1.5 disabled:cursor-not-allowed! disabled:pointer-events-auto!"
+        :label="isCurrentResultsId
+          ? 'Showing Results'
+          : (isResultsGenerated ? 'View Results' : 'Generate Results')"
+        :severity="isCurrentResultsId
+          ? 'warn'
+          : (isResultsGenerated ? 'help' : undefined)"
+        :disabled="isCurrentResultsId"
         rounded
         @click="viewResultsBtnClickHandler"
       />
@@ -105,6 +110,7 @@ const props = defineProps<{
   testResultOverview: TestResultOverview | TestResultOverviewDB
   readOnly?: boolean
   selected?: boolean
+  isCurrentResultsId?: boolean
 }>()
 
 const emit = defineEmits<{

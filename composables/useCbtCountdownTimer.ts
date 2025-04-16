@@ -26,12 +26,12 @@ export default () => {
     }
   }
 
-  const stopCountdown = () => {
+  const stopCountdown = (isCalledForClearUp: boolean = false) => {
     if (timerState.timer) {
       clearInterval(timerState.timer)
       timerState.timer = null
     }
-    currentTestState.value.testStatus = 'finished'
+    if (!isCalledForClearUp) currentTestState.value.testStatus = 'finished'
   }
 
   const startCountdown = (durationInSeconds: number, intervalMs: number = 250) => {
