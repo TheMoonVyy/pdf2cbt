@@ -416,7 +416,8 @@
         class="flex flex-col m-auto gap-8"
       >
         <p class="text-xl font-semibold text-center">
-          Your test is submitted.
+          There was an error while trying to save the test data to your local database!
+          Please download the test data so you can import it on the Results page.
         </p>
         <BaseButton
           label="Download Test Data"
@@ -527,6 +528,7 @@ import type {
   TestSummaryDataTableRow,
 } from '~/src/types'
 import { db } from '~/src/db/cbt-db'
+import { CbtUseState } from '~/src/types/enums'
 
 definePageMeta({
   layout: false,
@@ -981,6 +983,14 @@ onLongPress(
   },
 )
 
+const pageCleanUpCallback = () => {
+  window.removeEventListener('beforeunload', onBeforeUnloadCallback)
+  document.documentElement.style.removeProperty('--main-layout-size')
+
+  removeNagivationGuard()
+  stopCountdown(true)
+}
+
 const testStatusWatchHandle = watch(
   () => currentTestState.value.testStatus,
   (newStatus) => {
@@ -996,8 +1006,6 @@ async function submitTest(isAuto: boolean) {
   submitState.isSubmitBtnClicked = false
   stopCountdown()
 
-  await nextTick() // to user see submitting msg
-
   const currentQueId = currentTestState.value.queId
   const currentQuestionData = testQuestionsData.value.get(currentQueId)!
 
@@ -1006,12 +1014,28 @@ async function submitTest(isAuto: boolean) {
 
   currentQuestionData.timeSpent += timeSpent
 
-  testLogger.logTestState('testFinished', isAuto ? 'Auto' : 'Manual')
+  try {
+    await testLogger.logTestState('testFinished', isAuto ? 'Auto' : 'Manual')
+  }
+  catch (err) {
+    console.error('Error while saving currentTestState when testFinished', err)
+  }
 
   generateTestOutputData()
-
-  submitState.isSubmitted = true
-  submitState.isSubmitting = false
+  try {
+    const id = await db.addTestOutputData(testOutputData!)
+    if (id) {
+      const currentResultsID = useCbtResultsCurrentID()
+      currentResultsID.value = id
+      pageCleanUpCallback()
+      await navigateTo('/cbt/results')
+    }
+  }
+  catch (err) {
+    console.error('Error while saving test data in db', err)
+    submitState.isSubmitted = true
+    submitState.isSubmitting = false
+  }
 }
 
 function generateTestOutputData() {
@@ -1058,7 +1082,7 @@ function generateTestOutputData() {
 
   const testSummary = testSummaryDataTable.value
   const outputData = { testConfig, testData, testSummary, testLogs }
-  const testResultOverview = utilGetTestResultOverview(outputData)
+  const testResultOverview = utilGetTestResultOverview(outputData, true)
   testOutputData = {
     ...outputData,
     testResultOverview,
@@ -1070,16 +1094,13 @@ const downloadTestData = () => {
   utilSaveFile('pdf2cbt_test_data.json', blob)
 }
 
-onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', onBeforeUnloadCallback)
-  document.documentElement.style.removeProperty('--main-layout-size')
-
-  removeNagivationGuard()
-  stopCountdown()
-})
+onBeforeUnmount(pageCleanUpCallback)
 
 onUnmounted(() => {
-  clearNuxtState()
+  clearNuxtState((key) => {
+    return Object.values(CbtUseState).includes(key as CbtUseState)
+      && key !== CbtUseState.CurrentResultsID
+  })
 })
 
 // onMounted(() => {
