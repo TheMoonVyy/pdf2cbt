@@ -4,11 +4,68 @@
       dark:bg-surface-900 dark:text-surface-0 border-t-2 border-surface-700"
   >
     <div
-      v-if="!fileUploaderState.isFileLoaded"
+      v-if="dbTestOutputDataState.isDataFound"
+      class="flex flex-col gap-5 py-15 items-center"
+    >
+      <h3 class="w-full text-lg mx-auto px-6 text-center max-w-[60rem]">
+        These test data entries were found in your local database<br>
+        that may not contain answer key data
+        (and therefore do not have results yet).
+        <br><br>
+        Select the one you want to generate answer key for,<br>
+        or you can load a ZIP/JSON file from PDF Cropper
+        or a JSON file from the CBT Interface/Results.
+      </h3>
+      <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
+        <div
+          v-for="(testResultOverview, index) in dbTestOutputDataState.testResultOverviews"
+          :key="index"
+        >
+          <CbtResultsOverviewCard
+            :test-result-overview="testResultOverview"
+            read-only
+            class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-[15rem] cursor-pointer select-none"
+            :selected="dbTestOutputDataState.selectedTestResultOverviewIndex === index"
+            @click="() => dbTestOutputDataState.selectedTestResultOverviewIndex = index"
+          />
+        </div>
+      </div>
+      <div class="flex gap-5 sm:gap-20 mt-5">
+        <BaseButton
+          label="Load Selected Test"
+          :disabled="dbTestOutputDataState.selectedTestResultOverviewIndex === null"
+          @click="loadDataFromDB()"
+        >
+          <template #icon>
+            <Icon
+              name="mdi:rocket-launch"
+              size="1.5rem"
+            />
+          </template>
+        </BaseButton>
+        <BaseButton
+          label="Upload file instead"
+          severity="warn"
+          @click="() => {
+            dbTestOutputDataState.testResultOverviews = []
+            dbTestOutputDataState.isDataFound = false
+          }"
+        >
+          <template #icon>
+            <Icon
+              name="prime:upload"
+              size="1.5rem"
+            />
+          </template>
+        </BaseButton>
+      </div>
+    </div>
+    <div
+      v-else-if="!fileUploaderState.isFileLoaded"
       class="flex flex-col gap-5 py-15"
     >
       <h3 class="text-xl text-center">
-        You can load either zip/json file of PDF Cropper or json file of CBT Interface
+        You can load either zip/json file of PDF Cropper or json file of CBT Interface/Results
       </h3>
       <CbtFileUpload
         v-model="fileUploaderState.selectedFileType"
@@ -279,7 +336,9 @@ import type {
   TestAnswerKeyData,
   QuestionAnswer,
   QuestionType,
+  TestResultOverviewDB,
 } from '~/src/types'
+import { db } from '~/src/db/cbt-db'
 import { DataFileNames } from '~/src/types/enums'
 
 type UnknownRecord = Record<string, unknown>
@@ -304,6 +363,23 @@ type SubjectsAnswerKeysData = {
   }
 }
 
+interface DBTestOutputDataState {
+  isDataFound: boolean
+  testResultOverviews: TestResultOverviewDB[]
+  selectedTestResultOverviewIndex: number | null
+  isDataFromDB: boolean
+}
+
+// if yes then load that and this below will be storing it
+const dbTestOutputDataState = shallowReactive<DBTestOutputDataState>({
+  isDataFound: false, // boolean to indicate if testResultOverviews without results generated is found or not
+  testResultOverviews: [], // list of testResultOverviews without results generated
+  selectedTestResultOverviewIndex: null,
+  isDataFromDB: false, // is data that is loaded (or being used) from db?
+})
+
+// if data to generate from is not found in db then
+// ask user to upload file of cropper/interface/results, this will store the fileUploader related data
 const fileUploaderState = shallowReactive({
   selectedFileType: 'json',
   isFileLoaded: false,
@@ -311,7 +387,7 @@ const fileUploaderState = shallowReactive({
 
 const tooltipContent = {
   questionsNumberingOrderType:
-    'Select how question numbers appear in the "Q. Num" Column:\n\n'
+    'Select how question numbers appear in the "Q. Num" Column. This is for visual use only (internally all questions are referred by original Q. Num):\n\n'
     + 'Original → Uses the numbering as provided in the data.\n\n'
     + 'Cumulative → Continues numbering across sections (e.g., 1-20, 21-40, 41-60).\n\n'
     + 'Section-wise → Resets numbering in each section (e.g., 1-20, 1-20, 1-20).',
@@ -319,7 +395,8 @@ const tooltipContent = {
   outputFileType:
     'zip → Merges Answer Key data into data.json file of uploaded zip file.\n\n'
     + 'json (merged) → Merges Answer Key data into the uploaded json file.\n\n'
-    + 'json (separate) → Separate Answer Key Data json file',
+    + 'json (separate) → Separate Answer Key Data json file\n\n\n'
+    + 'some may not be available depending on the input file/data',
 }
 
 // to store raw uploaded file data
@@ -394,8 +471,13 @@ const outputFileTypeOptions = computed(() => {
     }
   }
 
-  options.shift()
-  return options
+  if (dbTestOutputDataState.isDataFromDB) {
+    return [{ name: '.json', value: 'json-separate' }]
+  }
+  else {
+    options.shift()
+    return options
+  }
 })
 
 const currentPageData = computed(() => {
@@ -586,18 +668,37 @@ function loadFileData(
   if (jsonData.testData) {
     subjectsData = jsonData.testData as TestOutputDataSubjects
   }
+  else if (jsonData.testOutputDatas) {
+    const testOutputData = (jsonData.testOutputDatas as Record<string, unknown>[])[0]
+    if (testOutputData.testData) {
+      subjectsData = testOutputData.testData as TestOutputDataSubjects
+    }
+  }
   else {
     subjectsData = jsonData.pdfCropperData as CropperOutputData
   }
 
-  uploadedFileData.value = {
-    pdfFile,
-    jsonData,
+  if (subjectsData === null) {
+    console.error('Error: Uploaded file is not in valid format')
+    return
   }
 
   if (pdfFile && fileUploaderState.selectedFileType === 'zip') {
     generateOutputState.selectedFileType = 'zip'
   }
+
+  loadDataState(jsonData, pdfFile)
+}
+
+function loadDataState(
+  jsonData: UnknownRecord,
+  pdfFile: Uint8Array | null,
+) {
+  uploadedFileData.value = {
+    pdfFile,
+    jsonData,
+  }
+  if (!subjectsData) return
 
   for (const [subject, sectionData] of Object.entries(subjectsData)) {
     subjectsAnswerKeysData.value[subject] ??= {}
@@ -702,8 +803,59 @@ async function downloadOutput() {
   }
 }
 
+async function loadDataFromDB() {
+  const index = dbTestOutputDataState.selectedTestResultOverviewIndex
+  if (typeof index === 'number') {
+    const id = dbTestOutputDataState.testResultOverviews[index]?.id
+    if (id) {
+      try {
+        const data = await db.getTestOutputData(id)
+        const testOutputData = data?.testOutputData
+        if (testOutputData && 'testData' in testOutputData) {
+          subjectsData = testOutputData.testData
+        }
+        else if (testOutputData && 'testResultData' in testOutputData) {
+          subjectsData = testOutputData.testResultData
+        }
+        if (subjectsData) {
+          dbTestOutputDataState.isDataFound = false
+          dbTestOutputDataState.testResultOverviews = []
+          loadDataState({}, null)
+          dbTestOutputDataState.isDataFromDB = true
+          generateOutputState.selectedFileType = 'json-separate'
+        }
+      }
+      catch (err) {
+        console.error('Error while loading selected testOutputData from db', err)
+      }
+    }
+  }
+}
+
+async function checkForTestOutputDataInDB() {
+  try {
+    const testResultOverviews = await db.testResultOverviews.orderBy('id').reverse().limit(10).toArray()
+    const overviewsList: TestResultOverviewDB[] = []
+    for (const data of testResultOverviews) {
+      if (!data?.overview?.marksObtained) {
+        overviewsList.push(data)
+      }
+    }
+
+    if (overviewsList.length > 0) {
+      dbTestOutputDataState.testResultOverviews = overviewsList
+      dbTestOutputDataState.isDataFound = true
+    }
+  }
+  catch (err) {
+    console.error('Error while trying to load test result overviews from db:', err)
+  }
+}
+
 function showAnswerKeyMainBlock() {
   currentPageSectionName.value = sectionsState.sectionsList[0].name
   settingsState.isStarted = true
 }
+
+onBeforeMount(checkForTestOutputDataInDB)
 </script>
