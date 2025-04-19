@@ -87,7 +87,6 @@
       <div class="flex gap-5 mt-5">
         <BaseButton
           label="Rename"
-          size="small"
           @click="renameTestDialogHandler('rename')"
         >
           <template #icon>
@@ -98,7 +97,6 @@
           </template>
         </BaseButton>
         <BaseButton
-          type="button"
           label="Cancel"
           severity="danger"
           @click="showRenameTestDialogState.visibility = false"
