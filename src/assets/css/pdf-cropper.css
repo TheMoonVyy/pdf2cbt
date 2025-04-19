@@ -1,5 +1,3 @@
-@reference "./main.css";
-
 .pdf-cropper-img {
   width: var(--pdf-page-scaled-width);
   height: var(--pdf-page-scaled-height);
