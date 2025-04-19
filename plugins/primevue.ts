@@ -213,6 +213,9 @@ export default defineNuxtPlugin((nuxtApp) => {
         hue: 'w-[17px] h-[150px] top-[8px] start-[167px] absolute opacity-85 bg-[linear-gradient(0deg,red_0,#ff0_17%,#0f0_33%,#0ff_50%,#00f_67%,#f0f_83%,red)]',
         hueHandle: 'absolute top-[150px] start-0 w-[21px] -ms-[2px] -mt-[5px] h-[10px] border-2 opacity-85 border-surface-0 cursor-pointer',
       },
+      tab: {
+        root: 'p-active:dark:text-white! p-active:font-bold!',
+      },
     },
   })
   nuxtApp.vueApp.directive('tooltip', Tooltip)

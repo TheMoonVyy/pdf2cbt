@@ -130,9 +130,7 @@ const showButton = computed(() => {
 
 const testResultsSideNavData = [
   { name: ResultsPagePanels.Summary, icon: 'material-symbols:full-coverage-outline-rounded' },
-  // { name: ResultsPagePanels.SubjectsWise, icon: 'mdi:book-multiple-outline' },
-  // { name: ResultsPagePanels.SectionsWise, icon: 'mdi:book-open-page-variant' },
-  // { name: ResultsPagePanels.QuestionsWise, icon: 'mdi:clipboard-list-outline' },
+  { name: ResultsPagePanels.Detailed, icon: 'mdi:book-open-page-variant' },
 ]
 
 const select = (label: ResultsPagePanels) => {

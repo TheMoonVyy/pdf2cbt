@@ -35,7 +35,7 @@
         >
           <template #icon>
             <Icon
-              name="iconamoon:menu-kebab-vertical-bold"
+              name="my-icon:kebab"
               class="text-3xl"
             />
           </template>

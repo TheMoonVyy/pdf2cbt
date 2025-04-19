@@ -1,7 +1,10 @@
 export default (
   totalSeconds: number,
   format: 'mmm:ss' | 'hh:mm:ss' = 'hh:mm:ss',
+  round: boolean = false,
 ): string => {
+  if (round) totalSeconds = Math.round(totalSeconds)
+
   if (format === 'mmm:ss') {
     if (totalSeconds <= 0) return '00:00'
 
