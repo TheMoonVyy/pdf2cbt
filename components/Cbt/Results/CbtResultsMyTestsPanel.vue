@@ -18,7 +18,13 @@
         If you have a test data file (.json) from the
         <span class="text-green-500 font-bold underline">
           <NuxtLink to="/cbt/interface">CBT Interface</NuxtLink>
-        </span>,
+        </span>,<br>
+        <span class="hidden sm:inline">
+          or from "Export Test Data" button above then,
+        </span>
+        <span class="sm:hidden">
+          or from "Export Data" button above then,
+        </span>
         <br>you can import it here.<br><br>
         Otherwise, take a test first!
       </h2>
@@ -41,23 +47,71 @@
       @show="cardMenuState.isPopOverShown = true"
       @hide="cardMenuState.isPopOverShown = false"
     >
-      <div class="flex flex-col gap-2 text-nowrap">
+      <div class="flex flex-col gap-3 text-nowrap">
+        <BaseButton
+          label="Rename"
+          size="small"
+          @click="renameTestDialogHandler('show')"
+        >
+          <template #icon>
+            <Icon
+              name="mdi:rename-outline"
+              size="1.5rem"
+            />
+          </template>
+        </BaseButton>
         <BaseButton
           label="Delete"
           severity="danger"
           size="small"
-          variant="outlined"
           @click="deleteTestResultsDataFromDB()"
         >
           <template #icon>
             <Icon
               name="material-symbols:delete"
-              size="1.3rem"
+              size="1.4rem"
             />
           </template>
         </BaseButton>
       </div>
     </Popover>
+    <Dialog
+      v-model:visible="showRenameTestDialogState.visibility"
+      modal
+      header="Rename Test"
+    >
+      <InputText
+        v-model="showRenameTestDialogState.newName"
+        autocomplete="off"
+      />
+      <div class="flex gap-5 mt-5">
+        <BaseButton
+          label="Rename"
+          size="small"
+          @click="renameTestDialogHandler('rename')"
+        >
+          <template #icon>
+            <Icon
+              name="mdi:rename-outline"
+              size="1.5rem"
+            />
+          </template>
+        </BaseButton>
+        <BaseButton
+          type="button"
+          label="Cancel"
+          severity="danger"
+          @click="showRenameTestDialogState.visibility = false"
+        >
+          <template #icon>
+            <Icon
+              name="mdi:clear-circle"
+              size="1.5rem"
+            />
+          </template>
+        </BaseButton>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -73,6 +127,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   viewOrGenerateResultsClicked: [id: number, btnType: 'generate' | 'view']
+  currentTestRenamed: [newName: string]
 }>()
 
 const currentResultsID = useCbtResultsCurrentID()
@@ -83,7 +138,12 @@ const sortBy = shallowRef<TestResultOverviewsDBSortByOption>('addedDescending')
 
 const testResultOverviews = ref<TestResultOverviewDB[]>([])
 
-const isDataNotFoundInDB = shallowRef(false)
+const isDataNotFoundInDB = defineModel<boolean>('disableExportDataBtn')
+
+const showRenameTestDialogState = shallowReactive({
+  visibility: false,
+  newName: '',
+})
 
 // reactively update testResultOverviews from db if either of these changes:
 // testResultOverviews store in db (when something is added/removed/updated etc)
@@ -134,6 +194,32 @@ const deleteTestResultsDataFromDB = async () => {
     menuPopOverElem.value.hide()
     await db.removeTestOutputDataAndResultOverview(id)
     cardMenuState.currentID = 0
+  }
+}
+
+const renameTestDialogHandler = async (type: 'show' | 'rename') => {
+  const id = cardMenuState.currentID
+  if (!id) return
+
+  if (type === 'show') {
+    const result = testResultOverviews.value.find(item => item.id === id)
+    if (result) {
+      showRenameTestDialogState.newName = result.testName
+      showRenameTestDialogState.visibility = true
+    }
+    else {
+      console.error('No Test Result Overview found with id of: ' + id)
+    }
+  }
+  else if (type === 'rename') {
+    showRenameTestDialogState.visibility = false
+    const newName = showRenameTestDialogState.newName.trim()
+    if (newName) {
+      const renameStatus = await db.renameTestNameOfTestOutputData(id, newName)
+      if (renameStatus && currentResultsID.value === id) {
+        emit('currentTestRenamed', newName) // emit to results page that currently loaded results name has changed
+      }
+    }
   }
 }
 

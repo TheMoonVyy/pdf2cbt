@@ -387,6 +387,21 @@ class CBTDatabase extends Dexie {
       ...data.testResultOverview,
     })
   }
+
+  async renameTestNameOfTestOutputData(id: number, newName: string) {
+    const updateStatus = await this.testOutputDatas.update(id, {
+      'testOutputData.testConfig.testName': newName,
+      'testOutputData.testResultOverview.testName': newName,
+    })
+    if (updateStatus) {
+      return this.testResultOverviews.update(id, {
+        testName: newName,
+      })
+    }
+    else {
+      return updateStatus
+    }
+  }
 }
 
 export const db = new CBTDatabase()

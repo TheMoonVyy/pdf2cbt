@@ -87,8 +87,10 @@
         />
         <CbtResultsMyTestsPanel
           v-show="currentPanelName === ResultsPagePanels.MyTests"
+          v-model:disable-export-data-btn="disableExportDataBtn"
           :load-or-refresh-data-when="currentPanelName === ResultsPagePanels.MyTests"
           @view-or-generate-results-clicked="myTestsPanelViewOrGenerateHandler"
+          @current-test-renamed="renameCurrentTest"
         />
       </div>
     </div>
@@ -809,9 +811,6 @@ async function loadTestOutputData(
       if (testOverview?.id) {
         id = testOverview.id
       }
-      else if (!testOverview && id === null) {
-        disableExportDataBtn.value = true
-      }
     }
 
     if (id) {
@@ -990,6 +989,13 @@ async function processImportExport(
 
   importExportDialogState.isVisible = false
   importExportDialogState.data = null
+}
+
+const renameCurrentTest = (newName: string) => {
+  if (!testResultsOutputData.value) return
+
+  testResultsOutputData.value.testConfig.testName = newName
+  testResultsOutputData.value.testResultOverview.testName = newName
 }
 
 function onMountedCallback(id: number | null = null) {
