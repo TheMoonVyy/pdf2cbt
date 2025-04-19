@@ -24,8 +24,6 @@ export enum MiscConsts {
 
 export enum ResultsPagePanels {
   Summary = 'summary',
-  SubjectsWise = 'subjectsWise',
-  SectionsWise = 'sectionsWise',
-  QuestionsWise = 'questionsWise',
+  Detailed = 'detailed',
   MyTests = 'myTests',
 }
