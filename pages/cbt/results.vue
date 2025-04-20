@@ -83,7 +83,6 @@
           v-show="currentPanelName === ResultsPagePanels.Detailed"
           :wait-until="currentPanelName === ResultsPagePanels.Detailed"
           :test-result-data="testResultsOutputData.testResultData"
-          :test-result-questions-data="testResultQuestionsData"
         />
         <CbtResultsMyTestsPanel
           v-show="currentPanelName === ResultsPagePanels.MyTests"

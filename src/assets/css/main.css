@@ -84,3 +84,61 @@
 .start-1\/2\! {
   inset-inline-start: calc(1/2 * 100%) !important;
 }
+
+/* for cbt-results page's detailed component */
+@custom-variant result-correct {
+  tbody > tr[data-result="correct"] {
+    @slot;
+  }
+}
+@custom-variant result-incorrect {
+  tbody > tr[data-result="incorrect"] {
+    @slot;
+  }
+}
+@custom-variant result-partial {
+  tbody > tr[data-result="partial"] {
+    @slot;
+  }
+}
+@custom-variant result-dropped {
+  tbody > tr[data-result="dropped"] {
+    @slot;
+  }
+}
+@custom-variant result-bonus {
+  tbody > tr[data-result="bonus"] {
+    @slot;
+  }
+}
+@custom-variant result-not-answered {
+  tbody > tr[data-result="notAnswered"] {
+    @slot;
+  }
+}
+
+@custom-variant status-answered {
+  tbody > tr[data-status="answered"] {
+    @slot;
+  }
+}
+@custom-variant status-not-answered {
+  tbody > tr[data-status="notAnswered"] {
+    @slot;
+  }
+}
+@custom-variant status-not-visited {
+  tbody > tr[data-status="notVisited"] {
+    @slot;
+  }
+}
+@custom-variant status-marked {
+  tbody > tr[data-status="marked"] {
+    @slot;
+  }
+}
+@custom-variant status-marked-answered {
+  tbody > tr[data-status="markedAnswered"] {
+    @slot;
+  }
+}

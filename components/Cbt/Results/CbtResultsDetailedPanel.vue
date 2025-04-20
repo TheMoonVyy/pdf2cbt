@@ -13,7 +13,7 @@
         pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
       >
         <Tab
-          v-if="Object.keys(testOverallStats ?? {}).length > 0"
+          v-if="Object.keys(testOverallStats ?? {}).length > 1"
           :value="TEST_OVERALL"
         >
           Test Overall
@@ -28,7 +28,7 @@
       </TabList>
     </Tabs>
     <Tabs
-      :value="selectedKeys[currentSelectedState.subject]"
+      :value="selectedTabs[currentSelectedState.subject]"
       :class="{
         'sticky top-0 z-20': settings.freezeMode === 'sectionHeader',
       }"
@@ -42,7 +42,7 @@
         <Tab
           v-if="
             (currentSelectedState.subject !== TEST_OVERALL)
-              && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 0"
+              && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1"
           :value="currentSelectedState.subject + OVERALL"
         >
           {{ currentSelectedState.subject + ' Overall' }}
@@ -60,17 +60,112 @@
       v-show="currentSelectedState.subject !== TEST_OVERALL && !currentSelectedState.section.endsWith(OVERALL)"
       class="px-4 pt-3 pb-15 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
     >
-      <table class="table-auto border w-full border-collapse text-lg pb-5">
+      <table
+        class="table-auto border w-full border-collapse text-lg pb-5"
+        :class="highlightModeClasses + questionStatusFilterClasses + questionResultFilterClasses"
+      >
         <thead class="bg-gray-300 dark:bg-gray-800">
           <tr
             class="border-b divide-x text-center"
           >
-            <th
-              v-for="(colName, index) in questionTableRow"
-              :key="index"
-              class="px-2 py-1.5"
-            >
-              {{ colName }}
+            <th class="px-2 py-1.5 flex gap-1 items-center justify-center">
+              Q. No.
+              <BaseButton
+                variant="text"
+                rounded
+                raised
+                @click="(e) => popOverQNumOrderElem.show(e)"
+              >
+                <template #icon>
+                  <Icon
+                    name="mdi:format-list-numbers"
+                    class="text-2xl"
+                  />
+                </template>
+              </BaseButton>
+            </th>
+            <th class="px-2 py-1.5">
+              Marks
+            </th>
+            <th class="px-2 py-1.5 flex gap-1 items-center justify-center">
+              <BaseButton
+                variant="text"
+                rounded
+                raised
+                @click="() => {
+                  if (settings.highlightMode === 'result') settings.highlightMode = null
+                  else settings.highlightMode = 'result'
+                }"
+              >
+                <template #icon>
+                  <Icon
+                    name="mdi:color"
+                    class="text-2xl"
+                    :class="settings.highlightMode === 'result' ? 'text-green-400' : 'text-gray-300'"
+                  />
+                </template>
+              </BaseButton>
+              Result
+              <BaseButton
+                variant="text"
+                severity="warn"
+                rounded
+                raised
+                @click="(e) => showFilterPopOverMenu('result', e)"
+              >
+                <template #icon>
+                  <Icon
+                    name="mdi:filter-menu-outline"
+                    class="text-2xl"
+                  />
+                </template>
+              </BaseButton>
+            </th>
+            <th class="px-2 py-1.5">
+              Type
+            </th>
+            <th class="px-2 py-1.5">
+              Your Answer
+            </th>
+            <th class="px-2 py-1.5">
+              Correct Answer
+            </th>
+            <th class="px-2 py-1.5">
+              Time Spent
+            </th>
+            <th class="px-2 py-1.5 flex gap-1 items-center justify-center">
+              <BaseButton
+                variant="text"
+                rounded
+                raised
+                @click="() => {
+                  if (settings.highlightMode === 'status') settings.highlightMode = null
+                  else settings.highlightMode = 'status'
+                }"
+              >
+                <template #icon>
+                  <Icon
+                    name="mdi:color"
+                    class="text-2xl"
+                    :class="settings.highlightMode === 'status' ? 'text-green-400' : 'text-gray-300'"
+                  />
+                </template>
+              </BaseButton>
+              Status
+              <BaseButton
+                variant="text"
+                severity="warn"
+                rounded
+                raised
+                @click="(e) => showFilterPopOverMenu('status', e)"
+              >
+                <template #icon>
+                  <Icon
+                    name="mdi:filter-menu-outline"
+                    class="text-2xl"
+                  />
+                </template>
+              </BaseButton>
             </th>
           </tr>
         </thead>
@@ -84,9 +179,20 @@
             v-for="question in Object.values(sectionData)"
             :key="question.queId"
             class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            :data-status="question.status"
+            :data-result="question.result.status"
           >
-            <td>{{ question.queId }}</td>
-            <td>{{ question.result.marks }}</td>
+            <td>
+              {{ questionsNumberingOrder === 'oriQueId'
+                ? question.oriQueId
+                : (
+                  questionsNumberingOrder === 'secQueId'
+                    ? question.secQueId
+                    : question.queId
+                )
+              }}
+            </td>
+            <td>{{ utilMarksWithSign(question.result.marks) }}</td>
             <td>{{ formattedResultStatus[question.result.status] }}</td>
             <td>{{ question.type.toUpperCase() }}</td>
             <td>{{ utilStringifyAnswer(question.answer, ', ', true) }}</td>
@@ -340,9 +446,12 @@
         </tfoot>
       </table>
     </div>
-    <h3 class="text-lg font-semibold text-center mt-5">
-      Marks Summary
-    </h3>
+    <div class="flex flex-row gap-3 justify-center mt-5 items-center">
+      <h3 class="text-lg font-semibold text-center">
+        Marks Summary
+      </h3>
+      <IconWithTooltip :tooltip-content="tooltipContent.marksSummary" />
+    </div>
     <div
       class="px-4 pt-3 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
     >
@@ -404,7 +513,7 @@
               v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
               :key="status"
             >
-              <td>{{ stats.marks[status].marks }}</td>
+              <td>{{ status === 'total' ? stats.marks[status].marks : utilMarksWithSign(stats.marks[status].marks) }}</td>
               <td v-if="status === 'total'">
                 {{ stats.marks[status].maxMarks }}
               </td>
@@ -436,7 +545,7 @@
               v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
               :key="status"
             >
-              <td>{{ stats.marks[status].marks }}</td>
+              <td>{{ status === 'total' ? stats.marks[status].marks : utilMarksWithSign(stats.marks[status].marks) }}</td>
               <td v-if="status === 'total'">
                 {{ stats.marks[status].maxMarks }}
               </td>
@@ -466,6 +575,83 @@
         </tfoot>
       </table>
     </div>
+    <Popover
+      ref="popOverStatusFilterElem"
+      pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+    >
+      <div
+        v-for="(label, key) in formattedQuestionStatus"
+        :key="key"
+        class="mb-2 flex items-center"
+      >
+        <input
+          :id="'status-' + key + 'filter-label'"
+          v-model="questionFiltersState.status"
+          type="checkbox"
+          name="question-status-filter"
+          :value="key"
+          class="accent-green-400 w-4 h-4 mr-2"
+        >
+        <label
+          :for="'status-' + key + 'filter-label'"
+          class="cursor-pointer"
+        >
+          {{ label }}
+        </label>
+      </div>
+    </Popover>
+    <Popover
+      ref="popOverResultFilterElem"
+      pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+    >
+      <div
+        v-for="(label, key) in formattedResultStatus"
+        :key="key"
+        class="mb-2 flex items-center"
+      >
+        <input
+          :id="'result-' + key + 'filter-label'"
+          v-model="questionFiltersState.result"
+          type="checkbox"
+          name="question-result-filter"
+          :value="key"
+          class="accent-green-400 w-4 h-4 mr-2 cursor-pointer"
+        >
+        <label
+          :for="'result-' + key + 'filter-label'"
+          class="cursor-pointer"
+        >
+          {{ label }}
+        </label>
+      </div>
+    </Popover>
+    <Popover
+      ref="popOverQNumOrderElem"
+      pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+    >
+      <div class="flex flex-col gap-2">
+        <div
+          v-for="(order, index) in questionsNumberingOrderList"
+          :key="index"
+          class="flex items-center gap-2"
+        >
+          <input
+            :id="'que-order-' + order.value"
+            v-model="questionsNumberingOrder"
+            type="radio"
+            name="que-num-order"
+            :value="order.value"
+            class="accent-green-400 w-4 h-4 cursor-pointer"
+          >
+          <label
+            :for="'que-order-' + order.value"
+            class="cursor-pointer"
+          >
+            {{ order.label }}
+          </label>
+        </div>
+      </div>
+    </Popover>
   </div>
 </template>
 
@@ -473,7 +659,15 @@
 import Tabs from '~/src/volt/Tabs.vue'
 import TabList from '~/src/volt/TabList.vue'
 import Tab from '~/src/volt/Tab.vue'
-import type { QuestionResult, QuestionStatus, TestResultData, TestResultDataQuestion, TestResultDataSection, TestResultDataSubject } from '~/src/types'
+import Popover from '~/src/volt/Popover.vue'
+import type {
+  QuestionResult,
+  QuestionStatus,
+  TestResultData,
+  TestResultDataSection,
+  TestResultDataSubject,
+  TestResultDataQuestion,
+} from '~/src/types'
 
 interface SelectedSectionKeys {
   [subject: string]: string
@@ -541,9 +735,34 @@ interface SubjectsOverallStats {
   [subject: string]: Stats
 }
 
+interface StyleClasses {
+  highlight: {
+    status: string
+    result: string
+  }
+  filters: {
+    status: {
+      answered: string
+      markedAnswered: string
+      notAnswered: string
+      marked: string
+      notVisited: string
+    }
+    result: {
+      correct: string
+      partial: string
+      incorrect: string
+      notAnswered: string
+      bonus: string
+      dropped: string
+    }
+  }
+}
+
 interface Settings {
   freezeMode: null
     | 'sectionHeader'
+  highlightMode: 'status' | 'result' | null
 }
 
 const formattedQuestionStatus = {
@@ -563,6 +782,48 @@ const formattedResultStatus = {
   dropped: 'Dropped',
 }
 
+const styleClasses: StyleClasses = {
+  highlight: {
+    status: `status-answered:bg-green-400/20 status-not-answered:bg-red-500/20
+      status-marked:bg-purple-500/20 status-marked-answered:bg-sky-500/20
+      status-not-visited:bg-gray-500/20`,
+    result: `result-correct:bg-green-400/20 result-incorrect:bg-red-500/20
+      result-partial:bg-yellow-600/30 result-dropped:bg-purple-500/20
+      result-bonus:bg-sky-500/20 result-not-answered:bg-gray-500/20`,
+  },
+  filters: {
+    status: {
+      answered: 'status-answered:hidden',
+      markedAnswered: 'status-marked-answered:hidden',
+      notAnswered: 'status-not-answered:hidden',
+      marked: 'status-marked:hidden',
+      notVisited: 'status-not-visited:hidden',
+    },
+    result: {
+      correct: 'result-correct:hidden',
+      partial: 'result-partial:hidden',
+      incorrect: 'result-incorrect:hidden',
+      notAnswered: 'result-not-answered:hidden',
+      bonus: 'result-bonus:hidden',
+      dropped: 'result-dropped:hidden',
+    },
+  },
+}
+
+const tooltipContent = {
+  marksSummary: 'In this, Avg. Time Spent is time spent per mark ("Time Spent" divided by "marks").\n\n'
+    + 'if marks is zero then avg time spent will be equal to "Time Spent".',
+}
+
+const questionsNumberingOrderList: {
+  label: string
+  value: keyof TestResultDataQuestion
+}[] = [
+  { label: 'Original order', value: 'oriQueId' },
+  { label: 'Section-wise order', value: 'secQueId' },
+  { label: 'Cumulative order', value: 'queId' },
+]
+
 const statusList = ['answered', 'markedAnswered', 'notAnswered', 'marked', 'notVisited']
 const statusListWithTotal = statusList.concat('total')
 const resultStatusList = ['correct', 'partial', 'incorrect', 'notAnswered', 'bonus', 'dropped']
@@ -572,16 +833,26 @@ const marksStatusListWithTotal = marksStatusList.concat('total')
 const TEST_OVERALL = 'Test Overall'
 const OVERALL = ' Overall'
 
-const questionTableRow = ['Q. No.', 'Marks', 'Result', 'Type', 'Your Answer', 'Correct Answer', 'Time Spent', 'Status']
-const settings = reactive<Settings>({
+const settings = shallowReactive<Settings>({
   freezeMode: 'sectionHeader',
+  highlightMode: 'result',
 })
 
 const { testResultData, waitUntil } = defineProps<{
   testResultData: TestResultData
-  testResultQuestionsData: Record<number | string, TestResultDataQuestion>
   waitUntil: boolean
 }>()
+
+const popOverStatusFilterElem = ref()
+const popOverResultFilterElem = ref()
+const popOverQNumOrderElem = ref()
+
+const questionFiltersState = reactive({
+  status: [...statusList],
+  result: [...resultStatusList],
+})
+
+const questionsNumberingOrder = shallowRef<keyof TestResultDataQuestion>('oriQueId')
 
 const currentSelectedState = shallowReactive({
   subject: TEST_OVERALL,
@@ -605,7 +876,7 @@ const currentResultsID = useCbtResultsCurrentID()
 
 // to store previously selected sections,
 // so that this can be used to get user back to the section they left for that particular subject
-const selectedKeys = ref<SelectedSectionKeys>({})
+const selectedTabs = ref<SelectedSectionKeys>({})
 
 // flag being used to indicate whether to load/reload for v-if of this component root
 const loadDataNow = shallowRef(false)
@@ -641,17 +912,57 @@ const currentSectionTabs = computed(() => {
   return []
 })
 
+const highlightModeClasses = computed(() => {
+  if (settings.highlightMode === 'status') {
+    return ' ' + styleClasses.highlight.status + ' '
+  }
+  else if (settings.highlightMode === 'result') {
+    return ' ' + styleClasses.highlight.result + ' '
+  }
+  else {
+    return ' '
+  }
+})
+
+const questionStatusFilterClasses = computed(() => {
+  const itemsToHide = statusList.filter(
+    s => !questionFiltersState.status.includes(s),
+  )
+
+  let classString = ' '
+  for (const item of itemsToHide as (keyof StyleClasses['filters']['status'])[]) {
+    classString += styleClasses.filters.status[item] + ' '
+  }
+  return classString
+})
+
+const questionResultFilterClasses = computed(() => {
+  const itemsToHide = resultStatusList.filter(
+    s => !questionFiltersState.result.includes(s),
+  )
+
+  let classString = ' '
+  for (const item of itemsToHide as (keyof StyleClasses['filters']['result'])[]) {
+    classString += styleClasses.filters.result[item] + ' '
+  }
+
+  return classString
+})
+
 async function reloadTestData(isFirst: boolean = false) {
   loadDataNow.value = false
   if (!isFirst) {
     await nextTick()
   }
 
+  currentSelectedState.subject = TEST_OVERALL
+  currentSelectedState.section = ''
+
   const newSelectedKeys: SelectedSectionKeys = {}
   for (const subject of Object.keys(testResultData)) {
     newSelectedKeys[subject] = subject + OVERALL
   }
-  selectedKeys.value = newSelectedKeys
+  selectedTabs.value = newSelectedKeys
 
   const newTestStats: TestStats = {}
   const newSubjectsOverallStats: SubjectsOverallStats = {}
@@ -670,7 +981,7 @@ async function reloadTestData(isFirst: boolean = false) {
     }
     else {
       const firstSection = Object.keys(newTestStats[subject])[0]
-      selectedKeys.value[subject] = firstSection
+      selectedTabs.value[subject] = firstSection
     }
   }
 
@@ -683,7 +994,7 @@ async function reloadTestData(isFirst: boolean = false) {
   else {
     const firstSubject = Object.keys(newSubjectsOverallStats)[0]
     currentSelectedState.subject = firstSubject
-    currentSelectedState.section = selectedKeys.value[firstSubject]
+    currentSelectedState.section = selectedTabs.value[firstSubject]
   }
 
   currentLoadState.loadedResultsID = currentResultsID.value
@@ -904,7 +1215,7 @@ function getStatsTotal(statsArray: Stats[]): Stats {
 }
 
 const sectionChangeHandler = (section: string) => {
-  selectedKeys.value[currentSelectedState.subject] = section
+  selectedTabs.value[currentSelectedState.subject] = section
   currentSelectedState.section = section
 }
 
@@ -914,7 +1225,7 @@ const subjectChangeHandler = (subject: string) => {
     currentSelectedState.section = ''
   }
   else {
-    currentSelectedState.section = selectedKeys.value[subject] ?? subject + OVERALL
+    currentSelectedState.section = selectedTabs.value[subject] ?? subject + OVERALL
   }
 }
 
@@ -927,6 +1238,11 @@ const reduceTestResultDataToListOfSectionData = (data: TestResultData): TestResu
   }
 
   return allSectionsData
+}
+
+const showFilterPopOverMenu = (type: 'status' | 'result', e: Event) => {
+  if (type === 'result') popOverResultFilterElem.value?.show(e)
+  else popOverStatusFilterElem.value?.show(e)
 }
 </script>
 
