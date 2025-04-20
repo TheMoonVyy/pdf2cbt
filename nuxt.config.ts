@@ -42,7 +42,7 @@ export default defineNuxtConfig({
   },
   echarts: {
     charts: ['LineChart', 'PieChart'],
-    components: ['LegendComponent', 'TitleComponent', 'GridComponent', 'TooltipComponent', 'GraphicComponent'],
+    components: ['LegendComponent', 'TitleComponent', 'GridComponent', 'TooltipComponent', 'GraphicComponent', 'DataZoomSliderComponent', 'DataZoomInsideComponent'],
   },
   eslint: {
     config: {

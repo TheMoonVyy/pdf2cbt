@@ -206,7 +206,7 @@ const chartTemplates: ChartTemplates = {
       type: 'value',
     },
     grid: {
-      top: 85,
+      top: 75,
       containLabel: true,
     },
     series: [
@@ -436,7 +436,7 @@ const chartOptions = {
     xAxis: {
       name: 'Time (in minutes)',
       nameLocation: 'middle',
-      nameGap: 50,
+      nameGap: 25,
       nameTextStyle: {
         align: 'center',
         fontSize: 23,
@@ -449,7 +449,7 @@ const chartOptions = {
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 15,
-        formatter: (val: number) => Number.isInteger(val) ? val.toString() : val.toFixed(1),
+        formatter: (val: number) => Math.round(val * 1000) / 1000,
       },
       axisTick: {
         show: true,
@@ -542,8 +542,22 @@ const timeSpentPerSectionChartOption = computed(() => {
   }
 })
 
+const pointerTypeIsTouch = shallowRef(false)
+
 const testJourneyChartOption = computed<ECOption>(() => {
   chartTooltipCache.testJourney.clear() // clear tooltip cache
+
+  const dataZoom = [
+    { type: 'slider', xAxisIndex: [0], filterMode: 'filter' },
+    { type: 'slider', yAxisIndex: [0], filterMode: 'empty' },
+    { type: 'inside', xAxisIndex: [0], filterMode: 'filter' },
+    { type: 'inside', yAxisIndex: [0], filterMode: 'empty' },
+  ]
+
+  if (pointerTypeIsTouch.value) {
+    dataZoom.pop()
+    dataZoom.pop()
+  }
 
   return {
     ...chartOptions.testJourney,
@@ -551,6 +565,7 @@ const testJourneyChartOption = computed<ECOption>(() => {
       ...chartOptions.testJourney.legend,
       data: chartDataState.testJourney.legendData,
     },
+    dataZoom: dataZoom,
     yAxis: {
       ...chartOptions.testJourney.yAxis,
       data: chartDataState.testJourney.yAxisData,
@@ -558,6 +573,12 @@ const testJourneyChartOption = computed<ECOption>(() => {
     series: chartDataState.testJourney.series,
   } as ECOption
 })
+
+const detectTouchDevice = () => {
+  pointerTypeIsTouch.value = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+}
+
+onMounted(() => detectTouchDevice())
 </script>
 
 <style>
