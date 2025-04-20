@@ -57,69 +57,109 @@
       </TabList>
     </Tabs>
     <div
-      v-show="currentSelectedState.subject !== TEST_OVERALL && !currentSelectedState.section.endsWith(OVERALL)"
-      class="px-4 pt-3 pb-15 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
+      class="px-4 pt-3 pb-15 flex flex-col gap-5 text-nowrap max-w-full overflow-auto"
     >
+      <div
+        v-show="currentSelectedState.subject === TEST_OVERALL || currentSelectedState.section.endsWith(OVERALL)"
+        class="flex flex-row gap-3 justify-center mt-3 items-center"
+      >
+        <h3 class="text-lg font-semibold text-center">
+          {{ showOverallQuestions ? 'Hide' : 'Show' }}&nbsp;
+          {{
+            currentSelectedState.subject === TEST_OVERALL
+              ? 'Test Questions'
+              : currentSelectedState.subject + ' Questions'
+          }}
+        </h3>
+        <BaseButton
+          class="w-7! h-7! p-0!"
+          rounded
+          raised
+          @click="showOverallQuestions = !showOverallQuestions"
+        >
+          <template #icon>
+            <Icon
+              :name="showOverallQuestions ? 'mdi:expand-less' : 'mdi:expand-more'"
+              class="text-2xl"
+            />
+          </template>
+        </BaseButton>
+      </div>
       <table
+        v-show="showOverallQuestions || (currentSelectedState.subject !== TEST_OVERALL && !currentSelectedState.section.endsWith(OVERALL))"
         class="table-auto border w-full border-collapse text-lg pb-5"
         :class="highlightModeClasses + questionStatusFilterClasses + questionResultFilterClasses"
       >
         <thead class="bg-gray-300 dark:bg-gray-800">
-          <tr
-            class="border-b divide-x text-center"
-          >
-            <th class="px-2 py-1.5 flex gap-1 items-center justify-center">
-              Q. No.
-              <BaseButton
-                variant="text"
-                rounded
-                raised
-                @click="(e) => popOverQNumOrderElem.show(e)"
-              >
-                <template #icon>
-                  <Icon
-                    name="mdi:format-list-numbers"
-                    class="text-2xl"
-                  />
-                </template>
-              </BaseButton>
+          <tr class="border-b divide-x text-center">
+            <th
+              v-show="currentSelectedState.subject === TEST_OVERALL"
+              class="px-2 py-1.5"
+            >
+              Subject
+            </th>
+            <th
+              v-show="currentSelectedState.subject === TEST_OVERALL || currentSelectedState.section.endsWith(OVERALL)"
+              class="px-2 py-1.5"
+            >
+              Section
+            </th>
+            <th class="px-2 py-1.5">
+              <div class="flex items-center gap-1 justify-center">
+                Q. No.
+                <BaseButton
+                  variant="text"
+                  rounded
+                  raised
+                  @click="(e) => popOverQNumOrderElem.show(e)"
+                >
+                  <template #icon>
+                    <Icon
+                      name="mdi:format-list-numbers"
+                      class="text-2xl"
+                    />
+                  </template>
+                </BaseButton>
+              </div>
             </th>
             <th class="px-2 py-1.5">
               Marks
             </th>
-            <th class="px-2 py-1.5 flex gap-1 items-center justify-center">
-              <BaseButton
-                variant="text"
-                rounded
-                raised
-                @click="() => {
-                  if (settings.highlightMode === 'result') settings.highlightMode = null
-                  else settings.highlightMode = 'result'
-                }"
-              >
-                <template #icon>
-                  <Icon
-                    name="mdi:color"
-                    class="text-2xl"
-                    :class="settings.highlightMode === 'result' ? 'text-green-400' : 'text-gray-300'"
-                  />
-                </template>
-              </BaseButton>
-              Result
-              <BaseButton
-                variant="text"
-                severity="warn"
-                rounded
-                raised
-                @click="(e) => showFilterPopOverMenu('result', e)"
-              >
-                <template #icon>
-                  <Icon
-                    name="mdi:filter-menu-outline"
-                    class="text-2xl"
-                  />
-                </template>
-              </BaseButton>
+            <th class="px-2 py-1.5">
+              <div class="flex items-center gap-1 justify-center">
+                <BaseButton
+                  variant="text"
+                  rounded
+                  raised
+                  @click="() => {
+                    if (settings.highlightMode === 'result') settings.highlightMode = null
+                    else settings.highlightMode = 'result'
+                  }"
+                >
+                  <template #icon>
+                    <Icon
+                      name="mdi:color"
+                      class="text-2xl"
+                      :class="settings.highlightMode === 'result' ? 'text-green-400' : 'text-gray-300'"
+                    />
+                  </template>
+                </BaseButton>
+                Result
+                <BaseButton
+                  variant="text"
+                  severity="warn"
+                  rounded
+                  raised
+                  @click="(e) => showFilterPopOverMenu('result', e)"
+                >
+                  <template #icon>
+                    <Icon
+                      name="mdi:filter-menu-outline"
+                      class="text-2xl"
+                    />
+                  </template>
+                </BaseButton>
+              </div>
             </th>
             <th class="px-2 py-1.5">
               Type
@@ -131,57 +171,115 @@
               Correct Answer
             </th>
             <th class="px-2 py-1.5">
-              Time Spent
+              <div class="flex items-center gap-1 justify-center">
+                Time Spent
+                <BaseButton
+                  variant="text"
+                  :title="settings.sortByTimeSpent === null
+                    ? 'sort by descending order'
+                    : (
+                      settings.sortByTimeSpent === 'descending'
+                        ? 'sort by ascending order'
+                        : 'remove sort'
+                    )"
+                  rounded
+                  raised
+                  @click="() => {
+                    const sortByTimeSpent = settings.sortByTimeSpent
+                    switch (sortByTimeSpent) {
+                    case null:
+                      settings.sortByTimeSpent = 'descending'
+                      break;
+                    case 'descending':
+                      settings.sortByTimeSpent = 'ascending'
+                      break;
+                    default:
+                      settings.sortByTimeSpent = null
+                      break;
+                    }
+                  }"
+                >
+                  <template #icon>
+                    <Icon
+                      :name="settings.sortByTimeSpent === 'ascending'
+                        ? 'mdi:sort-clock-ascending-outline'
+                        : 'mdi:sort-clock-descending-outline'"
+                      class="text-2xl"
+                      :class="settings.sortByTimeSpent === null
+                        ? 'text-gray-300'
+                        : 'text-green-400'"
+                    />
+                  </template>
+                </BaseButton>
+              </div>
             </th>
-            <th class="px-2 py-1.5 flex gap-1 items-center justify-center">
-              <BaseButton
-                variant="text"
-                rounded
-                raised
-                @click="() => {
-                  if (settings.highlightMode === 'status') settings.highlightMode = null
-                  else settings.highlightMode = 'status'
-                }"
-              >
-                <template #icon>
-                  <Icon
-                    name="mdi:color"
-                    class="text-2xl"
-                    :class="settings.highlightMode === 'status' ? 'text-green-400' : 'text-gray-300'"
-                  />
-                </template>
-              </BaseButton>
-              Status
-              <BaseButton
-                variant="text"
-                severity="warn"
-                rounded
-                raised
-                @click="(e) => showFilterPopOverMenu('status', e)"
-              >
-                <template #icon>
-                  <Icon
-                    name="mdi:filter-menu-outline"
-                    class="text-2xl"
-                  />
-                </template>
-              </BaseButton>
+            <th class="px-2 py-1.5">
+              <div class="flex items-center gap-1 justify-center">
+                <BaseButton
+                  variant="text"
+                  rounded
+                  raised
+                  @click="() => {
+                    if (settings.highlightMode === 'status') settings.highlightMode = null
+                    else settings.highlightMode = 'status'
+                  }"
+                >
+                  <template #icon>
+                    <Icon
+                      name="mdi:color"
+                      class="text-2xl"
+                      :class="settings.highlightMode === 'status' ? 'text-green-400' : 'text-gray-300'"
+                    />
+                  </template>
+                </BaseButton>
+                Status
+                <BaseButton
+                  variant="text"
+                  severity="warn"
+                  rounded
+                  raised
+                  @click="(e) => showFilterPopOverMenu('status', e)"
+                >
+                  <template #icon>
+                    <Icon
+                      name="mdi:filter-menu-outline"
+                      class="text-2xl"
+                    />
+                  </template>
+                </BaseButton>
+              </div>
             </th>
           </tr>
         </thead>
         <tbody
-          v-for="(sectionData, sectionName) in reduceTestResultDataToListOfSectionData(testResultData)"
-          v-show="currentSelectedState.section === sectionName"
-          :key="sectionName"
-          class="dark:divide-gray-500 divide-y"
+          class="dark:divide-gray-500"
         >
           <tr
-            v-for="question in Object.values(sectionData)"
+            v-for="question in testQuestions"
+            v-show="question.section === currentSelectedState.section
+              || (
+                showOverallQuestions
+                && (
+                  currentSelectedState.subject === TEST_OVERALL
+                  || (currentSelectedState.section.endsWith(OVERALL) && question.subject === currentSelectedState.subject)
+                )
+              )"
             :key="question.queId"
-            class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            class="divide-x border-t dark:border-gray-500 dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
             :data-status="question.status"
             :data-result="question.result.status"
           >
+            <td v-show="currentSelectedState.subject === TEST_OVERALL">
+              {{ question.subject }}
+            </td>
+            <td
+              v-show="currentSelectedState.subject === TEST_OVERALL
+                || (
+                  currentSelectedState.subject === question.subject && currentSelectedState.section.endsWith(OVERALL)
+                )"
+            >
+              {{ question.section }}
+            </td>
             <td>
               {{ questionsNumberingOrder === 'oriQueId'
                 ? question.oriQueId
@@ -453,7 +551,7 @@
       <IconWithTooltip :tooltip-content="tooltipContent.marksSummary" />
     </div>
     <div
-      class="px-4 pt-3 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
+      class="px-4 pt-3 flex pb-20 flex-col gap-10 text-nowrap max-w-full overflow-auto"
     >
       <table class="table-auto border w-full border-collapse text-lg text-center">
         <thead class="bg-gray-300 dark:bg-gray-800">
@@ -665,7 +763,6 @@ import type {
   QuestionStatus,
   TestResultData,
   TestResultDataSection,
-  TestResultDataSubject,
   TestResultDataQuestion,
 } from '~/src/types'
 
@@ -763,6 +860,7 @@ interface Settings {
   freezeMode: null
     | 'sectionHeader'
   highlightMode: 'status' | 'result' | null
+  sortByTimeSpent: 'ascending' | 'descending' | null
 }
 
 const formattedQuestionStatus = {
@@ -836,12 +934,16 @@ const OVERALL = ' Overall'
 const settings = shallowReactive<Settings>({
   freezeMode: 'sectionHeader',
   highlightMode: 'result',
+  sortByTimeSpent: null,
 })
 
-const { testResultData, waitUntil } = defineProps<{
+const { testResultData, waitUntil, testResultQuestionsData } = defineProps<{
   testResultData: TestResultData
+  testResultQuestionsData: Record<string | number, TestResultDataQuestion>
   waitUntil: boolean
 }>()
+
+const showOverallQuestions = shallowRef(false)
 
 const popOverStatusFilterElem = ref()
 const popOverResultFilterElem = ref()
@@ -902,6 +1004,20 @@ watch(
   },
   { deep: false },
 )
+
+const testQuestions = computed(() => {
+  const questions = Object.values(testResultQuestionsData)
+
+  if (settings.sortByTimeSpent === 'ascending') {
+    return questions.toSorted((a, b) => a.timeSpent - b.timeSpent)
+  }
+  else if (settings.sortByTimeSpent === 'descending') {
+    return questions.toSorted((a, b) => b.timeSpent - a.timeSpent)
+  }
+  else {
+    return questions
+  }
+})
 
 // computed "sections" tablist for current subject
 const currentSectionTabs = computed(() => {
@@ -1227,17 +1343,6 @@ const subjectChangeHandler = (subject: string) => {
   else {
     currentSelectedState.section = selectedTabs.value[subject] ?? subject + OVERALL
   }
-}
-
-const reduceTestResultDataToListOfSectionData = (data: TestResultData): TestResultDataSubject => {
-  const allSectionsData: TestResultDataSubject = {}
-  for (const subjectData of Object.values(data)) {
-    for (const [section, sectionData] of Object.entries(subjectData)) {
-      allSectionsData[section] = sectionData
-    }
-  }
-
-  return allSectionsData
 }
 
 const showFilterPopOverMenu = (type: 'status' | 'result', e: Event) => {
