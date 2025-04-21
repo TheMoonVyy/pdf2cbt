@@ -158,10 +158,7 @@ interface ChartDataState {
     yAxisData: string[]
     series: LineSeriesOption[]
   }
-  testResultSummary: {
-    data: PieSeriesOption['data']
-    centerText: string
-  }
+  testResultSummary: PieSeriesOption['data']
 }
 
 type TestResultSeriesDataItem = {
@@ -260,10 +257,7 @@ const chartDataState = reactive<ChartDataState>({
     yAxisData: [],
     series: [],
   },
-  testResultSummary: {
-    data: [],
-    centerText: '',
-  },
+  testResultSummary: [],
 })
 
 // stores data for score card component
@@ -364,16 +358,7 @@ function loadTestResultToChartDataState() {
     }
   }
 
-  const {
-    accuracy,
-    marksObtained,
-    maxMarks,
-  } = testResultsOutputData.value.testResultOverview.overview
-
-  const centerText = `${marksObtained}/${maxMarks}\n${accuracy}%`
-
-  chartDataState.testResultSummary.data = seriesData
-  chartDataState.testResultSummary.centerText = centerText
+  chartDataState.testResultSummary = seriesData
 }
 
 function loadQuestionsSummaryToChartDataState() {

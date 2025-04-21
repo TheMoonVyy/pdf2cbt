@@ -53,7 +53,6 @@ import type {
 interface ChartTemplates {
   pie: ECOption
   line: ECOption
-  donut: ECOption
 }
 
 interface ChartDataState {
@@ -64,10 +63,7 @@ interface ChartDataState {
     yAxisData: string[]
     series: LineSeriesOption[]
   }
-  testResultSummary: {
-    data: PieSeriesOption['data']
-    centerText: string
-  }
+  testResultSummary: PieSeriesOption['data']
 }
 
 type TestResultSeriesDataItem = {
@@ -100,62 +96,58 @@ const {
   }
 }>()
 
-const pieChartTemplate: ECOption = {
-  backgroundColor: 'transparent',
-  title: {
-    text: 'Title',
-    left: 'center',
-    top: 0,
-  },
-  legend: {
-    top: 35,
-    textStyle: {
-      color: '#ffffff',
-      fontSize: 13,
-    },
-    type: 'scroll',
-    pageIconColor: '#00FF00',
-    pageIconInactiveColor: '#eeeeee',
-    pageTextStyle: {
-      color: '#00cc00',
-    },
-  },
-  tooltip: {
-    backgroundColor: '#1E1E1E',
-    textStyle: {
-      color: '#fff',
-    },
-    formatter: (params: TopLevelFormatterParams) => {
-      const p = params as CallbackDataParams
-      return `<p><strong>${p.seriesName}</strong></p>${p.marker} ${p.name}: ${p.value} (${p.percent}%)`
-    },
-  },
-  series: [
-    {
-      name: 'SeriesName',
-      type: 'pie',
-      radius: '60%',
-      center: ['50%', '50%'],
-      data: [],
-      label: {
-        show: true,
-        color: '#fff',
-        fontSize: 15,
-        formatter: '{c} ({d}%)',
-      },
-      labelLine: {
-        lineStyle: {
-          width: 2,
-        },
-      },
-    },
-  ],
-}
-
 // base template for charts
 const chartTemplates: ChartTemplates = {
   pie: {
-    ...pieChartTemplate,
+    backgroundColor: 'transparent',
+    title: {
+      text: 'Title',
+      left: 'center',
+      top: 0,
+    },
+    legend: {
+      top: 35,
+      textStyle: {
+        color: '#ffffff',
+        fontSize: 13,
+      },
+      type: 'scroll',
+      pageIconColor: '#00FF00',
+      pageIconInactiveColor: '#eeeeee',
+      pageTextStyle: {
+        color: '#00cc00',
+      },
+    },
+    tooltip: {
+      backgroundColor: '#1E1E1E',
+      textStyle: {
+        color: '#fff',
+      },
+      formatter: (params: TopLevelFormatterParams) => {
+        const p = params as CallbackDataParams
+        return `<p><strong>${p.seriesName}</strong></p>${p.marker} ${p.name}: ${p.value} (${p.percent}%)`
+      },
+    },
+    series: [
+      {
+        name: 'SeriesName',
+        type: 'pie',
+        radius: '60%',
+        center: ['50%', '50%'],
+        data: [],
+        label: {
+          show: true,
+          color: '#fff',
+          fontSize: 15,
+          formatter: '{c} ({d}%)',
+        },
+        labelLine: {
+          lineStyle: {
+            width: 2,
+          },
+        },
+      },
+    ],
   },
 
   line: {
@@ -218,14 +210,6 @@ const chartTemplates: ChartTemplates = {
       },
     ],
   },
-
-  donut: {
-    ...pieChartTemplate,
-    series: [{
-      ...(pieChartTemplate.series as PieSeriesOption[])[0],
-      radius: ['30%', '60%'],
-    }],
-  },
 }
 
 const chartTooltipCache = {
@@ -273,13 +257,13 @@ const chartOptions = {
   },
 
   testResultSummary: {
-    ...chartTemplates.donut,
+    ...chartTemplates.pie,
     title: {
-      ...chartTemplates.donut.title,
+      ...chartTemplates.pie.title,
       text: 'Test Result Summary',
     },
     tooltip: {
-      ...chartTemplates.donut.tooltip,
+      ...chartTemplates.pie.tooltip,
       formatter: (params: TopLevelFormatterParams) => {
         const p = params as CallbackDataParams
         const data = p.data as TestResultSeriesDataItem
@@ -326,7 +310,7 @@ const chartOptions = {
       },
     },
     series: [{
-      ...(chartTemplates.donut.series as PieSeriesOption[])[0],
+      ...(chartTemplates.pie.series as PieSeriesOption[])[0],
       name: 'Test Result',
     }],
   },
@@ -503,21 +487,7 @@ const testResultSummaryChartOption = computed(() => {
     ...chartOptions.testResultSummary,
     series: [{
       ...chartOptions.testResultSummary.series[0],
-      data: chartDataState.testResultSummary.data,
-    }],
-    graphic: [{
-      type: 'text',
-      left: 'center',
-      top: 'middle',
-      style: {
-        text: chartDataState.testResultSummary.centerText,
-        fill: '#ffffff',
-        fontSize: 24,
-        fontWeight: 'bold',
-        lineHeight: 34,
-        textAlign: 'center',
-        textVerticalAlign: 'middle',
-      },
+      data: chartDataState.testResultSummary,
     }],
   }
 })
