@@ -70,6 +70,18 @@
             </div>
           </div>
         </div>
+        <ClientOnly>
+          <div
+            v-show="currentPanelName === ResultsPagePanels.Summary"
+            class="flex flex-row justify-center flex-wrap gap-5 py-2 sm:py-5 px-4"
+          >
+            <CbtResultsScoreCard
+              v-for="(scoreCardData, idx) in scoreCardsData"
+              :key="idx"
+              :score-card-data="scoreCardData"
+            />
+          </div>
+        </ClientOnly>
         <CbtResultsChartsPanel
           v-if="showChart"
           v-show="currentPanelName === ResultsPagePanels.Summary"
@@ -131,6 +143,8 @@ import type {
   TestResultOverviewDB,
   TestAnswerKeyData,
   TestResultCommonOutput,
+  ScoreCardData,
+  TestResultDataSection,
 } from '~/src/types'
 
 import { db } from '~/src/db/cbt-db'
@@ -252,6 +266,9 @@ const chartDataState = reactive<ChartDataState>({
   },
 })
 
+// stores data for score card component
+const scoreCardsData = shallowRef<ScoreCardData[]>([])
+
 function loadDataToChartDataState(id: number) {
   loadQuestionsSummaryToChartDataState()
 
@@ -260,6 +277,7 @@ function loadDataToChartDataState(id: number) {
 
   loadTestResultToChartDataState()
   loadTestJourneyToChartDataState()
+  loadScoreCardsData()
 
   if (id) currentResultsID.value = id
   showChart.value = true
@@ -586,6 +604,138 @@ function loadTestJourneyToChartDataState() {
   chartDataState.testJourney.series = series
   chartDataState.testJourney.yAxisData = ['0'].concat(questionQueIds)
   chartDataState.testJourney.legendData = legendData
+}
+
+function loadScoreCardsData() {
+  const subjectsData = testResultsOutputData.value?.testResultData
+  const testDuration = testResultsOutputData.value?.testConfig.testDurationInSeconds
+
+  if (!subjectsData || !testDuration) return
+
+  const scoreCards: Record<string, Record<string, ScoreCardData>> = {}
+  for (const [subject, subjectData] of Object.entries(subjectsData)) {
+    scoreCards[subject] ??= {}
+
+    for (const [section, sectionData] of Object.entries(subjectData)) {
+      scoreCards[subject][section] = getSectionScoreCardData(sectionData, section)
+    }
+  }
+
+  const newScoreCardDatas: ScoreCardData[] = []
+
+  // if there are more than 1 subject,
+  // then make subject-wise scorecard
+  if (Object.keys(scoreCards).length > 1) {
+    for (const [subject, sectionsCards] of Object.entries(scoreCards)) {
+      // get sum only if there are more than 1 section in this subject
+      if (Object.keys(sectionsCards).length > 1) {
+        const subjectCard = getSumOfScoreCardData(Object.values(sectionsCards), subject)
+        newScoreCardDatas.push(subjectCard)
+      }
+      else {
+        const subjectCard = Object.values(sectionsCards)[0]
+        if (subjectCard) {
+          subjectCard.title = subject
+          newScoreCardDatas.push(subjectCard)
+        }
+      }
+    }
+  }
+  else {
+    // one subject found, then make section-wise score card
+    const sectioncards = Object.values(scoreCards)[0]
+    if (sectioncards) {
+      for (const card of Object.values(sectioncards)) {
+        newScoreCardDatas.push(card)
+      }
+    }
+  }
+
+  const testOverallCard = getSumOfScoreCardData(newScoreCardDatas, 'Test Overall')
+  testOverallCard.testDuration = testDuration
+
+  newScoreCardDatas.unshift(testOverallCard)
+
+  scoreCardsData.value = newScoreCardDatas
+}
+
+function getEmptyScoreCardData(): ScoreCardData {
+  return {
+    title: '',
+    marks: {
+      correct: 0,
+      partial: 0,
+      incorrect: 0,
+      bonus: 0,
+      dropped: 0,
+    },
+    marksObtained: 0,
+    maxMarks: 0,
+    accuracy: {
+      count: 0,
+      denominator: 0,
+    },
+    timeSpent: 0,
+    testDuration: 0,
+    questionsAttempted: 0,
+    totalQuestions: 0,
+  }
+}
+
+function getSectionScoreCardData(sectionData: TestResultDataSection, title: string = '') {
+  const cardData = getEmptyScoreCardData()
+
+  for (const question of Object.values(sectionData)) {
+    const { status, result, marks, timeSpent, totalOptions } = question
+
+    cardData.timeSpent += timeSpent
+    cardData.maxMarks += marks.cm
+    if (status !== 'notVisited') cardData.questionsAttempted++
+    cardData.totalQuestions++
+
+    if (result.status !== 'notAnswered') {
+      cardData.marks[result.status] += result.marks
+      if (result.status === 'correct') {
+        cardData.accuracy.count++
+        cardData.accuracy.denominator++
+      }
+      else if (result.status === 'partial') {
+        const partialCount = result.marks / (marks.pm || 1)
+        cardData.accuracy.count += partialCount / (totalOptions || 4)
+        cardData.accuracy.denominator++
+      }
+      else if (result.status === 'incorrect') {
+        cardData.accuracy.denominator++
+      }
+    }
+  }
+
+  cardData.marksObtained = Object.values(cardData.marks).reduce((a, b) => a + b, 0)
+  cardData.title = title
+
+  return cardData
+}
+
+function getSumOfScoreCardData(cardDatas: ScoreCardData[], title: string = '') {
+  const cardSum = getEmptyScoreCardData()
+
+  for (const data of cardDatas) {
+    cardSum.maxMarks += data.maxMarks
+    cardSum.marksObtained += data.marksObtained
+    cardSum.questionsAttempted += data.questionsAttempted
+    cardSum.totalQuestions += data.totalQuestions
+    cardSum.timeSpent += data.timeSpent
+    cardSum.accuracy.count += data.accuracy.count
+    cardSum.accuracy.denominator += data.accuracy.denominator
+
+    for (const k of Object.keys(cardSum.marks) as (keyof ScoreCardData['marks'])[]) {
+      cardSum.marks[k] += data.marks[k]
+    }
+  }
+
+  if (title) cardSum.title = title
+
+  return cardSum
 }
 
 // returns the testTime (countdown seconds) of testFinished log from the test logs.

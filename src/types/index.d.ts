@@ -317,3 +317,19 @@ export interface MiscSettings {
   imgWidth: number
   imgHeight: number
 }
+
+export type ScoreCardData = Required<Omit<TestResultOverview['overview'], 'accuracy' | 'testDuration'>> & {
+  title: string
+  marks: {
+    correct: number
+    partial: number
+    incorrect: number
+    bonus: number
+    dropped: number
+  }
+  accuracy: {
+    count: number
+    denominator: number
+  }
+  testDuration?: number
+}
