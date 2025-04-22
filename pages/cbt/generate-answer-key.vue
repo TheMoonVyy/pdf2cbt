@@ -173,7 +173,7 @@
               <td class="p-2 sm:p-3 md:px-4">
                 {{
                   currentPageData.firstQuestionNum === null
-                    ? parseInt(quesNum + '')
+                    ? quesNum
                     : currentPageData.firstQuestionNum + index + 1
                 }}
               </td>
@@ -187,12 +187,16 @@
                   size="large"
                   :trim="true"
                   :max-length="100"
+                  :input-text-id="INPUT_ID_PREFIX + index"
                   pt:root:class="text-center p-2! outline-1 focus:outline-solid! outline-green-500!"
                   @update:model-value="parseInputAnswer(
                     subjectsAnswerKeysData[currentPageData.subject][currentPageData.section][quesNum],
                     questionData.type,
                     questionData.type !== 'nat' ? getQuestionOptions(questionData) : null,
                   )"
+                  @keydown.up="(e: Event) => keyDownHandler('arrowUp', e, index)"
+                  @keydown.down="(e: Event) => keyDownHandler('arrowDown', e, index)"
+                  @keydown.enter="(e: Event) => keyDownHandler('enter', e, index)"
                 />
               </td>
               <td
@@ -399,6 +403,8 @@ const tooltipContent = {
     + 'some may not be available depending on the input file/data',
 }
 
+const INPUT_ID_PREFIX = 'input-answer-q-'
+
 // to store raw uploaded file data
 const uploadedFileData = shallowRef<FileUploaderData | null>(null)
 
@@ -515,10 +521,12 @@ const currentPageData = computed(() => {
     }
   }
 
+  const sectionTotalQuestions = Object.keys(subjectsData[subjectName][currentSectionName]).length
   return {
     subject: subjectName,
     section: currentSectionName,
     firstQuestionNum,
+    sectionTotalQuestions,
   }
 })
 
@@ -849,6 +857,26 @@ async function checkForTestOutputDataInDB() {
   }
   catch (err) {
     console.error('Error while trying to load test result overviews from db:', err)
+  }
+}
+
+const keyDownHandler = (type: 'arrowUp' | 'arrowDown' | 'enter', e: Event, queIndex: number) => {
+  if (!currentPageData.value) return
+
+  const lastQuestionIndex = currentPageData.value.sectionTotalQuestions - 1
+  if (lastQuestionIndex < 0) return
+
+  if (type === 'arrowUp') {
+    if (queIndex === 0) return
+
+    const prev = document.getElementById(INPUT_ID_PREFIX + (queIndex - 1))
+    if (prev && typeof prev.focus === 'function') prev.focus()
+    return
+  }
+  else if ((type === 'arrowDown' || type === 'enter') && queIndex < lastQuestionIndex) {
+    const next = document.getElementById(INPUT_ID_PREFIX + (queIndex + 1))
+    if (next && typeof next.focus === 'function') next.focus()
+    return
   }
 }
 

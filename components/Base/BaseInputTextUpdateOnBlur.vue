@@ -1,12 +1,14 @@
 <template>
   <template v-if="trimText">
     <InputText
+      :id="inputTextId"
       v-model.trim="localValue"
       @blur="onBlurHandler()"
     />
   </template>
   <template v-else>
     <InputText
+      :id="inputTextId"
       v-model="localValue"
       @blur="onBlurHandler()"
     />
@@ -20,6 +22,7 @@ const originalValue = defineModel<string>({ required: true })
 
 const props = defineProps<{
   trim?: boolean
+  inputTextId: string
 }>()
 
 const trimText = props.trim ? true : false
