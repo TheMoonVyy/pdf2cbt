@@ -1075,9 +1075,16 @@ async function reloadTestData(isFirst: boolean = false) {
   currentSelectedState.section = ''
 
   const newSelectedKeys: SelectedSectionKeys = {}
-  for (const subject of Object.keys(testResultData)) {
-    newSelectedKeys[subject] = subject + OVERALL
+  for (const [subject, subjectData] of Object.entries(testResultData)) {
+    const sectionNames = Object.keys(subjectData)
+    if (sectionNames.length > 1) {
+      newSelectedKeys[subject] = subject + OVERALL
+    }
+    else {
+      newSelectedKeys[subject] = sectionNames[0]
+    }
   }
+
   selectedTabs.value = newSelectedKeys
 
   const newTestStats: TestStats = {}
@@ -1104,11 +1111,30 @@ async function reloadTestData(isFirst: boolean = false) {
   testStats.value = newTestStats
   subjectsOverallStats.value = newSubjectsOverallStats
 
-  if (Object.keys(newSubjectsOverallStats).length > 1) {
+  let isTestOverallNeeded = false
+  const subjectsOverallKeys = Object.keys(newSubjectsOverallStats)
+
+  if (subjectsOverallKeys.length > 1) {
     testOverallStats.value = getStatsTotal(Object.values(newSubjectsOverallStats))
+    isTestOverallNeeded = true
   }
-  else {
-    const firstSubject = Object.keys(newSubjectsOverallStats)[0]
+  else if (subjectsOverallKeys.length === 0) {
+    const subjectNames = Object.keys(newTestStats)
+    if (subjectNames.length > 1) {
+      const allSectionsStats: Stats[] = []
+      for (const sectionStats of Object.values(newTestStats)) {
+        for (const stats of Object.values(sectionStats)) {
+          allSectionsStats.push(stats)
+        }
+      }
+
+      testOverallStats.value = getStatsTotal(allSectionsStats)
+      isTestOverallNeeded = true
+    }
+  }
+
+  if (!isTestOverallNeeded) {
+    const firstSubject = Object.keys(newTestStats)[0]
     currentSelectedState.subject = firstSubject
     currentSelectedState.section = selectedTabs.value[firstSubject]
   }
