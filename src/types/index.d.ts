@@ -293,6 +293,7 @@ export type TestResultsOutputData = Omit<TestOutputData, 'testData' | 'testAnswe
 
 export interface TestState {
   pdfFile: null | Uint8Array
+  testAnswerKey: null | TestAnswerKeyData
   isSectionsDataLoaded: boolean
   totalQuestions: number
   totalSections: number

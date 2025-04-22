@@ -990,6 +990,7 @@ import type {
   QuestionAnswer,
   MiscSettings,
   CbtUiSettings,
+  TestAnswerKeyData,
 } from '~/src/types'
 
 type ImportExportTypeKey = 'import' | 'export' | 'restoreFromSaved' | 'reset'
@@ -1362,7 +1363,12 @@ async function loadTestData(
 
     const isContinueLastTest = testState.value.continueLastTest
 
-    const { pdfCropperData } = jsonData as Record<string, CropperOutputData>
+    const { pdfCropperData, testAnswerKey } = jsonData as {
+      pdfCropperData: CropperOutputData
+      testAnswerKey: TestAnswerKeyData | undefined
+    }
+
+    if (testAnswerKey) testState.value.testAnswerKey = testAnswerKey
 
     // for newCropperSectionsData and sectionsArray
     for (const subject of Object.keys(pdfCropperData)) {

@@ -610,6 +610,7 @@ const testLogger = useCbtLogger(true)
 
 const testState = shallowReactive<TestState>({
   pdfFile: null,
+  testAnswerKey: null,
   isSectionsDataLoaded: false,
   totalQuestions: 75,
   totalSections: 6,
@@ -1086,6 +1087,11 @@ function generateTestOutputData() {
   testOutputData = {
     ...outputData,
     testResultOverview,
+  }
+
+  const testAnswerKey = testState.testAnswerKey
+  if (testAnswerKey) {
+    testOutputData.testAnswerKey = testAnswerKey
   }
 }
 
