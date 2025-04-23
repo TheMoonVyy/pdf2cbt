@@ -777,7 +777,12 @@ function getQuestionResult(
     }
 
     if (type === 'mcq' || type === 'nat') {
-      if (answer === questionCorrectAnswer) {
+      const answerInt = typeof answer === 'number' ? answer : parseFloat(answer as string)
+      const correctAnswerInt = typeof questionCorrectAnswer === 'number'
+        ? questionCorrectAnswer
+        : parseFloat(questionCorrectAnswer as string)
+
+      if (answerInt === correctAnswerInt) {
         result.marks = marks.cm
         result.status = 'correct'
       }
