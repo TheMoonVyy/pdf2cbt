@@ -557,7 +557,7 @@
               <label
                 class="col-span-2 text-center text-base text-nowrap font-semibold"
               >
-                Question Img Max Width
+                Question Img Max Width (%)
               </label>
               <div class="flex flex-col">
                 <label
@@ -1011,7 +1011,7 @@ const addIds = <T extends Record<string, unknown>>(items: T[]): (T & { id: strin
 const htmlContent = {
   customizeUi: {
     mainLayout: addIds([
-      { key: 'size', label: 'Main Layout Size (%)', min: 5, max: 25 },
+      { key: 'size', label: 'Main Layout Size (px)', min: 5, max: 25 },
       { key: 'testTotalHeaderHeight', label: '"Test Total" Header Height', min: 0, max: 30, step: 0.1 },
       { key: 'sectionHeaderHeight', label: 'Sections Height', min: 1, max: 20, step: 0.1 },
       { key: 'sectionHeaderScrollPadding', label: 'Sections Scroll Padding', min: 0, max: 20, step: 0.1 },
