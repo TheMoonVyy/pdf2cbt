@@ -121,23 +121,31 @@
             label-id="marks_correct"
           />
         </BaseFloatLabel>
-        <BaseFloatLabel
+        <div
           v-if="currentQuestionData.questionType === 'msq'"
-          class="w-full"
-          label="Partial"
-          label-id="marks_partial"
-          label-class="start-1/2! -translate-x-1/2 text-xs"
+          class="flex gap-3"
         >
-          <BaseInputNumber
-            v-model="currentQuestionData.partialMarks"
-            :disabled="!props.isPdfLoaded"
-            :min="0"
-            :max="99"
-            prefix="+"
-            size="small"
-            label-id="marks_partial"
+          <IconWithTooltip
+            :tooltip-content="tooltipContent.partialMarking"
+            icon-class="text-2xl"
           />
-        </BaseFloatLabel>
+          <BaseFloatLabel
+            class="w-full"
+            label="Partial"
+            label-id="marks_partial"
+            label-class="start-1/2! -translate-x-1/2 text-xs"
+          >
+            <BaseInputNumber
+              v-model="currentQuestionData.partialMarks"
+              :disabled="!props.isPdfLoaded"
+              :min="0"
+              :max="99"
+              prefix="+"
+              size="small"
+              label-id="marks_partial"
+            />
+          </BaseFloatLabel>
+        </div>
         <BaseFloatLabel
           class="w-full"
           label="Incorrect"
@@ -176,4 +184,13 @@ const optionItems = reactive({
     { name: 'NAT', value: 'nat', tooltip: 'Numerial Answer Type' },
   ],
 })
+
+const tooltipContent = {
+  partialMarking:
+    'If you want JEE Advanced format then use +1 as partial marking.\n'
+    + 'While JEE Advanced format looks complex, the logic for partial marking in a nutshell is:\n'
+    + 'marks awarded = no. of partically correct answer * 1\n\n'
+    + 'Look at the their format properly,\n'
+    + 'if you notice you get +1 for each partially correct answer when the case is of "partially correct answers"',
+}
 </script>

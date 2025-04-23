@@ -500,7 +500,7 @@ const currentQuestionData = shallowReactive<CurrentQuestionData>({
   totalOptions: 4,
   questionNum: 1,
   correctMarks: 4,
-  partialMarks: 0,
+  partialMarks: 1,
   incorrectMarks: -1,
 })
 
