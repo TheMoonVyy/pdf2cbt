@@ -1,4 +1,4 @@
-import type { TestLog, TestOutputData, TestResultOverview, TestResultsOutputData } from '~/src/types'
+import type { TestLog, TestResultOverview, TestResultCommonOutput } from '~/src/types'
 
 export const utilFindTestLog = (
   logs: TestLog[],

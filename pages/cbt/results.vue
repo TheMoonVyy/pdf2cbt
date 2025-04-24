@@ -776,19 +776,54 @@ function getQuestionResult(
       return result
     }
 
-    if (type === 'mcq' || type === 'nat') {
-      const answerInt = typeof answer === 'number' ? answer : parseFloat(answer as string)
-      const correctAnswerInt = typeof questionCorrectAnswer === 'number'
-        ? questionCorrectAnswer
-        : parseFloat(questionCorrectAnswer as string)
-
-      if (answerInt === correctAnswerInt) {
+    if (type === 'mcq') {
+      if (answer === questionCorrectAnswer) {
         result.marks = marks.cm
         result.status = 'correct'
       }
       else {
         result.marks = marks.im
         result.status = 'incorrect'
+      }
+    }
+    else if (type === 'nat') {
+      const answerFloat = parseFloat(answer + '')
+      const correctAnswerStr = questionCorrectAnswer + ''
+
+      if (correctAnswerStr.includes('TO')) { // range of correct answers
+        const [lowerLimit, upperLimit] = correctAnswerStr.split('TO').map(n => parseFloat(n.trim()))
+
+        if (answerFloat <= upperLimit && answerFloat >= lowerLimit) {
+          result.marks = marks.cm
+          result.status = 'correct'
+        }
+        else {
+          result.marks = marks.im
+          result.status = 'incorrect'
+        }
+      }
+      else if (correctAnswerStr.includes(',')) { // multiple correct answers
+        const correctAnswers = correctAnswerStr.split(',').map(n => parseFloat(n.trim()))
+        const isAnswerCorrect = correctAnswers.some(n => n === answerFloat)
+
+        if (isAnswerCorrect) {
+          result.marks = marks.cm
+          result.status = 'correct'
+        }
+        else {
+          result.marks = marks.im
+          result.status = 'incorrect'
+        }
+      }
+      else { // just one correct answer
+        if (answerFloat === parseFloat(correctAnswerStr)) {
+          result.marks = marks.cm
+          result.status = 'correct'
+        }
+        else {
+          result.marks = marks.im
+          result.status = 'incorrect'
+        }
       }
     }
     else { // type is msq

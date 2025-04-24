@@ -623,6 +623,46 @@ const parseMsqInputText = (text: string, totalOptions: number) => {
   return uniqueNumbers.length ? uniqueNumbers : null
 }
 
+const isStringValidNatNumFormat = (text: string) => /^-?\d+(\.\d+)?$/.test(text)
+
+const parseNatInputText = (text: string) => {
+  if (text.includes('TO')) {
+    const answerStrs = text.split('TO').map(n => n.trim())
+
+    const isValidFormat = answerStrs.every(isStringValidNatNumFormat)
+    if (isValidFormat && answerStrs.length === 2) {
+      const answerFloats = answerStrs.map(n => parseFloat(n))
+      const [lowerLimit, upperLimit] = answerFloats[0] <= answerFloats[1]
+        ? answerStrs
+        : answerStrs.toReversed()
+
+      return `${lowerLimit}TO${upperLimit}`
+    }
+    else {
+      return null
+    }
+  }
+  else if (text.includes(',')) {
+    const answerStrs = text.split(',').map(n => n.trim())
+    const isValidFormat = answerStrs.every(isStringValidNatNumFormat)
+    if (isValidFormat) {
+      return answerStrs.join(',')
+    }
+    else {
+      return null
+    }
+  }
+  else {
+    const answer = text.trim()
+    if (isStringValidNatNumFormat(answer)) {
+      return answer
+    }
+    else {
+      return null
+    }
+  }
+}
+
 // for parsing Input Answer and then storing it to savedAnswer
 function parseInputAnswer(
   questionData: QuestionAnswerKeyData,
@@ -646,8 +686,7 @@ function parseInputAnswer(
         questionData.savedAnswer = parseMsqInputText(inputAnswer, totalOptions ?? 4)
       }
       else {
-        // test for valid nat answer format
-        questionData.savedAnswer = /^-?\d+(\.\d+)?$/.test(inputAnswer) ? inputAnswer : null
+        questionData.savedAnswer = parseNatInputText(inputAnswer)
       }
     }
   }

@@ -252,10 +252,23 @@
         </ul>
         <p class="mt-3 text-left">
           <strong>NOTE:</strong><br>
+          <strong>In NAT Type</strong>, you can also define a range of numbers or multiple numbers as correct answer in the <strong>Input Answer</strong> part of <strong>generate answer key page</strong>.
+        </p>
+        <ul class="list-disc list-outside mt-2 text-left ml-8">
+          <li>
+            <strong>Defining Range of Correct Answers:</strong> You can define this by using <strong>to</strong> between two numbers.<br>
+            For Example, 1to5 or 1 to 5 (both does the same thing ), this will mean correct answer is greater or equal to 1 AND less than or equal to 5. SO if your answer in test is say 3, then it will be correct answer as it is in the range.<br><br>
+          </li>
+          <li>
+            <strong>Defining multiple numbers as Correct Answers:</strong> You can define this by using <strong>, (i.e. comma)</strong> between numbers.<br>
+            For Example, 1,-1,5 or 1, -1, 5 (both does the same thing, space doesn't matter ), this will mean correct answer is 1 or -1 or 5. So if your answer in test is either of these, then it will be correct answer.
+          </li>
+        </ul>
+        <p class="mt-4 text-left">
           Althrough you will rarely require it but "dropped" &amp; "bonus" are two special keywords you can use as the answer as well<br><br>
           There is too much confusion on what dropped/bonus really means, hence the project has its own definition, use the one you want based on these condition:<br>
         </p>
-        <ul class="list-disc list-outside mt-2 text-left ml-8">
+        <ul class="list-disc list-outside mt-1 text-left ml-8">
           <li class="mt-2">
             <strong>DROPPED:</strong> Correct marks of that question is given <strong>irrespective</strong> of whether you have answered the question or not.
           </li>
