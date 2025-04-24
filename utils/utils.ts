@@ -67,7 +67,8 @@ export function utilCloneJson<T>(data: T, returnString: boolean = false): T | st
  */
 
 export const utilGetTestResultOverview = (
-  testOutputData: TestResultCommonOutput,
+  testOutputData: Omit<TestResultCommonOutput, 'testResultOverview'>
+    & Partial<Pick<TestResultCommonOutput, 'testResultOverview'>>,
   fresh: boolean = false,
 ): TestResultOverview => {
   // first try to obtain testOutputData.testResultOverview, if it is invalid then create fresh one

@@ -14,6 +14,7 @@ const defaultUiSettings: CbtUiSettings = {
     sectionHeaderAndQuesPanelDividerHeight: 1.7,
     showQuestionType: true,
     showMarkingScheme: true,
+    showQuestionTimeSpent: false,
   },
 
   themes: {
@@ -105,6 +106,7 @@ const defaultTestSettings: CbtTestSettings = {
   testName: 'Mock Test 1',
   timeFormat: 'mmm:ss',
   submitBtn: 'enabled',
+  showPauseBtn: false,
   durationInSeconds: 3 * 60 * 60,
   questionImgScale: 2,
   saveTestData: true,

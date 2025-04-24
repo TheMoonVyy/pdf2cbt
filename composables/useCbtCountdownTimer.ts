@@ -2,7 +2,7 @@ interface TimerState {
   pausedAt: number | null
   pausedMs: number
   endTime: number | null
-  timer: ReturnType<typeof setInterval> | null
+  timerID: ReturnType<typeof setInterval> | null
   intervalMs: number
 }
 
@@ -13,8 +13,8 @@ export default () => {
     pausedAt: null,
     pausedMs: 0,
     endTime: null,
-    timer: null,
-    intervalMs: 200,
+    timerID: null,
+    intervalMs: 250,
   }
 
   const updateCountdownSeconds = () => {
@@ -27,25 +27,44 @@ export default () => {
   }
 
   const stopCountdown = (isCalledForClearUp: boolean = false) => {
-    if (timerState.timer) {
-      clearInterval(timerState.timer)
-      timerState.timer = null
+    if (timerState.timerID) {
+      clearInterval(timerState.timerID)
+      timerState.timerID = null
     }
     if (!isCalledForClearUp) currentTestState.value.testStatus = 'finished'
   }
 
   const startCountdown = (durationInSeconds: number, intervalMs: number = 250) => {
-    if (!timerState.timer) {
+    if (!timerState.timerID) {
       timerState.endTime = Date.now() + (durationInSeconds * 1000)
       currentTestState.value.testStatus = 'ongoing'
       timerState.intervalMs = intervalMs
       updateCountdownSeconds()
-      timerState.timer = setInterval(updateCountdownSeconds, timerState.intervalMs)
+      timerState.timerID = setInterval(updateCountdownSeconds, timerState.intervalMs)
+    }
+  }
+
+  const pauseCountdown = () => {
+    if (timerState.timerID) {
+      clearInterval(timerState.timerID)
+      timerState.timerID = null
+      timerState.pausedAt = Date.now()
+    }
+  }
+
+  const resumeCountdown = () => {
+    if (timerState.pausedAt) {
+      timerState.pausedMs += Date.now() - timerState.pausedAt
+      timerState.pausedAt = null
+      updateCountdownSeconds()
+      timerState.timerID = setInterval(updateCountdownSeconds, timerState.intervalMs)
     }
   }
 
   return {
     startCountdown,
+    pauseCountdown,
+    resumeCountdown,
     stopCountdown,
   }
 }

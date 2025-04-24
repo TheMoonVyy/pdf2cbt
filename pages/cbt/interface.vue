@@ -149,7 +149,7 @@
             class="block shrink-0 primary-theme"
             :style="{ height: `${uiSettings.mainLayout.sectionHeaderAndQuesPanelDividerHeight}rem` }"
           />
-          <div class="flex px-2 mt-[1px] border-y-2 border-gray-300">
+          <div class="flex px-2 mt-[1px] border-y-2 gap-3 border-gray-300">
             <span class="flex items-center text-base">
               Question No.
               {{
@@ -159,6 +159,12 @@
                     ? testQuestionsData.get(currentTestState.queId)?.secQueId
                     : currentTestState.question
               }}
+            </span>
+            <span
+              v-if="uiSettings.mainLayout.showQuestionTimeSpent"
+              class="pl-3 border-l-[1.5px] border-black"
+            >
+              {{ questionTimeSpentString }}
             </span>
           </div>
           <CbtInterfaceSettingsPanel
@@ -323,6 +329,8 @@
     </div>
     <CbtInterfaceHiddenSettings
       v-model="hiddenSettingsVisibility"
+      :test-status="currentTestState.testStatus"
+      @pause-test="pauseTestHandler"
     />
     <div
       v-show="submitState.isSubmitBtnClicked
@@ -498,12 +506,38 @@
         >
           <template #icon>
             <Icon
-              name="mdi:stopwatch-start-outline"
+              name="mdi:stopwatch-play-outline"
               size="1.4rem"
             />
           </template>
         </BaseButton>
       </div>
+    </Dialog>
+    <Dialog
+      :visible="isTestPaused"
+      header="Test is Paused"
+      :modal="true"
+      :closable="false"
+      :close-on-escape="false"
+      :block-scroll="true"
+      :draggable="false"
+      pt:content:class="flex flex-col p-6 pt-0 gap-8"
+    >
+      <h4 class="font-semibold">
+        You have paused the test.
+      </h4>
+      <BaseButton
+        class="mx-auto"
+        label="Resume Test"
+        @click="resumePausedTestHandler"
+      >
+        <template #icon>
+          <Icon
+            name="mdi:stopwatch-play-outline"
+            size="1.4rem"
+          />
+        </template>
+      </BaseButton>
     </Dialog>
   </div>
 </template>
@@ -626,6 +660,8 @@ const preparingTestProgressBar = computed(() => {
 
 const isQuestionPalleteCollapsed = shallowRef(false)
 
+const isTestPaused = shallowRef(false)
+
 const submitState = shallowReactive({
   isSubmitBtnClicked: false,
   isSubmitting: false,
@@ -663,12 +699,31 @@ const testTotalSummary = computed(() => {
   return total
 })
 
-const { startCountdown, stopCountdown } = useCbtCountdownTimer()
+const {
+  startCountdown,
+  pauseCountdown,
+  resumeCountdown,
+  stopCountdown,
+} = useCbtCountdownTimer()
 
 const testTimeLeftString = computed(() => {
   const seconds = currentTestState.value.remainingSeconds ?? testSettings.value.durationInSeconds
   const timeFormat = testSettings.value.timeFormat
   return utilSecondsToTime(seconds, timeFormat)
+})
+
+const questionTimeSpentString = computed(() => {
+  let quesTimeSpentSeconds = 0
+
+  if (currentTestState.value.testStatus === 'ongoing') {
+    const remainingSeconds = currentTestState.value.remainingSeconds ?? 0
+    const questionStartTime = currentTestState.value.currentQuestionStartTime
+    const existingTimeSpent = testQuestionsData.value.get(currentTestState.value.queId)?.timeSpent || 0
+
+    quesTimeSpentSeconds = existingTimeSpent + (questionStartTime - remainingSeconds)
+  }
+
+  return utilSecondsToTime(quesTimeSpentSeconds, 'mmm:ss')
 })
 
 const testSummaryDataTable = computed<TestSummaryDataTableRow[]>(() => {
@@ -946,6 +1001,16 @@ async function prepareTest() {
   testState.currentProcess = 'preparing-imgs'
 }
 
+const pauseTestHandler = () => {
+  pauseCountdown()
+  isTestPaused.value = true
+}
+
+const resumePausedTestHandler = () => {
+  resumeCountdown()
+  isTestPaused.value = false
+}
+
 function onBeforeUnloadCallback(e: Event) {
   e.preventDefault()
   // @ts-expect-error compatibility for older browser versions
@@ -980,7 +1045,7 @@ onLongPress(
     modifiers: {
       prevent: true,
     },
-    delay: 1250,
+    delay: 750,
   },
 )
 
@@ -1108,8 +1173,4 @@ onUnmounted(() => {
       && key !== CbtUseState.CurrentResultsID
   })
 })
-
-// onMounted(() => {
-//   setTimeout(startTest, 3000)
-// })
 </script>

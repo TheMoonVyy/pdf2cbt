@@ -21,6 +21,7 @@ export interface CbtUiSettings {
     sectionHeaderAndQuesPanelDividerHeight: number
     showQuestionType: boolean
     showMarkingScheme: boolean
+    showQuestionTimeSpent: boolean
   }
 
   themes: {
@@ -307,6 +308,7 @@ export interface CbtTestSettings {
   timeFormat: 'mmm:ss' | 'hh:mm:ss'
   durationInSeconds: number
   submitBtn: 'enabled' | 'disabled' | 'hidden'
+  showPauseBtn: boolean
   questionImgScale: number
   saveTestData: boolean
 }

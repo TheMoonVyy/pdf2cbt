@@ -63,7 +63,7 @@
       >
         <div class="flex flex-col w-1/4 items-center mx-auto">
           <span class="pl-5 pr-3 text-lg font-bold">Test Settings</span>
-          <div class="grow p-3 px-1.5 w-full border border-surface-200 dark:border-surface-700 rounded-md">
+          <div class="grow pb-3 pt-1 px-1.5 w-full border border-surface-200 dark:border-surface-700 rounded-md">
             <div class="grid grid-cols-1 w-full">
               <div class="grid grid-cols-1 w-full mr-0.5">
                 <label
@@ -203,6 +203,31 @@
                     pt:root:class="[&>input]:pr-2.5!"
                   />
                 </div>
+              </div>
+              <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
+                <div class="flex gap-2 w-full justify-center mb-0.5">
+                  <label
+                    class="text-center text-base"
+                    for="pause_btn_dropdown"
+                  >
+                    Allow Pausing Test
+                  </label>
+                  <IconWithTooltip
+                    :tooltip-content="tooltipContent.showPauseBtn"
+                    icon-class="text-lg"
+                  />
+                </div>
+                <Select
+                  v-model="testSettings.showPauseBtn"
+                  label-id="pause_btn_dropdown"
+                  :options="selectOptions.showPauseBtn"
+                  option-label="name"
+                  option-value="value"
+                  :fluid="true"
+                  size="small"
+                  pt:root:class="col-span-6"
+                  pt:label:class="text-center"
+                />
               </div>
               <div class="flex justify-center gap-3 mt-3 w-full">
                 <label
@@ -372,6 +397,23 @@
             </label>
             <Select
               v-model="settings.mainLayout.showMarkingScheme"
+              label-id="show_marking_scheme"
+              :options="selectOptions.showHide"
+              option-label="name"
+              option-value="value"
+              :fluid="true"
+              pt:root="w-3/4"
+            />
+          </div>
+          <div class="flex flex-col w-full items-center justify-end">
+            <label
+              class="text-center text-sm"
+              for="show_marking_scheme"
+            >
+              Show Question's Time Spent
+            </label>
+            <Select
+              v-model="settings.mainLayout.showQuestionTimeSpent"
               label-id="show_marking_scheme"
               :options="selectOptions.showHide"
               option-label="name"
@@ -1061,6 +1103,13 @@ const tooltipContent = {
     + '"Hidden" → Submit Button is hidden (i.e. not visible) and test cannot be submitted before timeout.\n\n'
     + 'In all cases, test will be submitted automatically on timeout.',
 
+  showPauseBtn:
+    '"Yes" → During the test, you will be able to Pause/Resume the test.\n'
+    + 'you can access the Pause Button in the hidden settings.\n'
+    + 'To access hidden settings, long press on profile icon (the one that you see in the upper-right corner).\n'
+    + 'You can access hidden settings whenever you want, now and while the test is ongoing.\n\n'
+    + '"No" → You will not have the ability to pause the test (pause button will not be provided in hidden settings)',
+
   questionImgScale:
     'The scale of question pdf/image dimensions relative to original dimensions (x).\n'
     + 'device pixel ratio (DPR) is also multipled separately.\n\n'
@@ -1095,6 +1144,11 @@ const selectOptions = {
     { name: 'Enabled', value: 'enabled' },
     { name: 'Disabled', value: 'disabled' },
     { name: 'Hidden', value: 'hidden' },
+  ],
+
+  showPauseBtn: [
+    { name: 'Yes', value: true },
+    { name: 'No', value: false },
   ],
 
   answerOptionsFormat: [
