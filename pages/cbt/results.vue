@@ -264,6 +264,20 @@ const chartDataState = reactive<ChartDataState>({
 const scoreCardsData = shallowRef<ScoreCardData[]>([])
 
 function loadDataToChartDataState(id: number) {
+  if (testResultsOutputData.value) {
+    const { testResultData } = testResultsOutputData.value
+
+    const newTestResultQuestionsData: Record<number | string, TestResultDataQuestion> = {}
+    for (const subjectData of Object.values(testResultData)) {
+      for (const sectionData of Object.values(subjectData)) {
+        for (const questionData of Object.values(sectionData)) {
+          newTestResultQuestionsData[questionData.queId] = questionData
+        }
+      }
+    }
+    testResultQuestionsData.value = newTestResultQuestionsData
+  }
+
   loadQuestionsSummaryToChartDataState()
 
   chartDataState.timeSpentPerSection = getTestTimebySection()
@@ -431,15 +445,7 @@ function loadTestJourneyToChartDataState() {
 
   if (!testResultsOutputData.value) return
 
-  const { testResultData, testLogs } = testResultsOutputData.value
-
-  for (const subjectData of Object.values(testResultData)) {
-    for (const sectionData of Object.values(subjectData)) {
-      for (const questionData of Object.values(sectionData)) {
-        testResultQuestionsData.value[questionData.queId] = questionData
-      }
-    }
-  }
+  const { testLogs } = testResultsOutputData.value
 
   const startCountdownTime = getTestStartedCountdownTime(testLogs)
   const finishedCountdownTime = getTestFinishedCountdownTime(testLogs)
