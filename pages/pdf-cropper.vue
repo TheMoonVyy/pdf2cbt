@@ -468,6 +468,10 @@ const pdfState = shallowReactive<PdfState>({
 
 const isPdfLoaded = shallowRef(false)
 
+// to store SHA-256 hash of pdf file,
+// which will be included in generated output file
+let pdfFileHash = ''
+
 // Default settings
 const settings = shallowReactive<SettingsState>({
   cropperMode: 'line',
@@ -1208,6 +1212,7 @@ function transformDataToOutputFormat(data: Record<number, QuestionData[]>) {
 
   const outputData = {
     pdfCropperData,
+    pdfFileHash,
   }
 
   return JSON.stringify(outputData, null, 2)
@@ -1219,6 +1224,9 @@ async function generatePdfCropperOutput() {
   if (!pdfFile) return
 
   generateOutputState.preparingDownload = true
+
+  const pdfU8Array = new Uint8Array(await pdfFile.arrayBuffer())
+  if (!pdfFileHash) pdfFileHash = await utilGetHash(pdfU8Array)
 
   const Data = structuredClone(toRaw(questionsData))
   const jsonString = transformDataToOutputFormat(Data)
@@ -1233,9 +1241,7 @@ async function generatePdfCropperOutput() {
     generateOutputState.downloaded = true
   }
   else {
-    const pdfU8Array = new Uint8Array(await pdfFile.arrayBuffer())
     const jsonU8Array = strToU8(jsonString)
-
     const zipFiles: AsyncZippable = {}
 
     zipFiles[DataFileNames.questionsPdf] = pdfU8Array
