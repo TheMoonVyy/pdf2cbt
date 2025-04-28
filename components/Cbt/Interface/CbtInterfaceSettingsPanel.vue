@@ -268,11 +268,12 @@
               autocomplete="off"
             >
               <CbtFileUpload
+                v-if="!hashMismatchDialogState.showDialog"
                 v-model="fileUploaderFileType"
                 :file-options="selectOptions.dataFile"
                 file-types="zip-or-pdfjson"
                 empty-slot-text-class="top-[30%]"
-                @on-uploaded="(data) => loadTestData(data.pdfFile!, data.jsonData)"
+                @on-uploaded="(data) => verifyTestData(data.pdfFile!, data.jsonData)"
               />
             </form>
           </template>
@@ -335,7 +336,7 @@
         </div>
       </Panel>
       <Panel
-        header="Customize UI"
+        header="UI Settings & Customizations"
         class="w-full"
         toggleable
         :collapsed="true"
@@ -1015,6 +1016,72 @@
         </BaseButton>
       </div>
     </Dialog>
+    <Dialog
+      v-model:visible="hashMismatchDialogState.showDialog"
+      header="PDF hash is not matching with the one in cropper data!"
+      :modal="true"
+      :closable="false"
+      :close-on-escape="false"
+      :block-scroll="true"
+      :draggable="false"
+      pt:content:class="flex flex-col px-0 py-4 max-w-xl"
+    >
+      <div class="flex mb-6 items-center">
+        <h3
+          v-if="fileUploaderFileType === 'zip'"
+          class="text-lg text-center"
+        >
+          PDF file's hash is different to the one that was used in PDF Cropper.<br><br>
+          Hash can differ if even slight modification was done to pdf's contents.<br><br>
+          If you sure that both questions.pdf and data.json in zip file are correct, then you can continue.<br>
+          OR<br>
+          You can re-upload the correct one.<br><br>
+        </h3>
+        <h3
+          v-else
+          class="text-lg text-center"
+        >
+          PDF file's hash and hash of PDF in JSON file is different.<br><br>
+          Hash can differ if even slight modification was done to pdf's contents.<br><br>
+          If you sure that both pdf and json files are correct, then you can continue.<br>
+          OR<br>
+          You can re-upload the correct ones.<br><br>
+        </h3>
+      </div>
+      <div class="flex px-2 sm:px-8 gap-2 justify-between">
+        <BaseButton
+          label="Continue anyway"
+          severity="warn"
+          @click="() => {
+            hashMismatchDialogState.showDialog = false
+
+            const { pdfFile, jsonData, pdfFileHash } = hashMismatchDialogState
+            if (pdfFile && jsonData) {
+              testState.pdfFileHash = pdfFileHash || ''
+              loadTestData(pdfFile, jsonData)
+            }
+          }"
+        >
+          <template #icon>
+            <Icon
+              name="mdi:rocket"
+              size="1.4rem"
+            />
+          </template>
+        </BaseButton>
+        <BaseButton
+          label="Re-upload"
+          @click="hashMismatchDialogState.showDialog = false"
+        >
+          <template #icon>
+            <Icon
+              name="prime:upload"
+              size="1.4rem"
+            />
+          </template>
+        </BaseButton>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -1199,6 +1266,18 @@ const importExportDialogState = shallowReactive<ImportExportDialogState>({
   isDialogOpen: false,
   type: 'import',
   data: {},
+})
+
+const hashMismatchDialogState = shallowReactive<{
+  showDialog: boolean
+  pdfFileHash: string
+  pdfFile: Uint8Array | null
+  jsonData: Record<string, unknown> | null
+}>({
+  showDialog: false,
+  pdfFileHash: '',
+  pdfFile: null,
+  jsonData: null,
 })
 
 const {
@@ -1402,6 +1481,33 @@ const processImportExport = (name: ImportExportTypeKey | string, data: Record<st
   }
 
   importExportDialogState.isDialogOpen = false
+}
+
+async function verifyTestData(
+  pdfFile: Uint8Array,
+  jsonData: Record<string, unknown>,
+) {
+  try {
+    const currentPdfFileHash = await utilGetHash(pdfFile)
+    const pdfFileHashInJson = jsonData.pdfFileHash as string | undefined
+
+    if (pdfFileHashInJson && currentPdfFileHash !== pdfFileHashInJson) {
+      hashMismatchDialogState.pdfFile = pdfFile
+      hashMismatchDialogState.jsonData = jsonData
+      hashMismatchDialogState.pdfFileHash = currentPdfFileHash
+      hashMismatchDialogState.showDialog = true
+    }
+    else {
+      if (currentPdfFileHash) {
+        testState.value.pdfFileHash = currentPdfFileHash
+      }
+
+      loadTestData(pdfFile, jsonData)
+    }
+  }
+  catch (err) {
+    console.error('Error while verifying test data:', err)
+  }
 }
 
 async function loadTestData(

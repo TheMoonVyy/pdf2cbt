@@ -278,6 +278,7 @@ export interface TestOutputData {
   testConfig: {
     testName: string
     testDurationInSeconds: number
+    pdfFileHash: string
   }
   testData: TestOutputDataSubjects
   testSummary: TestSummaryDataTableRow[]
@@ -294,6 +295,7 @@ export type TestResultsOutputData = Omit<TestOutputData, 'testData' | 'testAnswe
 
 export interface TestState {
   pdfFile: null | Uint8Array
+  pdfFileHash: string
   testAnswerKey: null | TestAnswerKeyData
   isSectionsDataLoaded: boolean
   totalQuestions: number
