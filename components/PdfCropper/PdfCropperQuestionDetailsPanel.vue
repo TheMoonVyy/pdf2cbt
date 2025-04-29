@@ -13,12 +13,12 @@
         <InputText
           id="subject_name"
           v-model.trim="currentQuestionData.subjectName"
-          :maxlength="20"
+          :maxlength="30"
           :disabled="!isPdfLoaded"
         />
       </BaseFloatLabel>
       <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
-        {{ currentQuestionData.subjectName?.length }}/20
+        {{ currentQuestionData.subjectName?.length }}/30
       </span>
     </div>
     <div class="flex w-full mt-4 bg-surface-950 border border-surface-700 rounded-md">
@@ -29,12 +29,12 @@
         <InputText
           id="section_name"
           v-model.trim="currentQuestionData.sectionName"
-          :maxlength="30"
+          :maxlength="40"
           :disabled="!isPdfLoaded"
         />
       </BaseFloatLabel>
       <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
-        {{ currentQuestionData.sectionName?.length }}/30
+        {{ currentQuestionData.sectionName?.length }}/40
       </span>
     </div>
     <div class="flex flex-wrap gap-2 mt-4">
@@ -94,7 +94,7 @@
         v-model="currentQuestionData.questionNum"
         :disabled="!props.isPdfLoaded"
         :min="1"
-        :max="99"
+        :max="9999"
         label-id="question_num"
         :step="1"
       />
