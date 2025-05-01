@@ -22,7 +22,7 @@
             Turn PDF of Questions into interactive real exam-like CBT and view detailed analysis of your test.
           </li>
           <li class="mt-2">
-            <strong>100% free with no ads, no login, no email/phone needed.</strong><br>
+            <strong>100% free with no ads, no login, no email/phone number needed.</strong><br>
             You just need a PDF with questions and a modern browser (any version from 2023 or later is recommended)<br>
             Recommended to use Firefox or Chromium based browsers (chrome, brave, ms edge etc).
           </li>
@@ -108,7 +108,15 @@
         </p>
         <p class="mt-3 text-left">
           <strong>NOTE:</strong><br>
-          If your PDF has question that is split across two pages, you can merge two cropped images into a single question like this:<br><br>
+          If your PDF has question that is split across two pages, you can merge two cropped images into a single question as mentioned below (here's a video:
+          <NuxtLink
+            to="https://www.youtube.com/watch?v=MSHy26Cg4-o"
+            class="underline text-green-400"
+            target="_blank"
+          >
+            📺Merge cropped images into one question
+          </NuxtLink>
+          ):<br><br>
 
           When two or more cropped images have the <strong>same question details</strong> (subject, section, and question number), they are treated as part of the <strong>same question</strong>.<br><br>
 
@@ -116,9 +124,9 @@
           Then go to the next page and make sure to use the <strong>same question number</strong> (you'll need to manually decrease it by 1, because it auto-increments after every crop).<br><br>
 
           <strong>Example:</strong><br>
-          Say the current question number is <code>3</code>.<br>
-          You crop the first half on the current page — the question number will be auto-increments to <code>4</code>.<br>
-          Now go to the next page and set the question number back to <code>3</code>, then crop the second half.<br>
+          Say the current question number is 3.<br>
+          You crop the first half on the current page — the question number will be auto-incremented to 4.<br>
+          Now go to the next page and set the question number back to 3, then crop the second half.<br>
           Both images will now be grouped as one question since they share the same subject, section, and question number.
         </p>
       </div>
