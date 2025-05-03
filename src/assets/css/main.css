@@ -142,3 +142,9 @@
     @slot;
   }
 }
+
+/* For CbtResultsQuestionPanel and CbtInterfaceAnswerOptionsDiv */
+.option-content::after {
+  counter-increment: answer-options;
+  content: var(--options-prefix) counter(answer-options, var(--counter-type)) var(--options-suffix);
+}
