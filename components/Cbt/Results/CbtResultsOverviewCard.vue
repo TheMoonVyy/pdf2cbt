@@ -120,9 +120,9 @@ const emit = defineEmits<{
 }>()
 
 const isResultsGenerated = computed(() => {
-  const { marksObtained, maxMarks } = props.testResultOverview?.overview ?? {}
+  const { maxMarks, totalQuestions } = props.testResultOverview?.overview ?? {}
 
-  if (marksObtained && maxMarks) {
+  if (maxMarks || totalQuestions) {
     return true
   }
 
