@@ -1198,17 +1198,7 @@ function transformDataToOutputFormat(data: Record<number, QuestionData[]>) {
     }
   }
 
-  // pdfCropperData with sorted sections for each subject
-  const pdfCropperData: CropperOutputData = Object.fromEntries(
-    Object.entries(subjectsData).map(([subjectName, sections]) => [
-      subjectName,
-      Object.fromEntries(
-        Object.entries(sections).sort(
-          ([a], [b]) => a.localeCompare(b, 'en', { numeric: true }),
-        ),
-      ),
-    ]),
-  )
+  const pdfCropperData = subjectsData
 
   const outputData = {
     pdfCropperData,
@@ -1318,6 +1308,12 @@ onMounted(() => {
 
 // clean up
 onBeforeUnmount(() => {
+  try {
+    mupdfWorker.close()
+  }
+  catch {
+    // maybe worker is not active
+  }
   syncSettingsWithLocalStorage(true)
 
   for (const pageData of Object.values(pageImgData)) {
