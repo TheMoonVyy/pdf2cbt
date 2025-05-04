@@ -11,6 +11,7 @@ export enum CbtUseState {
   TestSectionsImgUrls = 'CBT-TestSectionsImgUrls',
   LastLoggedAnswer = 'CBT-LastLoggedAnswer',
   CurrentResultsID = 'CBT-CurrentResultsID',
+  ResultsTestQuestionsImgUrls = 'CBT-ResultsTestQuestionsImgUrls',
 }
 
 export enum DataFileNames {
@@ -26,4 +27,9 @@ export enum ResultsPagePanels {
   Summary = 'summary',
   Detailed = 'detailed',
   MyTests = 'myTests',
+}
+
+export enum LocalStorageKeys {
+  ResultsQuestionPanelWidth = 'CBT-ResultsQuestionPanelWidth',
+  ResultsQuestionPanelImgBgColor = 'CBT-ResultsQuestionPanelImgBgColor',
 }
