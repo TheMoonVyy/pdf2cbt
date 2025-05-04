@@ -586,7 +586,7 @@ const navigateQuestion = (type: 'next' | 'prev') => {
     newQueId = queIds[currentQueIdIndex - 1]
   }
   else if (type === 'next' && currentQueIdIndex < queIds.length) {
-    newQueId = queIds[currentQueId + 1]
+    newQueId = queIds[currentQueIdIndex + 1]
   }
 
   if (panelState.value.questions[newQueId]) {
