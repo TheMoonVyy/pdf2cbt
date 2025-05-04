@@ -47,48 +47,36 @@ export class MuPdfProcessor {
     if (getPageCount) return this.doc?.countPages()
   }
 
-  async getPageImg(
+  private async getPagePixmap(
     pageNum: number,
     scale: number,
-    output?: 'pixmap',
-    transparent?: boolean
-  ): Promise<Pixmap>
-
-  async getPageImg(
-    pageNum: number,
-    scale: number,
-    output?: 'blob',
-    transparent?: boolean
-  ): Promise<{ blob: Blob, dimensions: { w: number, h: number } }>
-
-  async getPageImg(
-    pageNum: number,
-    scale: number,
-    output: 'pixmap' | 'blob' = 'blob',
     transparent: boolean = false,
-  ) {
+  ): Promise<Pixmap> {
     if (!this.doc) throw new Error('PDF not loaded')
 
     const page = this.doc.loadPage(pageNum - 1)
-    const [ulx, uly, lrx, lry] = page.getBounds()
-    const pagePixmap = page.toPixmap(
+    return page.toPixmap(
       this.mupdf!.Matrix.scale(scale, scale),
       this.mupdf!.ColorSpace.DeviceRGB,
       transparent,
       true,
     )
+  }
 
-    if (output === 'pixmap') {
-      return pagePixmap
-    }
-    else {
-      return {
-        blob: new Blob([pagePixmap.asPNG()], { type: 'image/png' }),
-        dimensions: {
-          w: Math.abs(lrx - ulx),
-          h: Math.abs(lry - uly),
-        },
-      }
+  async getPageImage(
+    pageNum: number,
+    scale: number,
+    transparent: boolean = false,
+  ): Promise<{ blob: Blob, dimensions: { w: number, h: number } }> {
+    const pixmap = await this.getPagePixmap(pageNum, scale, transparent)
+    const [ulx, uly, lrx, lry] = pixmap.getBounds()
+
+    return {
+      blob: new Blob([pixmap.asPNG()], { type: 'image/png' }),
+      dimensions: {
+        w: Math.abs(lrx - ulx),
+        h: Math.abs(lry - uly),
+      },
     }
   }
 
@@ -103,7 +91,7 @@ export class MuPdfProcessor {
 
     for (const pageKey of Object.keys(processedCropperData)) {
       const pageNum = parseInt(pageKey)
-      const pagePixmap = await this.getPageImg(pageNum, scale, 'pixmap')
+      const pagePixmap = await this.getPagePixmap(pageNum, scale)
 
       for (const questionData of processedCropperData[pageKey]) {
         const { pdfData, section, question } = questionData
@@ -125,6 +113,36 @@ export class MuPdfProcessor {
     return imageBlobs
   }
 
+  async generateAndPostQuestionImagesIndividually(
+    indexes: number[],
+    questionsPdfData: [string, PdfData[]][],
+    scale: number = 2,
+    transparent: boolean = false,
+  ) {
+    const pagePixmaps: Record<number | string, Pixmap> = {}
+
+    for (const i of indexes) {
+      const [queId, pdfData] = questionsPdfData[i]
+
+      for (const pdfDataItem of pdfData) {
+        const pageNum = pdfDataItem.page
+
+        if (!pagePixmaps[pageNum]) {
+          pagePixmaps[pageNum] = await this.getPagePixmap(Number(pageNum), scale, transparent)
+        }
+
+        const imgBlob = await this.getCroppedImg(pagePixmaps[pageNum], pdfDataItem)
+        self.postMessage(
+          {
+            type: 'question-image',
+            queId,
+            blob: imgBlob,
+          },
+        )
+      }
+    }
+  }
+
   private async getCroppedImg(pagePixmap: Pixmap, pdfData: PdfData) {
     const { x, y, w, h } = pdfData
 
@@ -143,8 +161,9 @@ export class MuPdfProcessor {
   }
 
   close() {
-    this.mupdf = null
+    this.doc?.destroy()
     this.doc = null
+    this.mupdf = null
     self.close()
   }
 }
