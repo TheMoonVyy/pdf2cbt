@@ -1,7 +1,7 @@
 <template>
   <div>
     <Drawer
-      v-if="currentQuestion?.pdfData"
+      v-if="currentQuestion"
       v-model:visible="drawerVisibility"
       position="right"
       :dismissable="true"
@@ -468,7 +468,9 @@ const panelState = computed(() => {
 
     if (selectedSubject !== TEST_OVERALL && selectedSubject !== subject) continue
 
-    if (selectedSection !== (subject + OVERALL) && selectedSection !== section) continue
+    if (selectedSubject !== TEST_OVERALL
+      && selectedSection !== (subject + OVERALL)
+      && selectedSection !== section) continue
 
     if (!questionFiltersState.status.includes(status)) continue
 
