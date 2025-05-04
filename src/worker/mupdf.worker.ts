@@ -68,8 +68,10 @@ export class MuPdfProcessor {
     scale: number,
     transparent: boolean = false,
   ): Promise<{ blob: Blob, dimensions: { w: number, h: number } }> {
+    if (!this.doc) throw new Error('PDF not loaded')
+
     const pixmap = await this.getPagePixmap(pageNum, scale, transparent)
-    const [ulx, uly, lrx, lry] = pixmap.getBounds()
+    const [ulx, uly, lrx, lry] = this.doc.loadPage(pageNum - 1).getBounds()
 
     return {
       blob: new Blob([pixmap.asPNG()], { type: 'image/png' }),
