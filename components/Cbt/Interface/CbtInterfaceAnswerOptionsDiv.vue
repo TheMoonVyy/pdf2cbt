@@ -83,10 +83,3 @@ const props = defineProps<{
 
 const questionAnswer = defineModel<QuestionAnswer>({ required: true })
 </script>
-
-<style>
-.option-content::after {
-  counter-increment: answer-options;
-  content: var(--options-prefix) counter(answer-options, var(--counter-type)) var(--options-suffix);
-}
-</style>

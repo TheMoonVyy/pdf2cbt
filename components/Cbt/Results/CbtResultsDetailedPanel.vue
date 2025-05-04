@@ -1,755 +1,787 @@
 <template>
-  <div
-    v-if="loadDataNow"
-    class="flex flex-col w-full grow pb-50"
-  >
-    <Tabs
-      :value="currentSelectedState.subject"
-      scrollable
-      @update:value="subjectChangeHandler"
-    >
-      <TabList
-        pt:nextButton:class="shadow-[0px_0px_5px_8px]!"
-        pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
-      >
-        <Tab
-          v-if="Object.keys(testOverallStats ?? {}).length > 1"
-          :value="TEST_OVERALL"
-        >
-          Test Overall
-        </Tab>
-        <Tab
-          v-for="(subject, idx) in Object.keys(testResultData)"
-          :key="idx"
-          :value="subject"
-        >
-          {{ subject }}
-        </Tab>
-      </TabList>
-    </Tabs>
-    <Tabs
-      :value="selectedTabs[currentSelectedState.subject]"
-      :class="{
-        'sticky top-0 z-20': settings.freezeMode === 'sectionHeader',
-      }"
-      scrollable
-      @update:value="sectionChangeHandler"
-    >
-      <TabList
-        pt:nextButton:class="shadow-[0px_0px_5px_8px]!"
-        pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
-      >
-        <Tab
-          v-if="
-            (currentSelectedState.subject !== TEST_OVERALL)
-              && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1"
-          :value="currentSelectedState.subject + OVERALL"
-        >
-          {{ currentSelectedState.subject + ' Overall' }}
-        </Tab>
-        <Tab
-          v-for="(section, index) in currentSectionTabs"
-          :key="index"
-          :value="section"
-        >
-          {{ section }}
-        </Tab>
-      </TabList>
-    </Tabs>
+  <div class="flex flex-col w-full grow">
     <div
-      class="px-4 pt-3 pb-15 flex flex-col gap-5 text-nowrap max-w-full overflow-auto"
+      v-if="loadDataNow"
+      class="flex flex-col w-full grow pb-50"
     >
+      <Tabs
+        :value="currentSelectedState.subject"
+        scrollable
+        @update:value="subjectChangeHandler"
+      >
+        <TabList
+          pt:nextButton:class="shadow-[0px_0px_5px_8px]!"
+          pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
+        >
+          <Tab
+            v-if="Object.keys(testOverallStats ?? {}).length > 1"
+            :value="TEST_OVERALL"
+          >
+            Test Overall
+          </Tab>
+          <Tab
+            v-for="(subject, idx) in Object.keys(testResultData)"
+            :key="idx"
+            :value="subject"
+          >
+            {{ subject }}
+          </Tab>
+        </TabList>
+      </Tabs>
+      <Tabs
+        :value="selectedTabs[currentSelectedState.subject]"
+        :class="{
+          'sticky top-0 z-20': settings.freezeMode === 'sectionHeader',
+        }"
+        scrollable
+        @update:value="sectionChangeHandler"
+      >
+        <TabList
+          pt:nextButton:class="shadow-[0px_0px_5px_8px]!"
+          pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
+        >
+          <Tab
+            v-if="
+              (currentSelectedState.subject !== TEST_OVERALL)
+                && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1"
+            :value="currentSelectedState.subject + OVERALL"
+          >
+            {{ currentSelectedState.subject + ' Overall' }}
+          </Tab>
+          <Tab
+            v-for="(section, index) in currentSectionTabs"
+            :key="index"
+            :value="section"
+          >
+            {{ section }}
+          </Tab>
+        </TabList>
+      </Tabs>
       <div
-        v-show="currentSelectedState.subject === TEST_OVERALL || currentSelectedState.section.endsWith(OVERALL)"
-        class="flex flex-row gap-3 justify-center mt-3 items-center"
+        class="px-4 pt-3 pb-15 flex flex-col gap-5 text-nowrap max-w-full overflow-auto"
       >
-        <h3 class="text-lg font-semibold text-center">
-          {{ showOverallQuestions ? 'Hide' : 'Show' }}&nbsp;
-          {{
-            currentSelectedState.subject === TEST_OVERALL
-              ? 'Test Questions'
-              : currentSelectedState.subject + ' Questions'
-          }}
-        </h3>
-        <BaseButton
-          class="w-7! h-7! p-0!"
-          rounded
-          raised
-          @click="showOverallQuestions = !showOverallQuestions"
-        >
-          <template #icon>
-            <Icon
-              :name="showOverallQuestions ? 'mdi:expand-less' : 'mdi:expand-more'"
-              class="text-2xl"
-            />
-          </template>
-        </BaseButton>
-      </div>
-      <table
-        v-show="showOverallQuestions || (currentSelectedState.subject !== TEST_OVERALL && !currentSelectedState.section.endsWith(OVERALL))"
-        class="table-auto border w-full border-collapse text-lg pb-5"
-        :class="highlightModeClasses + questionStatusFilterClasses + questionResultFilterClasses"
-      >
-        <thead class="bg-gray-300 dark:bg-gray-800">
-          <tr class="border-b divide-x text-center">
-            <th
-              v-show="currentSelectedState.subject === TEST_OVERALL"
-              class="px-2 py-1.5"
-            >
-              Subject
-            </th>
-            <th
-              v-show="currentSelectedState.subject === TEST_OVERALL || currentSelectedState.section.endsWith(OVERALL)"
-              class="px-2 py-1.5"
-            >
-              Section
-            </th>
-            <th class="px-2 py-1.5">
-              <div class="flex items-center gap-1 justify-center">
-                Q. No.
-                <BaseButton
-                  variant="text"
-                  rounded
-                  raised
-                  @click="(e) => popOverQNumOrderElem.show(e)"
-                >
-                  <template #icon>
-                    <Icon
-                      name="mdi:format-list-numbers"
-                      class="text-2xl"
-                    />
-                  </template>
-                </BaseButton>
-              </div>
-            </th>
-            <th class="px-2 py-1.5">
-              Marks
-            </th>
-            <th class="px-2 py-1.5">
-              <div class="flex items-center gap-1 justify-center">
-                <BaseButton
-                  variant="text"
-                  rounded
-                  raised
-                  @click="() => {
-                    if (settings.highlightMode === 'result') settings.highlightMode = null
-                    else settings.highlightMode = 'result'
-                  }"
-                >
-                  <template #icon>
-                    <Icon
-                      name="mdi:color"
-                      class="text-2xl"
-                      :class="settings.highlightMode === 'result' ? 'text-green-400' : 'text-gray-300'"
-                    />
-                  </template>
-                </BaseButton>
-                Result
-                <BaseButton
-                  variant="text"
-                  severity="warn"
-                  rounded
-                  raised
-                  @click="(e) => showFilterPopOverMenu('result', e)"
-                >
-                  <template #icon>
-                    <Icon
-                      name="mdi:filter-menu-outline"
-                      class="text-2xl"
-                    />
-                  </template>
-                </BaseButton>
-              </div>
-            </th>
-            <th class="px-2 py-1.5">
-              Type
-            </th>
-            <th class="px-2 py-1.5">
-              Your Answer
-            </th>
-            <th class="px-2 py-1.5">
-              Correct Answer
-            </th>
-            <th class="px-2 py-1.5">
-              <div class="flex items-center gap-1 justify-center">
-                Time Spent
-                <BaseButton
-                  variant="text"
-                  :title="settings.sortByTimeSpent === null
-                    ? 'sort by descending order'
-                    : (
-                      settings.sortByTimeSpent === 'descending'
-                        ? 'sort by ascending order'
-                        : 'remove sort'
-                    )"
-                  rounded
-                  raised
-                  @click="() => {
-                    const sortByTimeSpent = settings.sortByTimeSpent
-                    switch (sortByTimeSpent) {
-                    case null:
-                      settings.sortByTimeSpent = 'descending'
-                      break;
-                    case 'descending':
-                      settings.sortByTimeSpent = 'ascending'
-                      break;
-                    default:
-                      settings.sortByTimeSpent = null
-                      break;
-                    }
-                  }"
-                >
-                  <template #icon>
-                    <Icon
-                      :name="settings.sortByTimeSpent === 'ascending'
-                        ? 'mdi:sort-clock-ascending-outline'
-                        : 'mdi:sort-clock-descending-outline'"
-                      class="text-2xl"
-                      :class="settings.sortByTimeSpent === null
-                        ? 'text-gray-300'
-                        : 'text-green-400'"
-                    />
-                  </template>
-                </BaseButton>
-              </div>
-            </th>
-            <th class="px-2 py-1.5">
-              <div class="flex items-center gap-1 justify-center">
-                <BaseButton
-                  variant="text"
-                  rounded
-                  raised
-                  @click="() => {
-                    if (settings.highlightMode === 'status') settings.highlightMode = null
-                    else settings.highlightMode = 'status'
-                  }"
-                >
-                  <template #icon>
-                    <Icon
-                      name="mdi:color"
-                      class="text-2xl"
-                      :class="settings.highlightMode === 'status' ? 'text-green-400' : 'text-gray-300'"
-                    />
-                  </template>
-                </BaseButton>
-                Status
-                <BaseButton
-                  variant="text"
-                  severity="warn"
-                  rounded
-                  raised
-                  @click="(e) => showFilterPopOverMenu('status', e)"
-                >
-                  <template #icon>
-                    <Icon
-                      name="mdi:filter-menu-outline"
-                      class="text-2xl"
-                    />
-                  </template>
-                </BaseButton>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody
-          class="dark:divide-gray-500"
-        >
-          <tr
-            v-for="question in testQuestions"
-            v-show="question.section === currentSelectedState.section
-              || (
-                showOverallQuestions
-                && (
-                  currentSelectedState.subject === TEST_OVERALL
-                  || (currentSelectedState.section.endsWith(OVERALL) && question.subject === currentSelectedState.subject)
-                )
-              )"
-            :key="question.queId"
-            class="divide-x border-t dark:border-gray-500 dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            :data-status="question.status"
-            :data-result="question.result.status"
-          >
-            <td v-show="currentSelectedState.subject === TEST_OVERALL">
-              {{ question.subject }}
-            </td>
-            <td
-              v-show="currentSelectedState.subject === TEST_OVERALL
-                || (
-                  currentSelectedState.subject === question.subject && currentSelectedState.section.endsWith(OVERALL)
-                )"
-            >
-              {{ question.section }}
-            </td>
-            <td>
-              {{ questionsNumberingOrder === 'oriQueId'
-                ? question.oriQueId
-                : (
-                  questionsNumberingOrder === 'secQueId'
-                    ? question.secQueId
-                    : question.queId
-                )
-              }}
-            </td>
-            <td>{{ utilMarksWithSign(question.result.marks) }}</td>
-            <td>{{ formattedResultStatus[question.result.status] }}</td>
-            <td>{{ question.type.toUpperCase() }}</td>
-            <td>{{ utilStringifyAnswer(question.answer, ', ', true) }}</td>
-            <td>{{ utilStringifyAnswer(question.result.correctAnswer, ', ', true) }}</td>
-            <td>{{ utilSecondsToTime(question.timeSpent, 'mmm:ss') }}</td>
-            <td>{{ formattedQuestionStatus[question.status] }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <h3 class="text-lg font-semibold text-center mt-5">
-      Questions Status Summary
-    </h3>
-    <div
-      class="px-4 pt-3 pb-15 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
-    >
-      <table class="table-auto border w-full border-collapse text-lg text-center">
-        <thead class="bg-gray-300 dark:bg-gray-800">
-          <tr
-            class="border-b divide-x"
-          >
-            <th
-              v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
-              rowspan="2"
-              class="px-2 py-1.5"
-            >
-              {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
-            </th>
-            <th
-              v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
-              :key="status"
-              colspan="3"
-              class="px-2 py-1.5"
-            >
-              {{ formattedQuestionStatus[status as QuestionStatus] ?? 'Total' }}
-            </th>
-          </tr>
-          <tr class="border-b divide-x text-base">
-            <template
-              v-for="status in statusListWithTotal"
-              :key="status"
-            >
-              <th
-                v-for="subHeader in ['Count', 'Time Spent', 'Avg. Time']"
-                :key="subHeader"
-                class="px-2 py-1.5"
-              >
-                {{ subHeader }}
-              </th>
-            </template>
-          </tr>
-        </thead>
-        <tbody
-          v-for="(subjectData, subject) in testStats"
-          v-show="currentSelectedState.subject === subject"
-          :key="subject"
-          class="dark:divide-gray-500 border"
-          :class="{
-            'divide-y': currentSelectedState.section.endsWith(OVERALL),
-          }"
-        >
-          <tr
-            v-for="(stats, section) in subjectData"
-            v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
-            :key="section"
-            class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td v-show="currentSelectedState.section === subject + OVERALL">
-              {{ section }}
-            </td>
-            <template
-              v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
-              :key="status"
-            >
-              <td>{{ stats.status[status].count }}</td>
-              <td>{{ utilSecondsToTime(stats.status[status].totalTime, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(stats.status[status].avgTime, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-        </tbody>
-        <tfoot
-          class="dark:divide-gray-500"
-          :class="{
-            'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
-          }"
-        >
-          <tr
-            v-for="(stats, subject) in subjectsOverallStats"
-            v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
-            :key="subject"
-            class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td>
-              {{
-                currentSelectedState.subject === TEST_OVERALL
-                  ? subject
-                  : subject + OVERALL
-              }}
-            </td>
-            <template
-              v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
-              :key="status"
-            >
-              <td>{{ stats.status[status].count }}</td>
-              <td>{{ utilSecondsToTime(stats.status[status].totalTime, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(stats.status[status].avgTime, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-          <tr
-            v-show="currentSelectedState.subject === TEST_OVERALL"
-            class="border divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td>
-              {{ TEST_OVERALL }}
-            </td>
-            <template
-              v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
-              :key="status"
-            >
-              <td>{{ testOverallStats?.status[status].count }}</td>
-              <td>{{ utilSecondsToTime(testOverallStats?.status[status].totalTime || 0, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(testOverallStats?.status[status].avgTime || 0, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-    <h3 class="text-lg font-semibold text-center mt-5">
-      Results Summary
-    </h3>
-    <div
-      class="px-4 pt-3 pb-15 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
-    >
-      <table class="table-auto border w-full border-collapse text-lg text-center">
-        <thead class="bg-gray-300 dark:bg-gray-800">
-          <tr
-            class="border-b divide-x"
-          >
-            <th
-              v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
-              rowspan="2"
-              class="px-2 py-1.5"
-            >
-              {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
-            </th>
-            <th
-              v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
-              :key="status"
-              :colspan="status === 'total' ? 4 : 3"
-              class="px-2 py-1.5"
-            >
-              {{ formattedResultStatus[status as QuestionResult['status']]?? 'Total' }}
-            </th>
-          </tr>
-          <tr class="border-b divide-x text-base">
-            <template
-              v-for="status in resultStatusListWithTotal"
-              :key="status"
-            >
-              <th
-                v-for="subHeader in (status === 'total' ? ['Count', 'Accuracy', 'Time Spent', 'Avg. Time'] : ['Count', 'Time Spent', 'Avg. Time'])"
-                :key="subHeader"
-                class="px-2 py-1.5"
-              >
-                {{ subHeader }}
-              </th>
-            </template>
-          </tr>
-        </thead>
-        <tbody
-          v-for="(subjectData, subject) in testStats"
-          v-show="currentSelectedState.subject === subject"
-          :key="subject"
-          class="dark:divide-gray-500 border"
-          :class="{
-            'divide-y': currentSelectedState.section.endsWith(OVERALL),
-          }"
-        >
-          <tr
-            v-for="(stats, section) in subjectData"
-            v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
-            :key="section"
-            class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td v-show="currentSelectedState.section === subject + OVERALL">
-              {{ section }}
-            </td>
-            <template
-              v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
-              :key="status"
-            >
-              <td>{{ stats.result[status].count }}</td>
-              <td v-if="status === 'total'">
-                {{ stats.accuracy.percent }}%
-              </td>
-              <td>{{ utilSecondsToTime(stats.result[status].totalTime, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(stats.result[status].avgTime, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-        </tbody>
-        <tfoot
-          class="dark:divide-gray-500"
-          :class="{
-            'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
-          }"
-        >
-          <tr
-            v-for="(stats, subject) in subjectsOverallStats"
-            v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
-            :key="subject"
-            class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td>
-              {{
-                currentSelectedState.subject === TEST_OVERALL
-                  ? subject
-                  : subject + OVERALL
-              }}
-            </td>
-            <template
-              v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
-              :key="status"
-            >
-              <td>{{ stats.result[status].count }}</td>
-              <td v-if="status === 'total'">
-                {{ stats.accuracy.percent }}%
-              </td>
-              <td>{{ utilSecondsToTime(stats.result[status].totalTime, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(stats.result[status].avgTime, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-          <tr
-            v-show="currentSelectedState.subject === TEST_OVERALL"
-            class="divide-x border dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td>
-              {{ TEST_OVERALL }}
-            </td>
-            <template
-              v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
-              :key="status"
-            >
-              <td>{{ testOverallStats?.result[status].count }}</td>
-              <td v-if="status === 'total'">
-                {{ testOverallStats?.accuracy.percent }}%
-              </td>
-              <td>{{ utilSecondsToTime(testOverallStats?.result[status].totalTime || 0, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(testOverallStats?.result[status].avgTime || 0, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-    <div class="flex flex-row gap-3 justify-center mt-5 items-center">
-      <h3 class="text-lg font-semibold text-center">
-        Marks Summary
-      </h3>
-      <IconWithTooltip :tooltip-content="tooltipContent.marksSummary" />
-    </div>
-    <div
-      class="px-4 pt-3 flex pb-20 flex-col gap-10 text-nowrap max-w-full overflow-auto"
-    >
-      <table class="table-auto border w-full border-collapse text-lg text-center">
-        <thead class="bg-gray-300 dark:bg-gray-800">
-          <tr
-            class="border-b divide-x"
-          >
-            <th
-              v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
-              rowspan="2"
-              class="px-2 py-1.5"
-            >
-              {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
-            </th>
-            <th
-              v-for="status in (marksStatusListWithTotal as (keyof Stats['status'])[])"
-              :key="status"
-              :colspan="status === 'total' ? 4 : 3"
-              class="px-2 py-1.5"
-            >
-              {{ utilKeyToLabel(status) }}
-            </th>
-          </tr>
-          <tr class="border-b divide-x text-base">
-            <template
-              v-for="status in marksStatusListWithTotal"
-              :key="status"
-            >
-              <th
-                v-for="subHeader in (status === 'total' ? ['Marks', 'Max Marks', 'Time Spent', 'Avg. Time'] : ['Marks', 'Time Spent', 'Avg. Time'])"
-                :key="subHeader"
-                class="px-2 py-1.5"
-              >
-                {{ subHeader }}
-              </th>
-            </template>
-          </tr>
-        </thead>
-        <tbody
-          v-for="(subjectData, subject) in testStats"
-          v-show="currentSelectedState.subject === subject"
-          :key="subject"
-          class="dark:divide-gray-500 border"
-          :class="{
-            'divide-y': currentSelectedState.section.endsWith(OVERALL),
-          }"
-        >
-          <tr
-            v-for="(stats, section) in subjectData"
-            v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
-            :key="section"
-            class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td v-show="currentSelectedState.section === subject + OVERALL">
-              {{ section }}
-            </td>
-            <template
-              v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
-              :key="status"
-            >
-              <td>{{ status === 'total' ? stats.marks[status].marks : utilMarksWithSign(stats.marks[status].marks) }}</td>
-              <td v-if="status === 'total'">
-                {{ stats.marks[status].maxMarks }}
-              </td>
-              <td>{{ utilSecondsToTime(stats.marks[status].totalTime, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(stats.marks[status].avgTime, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-        </tbody>
-        <tfoot
-          class="dark:divide-gray-500"
-          :class="{
-            'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
-          }"
-        >
-          <tr
-            v-for="(stats, subject) in subjectsOverallStats"
-            v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
-            :key="subject"
-            class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td>
-              {{
-                currentSelectedState.subject === TEST_OVERALL
-                  ? subject
-                  : subject + OVERALL
-              }}
-            </td>
-            <template
-              v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
-              :key="status"
-            >
-              <td>{{ status === 'total' ? stats.marks[status].marks : utilMarksWithSign(stats.marks[status].marks) }}</td>
-              <td v-if="status === 'total'">
-                {{ stats.marks[status].maxMarks }}
-              </td>
-              <td>{{ utilSecondsToTime(stats.marks[status].totalTime, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(stats.marks[status].avgTime, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-          <tr
-            v-show="currentSelectedState.subject === TEST_OVERALL"
-            class="divide-x border dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-          >
-            <td>
-              {{ TEST_OVERALL }}
-            </td>
-            <template
-              v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
-              :key="status"
-            >
-              <td>{{ testOverallStats?.marks[status].marks }}</td>
-              <td v-if="status === 'total'">
-                {{ testOverallStats?.marks[status].maxMarks }}
-              </td>
-              <td>{{ utilSecondsToTime(testOverallStats?.marks[status].totalTime || 0, 'mmm:ss', true) }}</td>
-              <td>{{ utilSecondsToTime(testOverallStats?.marks[status].avgTime || 0, 'mmm:ss', true) }}</td>
-            </template>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-    <Popover
-      ref="popOverStatusFilterElem"
-      pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
-    >
-      <div
-        v-for="(label, key) in formattedQuestionStatus"
-        :key="key"
-        class="mb-2 flex items-center"
-      >
-        <input
-          :id="'status-' + key + 'filter-label'"
-          v-model="questionFiltersState.status"
-          type="checkbox"
-          name="question-status-filter"
-          :value="key"
-          class="accent-green-400 w-4 h-4 mr-2"
-        >
-        <label
-          :for="'status-' + key + 'filter-label'"
-          class="cursor-pointer"
-        >
-          {{ label }}
-        </label>
-      </div>
-    </Popover>
-    <Popover
-      ref="popOverResultFilterElem"
-      pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
-    >
-      <div
-        v-for="(label, key) in formattedResultStatus"
-        :key="key"
-        class="mb-2 flex items-center"
-      >
-        <input
-          :id="'result-' + key + 'filter-label'"
-          v-model="questionFiltersState.result"
-          type="checkbox"
-          name="question-result-filter"
-          :value="key"
-          class="accent-green-400 w-4 h-4 mr-2 cursor-pointer"
-        >
-        <label
-          :for="'result-' + key + 'filter-label'"
-          class="cursor-pointer"
-        >
-          {{ label }}
-        </label>
-      </div>
-    </Popover>
-    <Popover
-      ref="popOverQNumOrderElem"
-      pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
-    >
-      <div class="flex flex-col gap-2">
         <div
-          v-for="(order, index) in questionsNumberingOrderList"
-          :key="index"
-          class="flex items-center gap-2"
+          v-show="currentSelectedState.subject === TEST_OVERALL || currentSelectedState.section.endsWith(OVERALL)"
+          class="flex flex-row gap-3 justify-center mt-3 items-center"
+        >
+          <h3 class="text-lg font-semibold text-center">
+            {{ showOverallQuestions ? 'Hide' : 'Show' }}&nbsp;
+            {{
+              currentSelectedState.subject === TEST_OVERALL
+                ? 'Test Questions'
+                : currentSelectedState.subject + ' Questions'
+            }}
+          </h3>
+          <BaseButton
+            class="w-7! h-7! p-0!"
+            rounded
+            raised
+            @click="showOverallQuestions = !showOverallQuestions"
+          >
+            <template #icon>
+              <Icon
+                :name="showOverallQuestions ? 'mdi:expand-less' : 'mdi:expand-more'"
+                class="text-2xl"
+              />
+            </template>
+          </BaseButton>
+        </div>
+        <table
+          v-show="showOverallQuestions || (currentSelectedState.subject !== TEST_OVERALL && !currentSelectedState.section.endsWith(OVERALL))"
+          class="table-auto border w-full border-collapse text-lg pb-5"
+          :class="highlightModeClasses + questionStatusFilterClasses + questionResultFilterClasses"
+        >
+          <thead class="bg-gray-300 dark:bg-gray-800">
+            <tr class="border-b divide-x text-center">
+              <th
+                v-show="currentSelectedState.subject === TEST_OVERALL"
+                class="px-2 py-1.5"
+              >
+                Subject
+              </th>
+              <th
+                v-show="currentSelectedState.subject === TEST_OVERALL || currentSelectedState.section.endsWith(OVERALL)"
+                class="px-2 py-1.5"
+              >
+                Section
+              </th>
+              <th class="px-2 py-1.5">
+                <div class="flex items-center gap-1 justify-center">
+                  Q. No.
+                  <BaseButton
+                    variant="text"
+                    rounded
+                    raised
+                    @click="(e) => popOverQNumOrderElem.show(e)"
+                  >
+                    <template #icon>
+                      <Icon
+                        name="mdi:format-list-numbers"
+                        class="text-2xl"
+                      />
+                    </template>
+                  </BaseButton>
+                </div>
+              </th>
+              <th class="px-2 py-1.5">
+                Marks
+              </th>
+              <th class="px-2 py-1.5">
+                <div class="flex items-center gap-1 justify-center">
+                  <BaseButton
+                    variant="text"
+                    rounded
+                    raised
+                    @click="() => {
+                      if (settings.highlightMode === 'result') settings.highlightMode = null
+                      else settings.highlightMode = 'result'
+                    }"
+                  >
+                    <template #icon>
+                      <Icon
+                        name="mdi:color"
+                        class="text-2xl"
+                        :class="settings.highlightMode === 'result' ? 'text-green-400' : 'text-gray-300'"
+                      />
+                    </template>
+                  </BaseButton>
+                  Result
+                  <BaseButton
+                    variant="text"
+                    severity="warn"
+                    rounded
+                    raised
+                    @click="(e) => showFilterPopOverMenu('result', e)"
+                  >
+                    <template #icon>
+                      <Icon
+                        name="mdi:filter-menu-outline"
+                        class="text-2xl"
+                      />
+                    </template>
+                  </BaseButton>
+                </div>
+              </th>
+              <th class="px-2 py-1.5">
+                Type
+              </th>
+              <th class="px-2 py-1.5">
+                Your Answer
+              </th>
+              <th class="px-2 py-1.5">
+                Correct Answer
+              </th>
+              <th class="px-2 py-1.5">
+                <div class="flex items-center gap-1 justify-center">
+                  Time Spent
+                  <BaseButton
+                    variant="text"
+                    :title="settings.sortByTimeSpent === null
+                      ? 'sort by descending order'
+                      : (
+                        settings.sortByTimeSpent === 'descending'
+                          ? 'sort by ascending order'
+                          : 'remove sort'
+                      )"
+                    rounded
+                    raised
+                    @click="() => {
+                      const sortByTimeSpent = settings.sortByTimeSpent
+                      switch (sortByTimeSpent) {
+                      case null:
+                        settings.sortByTimeSpent = 'descending'
+                        break;
+                      case 'descending':
+                        settings.sortByTimeSpent = 'ascending'
+                        break;
+                      default:
+                        settings.sortByTimeSpent = null
+                        break;
+                      }
+                    }"
+                  >
+                    <template #icon>
+                      <Icon
+                        :name="settings.sortByTimeSpent === 'ascending'
+                          ? 'mdi:sort-clock-ascending-outline'
+                          : 'mdi:sort-clock-descending-outline'"
+                        class="text-2xl"
+                        :class="settings.sortByTimeSpent === null
+                          ? 'text-gray-300'
+                          : 'text-green-400'"
+                      />
+                    </template>
+                  </BaseButton>
+                </div>
+              </th>
+              <th class="px-2 py-1.5">
+                <div class="flex items-center gap-1 justify-center">
+                  <BaseButton
+                    variant="text"
+                    rounded
+                    raised
+                    @click="() => {
+                      if (settings.highlightMode === 'status') settings.highlightMode = null
+                      else settings.highlightMode = 'status'
+                    }"
+                  >
+                    <template #icon>
+                      <Icon
+                        name="mdi:color"
+                        class="text-2xl"
+                        :class="settings.highlightMode === 'status' ? 'text-green-400' : 'text-gray-300'"
+                      />
+                    </template>
+                  </BaseButton>
+                  Status
+                  <BaseButton
+                    variant="text"
+                    severity="warn"
+                    rounded
+                    raised
+                    @click="(e) => showFilterPopOverMenu('status', e)"
+                  >
+                    <template #icon>
+                      <Icon
+                        name="mdi:filter-menu-outline"
+                        class="text-2xl"
+                      />
+                    </template>
+                  </BaseButton>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            class="dark:divide-gray-500"
+          >
+            <tr
+              v-for="question in testQuestions"
+              v-show="question.section === currentSelectedState.section
+                || (
+                  showOverallQuestions
+                  && (
+                    currentSelectedState.subject === TEST_OVERALL
+                    || (currentSelectedState.section.endsWith(OVERALL) && question.subject === currentSelectedState.subject)
+                  )
+                )"
+              :key="question.queId"
+              class="divide-x border-t dark:border-gray-500 dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+              :data-status="question.status"
+              :data-result="question.result.status"
+            >
+              <td v-show="currentSelectedState.subject === TEST_OVERALL">
+                {{ question.subject }}
+              </td>
+              <td
+                v-show="currentSelectedState.subject === TEST_OVERALL
+                  || (
+                    currentSelectedState.subject === question.subject && currentSelectedState.section.endsWith(OVERALL)
+                  )"
+              >
+                {{ question.section }}
+              </td>
+              <td>
+                <div class="flex items-center justify-items gap-4">
+                  <BaseButton
+                    variant="text"
+                    rounded
+                    raised
+                    title="Show Question Preview"
+                    @click="showQuestionPreview(question.queId)"
+                  >
+                    <template #icon>
+                      <Icon
+                        name="mdi:pageview"
+                        class="text-2xl"
+                      />
+                    </template>
+                  </BaseButton>
+                  <span>
+                    {{ questionsNumberingOrder === 'oriQueId'
+                      ? question.oriQueId
+                      : (
+                        questionsNumberingOrder === 'secQueId'
+                          ? question.secQueId
+                          : question.queId
+                      )
+                    }}
+                  </span>
+                </div>
+              </td>
+              <td>{{ utilMarksWithSign(question.result.marks) }}</td>
+              <td>{{ formattedResultStatus[question.result.status] }}</td>
+              <td>{{ question.type.toUpperCase() }}</td>
+              <td>{{ utilStringifyAnswer(question.answer, ', ', true) }}</td>
+              <td>{{ utilStringifyAnswer(question.result.correctAnswer, ', ', true) }}</td>
+              <td>{{ utilSecondsToTime(question.timeSpent, 'mmm:ss') }}</td>
+              <td>{{ formattedQuestionStatus[question.status] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 class="text-lg font-semibold text-center mt-5">
+        Questions Status Summary
+      </h3>
+      <div
+        class="px-4 pt-3 pb-15 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
+      >
+        <table class="table-auto border w-full border-collapse text-lg text-center">
+          <thead class="bg-gray-300 dark:bg-gray-800">
+            <tr
+              class="border-b divide-x"
+            >
+              <th
+                v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
+                rowspan="2"
+                class="px-2 py-1.5"
+              >
+                {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
+              </th>
+              <th
+                v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
+                :key="status"
+                colspan="3"
+                class="px-2 py-1.5"
+              >
+                {{ formattedQuestionStatus[status as QuestionStatus] ?? 'Total' }}
+              </th>
+            </tr>
+            <tr class="border-b divide-x text-base">
+              <template
+                v-for="status in statusListWithTotal"
+                :key="status"
+              >
+                <th
+                  v-for="subHeader in ['Count', 'Time Spent', 'Avg. Time']"
+                  :key="subHeader"
+                  class="px-2 py-1.5"
+                >
+                  {{ subHeader }}
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody
+            v-for="(subjectData, subject) in testStats"
+            v-show="currentSelectedState.subject === subject"
+            :key="subject"
+            class="dark:divide-gray-500 border"
+            :class="{
+              'divide-y': currentSelectedState.section.endsWith(OVERALL),
+            }"
+          >
+            <tr
+              v-for="(stats, section) in subjectData"
+              v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
+              :key="section"
+              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td v-show="currentSelectedState.section === subject + OVERALL">
+                {{ section }}
+              </td>
+              <template
+                v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
+                :key="status"
+              >
+                <td>{{ stats.status[status].count }}</td>
+                <td>{{ utilSecondsToTime(stats.status[status].totalTime, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(stats.status[status].avgTime, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+          </tbody>
+          <tfoot
+            class="dark:divide-gray-500"
+            :class="{
+              'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
+            }"
+          >
+            <tr
+              v-for="(stats, subject) in subjectsOverallStats"
+              v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
+              :key="subject"
+              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td>
+                {{
+                  currentSelectedState.subject === TEST_OVERALL
+                    ? subject
+                    : subject + OVERALL
+                }}
+              </td>
+              <template
+                v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
+                :key="status"
+              >
+                <td>{{ stats.status[status].count }}</td>
+                <td>{{ utilSecondsToTime(stats.status[status].totalTime, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(stats.status[status].avgTime, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+            <tr
+              v-show="currentSelectedState.subject === TEST_OVERALL"
+              class="border divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td>
+                {{ TEST_OVERALL }}
+              </td>
+              <template
+                v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
+                :key="status"
+              >
+                <td>{{ testOverallStats?.status[status].count }}</td>
+                <td>{{ utilSecondsToTime(testOverallStats?.status[status].totalTime || 0, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(testOverallStats?.status[status].avgTime || 0, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <h3 class="text-lg font-semibold text-center mt-5">
+        Results Summary
+      </h3>
+      <div
+        class="px-4 pt-3 pb-15 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
+      >
+        <table class="table-auto border w-full border-collapse text-lg text-center">
+          <thead class="bg-gray-300 dark:bg-gray-800">
+            <tr
+              class="border-b divide-x"
+            >
+              <th
+                v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
+                rowspan="2"
+                class="px-2 py-1.5"
+              >
+                {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
+              </th>
+              <th
+                v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
+                :key="status"
+                :colspan="status === 'total' ? 4 : 3"
+                class="px-2 py-1.5"
+              >
+                {{ formattedResultStatus[status as QuestionResult['status']]?? 'Total' }}
+              </th>
+            </tr>
+            <tr class="border-b divide-x text-base">
+              <template
+                v-for="status in resultStatusListWithTotal"
+                :key="status"
+              >
+                <th
+                  v-for="subHeader in (status === 'total' ? ['Count', 'Accuracy', 'Time Spent', 'Avg. Time'] : ['Count', 'Time Spent', 'Avg. Time'])"
+                  :key="subHeader"
+                  class="px-2 py-1.5"
+                >
+                  {{ subHeader }}
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody
+            v-for="(subjectData, subject) in testStats"
+            v-show="currentSelectedState.subject === subject"
+            :key="subject"
+            class="dark:divide-gray-500 border"
+            :class="{
+              'divide-y': currentSelectedState.section.endsWith(OVERALL),
+            }"
+          >
+            <tr
+              v-for="(stats, section) in subjectData"
+              v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
+              :key="section"
+              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td v-show="currentSelectedState.section === subject + OVERALL">
+                {{ section }}
+              </td>
+              <template
+                v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
+                :key="status"
+              >
+                <td>{{ stats.result[status].count }}</td>
+                <td v-if="status === 'total'">
+                  {{ stats.accuracy.percent }}%
+                </td>
+                <td>{{ utilSecondsToTime(stats.result[status].totalTime, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(stats.result[status].avgTime, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+          </tbody>
+          <tfoot
+            class="dark:divide-gray-500"
+            :class="{
+              'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
+            }"
+          >
+            <tr
+              v-for="(stats, subject) in subjectsOverallStats"
+              v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
+              :key="subject"
+              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td>
+                {{
+                  currentSelectedState.subject === TEST_OVERALL
+                    ? subject
+                    : subject + OVERALL
+                }}
+              </td>
+              <template
+                v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
+                :key="status"
+              >
+                <td>{{ stats.result[status].count }}</td>
+                <td v-if="status === 'total'">
+                  {{ stats.accuracy.percent }}%
+                </td>
+                <td>{{ utilSecondsToTime(stats.result[status].totalTime, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(stats.result[status].avgTime, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+            <tr
+              v-show="currentSelectedState.subject === TEST_OVERALL"
+              class="divide-x border dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td>
+                {{ TEST_OVERALL }}
+              </td>
+              <template
+                v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
+                :key="status"
+              >
+                <td>{{ testOverallStats?.result[status].count }}</td>
+                <td v-if="status === 'total'">
+                  {{ testOverallStats?.accuracy.percent }}%
+                </td>
+                <td>{{ utilSecondsToTime(testOverallStats?.result[status].totalTime || 0, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(testOverallStats?.result[status].avgTime || 0, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="flex flex-row gap-3 justify-center mt-5 items-center">
+        <h3 class="text-lg font-semibold text-center">
+          Marks Summary
+        </h3>
+        <IconWithTooltip :tooltip-content="tooltipContent.marksSummary" />
+      </div>
+      <div
+        class="px-4 pt-3 flex pb-20 flex-col gap-10 text-nowrap max-w-full overflow-auto"
+      >
+        <table class="table-auto border w-full border-collapse text-lg text-center">
+          <thead class="bg-gray-300 dark:bg-gray-800">
+            <tr
+              class="border-b divide-x"
+            >
+              <th
+                v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
+                rowspan="2"
+                class="px-2 py-1.5"
+              >
+                {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
+              </th>
+              <th
+                v-for="status in (marksStatusListWithTotal as (keyof Stats['status'])[])"
+                :key="status"
+                :colspan="status === 'total' ? 4 : 3"
+                class="px-2 py-1.5"
+              >
+                {{ utilKeyToLabel(status) }}
+              </th>
+            </tr>
+            <tr class="border-b divide-x text-base">
+              <template
+                v-for="status in marksStatusListWithTotal"
+                :key="status"
+              >
+                <th
+                  v-for="subHeader in (status === 'total' ? ['Marks', 'Max Marks', 'Time Spent', 'Avg. Time'] : ['Marks', 'Time Spent', 'Avg. Time'])"
+                  :key="subHeader"
+                  class="px-2 py-1.5"
+                >
+                  {{ subHeader }}
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody
+            v-for="(subjectData, subject) in testStats"
+            v-show="currentSelectedState.subject === subject"
+            :key="subject"
+            class="dark:divide-gray-500 border"
+            :class="{
+              'divide-y': currentSelectedState.section.endsWith(OVERALL),
+            }"
+          >
+            <tr
+              v-for="(stats, section) in subjectData"
+              v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
+              :key="section"
+              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td v-show="currentSelectedState.section === subject + OVERALL">
+                {{ section }}
+              </td>
+              <template
+                v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
+                :key="status"
+              >
+                <td>{{ status === 'total' ? stats.marks[status].marks : utilMarksWithSign(stats.marks[status].marks) }}</td>
+                <td v-if="status === 'total'">
+                  {{ stats.marks[status].maxMarks }}
+                </td>
+                <td>{{ utilSecondsToTime(stats.marks[status].totalTime, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(stats.marks[status].avgTime, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+          </tbody>
+          <tfoot
+            class="dark:divide-gray-500"
+            :class="{
+              'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
+            }"
+          >
+            <tr
+              v-for="(stats, subject) in subjectsOverallStats"
+              v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
+              :key="subject"
+              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td>
+                {{
+                  currentSelectedState.subject === TEST_OVERALL
+                    ? subject
+                    : subject + OVERALL
+                }}
+              </td>
+              <template
+                v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
+                :key="status"
+              >
+                <td>{{ status === 'total' ? stats.marks[status].marks : utilMarksWithSign(stats.marks[status].marks) }}</td>
+                <td v-if="status === 'total'">
+                  {{ stats.marks[status].maxMarks }}
+                </td>
+                <td>{{ utilSecondsToTime(stats.marks[status].totalTime, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(stats.marks[status].avgTime, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+            <tr
+              v-show="currentSelectedState.subject === TEST_OVERALL"
+              class="divide-x border dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
+            >
+              <td>
+                {{ TEST_OVERALL }}
+              </td>
+              <template
+                v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
+                :key="status"
+              >
+                <td>{{ testOverallStats?.marks[status].marks }}</td>
+                <td v-if="status === 'total'">
+                  {{ testOverallStats?.marks[status].maxMarks }}
+                </td>
+                <td>{{ utilSecondsToTime(testOverallStats?.marks[status].totalTime || 0, 'mmm:ss', true) }}</td>
+                <td>{{ utilSecondsToTime(testOverallStats?.marks[status].avgTime || 0, 'mmm:ss', true) }}</td>
+              </template>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <Popover
+        ref="popOverStatusFilterElem"
+        pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+      >
+        <div
+          v-for="(label, key) in formattedQuestionStatus"
+          :key="key"
+          class="mb-2 flex items-center"
         >
           <input
-            :id="'que-order-' + order.value"
-            v-model="questionsNumberingOrder"
-            type="radio"
-            name="que-num-order"
-            :value="order.value"
-            class="accent-green-400 w-4 h-4 cursor-pointer"
+            :id="'status-' + key + 'filter-label'"
+            v-model="questionFiltersState.status"
+            type="checkbox"
+            name="question-status-filter"
+            :value="key"
+            class="accent-green-400 w-4 h-4 mr-2"
           >
           <label
-            :for="'que-order-' + order.value"
+            :for="'status-' + key + 'filter-label'"
             class="cursor-pointer"
           >
-            {{ order.label }}
+            {{ label }}
           </label>
         </div>
-      </div>
-    </Popover>
+      </Popover>
+      <Popover
+        ref="popOverResultFilterElem"
+        pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+      >
+        <div
+          v-for="(label, key) in formattedResultStatus"
+          :key="key"
+          class="mb-2 flex items-center"
+        >
+          <input
+            :id="'result-' + key + 'filter-label'"
+            v-model="questionFiltersState.result"
+            type="checkbox"
+            name="question-result-filter"
+            :value="key"
+            class="accent-green-400 w-4 h-4 mr-2 cursor-pointer"
+          >
+          <label
+            :for="'result-' + key + 'filter-label'"
+            class="cursor-pointer"
+          >
+            {{ label }}
+          </label>
+        </div>
+      </Popover>
+      <Popover
+        ref="popOverQNumOrderElem"
+        pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+      >
+        <div class="flex flex-col gap-2">
+          <div
+            v-for="(order, index) in questionsNumberingOrderList"
+            :key="index"
+            class="flex items-center gap-2"
+          >
+            <input
+              :id="'que-order-' + order.value"
+              v-model="questionsNumberingOrder"
+              type="radio"
+              name="que-num-order"
+              :value="order.value"
+              class="accent-green-400 w-4 h-4 cursor-pointer"
+            >
+            <label
+              :for="'que-order-' + order.value"
+              class="cursor-pointer"
+            >
+              {{ order.label }}
+            </label>
+          </div>
+        </div>
+      </Popover>
+    </div>
+    <LazyCbtResultsQuestionPanel
+      v-if="questionPreviewState.hydrate"
+      v-model:show-panel="questionPreviewState.show"
+      :preview-question-id="questionPreviewQueId"
+      :formatted-question-status="formattedQuestionStatus"
+      :formatted-result-status="formattedResultStatus"
+      :question-filters-state="questionFiltersState"
+      :questions-numbering-order="questionsNumberingOrder"
+      :selected-sub-and-sec="currentSelectedState"
+      :overall-constants="[TEST_OVERALL, OVERALL]"
+      :all-questions="testQuestions"
+    />
   </div>
 </template>
 
@@ -863,6 +895,13 @@ interface Settings {
   sortByTimeSpent: 'ascending' | 'descending' | null
 }
 
+const questionPreviewState = shallowReactive({
+  show: false,
+  hydrate: false,
+})
+
+const questionPreviewQueId = shallowRef(1)
+
 const formattedQuestionStatus = {
   answered: 'Answered',
   markedAnswered: 'MFR & Answered',
@@ -924,8 +963,10 @@ const questionsNumberingOrderList: {
 
 const statusList = ['answered', 'markedAnswered', 'notAnswered', 'marked', 'notVisited']
 const statusListWithTotal = statusList.concat('total')
+
 const resultStatusList = ['correct', 'partial', 'incorrect', 'notAnswered', 'bonus', 'dropped']
 const resultStatusListWithTotal = resultStatusList.concat('total')
+
 const marksStatusList = ['positive', 'negative', 'bonus', 'dropped']
 const marksStatusListWithTotal = marksStatusList.concat('total')
 const TEST_OVERALL = 'Test Overall'
@@ -954,7 +995,9 @@ const questionFiltersState = reactive({
   result: [...resultStatusList],
 })
 
-const questionsNumberingOrder = shallowRef<keyof TestResultDataQuestion>('oriQueId')
+const questionsNumberingOrder = shallowRef<keyof Pick<
+  TestResultDataQuestion, 'oriQueId' | 'queId' | 'secQueId'
+>>('oriQueId')
 
 const currentSelectedState = shallowReactive({
   subject: TEST_OVERALL,
@@ -1374,6 +1417,13 @@ const subjectChangeHandler = (subject: string) => {
 const showFilterPopOverMenu = (type: 'status' | 'result', e: Event) => {
   if (type === 'result') popOverResultFilterElem.value?.show(e)
   else popOverStatusFilterElem.value?.show(e)
+}
+
+const showQuestionPreview = (queId: number) => {
+  questionPreviewQueId.value = queId
+  questionPreviewState.show = true
+
+  questionPreviewState.hydrate ||= true
 }
 </script>
 
