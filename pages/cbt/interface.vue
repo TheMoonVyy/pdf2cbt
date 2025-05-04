@@ -12,7 +12,8 @@
     <div
       v-show="!submitState.isSubmitBtnClicked
         && !submitState.isSubmitting
-        && !submitState.isSubmitted"
+        && !submitState.isSubmitted
+        && !submitState.unableToSave"
       class="flex flex-col max-w-full max-h-dvh min-h-dvh select-none"
     >
       <div
@@ -335,7 +336,8 @@
     <div
       v-show="submitState.isSubmitBtnClicked
         || submitState.isSubmitting
-        || submitState.isSubmitted"
+        || submitState.isSubmitted
+        || submitState.unableToSave"
       class="flex flex-col max-w-full max-h-dvh min-h-dvh light"
     >
       <div
@@ -421,9 +423,20 @@
       </div>
       <div
         v-if="submitState.isSubmitted"
-        class="flex flex-col m-auto gap-8"
+        class="flex m-auto"
       >
-        <p class="text-xl font-semibold text-center">
+        <p class="text-2xl font-semibold text-center">
+          Your test has been submitted<br><br>
+          <template v-if="!submitState.unableToSave">
+            Please wait, Redirecting you to results page...<br>
+          </template>
+        </p>
+      </div>
+      <div
+        v-if="submitState.unableToSave"
+        class="flex flex-col m-auto gap-8 mt-5"
+      >
+        <p class="text-2xl font-semibold text-center">
           There was an error while trying to save the test data to your local database!
           Please download the test data so you can import it on the Results page.
         </p>
@@ -667,6 +680,7 @@ const submitState = shallowReactive({
   isSubmitBtnClicked: false,
   isSubmitting: false,
   isSubmitted: false,
+  unableToSave: false,
 })
 
 const {
@@ -676,6 +690,7 @@ const {
   testQuestionsData,
   testSectionsSummary,
   currentTestState,
+  testSectionsImgUrls,
 } = useCbtTestData()
 
 useCreateSectionsSummary(testSectionsData, testSectionsSummary)
@@ -1094,13 +1109,19 @@ async function submitTest(isAuto: boolean) {
     if (id) {
       const currentResultsID = useCbtResultsCurrentID()
       currentResultsID.value = id
+      submitState.isSubmitted = true
+      submitState.isSubmitting = false
+      await nextTick()
       pageCleanUpCallback()
+
+      loadQuestionImgUrlsToResultsUrlsState(id)
       await navigateTo('/cbt/results')
     }
   }
   catch (err) {
     console.error('Error while saving test data in db', err)
     submitState.isSubmitted = true
+    submitState.unableToSave = true
     submitState.isSubmitting = false
   }
 }
@@ -1162,6 +1183,29 @@ function generateTestOutputData() {
   }
 }
 
+function loadQuestionImgUrlsToResultsUrlsState(testId: number) {
+  const sectionsUrls = testSectionsImgUrls.value
+  const sectionsData = testSectionsData.value
+  const questionsUrls: Record<string | number, string[]> = {}
+
+  let isAdded = false
+
+  for (const [section, questions] of Object.entries(sectionsUrls)) {
+    for (const [oriQueId, questionUrls] of Object.entries(questions)) {
+      const queId = sectionsData?.[section]?.[oriQueId]?.queId || 0
+      if (queId === 0) return
+
+      questionsUrls[queId] = questionUrls
+      isAdded = true
+    }
+  }
+
+  if (isAdded) {
+    const resultsStateUrls = useCbtResultsTestQuestionsImgUrls()
+    resultsStateUrls.value[testId] = questionsUrls
+  }
+}
+
 const downloadTestData = () => {
   const blob = new Blob([JSON.stringify(testOutputData, null, 2)], { type: 'application/json' })
   utilSaveFile('pdf2cbt_test_data.json', blob)
@@ -1170,9 +1214,11 @@ const downloadTestData = () => {
 onBeforeUnmount(pageCleanUpCallback)
 
 onUnmounted(() => {
+  const keys = Object.values(CbtUseState)
   clearNuxtState((key) => {
-    return Object.values(CbtUseState).includes(key as CbtUseState)
+    return keys.includes(key as CbtUseState)
       && key !== CbtUseState.CurrentResultsID
+      && key !== CbtUseState.ResultsTestQuestionsImgUrls
   })
 })
 </script>
