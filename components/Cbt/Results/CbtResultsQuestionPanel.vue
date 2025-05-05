@@ -433,9 +433,16 @@ watch(showPanel,
   (newValue) => {
     if (newValue) {
       currentQuestionId.value = previewQuestionId
-      if (!testQuestionsImgUrls.value[currentTestResultsId.value]) {
+      const testId = currentTestResultsId.value
+      if (!testQuestionsImgUrls.value[testId]) {
         cleanupQuestionImgs()
-        showLoadPdfDialog.value = true
+        if (testId === 0) {
+          loadDemoImages()
+          drawerVisibility.value = true
+        }
+        else {
+          showLoadPdfDialog.value = true
+        }
       }
       else {
         drawerVisibility.value = true
@@ -691,6 +698,41 @@ async function unzipFile(zipFile: File | Blob) {
   })
 }
 
+async function loadDemoImages() {
+  pdfRenderingProgress.value = 'loading-pdf'
+  const zipModule = await import('~/src/assets/zip/results_demo_pngs.zip?url')
+  const zipUrl = zipModule.default
+
+  const res = await fetch(zipUrl)
+  const buffer = await res.arrayBuffer()
+  const zipU8Array = new Uint8Array(buffer)
+
+  pdfRenderingProgress.value = 'generating-img'
+
+  unzip(zipU8Array, (err, files) => {
+    if (err) {
+      pdfRenderingProgress.value = 'failed'
+      throw err
+    }
+
+    testQuestionsImgUrls.value[0] = {}
+    for (const [filename, imageUint8Array] of Object.entries(files).toSorted()) {
+      const queId = parseInt(filename.split('-')[0])
+      const blob = new Blob([imageUint8Array], { type: 'image/png' })
+      const url = URL.createObjectURL(blob)
+      testQuestionsImgUrls.value[0][queId] ||= []
+      testQuestionsImgUrls.value[0][queId].push(url)
+    }
+
+    if (Object.keys(testQuestionsImgUrls.value[0] || {}).length > 0) {
+      pdfRenderingProgress.value = 'done'
+    }
+    else {
+      pdfRenderingProgress.value = 'failed'
+    }
+  })
+}
+
 function getQuestionsPdfData(questions: TestResultDataQuestion[]) {
   const newQuestionsPdfData: QuestionsPdfData = {}
 
@@ -715,6 +757,8 @@ function getQuestionsPdfData(questions: TestResultDataQuestion[]) {
 async function renderPdftoImgs(pdf: Uint8Array) {
   let mupdfOgWorker: null | Worker = null
   let mupdfWorker: Comlink.Remote<MuPdfProcessor> | null = null
+
+  const testId = currentTestResultsId.value
 
   pdfRenderingProgress.value = 'loading-pdf'
   try {
@@ -762,15 +806,15 @@ async function renderPdftoImgs(pdf: Uint8Array) {
       if (!added) break
     }
 
-    testQuestionsImgUrls.value[currentTestResultsId.value] ||= {}
+    testQuestionsImgUrls.value[testId] ||= {}
 
     mupdfOgWorker.onmessage = (e) => {
       if (e.data.type === 'question-image') {
         const { queId, blob } = e.data as { queId: number, blob: Blob }
 
         const imgUrl = URL.createObjectURL(blob)
-        testQuestionsImgUrls.value[currentTestResultsId.value][queId] ??= []
-        testQuestionsImgUrls.value[currentTestResultsId.value][queId].push(imgUrl)
+        testQuestionsImgUrls.value[testId][queId] ??= []
+        testQuestionsImgUrls.value[testId][queId].push(imgUrl)
       }
     }
     pdfRenderingProgress.value = 'generating-img'
@@ -785,7 +829,15 @@ async function renderPdftoImgs(pdf: Uint8Array) {
     if (mupdfWorker) {
       mupdfWorker.close()
     }
-    if (pdfRenderingProgress.value !== 'done') pdfRenderingProgress.value = 'failed'
+    if (pdfRenderingProgress.value !== 'done') {
+      pdfRenderingProgress.value = 'failed'
+      if (Object.keys(testQuestionsImgUrls.value[testId] || {}).length === 0) {
+        if (testQuestionsImgUrls.value[testId]) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete testQuestionsImgUrls.value[testId]
+        }
+      }
+    }
   }
 }
 
@@ -795,6 +847,8 @@ function cleanupQuestionImgs() {
       imgs.forEach(url => URL.revokeObjectURL(url))
     }
   }
+
+  testQuestionsImgUrls.value = {}
 }
 
 onBeforeMount(() => {
