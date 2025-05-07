@@ -170,7 +170,7 @@
           <div
             v-for="n in (currentQuestion.totalOptions || 4)"
             :key="n"
-            class="relative border-[1.5px] border-gray-300 rounded-lg p-2 min-w-64 sm:min-w-60 sm:@min-lg:min-w-64
+            class="relative border-2 border-gray-300 rounded-lg p-2 min-w-64 sm:min-w-60 sm:@min-lg:min-w-64
             has-[.option-status-correct]:border-green-500 has-[.option-status-correct]:bg-green-500/2
             has-[.option-result-partial]:border-yellow-500! has-[.option-result-partial]:bg-yellow-500/2!
             has-[.option-result-incorrect]:border-red-500! has-[.option-result-incorrect]:bg-red-500/2!
@@ -192,7 +192,8 @@
               :class="'option-result-' + getYourAnswerStatus(n)"
               class="absolute top-0 right-5 -translate-y-1/2 rounded-md text-white px-2 text-xs bg-green-800
               [.option-result-correct]:bg-green-800 [.option-result-partial]:bg-yellow-800
-              [.option-result-incorrect]:bg-red-800 [.option-result-none]:hidden"
+              [.option-result-incorrect]:bg-red-800 [.option-result-none]:hidden
+              [.option-result-neutral]:bg-gray-600"
             >
               Your Answer
             </span>
@@ -213,7 +214,7 @@
             )"
             :key="n"
             class="relative text-center text-xl font-bold p-2
-            border-[1.5px] border-gray-300 rounded-lg min-w-64 sm:min-w-60 sm:@min-lg:min-w-64
+            border-2 border-gray-300 rounded-lg min-w-64 sm:min-w-60 sm:@min-lg:min-w-64
             has-[.numeric-status-correct]:border-green-500 has-[.numeric-status-correct]:bg-green-500/2
             has-[.numeric-result-incorrect]:border-red-500! has-[.numeric-result-incorrect]:bg-red-500/2!
             has-[.numeric-status-dropped]:border-fuchsia-500
@@ -296,7 +297,7 @@
       </div>
     </Drawer>
     <Dialog
-      v-model:visible="showLoadPdfDialog"
+      v-model:visible="fileUploaderState.showLoadPdfDialog"
       header="Upload PDF/ZIP for Question Preview"
       :draggable="false"
       :modal="true"
@@ -323,13 +324,94 @@
         />
       </div>
     </Dialog>
+    <Dialog
+      v-model:visible="fileUploaderState.showPdfHashMismatchDialog"
+      header="PDF hash is not matching with the one in your test data!"
+      :modal="true"
+      :closable="false"
+      :close-on-escape="false"
+      :block-scroll="true"
+      :draggable="false"
+      pt:content:class="flex flex-col px-0 py-4 max-w-xl"
+    >
+      <div class="flex mb-6 items-center">
+        <h3
+          class="text-lg text-center"
+        >
+          PDF file's hash is different to the one that is in your test data.<br><br>
+          Hash can differ if even slight modification was done to pdf's contents.<br><br>
+          If you are sure that pdf/zip file is correct, then you can continue anyway.<br>
+          OR<br>
+          You can go back and re-upload the correct one.<br>
+        </h3>
+      </div>
+      <div class="flex flex-col sm:flex-row px-2 sm:px-8 gap-x-5 gap-y-3 justify-between">
+        <BaseButton
+          label="Continue anyway"
+          severity="warn"
+          @click="startRenderingImgs()"
+        >
+          <template #icon>
+            <Icon
+              name="mdi:rocket"
+              size="1.4rem"
+            />
+          </template>
+        </BaseButton>
+        <BaseButton
+          label="Go back to Re-upload"
+          @click="() => {
+            fileUploaderState.showPdfHashMismatchDialog = false
+            fileUploaderState.showLoadPdfDialog = true
+          }"
+        >
+          <template #icon>
+            <Icon
+              name="material-symbols:undo-rounded"
+              size="1.4rem"
+            />
+          </template>
+        </BaseButton>
+      </div>
+    </Dialog>
+    <Dialog
+      v-model:visible="fileUploaderState.showLoadPdfDataDialog"
+      header="PDF Cropper's data is not in your test data."
+      :modal="true"
+      :closable="false"
+      :close-on-escape="false"
+      :block-scroll="true"
+      :draggable="false"
+      pt:root:class="mx-auto max-w-lg"
+      pt:title:class="p-0 mx-auto"
+      pt:content:class="px-4 text-center"
+      pt:header:class="gap-4"
+    >
+      <h4 class="font-bold text-red-400">
+        PDF Cropper's Data is not found in your test data.<br>
+        This may happen if you gave this test before April 16, as versions before that didn't have cropper data in test data
+      </h4>
+      <h4 class="my-6">
+        No worries!<br>
+        You just need to upload the PDF Cropper data now (either the Zip or json file)
+      </h4>
+      <div class="flex my-5 mx-auto justify-center">
+        <BaseSimpleFileUpload
+          accept="application/json,application/zip,.json,.zip"
+          label="Upload Cropper's ZIP or JSON file"
+          invalid-file-type-message="Invalid file. Please select a valid PDF or JSON file which you had uploaded on Test Interface"
+          icon-name="prime:upload"
+          @upload="(file) => handleFileUpload(file, 'zip-or-json')"
+        />
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { unzip } from 'fflate'
+import { strFromU8, unzip } from 'fflate'
 import * as Comlink from 'comlink'
-import type { QuestionResult, QuestionStatus, TestResultDataQuestion } from '~/src/types'
+import type { CropperOutputData, QuestionResult, QuestionStatus, TestResultDataQuestion } from '~/src/types'
 import { LocalStorageKeys, DataFileNames } from '~/src/types/enums'
 import { db } from '~/src/db/cbt-db'
 import mupdfWorkerFile from '~/src/worker/mupdf.worker?worker'
@@ -354,6 +436,7 @@ interface Props {
   questionsNumberingOrder: keyof Pick<TestResultDataQuestion, 'oriQueId' | 'queId' | 'secQueId'>
   overallConstants: string[]
   allQuestions: TestResultDataQuestion[]
+  testPdfFileHash: string
 }
 
 type QuestionsPdfData = {
@@ -364,6 +447,10 @@ type QuestionsPdfData = {
     w: number
     h: number
   }[]
+}
+
+type PdfCropperJsonData = {
+  pdfCropperData: CropperOutputData
 }
 
 const showPanel = defineModel<boolean>('showPanel', { required: true })
@@ -378,13 +465,26 @@ const {
   questionsNumberingOrder,
   overallConstants,
   allQuestions,
+  testPdfFileHash,
 } = defineProps<Props>()
 
 const [TEST_OVERALL, OVERALL] = overallConstants
 
 const drawerVisibility = shallowRef(false)
 
-const showLoadPdfDialog = shallowRef(false)
+const fileUploaderState = shallowReactive<{
+  pdfUint8Array: Uint8Array | null
+  cropperData: PdfCropperJsonData | null
+  showLoadPdfDialog: boolean
+  showPdfHashMismatchDialog: boolean
+  showLoadPdfDataDialog: boolean
+}>({
+  pdfUint8Array: null,
+  cropperData: null,
+  showLoadPdfDialog: false,
+  showPdfHashMismatchDialog: false,
+  showLoadPdfDataDialog: false,
+})
 
 const pdfRenderingProgress = shallowRef<'loading-pdf' | 'generating-img' | 'done' | 'failed'>('loading-pdf')
 
@@ -441,7 +541,7 @@ watch(showPanel,
           drawerVisibility.value = true
         }
         else {
-          showLoadPdfDialog.value = true
+          fileUploaderState.showLoadPdfDialog = true
         }
       }
       else {
@@ -454,9 +554,14 @@ watch(showPanel,
 
 // just a simple watcher to set showPanel to false if both question Panel and uploadPDF dialog is not visible
 // this will allow parent to trigger (the watcher above) question panel again.
-watch([drawerVisibility, showLoadPdfDialog], () => {
-  if (!drawerVisibility.value && !showLoadPdfDialog.value) showPanel.value = false
-})
+watch(
+  [drawerVisibility, () => fileUploaderState.showLoadPdfDialog],
+  () => {
+    if (!drawerVisibility.value && !fileUploaderState.showLoadPdfDialog) {
+      showPanel.value = false
+    }
+  },
+)
 
 // stores panel's questions related data
 // questionsData is filtered version of allQuestions using detailed panel's questions table's filters
@@ -552,12 +657,15 @@ const getCorrectAnswerStatus = (optionNum: number) => {
 // label to show on option's right side, for any question type
 const getYourAnswerStatus = (optionNum: number) => {
   const resultStatus = currentQuestion.value.result.status
-  if (resultStatus === 'bonus' || resultStatus === 'dropped' || resultStatus === 'notAnswered') {
+  if (resultStatus === 'notAnswered') {
     return 'none'
   }
 
   if (currentQuestion.value.type === 'mcq') {
     if (optionNum === currentQuestion.value.answer) {
+      if (resultStatus === 'bonus' || resultStatus === 'dropped') {
+        return 'neutral'
+      }
       return resultStatus
     }
   }
@@ -574,11 +682,17 @@ const getYourAnswerStatus = (optionNum: number) => {
         }
       }
       else {
-        return resultStatus
+        if (resultStatus === 'bonus' || resultStatus === 'dropped') {
+          return 'neutral'
+        }
+        return 'correct'
       }
     }
   }
   else {
+    if (resultStatus === 'bonus' || resultStatus === 'dropped') {
+      return 'neutral'
+    }
     return resultStatus
   }
 
@@ -614,64 +728,73 @@ const resizeDrawer = (resizeType: 'increase' | 'decrease') => {
   }
 }
 
-const handleFileUpload = (file: File) => {
-  const reader = new FileReader()
-
-  reader.onload = function (e) {
-    let isPdf = false
-    let isZip = false
-
-    const results = e.target?.result
-    if (results) {
-      const arr = new Uint8Array(results as ArrayBuffer)
-
-      // Check file type via magic number
-      if (arr[0] === 0x25 && arr[1] === 0x50 && arr[2] === 0x44 && arr[3] === 0x46) {
-        isPdf = true
-      }
-      else if (arr[0] === 0x50 && arr[1] === 0x4B) {
-        isZip = true
-      }
-      else {
-        // Fallback to MIME type or extension
-        const mime = file.type
-        const name = file.name.toLowerCase()
-
-        if (mime === 'application/pdf' || name.endsWith('.pdf')) {
-          isPdf = true
-        }
-        else if (mime === 'application/zip' || name.endsWith('.zip')) {
-          isZip = true
-        }
+const handleFileUpload = async (file: File, type: 'zip-or-pdf' | 'zip-or-json' = 'zip-or-pdf') => {
+  const zipCheckScore = await utilIsZipFile(file)
+  if (zipCheckScore > 0) {
+    loadUploadedFile(file, 'zip')
+  }
+  else {
+    if (type === 'zip-or-pdf') {
+      const pdfCheckScore = await utilIsPdfFile(file)
+      if (pdfCheckScore > 0) {
+        loadUploadedFile(file, 'pdf')
       }
     }
-
-    if (isPdf || isZip) loadUploadedFile(file, isPdf ? 'pdf' : 'zip')
+    else {
+      loadUploadedFile(file, 'json')
+    }
   }
-
-  // Only read first 4 bytes for magic number check
-  reader.readAsArrayBuffer(file.slice(0, 4))
 }
 
-async function loadUploadedFile(file: File, fileType: 'zip' | 'pdf') {
-  let pdfBuffer: null | Uint8Array = null
+async function loadUploadedFile(file: File, fileType: 'zip' | 'pdf' | 'json') {
+  fileUploaderState.showPdfHashMismatchDialog = false
 
   try {
     if (fileType === 'pdf') {
-      pdfBuffer = new Uint8Array(await file.arrayBuffer())
+      fileUploaderState.pdfUint8Array = new Uint8Array(await file.arrayBuffer())
+      fileUploaderState.cropperData = null
+    }
+    else if (fileType === 'zip') {
+      const data = await unzipFile(file)
+      fileUploaderState.pdfUint8Array = data.pdfFile
+      fileUploaderState.cropperData = data.jsonData
     }
     else {
-      pdfBuffer = (await unzipFile(file)).pdfFile
+      fileUploaderState.cropperData = JSON.parse(strFromU8(new Uint8Array(await file.arrayBuffer())))
+    }
+
+    if (fileUploaderState.pdfUint8Array) {
+      if (fileType !== 'json' && testPdfFileHash) {
+        const currentPdfHash = await utilGetHash(fileUploaderState.pdfUint8Array)
+        if (currentPdfHash !== testPdfFileHash) {
+          fileUploaderState.showLoadPdfDialog = false
+          fileUploaderState.showPdfHashMismatchDialog = true
+          return
+        }
+      }
+      startRenderingImgs()
     }
   }
   catch (err) {
     console.error('Error while loading the Uploaded File for Question Preview', err)
   }
+}
 
-  if (pdfBuffer) {
+async function startRenderingImgs() {
+  fileUploaderState.showLoadPdfDialog = false
+  fileUploaderState.showPdfHashMismatchDialog = false
+  fileUploaderState.showLoadPdfDataDialog = false
+
+  const questionsPdfData = getQuestionsPdfData(allQuestions)
+  if (questionsPdfData) {
     drawerVisibility.value = true
-    showLoadPdfDialog.value = false
-    renderPdftoImgs(pdfBuffer)
+    renderPdftoImgs(questionsPdfData)
+  }
+  else if (!fileUploaderState.cropperData) {
+    fileUploaderState.showLoadPdfDataDialog = true
+  }
+  else {
+    console.error('Error: pdfData not found in questions data')
   }
 }
 
@@ -680,6 +803,7 @@ async function unzipFile(zipFile: File | Blob) {
 
   return new Promise<{
     pdfFile: Uint8Array
+    jsonData: PdfCropperJsonData
   }>((resolve, reject) => {
     unzip(zipU8Array, (err, files) => {
       if (err) {
@@ -688,8 +812,10 @@ async function unzipFile(zipFile: File | Blob) {
       }
 
       const pdfFile = files[DataFileNames.questionsPdf] ?? null
-      if (pdfFile) {
-        resolve({ pdfFile })
+      const jsonFile = files[DataFileNames.dataJson] ?? null
+      if (pdfFile && jsonFile) {
+        const jsonData = JSON.parse(strFromU8(jsonFile))
+        resolve({ pdfFile, jsonData })
       }
       else {
         reject(DataFileNames.questionsPdf + ' is not in ZIP file!')
@@ -735,43 +861,52 @@ async function loadDemoImages() {
 
 function getQuestionsPdfData(questions: TestResultDataQuestion[]) {
   const newQuestionsPdfData: QuestionsPdfData = {}
+  const pdfCropperData = fileUploaderState.cropperData?.pdfCropperData
 
   for (const question of questions) {
-    const { queId, pdfData } = question
+    const { queId, subject, section, oriQueId } = question
+    const pdfData = (question.pdfData ?? pdfCropperData?.[subject]?.[section]?.[oriQueId]?.pdfData)
+      ?? null
+
     newQuestionsPdfData[queId] = []
 
-    for (const pdfDataItem of pdfData) {
-      const { page, x1, y1, x2, y2 } = pdfDataItem
-      const x = Math.min(x1, x2) * imgScale
-      const y = Math.min(y1, y2) * imgScale
-      const w = Math.abs(x2 - x1) * imgScale
-      const h = Math.abs(y2 - y1) * imgScale
+    if (pdfData) {
+      for (const pdfDataItem of pdfData) {
+        const { page, x1, y1, x2, y2 } = pdfDataItem
+        const x = Math.min(x1, x2) * imgScale
+        const y = Math.min(y1, y2) * imgScale
+        const w = Math.abs(x2 - x1) * imgScale
+        const h = Math.abs(y2 - y1) * imgScale
 
-      newQuestionsPdfData[queId].push({ page, x, y, w, h })
+        newQuestionsPdfData[queId].push({ page, x, y, w, h })
+      }
+    }
+    else {
+      return null
     }
   }
 
   return newQuestionsPdfData
 }
 
-async function renderPdftoImgs(pdf: Uint8Array) {
-  let mupdfOgWorker: null | Worker = null
+async function renderPdftoImgs(questionsPdfData: QuestionsPdfData) {
+  if (!fileUploaderState.pdfUint8Array) throw new Error('PDF is not loaded')
+
   let mupdfWorker: Comlink.Remote<MuPdfProcessor> | null = null
 
   const testId = currentTestResultsId.value
 
   pdfRenderingProgress.value = 'loading-pdf'
+
   try {
-    if (!mupdfWorker) {
-      mupdfOgWorker = new mupdfWorkerFile()
-      mupdfWorker = Comlink.wrap<MuPdfProcessor>(mupdfOgWorker)
-    }
+    const mupdfOgWorker = new mupdfWorkerFile()
+    mupdfWorker = Comlink.wrap<MuPdfProcessor>(mupdfOgWorker)
 
     if (!mupdfOgWorker || !mupdfWorker) throw new Error('mupdf worker is undefined')
 
-    await mupdfWorker.loadPdf(pdf, false)
+    await mupdfWorker.loadPdf(fileUploaderState.pdfUint8Array, false)
 
-    const questionsData = utilCloneJson(Object.entries(getQuestionsPdfData(allQuestions)))
+    const questionsData = utilCloneJson(Object.entries(questionsPdfData))
     const currentQueId = currentQuestionId.value
 
     let currentQueIndex = questionsData.findIndex(([queId]) => currentQueId == queId)

@@ -781,6 +781,7 @@
       :selected-sub-and-sec="currentSelectedState"
       :overall-constants="[TEST_OVERALL, OVERALL]"
       :all-questions="testQuestions"
+      :test-pdf-file-hash="testPdfFileHash"
     />
   </div>
 </template>
@@ -978,9 +979,10 @@ const settings = shallowReactive<Settings>({
   sortByTimeSpent: null,
 })
 
-const { testResultData, waitUntil, testResultQuestionsData } = defineProps<{
+const { testResultData, waitUntil, testPdfFileHash, testResultQuestionsData } = defineProps<{
   testResultData: TestResultData
   testResultQuestionsData: Record<string | number, TestResultDataQuestion>
+  testPdfFileHash: string
   waitUntil: boolean
 }>()
 
