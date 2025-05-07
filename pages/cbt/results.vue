@@ -681,7 +681,7 @@ function getSectionScoreCardData(sectionData: TestResultDataSection, title: stri
 
     cardData.timeSpent += timeSpent
     cardData.maxMarks += marks.cm
-    if (status !== 'notVisited') cardData.questionsAttempted++
+    if (status === 'answered' || status === 'markedAnswered') cardData.questionsAttempted++
     cardData.totalQuestions++
 
     if (result.status !== 'notAnswered') {
