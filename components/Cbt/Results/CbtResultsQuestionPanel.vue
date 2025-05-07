@@ -973,6 +973,8 @@ async function renderPdftoImgs(questionsPdfData: QuestionsPdfData) {
         }
       }
     }
+    fileUploaderState.cropperData = null
+    fileUploaderState.pdfUint8Array = null
   }
 }
 
