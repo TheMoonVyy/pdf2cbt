@@ -148,3 +148,7 @@
   counter-increment: answer-options;
   content: var(--options-prefix) counter(answer-options, var(--counter-type)) var(--options-suffix);
 }
+
+.p-popover:after, .p-popover:before {
+    left: calc(1.25rem + var(--p-popover-arrow-left))
+}

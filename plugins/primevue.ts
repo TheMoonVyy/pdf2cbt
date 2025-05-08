@@ -216,6 +216,9 @@ export default defineNuxtPlugin((nuxtApp) => {
       tab: {
         root: 'p-active:dark:text-white! p-active:font-bold!',
       },
+      popover: {
+        root: 'p-popover',
+      },
     },
   })
   nuxtApp.vueApp.directive('tooltip', Tooltip)
