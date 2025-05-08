@@ -796,7 +796,8 @@
       >
         <div class="flex flex-col">
           <h4 class="text-base text-center">
-            Filter by Time Spent Range
+            Filter by Time Spent Range<br>
+            (values are in seconds)
           </h4>
           <BaseFloatLabel
             class="w-full mt-6"
