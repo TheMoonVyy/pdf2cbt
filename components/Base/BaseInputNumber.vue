@@ -18,6 +18,7 @@ const preventVKeyboard = (e: Event) => {
     :fluid="true"
     show-buttons
     button-layout="horizontal"
+    :use-grouping="false"
     :allow-empty="false"
     pt:incrementButton:class="outline-hidden"
     pt:decrementButton:class="outline-hidden"
