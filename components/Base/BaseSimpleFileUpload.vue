@@ -3,7 +3,7 @@
     auto
     custom-upload
     :pt:header:class="'flex flex-col items-center ' + (fluid ? 'w-full ' : '') + headerClass"
-    pt:content:class="hidden has-[div]:flex has-[div]:mt-3"
+    pt:content:class="hidden has-data-[pc-name=pcmessage]:flex has-data-[pc-name=pcmessage]:mt-3"
     @uploader="(e) => uploadHandler(e.files)"
   >
     <template #header="scope">
