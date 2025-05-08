@@ -173,7 +173,6 @@
               </th>
               <th class="px-2 py-1.5">
                 <div class="flex items-center gap-1 justify-center">
-                  Time Spent
                   <BaseButton
                     variant="text"
                     :title="settings.sortByTimeSpent === null
@@ -209,6 +208,21 @@
                         :class="settings.sortByTimeSpent === null
                           ? 'text-gray-300'
                           : 'text-green-400'"
+                      />
+                    </template>
+                  </BaseButton>
+                  Time Spent
+                  <BaseButton
+                    variant="text"
+                    severity="warn"
+                    rounded
+                    raised
+                    @click="(e) => showFilterPopOverMenu('timeSpent', e)"
+                  >
+                    <template #icon>
+                      <Icon
+                        name="mdi:filter-menu-outline"
+                        class="text-2xl"
                       />
                     </template>
                   </BaseButton>
@@ -257,12 +271,18 @@
           >
             <tr
               v-for="question in testQuestions"
-              v-show="question.section === currentSelectedState.section
-                || (
-                  showOverallQuestions
-                  && (
-                    currentSelectedState.subject === TEST_OVERALL
-                    || (currentSelectedState.section.endsWith(OVERALL) && question.subject === currentSelectedState.subject)
+              v-show="
+                (
+                  question.timeSpent >= timeSpentFilterMinRange
+                  && question.timeSpent <= timeSpentFilterMaxRange
+                ) && (
+                  question.section === currentSelectedState.section
+                  || (
+                    showOverallQuestions
+                    && (
+                      currentSelectedState.subject === TEST_OVERALL
+                      || (currentSelectedState.section.endsWith(OVERALL) && question.subject === currentSelectedState.subject)
+                    )
                   )
                 )"
               :key="question.queId"
@@ -769,6 +789,59 @@
           </div>
         </div>
       </Popover>
+      <Popover
+        ref="popOverTimeSpentFilterElem"
+        pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]
+          max-w-3xs"
+      >
+        <div class="flex flex-col">
+          <h4 class="text-base text-center">
+            Filter by Time Spent Range
+          </h4>
+          <BaseFloatLabel
+            class="w-full mt-6"
+            label="Minimum"
+            label-id="time_spent_filter_min"
+            label-class="start-1/2! -translate-x-1/2"
+          >
+            <BaseInputNumber
+              v-model="timeSpentFilterMinRange"
+              :min="0"
+              :max="testDuration"
+              label-id="time_spent_filter_min"
+              :step="10"
+            />
+          </BaseFloatLabel>
+          <BaseFloatLabel
+            class="w-full mt-6"
+            label="Maximum"
+            label-id="time_spent_filter_max"
+            label-class="start-1/2! -translate-x-1/2"
+          >
+            <BaseInputNumber
+              v-model="timeSpentFilterMaxRange"
+              :min="0"
+              :max="testDuration"
+              label-id="time_spent_filter_max"
+              :step="10"
+            />
+          </BaseFloatLabel>
+          <BaseButton
+            class="mt-5 max-w-42 mx-auto"
+            label="Clear Filter"
+            severity="danger"
+            size="small"
+            @click="resetTimeSpentFilter"
+          >
+            <template #icon>
+              <Icon
+                name="material-symbols:delete"
+                size="1.4rem"
+              />
+            </template>
+          </BaseButton>
+        </div>
+      </Popover>
     </div>
     <LazyCbtResultsQuestionPanel
       v-if="questionPreviewState.hydrate"
@@ -777,6 +850,8 @@
       :formatted-question-status="formattedQuestionStatus"
       :formatted-result-status="formattedResultStatus"
       :question-filters-state="questionFiltersState"
+      :time-spent-filter-min-range="timeSpentFilterMinRange"
+      :time-spent-filter-max-range="timeSpentFilterMaxRange"
       :questions-numbering-order="questionsNumberingOrder"
       :selected-sub-and-sec="currentSelectedState"
       :overall-constants="[TEST_OVERALL, OVERALL]"
@@ -979,11 +1054,12 @@ const settings = shallowReactive<Settings>({
   sortByTimeSpent: null,
 })
 
-const { testResultData, waitUntil, testPdfFileHash, testResultQuestionsData } = defineProps<{
+const { testResultData, waitUntil, testPdfFileHash, testResultQuestionsData, testDuration } = defineProps<{
   testResultData: TestResultData
   testResultQuestionsData: Record<string | number, TestResultDataQuestion>
   testPdfFileHash: string
   waitUntil: boolean
+  testDuration: number
 }>()
 
 const showOverallQuestions = shallowRef(false)
@@ -991,6 +1067,7 @@ const showOverallQuestions = shallowRef(false)
 const popOverStatusFilterElem = ref()
 const popOverResultFilterElem = ref()
 const popOverQNumOrderElem = ref()
+const popOverTimeSpentFilterElem = ref()
 
 const questionFiltersState = reactive({
   status: [...statusList],
@@ -1000,6 +1077,15 @@ const questionFiltersState = reactive({
 const questionsNumberingOrder = shallowRef<keyof Pick<
   TestResultDataQuestion, 'oriQueId' | 'queId' | 'secQueId'
 >>('oriQueId')
+
+// to store raw min and max range of time spent filter
+// for min, this will be used directly but for max,
+// timeSpentFilterMinRange and timeSpentFilterMaxRange (writeable computed vars) will be the actual ones
+// that will be used, due to requiring reactive testDuration for max limit for both
+const timeSpentFilterState = shallowReactive({
+  min: 0,
+  max: Infinity,
+})
 
 const currentSelectedState = shallowReactive({
   subject: TEST_OVERALL,
@@ -1042,9 +1128,10 @@ watch(
 // so that tables can be recalculated and rendered
 watch(
   [currentResultsID, testResultData],
-  async ([newID, _]) => {
+  ([newID, _]) => {
     if ((newID !== currentLoadState.loadedResultsID) && loadDataNow.value) {
       reloadTestData()
+      resetTimeSpentFilter()
     }
   },
   { deep: false },
@@ -1109,6 +1196,25 @@ const questionResultFilterClasses = computed(() => {
 
   return classString
 })
+
+const timeSpentFilterMinRange = computed({
+  get: () => Math.min(Math.max(timeSpentFilterState.min, 0), testDuration),
+  set: (value) => {
+    timeSpentFilterState.min = Math.min(Math.max(value, 0), testDuration)
+  },
+})
+
+const timeSpentFilterMaxRange = computed({
+  get: () => Math.min(timeSpentFilterState.max, testDuration),
+  set: (value) => {
+    timeSpentFilterState.max = Math.min(value, testDuration)
+  },
+})
+
+const resetTimeSpentFilter = () => {
+  timeSpentFilterState.min = 0
+  timeSpentFilterState.max = Infinity
+}
 
 async function reloadTestData(isFirst: boolean = false) {
   loadDataNow.value = false
@@ -1416,9 +1522,16 @@ const subjectChangeHandler = (subject: string) => {
   }
 }
 
-const showFilterPopOverMenu = (type: 'status' | 'result', e: Event) => {
-  if (type === 'result') popOverResultFilterElem.value?.show(e)
-  else popOverStatusFilterElem.value?.show(e)
+const showFilterPopOverMenu = (type: 'status' | 'result' | 'timeSpent', e: Event) => {
+  if (type === 'result') {
+    popOverResultFilterElem.value?.show(e)
+  }
+  else if (type === 'status') {
+    popOverStatusFilterElem.value?.show(e)
+  }
+  else {
+    popOverTimeSpentFilterElem.value?.show(e)
+  }
 }
 
 const showQuestionPreview = (queId: number) => {

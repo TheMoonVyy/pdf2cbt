@@ -428,6 +428,8 @@ interface Props {
     status: string[]
     result: string[]
   }
+  timeSpentFilterMinRange: number
+  timeSpentFilterMaxRange: number
   selectedSubAndSec: {
     subject: string
     section: string
@@ -460,6 +462,8 @@ const {
   formattedQuestionStatus,
   formattedResultStatus,
   questionFiltersState,
+  timeSpentFilterMinRange,
+  timeSpentFilterMaxRange,
   selectedSubAndSec,
   previewQuestionId,
   questionsNumberingOrder,
@@ -576,7 +580,7 @@ const panelState = computed(() => {
   let lastQuestionId = 0
 
   for (const question of allQuestions) {
-    const { subject, section, status, result, queId } = question
+    const { subject, section, status, result, queId, timeSpent } = question
 
     if (selectedSubject !== TEST_OVERALL && selectedSubject !== subject) continue
 
@@ -587,6 +591,8 @@ const panelState = computed(() => {
     if (!questionFiltersState.status.includes(status)) continue
 
     if (!questionFiltersState.result.includes(result.status)) continue
+
+    if (!(timeSpent >= timeSpentFilterMinRange && timeSpent <= timeSpentFilterMaxRange)) continue
 
     newQuestions[queId] = question
     queIds.push(queId)

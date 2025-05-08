@@ -97,6 +97,7 @@
           :test-result-data="testResultsOutputData.testResultData"
           :test-result-questions-data="testResultQuestionsData"
           :test-pdf-file-hash="testResultsOutputData.testConfig?.pdfFileHash || ''"
+          :test-duration="testResultsOutputData.testConfig.testDurationInSeconds"
         />
         <CbtResultsMyTestsPanel
           v-show="currentPanelName === ResultsPagePanels.MyTests"
