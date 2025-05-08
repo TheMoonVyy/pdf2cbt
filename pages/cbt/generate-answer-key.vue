@@ -181,13 +181,13 @@
                 {{ formatQuestionTypeText(questionData) }}
               </td>
               <td class="p-2 sm:p-3 md:px-4 text-base">
-                <BaseInputTextUpdateOnBlur
+                <InputText
+                  :id="INPUT_ID_PREFIX + index"
                   v-model.trim="subjectsAnswerKeysData[currentPageData.subject][currentPageData.section][quesNum].inputAnswer"
                   type="text"
                   size="large"
                   :trim="true"
                   :max-length="100"
-                  :input-text-id="INPUT_ID_PREFIX + index"
                   pt:root:class="text-center p-2! outline-1 focus:outline-solid! outline-green-500!"
                   @update:model-value="parseInputAnswer(
                     subjectsAnswerKeysData[currentPageData.subject][currentPageData.section][quesNum],
