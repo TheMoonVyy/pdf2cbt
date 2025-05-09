@@ -4,7 +4,7 @@
       v-model:settings="settings"
       v-model:advance-settings-visible="visibilityState.advanceSettings"
     />
-    <Splitter pt:root:class="flex-1 min-h-0 min-w-0 rounded-none select-none">
+    <Splitter pt:root:class="flex-1 flex-nowrap min-h-0 min-w-0 rounded-none select-none">
       <SplitterPanel
         pt:root:class="flex flex-col items-center overflow-y-auto!"
         :size="settings.splitterPanelSize"
