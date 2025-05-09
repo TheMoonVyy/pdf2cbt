@@ -342,7 +342,7 @@
     >
       <div
         v-show="submitState.isSubmitBtnClicked"
-        class="grow flex flex-col px-8 pt-8"
+        class="grow flex flex-col px-8 pt-8 pb-6 overflow-y-auto"
       >
         <p class="text-lg font-semibold text-center">
           Test Summary
