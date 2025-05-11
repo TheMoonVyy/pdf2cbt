@@ -11,10 +11,10 @@
         '--view-question-drawer': drawerWidthLocalStorageValue,
       }"
       pt:header:class="py-1.5 px-4"
-      pt:content:class="px-0 flex flex-col pb-0"
+      pt:content:class="px-0 flex flex-col pb-0 @container"
     >
       <template #header>
-        <div class="grow flex justify-between items-center mr-1 sm:mr-5">
+        <div class="grow flex justify-between items-center mr-3 sm:mr-5">
           <h3 class="text-xl mx-auto">
             Question No. {{
               questionsNumberingOrder === 'oriQueId'
@@ -63,6 +63,38 @@
               <template #icon>
                 <Icon
                   name="mdi:arrow-expand-right"
+                  class="text-2xl text-green-400"
+                />
+              </template>
+            </BaseButton>
+            <BaseButton
+              variant="text"
+              rounded
+              raised
+              title="Increase Image Size"
+              class="hidden! sm:inline-flex!"
+              :disabled="imageWidth >= 100"
+              @click="resizeImage('increase')"
+            >
+              <template #icon>
+                <Icon
+                  name="mdi:file-image-plus"
+                  class="text-2xl text-green-400"
+                />
+              </template>
+            </BaseButton>
+            <BaseButton
+              variant="text"
+              rounded
+              raised
+              title="Decrease Image Size"
+              class="hidden! sm:inline-flex!"
+              :disabled="imageWidth <= 20"
+              @click="resizeImage('decrease')"
+            >
+              <template #icon>
+                <Icon
+                  name="mdi:file-image-minus"
                   class="text-2xl text-green-400"
                 />
               </template>
@@ -123,7 +155,7 @@
           </div>
         </div>
       </div>
-      <div class="flex flex-col mt-2 mb-6 overflow-auto px-3">
+      <div class="flex flex-col items-center mt-2 mb-6 overflow-auto px-3">
         <template v-if="testQuestionsImgUrls[currentTestResultsId]?.[currentQuestionId]">
           <img
             v-for="(url, index) in testQuestionsImgUrls[currentTestResultsId][currentQuestionId]"
@@ -131,6 +163,7 @@
             :src="url"
             :style="{
               backgroundColor: `#${questionImgBgColor}`,
+              width: `${imageWidth}%`,
             }"
             draggable="false"
           >
@@ -262,7 +295,7 @@
           </div>
         </div>
       </div>
-      <div class="grid grid-cols-2 w-full shrink-0 mt-6 mb-8">
+      <div class="grid grid-cols-2 mx-auto gap-3 @min-md:gap-20 shrink-0 mt-6 mb-8">
         <div class="flex items-center justify-center">
           <BaseButton
             v-if="panelState.firstQuestionId !== currentQuestionId"
@@ -495,6 +528,9 @@ const pdfRenderingProgress = shallowRef<'loading-pdf' | 'generating-img' | 'done
 // settings for question panel's drawer
 const drawerWidthLocalStorageValue = useLocalStorage(LocalStorageKeys.ResultsQuestionPanelWidth, '60%')
 const questionImgBgColor = shallowRef('ffffff')
+
+// style for <img> width, % as unit
+const imageWidth = shallowRef(100)
 
 // settings of mcq/msq options display text format
 const answerOptionsFormat = ref({
@@ -731,6 +767,17 @@ const resizeDrawer = (resizeType: 'increase' | 'decrease') => {
   }
   else if (resizeType === 'decrease' && currentSize > 0) {
     drawerWidthLocalStorageValue.value = Math.max(currentSize - 5, 40) + '%'
+  }
+}
+
+const resizeImage = (resizeType: 'increase' | 'decrease') => {
+  const currentSize = imageWidth.value
+
+  if (resizeType === 'increase' && currentSize < 100) {
+    imageWidth.value = Math.min(currentSize + 5, 100)
+  }
+  else if (resizeType === 'decrease' && currentSize > 0) {
+    imageWidth.value = Math.max(currentSize - 5, 20)
   }
 }
 
