@@ -1137,7 +1137,7 @@
       </div>
       <InputText
         v-show="!zipFileFromUrlState.isLoading"
-        v-model="zipFileFromUrlState.url"
+        v-model.trim="zipFileFromUrlState.url"
         type="text"
         :fluid="true"
         pt:root:class="w-4/5"

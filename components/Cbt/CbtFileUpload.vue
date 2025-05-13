@@ -300,7 +300,7 @@ const handleUpload = async (uploadedFiles: File[] | File) => {
 watch(
   () => props.zipFileToLoad,
   (newVal) => {
-    if (newVal && selectedFileType.value === 'zip-url') {
+    if (newVal) {
       handleUpload(newVal)
     }
   },
