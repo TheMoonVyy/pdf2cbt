@@ -136,9 +136,10 @@ export const utilIsPdfFile = (file: File): Promise<0 | 1 | 2> => {
   })
 }
 
-export const utilIsZipFile = (file: File): Promise<0 | 1 | 2> => {
+export const utilIsZipFile = (file: File | Blob): Promise<0 | 1 | 2> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
+
     reader.onload = (e) => {
       const results = e.target?.result
 
@@ -148,14 +149,37 @@ export const utilIsZipFile = (file: File): Promise<0 | 1 | 2> => {
         if (arr[0] === 0x50 && arr[1] === 0x4B) {
           return resolve(2) // valid zip by magic number
         }
-        else if (file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip')) {
+        else if (
+          (file.type === 'application/zip')
+          || (file instanceof File && file.name.toLowerCase().endsWith('.zip'))
+        ) {
           return resolve(1) // probably a zip
         }
       }
 
       return resolve(0) // not a zip
     }
+
     reader.onerror = error => reject(error)
     reader.readAsArrayBuffer(file.slice(0, 2))
   })
+}
+
+export const utilGhUrlToJsDelivrUrl = (githubUrl: string) => {
+  // Extract the username, repository, branch, and file path from the GitHub URL
+  const regex = /https:\/\/github\.com\/([^/]+)\/([^/]+)\/(?:tree|blob)\/([^/]+)\/(.*)/
+  const match = githubUrl.match(regex)
+
+  if (match) {
+    const username = match[1]
+    const repository = match[2]
+    const branch = match[3]
+    const filePath = match[4]
+
+    // Construct the jsDelivr URL
+    return `https://cdn.jsdelivr.net/gh/${username}/${repository}@${branch}/${filePath}`
+  }
+  else {
+    return null
+  }
 }

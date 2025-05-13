@@ -33,3 +33,13 @@ export enum LocalStorageKeys {
   ResultsQuestionPanelWidth = 'CBT-ResultsQuestionPanelWidth',
   ResultsQuestionPanelImgBgColor = 'CBT-ResultsQuestionPanelImgBgColor',
 }
+
+export enum CBTInterfaceQueryParams {
+  testName = 'name',
+  testDuration = 'duration',
+  submitMode = 'submit',
+  timeFormat = 'timeformat',
+  zipUrl = 'zipurl',
+  allowPause = 'allowpause',
+  imageScale = 'imagescale',
+}

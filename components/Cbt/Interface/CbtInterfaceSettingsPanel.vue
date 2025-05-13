@@ -273,6 +273,12 @@
                 :file-options="selectOptions.dataFile"
                 file-types="zip-or-pdfjson"
                 empty-slot-text-class="top-[30%]"
+                :zip-file-to-load="zipFileFromUrlState.zipFile"
+                @update:model-value="(value) => {
+                  if (value === 'zip-url') {
+                    zipFileFromUrlState.isDialogOpen = true
+                  }
+                }"
                 @on-uploaded="(data) => verifyTestData(data.pdfFile!, data.jsonData)"
               />
             </form>
@@ -1082,10 +1088,82 @@
         </BaseButton>
       </div>
     </Dialog>
+    <Dialog
+      v-if="zipFileFromUrlState.isDialogOpen"
+      v-model:visible="zipFileFromUrlState.isDialogOpen"
+      header="Load Test Data from URL"
+      :modal="true"
+      :block-scroll="true"
+      :draggable="false"
+      pt:content:class="flex flex-col px-4 pt-2 pb-6 gap-4 items-center text-center md:min-w-lg sm:max-w-xl"
+    >
+      <p
+        v-if="zipFileFromUrlState.isLoading"
+        class="text-cyan-400 py-5"
+      >
+        Please wait, loading the test data zip file from the URL...
+      </p>
+      <div
+        v-else-if="zipFileFromUrlState.errorMsg"
+        class="flex flex-col items-center gap-4 mb-4 text-center"
+      >
+        <p class="text-red-400 text-lg font-semibold">
+          Error: {{ zipFileFromUrlState.errorMsg }}
+        </p>
+        <p>
+          Check the URL or retry.<br>
+          Make sure your network connection is working
+        </p>
+        <p>
+          Retried {{ zipFileFromUrlState.retryCount }} times.
+        </p>
+      </div>
+      <div v-else>
+        <p class="text-sm text-gray-200 mt-2 mb-7">
+          <strong>Note:</strong> The URL must be a direct link to the file and should have CORS setup to allow loading the file.<br>
+          URLs that work include links to file on public GitHub repositories.<br>
+          For example, here is the URL of demo test data on this project's GitHub repo which will work:<br>
+          <a
+            href="https://github.com/TheMoonVyy/pdf2cbt/blob/main/src/assets/zip/demo_test_data.zip"
+            target="_blank"
+            class="text-blue-400 underline"
+          >
+            https://github.com/TheMoonVyy/pdf2cbt/blob/main/src/assets/zip/demo_test_data.zip
+          </a>
+        </p>
+        <p>
+          Enter the URL (link) of the test data zip file:
+        </p>
+      </div>
+      <InputText
+        v-show="!zipFileFromUrlState.isLoading"
+        v-model="zipFileFromUrlState.url"
+        type="text"
+        :fluid="true"
+        pt:root:class="w-4/5"
+      />
+      <div
+        v-if="!zipFileFromUrlState.isLoading"
+        class="flex gap-15 mx-auto mt-4"
+      >
+        <BaseButton
+          :label="zipFileFromUrlState.errorMsg ? 'Retry' : 'Load File'"
+          :disabled="zipFileFromUrlState.isLoading || !zipFileFromUrlState.url.trim()"
+          @click="fetchZipFile(Boolean(zipFileFromUrlState.errorMsg))"
+        />
+        <BaseButton
+          label="Cancel"
+          severity="danger"
+          :disabled="zipFileFromUrlState.isLoading"
+          @click="zipFileFromUrlState.isDialogOpen = false"
+        />
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
+import type { LocationQueryValue } from 'vue-router'
 import { db } from '~/src/db/cbt-db'
 import type {
   QuestionStatus,
@@ -1101,6 +1179,7 @@ import type {
   CbtUiSettings,
   TestAnswerKeyData,
 } from '~/src/types'
+import { CBTInterfaceQueryParams } from '~/src/types/enums'
 
 type ImportExportTypeKey = 'import' | 'export' | 'restoreFromSaved' | 'reset'
 
@@ -1229,6 +1308,7 @@ const selectOptions = {
   dataFile: [
     { name: 'Zip', value: 'zip' },
     { name: 'PDF + Json', value: 'json' },
+    { name: 'Zip from URL', value: 'zip-url' },
   ],
 
   showHide: [
@@ -1261,6 +1341,22 @@ const testState = defineModel<TestState>('testState', { required: true })
 const emit = defineEmits(['prepareTest'])
 
 const fileUploaderFileType = shallowRef('zip')
+
+const zipFileFromUrlState = shallowReactive<{
+  url: string
+  isLoading: boolean
+  errorMsg: string
+  retryCount: number
+  isDialogOpen: boolean
+  zipFile: File | null
+}>({
+  url: '',
+  isLoading: false,
+  errorMsg: '',
+  retryCount: 0,
+  isDialogOpen: false,
+  zipFile: null,
+})
 
 const importExportDialogState = shallowReactive<ImportExportDialogState>({
   isDialogOpen: false,
@@ -1313,7 +1409,7 @@ const testTimings = shallowReactive({
   s: 0,
 })
 
-watch(() => testSettings.value.timeFormat, (newtimeFormat) => {
+const testTimeFormatWatcher = watch(() => testSettings.value.timeFormat, (newtimeFormat) => {
   if (newtimeFormat === 'mmm:ss') {
     testTimings.m += testTimings.h * 60
     testTimings.h = 0
@@ -1327,7 +1423,7 @@ watch(() => testSettings.value.timeFormat, (newtimeFormat) => {
 
 let istestTimingsUpdating: boolean = false
 
-watch(
+const testDurationWatcher = watch(
   [
     () => testSettings.value.durationInSeconds,
     testTimings,
@@ -1359,6 +1455,68 @@ watch(
     }
   },
 )
+
+watch(
+  () => zipFileFromUrlState.isDialogOpen,
+  (newValue) => {
+    if (newValue) {
+      zipFileFromUrlState.errorMsg = ''
+      zipFileFromUrlState.retryCount = 0
+    }
+    else {
+      if (fileUploaderFileType.value === 'zip-url') {
+        fileUploaderFileType.value = 'zip'
+      }
+    }
+  },
+)
+
+const fetchZipFile = async (isRetry: boolean = false) => {
+  if (!zipFileFromUrlState.url) return
+  zipFileFromUrlState.errorMsg = ''
+  zipFileFromUrlState.zipFile = null
+  zipFileFromUrlState.isLoading = true
+  await nextTick()
+
+  try {
+    const parsedUrl = new URL(zipFileFromUrlState.url)
+    const href = parsedUrl.href
+
+    if (!href) {
+      throw new Error('Invalid URL')
+    }
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new Error('Invalid URL: Only a valid HTTP or HTTPS URL is supported')
+    }
+
+    // Check if the URL is of a GitHub repository and convert it to jsDelivr URL
+    // Conversion to jsDelivr is due to CORS issues with GitHub URLs
+    // else use the original URL
+    const jsDelivrUrl = utilGhUrlToJsDelivrUrl(href)
+    const response = await fetch(jsDelivrUrl ?? parsedUrl)
+    if (!response.ok) {
+      const msg = response.statusText?.trim() ? `:\n${response.statusText}` : ''
+      throw new Error(`Failed to load zip file from url (Status ${response.status})${msg}`)
+    }
+
+    const blob = await response.blob()
+    const isZip = await utilIsZipFile(blob)
+    if (isZip > 0) {
+      zipFileFromUrlState.zipFile = new File([blob], 'testData.zip', { type: 'application/zip' })
+      zipFileFromUrlState.isDialogOpen = false
+      zipFileFromUrlState.isLoading = false
+    }
+    else {
+      throw new Error('Error: The file from the url is not a valid zip file')
+    }
+  }
+  catch (error) {
+    console.error('Error fetching zip file from url:', error)
+    zipFileFromUrlState.errorMsg = error instanceof Error ? error.message : String(error)
+    zipFileFromUrlState.isLoading = false
+    if (isRetry) zipFileFromUrlState.retryCount++
+  }
+}
 
 const changeIcon = (iconFile: File, key: QuestionStatus) => {
   utilFileAsDataURL(iconFile).then((dataURL) => {
@@ -1515,6 +1673,7 @@ async function loadTestData(
   jsonData: Record<string, unknown>,
 ) {
   try {
+    zipFileFromUrlState.zipFile = null
     testState.value.pdfFile = pdfFile
 
     const newCropperSectionsData: CropperSectionsData = {}
@@ -1713,13 +1872,84 @@ onMounted(() => {
         }
       }
     })
+    .finally(() => {
+      const route = useRoute()
+      testTimeFormatWatcher.pause()
+      testDurationWatcher.pause()
 
-  db.getTestStatus().then((testStatus) => {
-    if (testStatus === 'ongoing') {
-      prepareTestState.isOngoingTestFoundInDB = true
-    }
-  }).catch((e: unknown) => console.error(
-    'Error getting last test data (if present) in db', e,
-  ))
+      const getFirstQuery = (
+        param: LocationQueryValue | LocationQueryValue[],
+      ) => {
+        return Array.isArray(param) ? param[0] : param
+      }
+
+      const nameValue = getFirstQuery(route.query[CBTInterfaceQueryParams.testName])
+      const durationValue = getFirstQuery(route.query[CBTInterfaceQueryParams.testDuration])
+      const timeFormatValue = getFirstQuery(route.query[CBTInterfaceQueryParams.timeFormat])
+      const zipurlValue = getFirstQuery(route.query[CBTInterfaceQueryParams.zipUrl])
+      const submitmodeValue = getFirstQuery(route.query[CBTInterfaceQueryParams.submitMode])
+      const allowpauseValue = getFirstQuery(route.query[CBTInterfaceQueryParams.allowPause])
+      const imgScaleValue = getFirstQuery(route.query[CBTInterfaceQueryParams.imageScale])
+
+      if (nameValue && typeof nameValue === 'string') {
+        testSettings.value.testName = nameValue
+      }
+      if (durationValue
+        && !isNaN(Number(durationValue))
+        && Number(durationValue) !== testSettings.value.durationInSeconds
+      ) {
+        testSettings.value.durationInSeconds = Number(durationValue)
+      }
+      if (timeFormatValue) {
+        const firstChar = timeFormatValue[0]
+        if (firstChar === 'm') {
+          testSettings.value.timeFormat = 'mmm:ss'
+        }
+        else if (firstChar === 'h') {
+          testSettings.value.timeFormat = 'hh:mm:ss'
+        }
+      }
+
+      const totalseconds = testSettings.value.durationInSeconds
+      testTimings.s = totalseconds % 60
+      if (testSettings.value.timeFormat === 'mmm:ss') {
+        testTimings.m = Math.floor(totalseconds / 60)
+        testTimings.h = 0
+      }
+      else {
+        testTimings.m = Math.floor(totalseconds / 60) % 60
+        testTimings.h = Math.floor(totalseconds / 3600)
+      }
+
+      if (typeof zipurlValue === 'string' && zipurlValue.trim() !== '') {
+        zipFileFromUrlState.url = zipurlValue.trim()
+        zipFileFromUrlState.isDialogOpen = true
+      }
+      if (submitmodeValue && ['enabled', 'disabled', 'hidden'].includes(submitmodeValue)) {
+        testSettings.value.submitBtn = submitmodeValue as 'enabled' | 'disabled' | 'hidden'
+      }
+      if (allowpauseValue && ['yes', 'no'].includes(allowpauseValue)) {
+        testSettings.value.showPauseBtn = allowpauseValue === 'yes'
+      }
+      if (imgScaleValue && !isNaN(Number(imgScaleValue))) {
+        testSettings.value.questionImgScale = Number(imgScaleValue)
+      }
+
+      nextTick().then(() => {
+        testTimeFormatWatcher.resume()
+        testDurationWatcher.resume()
+        istestTimingsUpdating = false
+      })
+    })
+
+  db.getTestStatus()
+    .then((testStatus) => {
+      if (testStatus === 'ongoing') {
+        prepareTestState.isOngoingTestFoundInDB = true
+      }
+    })
+    .catch((e: unknown) => console.error(
+      'Error getting last test data (if present) in db', e,
+    ))
 })
 </script>

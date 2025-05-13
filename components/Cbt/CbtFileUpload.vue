@@ -128,6 +128,7 @@ const props = defineProps<{
   emptySlotTextClass?: string
   rootClass?: string
   contentClass?: string
+  zipFileToLoad?: File | null
   validationFunction?: (data: EmitData) => Promise<boolean>
 }>()
 
@@ -156,7 +157,7 @@ const loadingAndErrorState = shallowReactive({
 })
 
 const computedValue = computed(() => {
-  if (selectedFileType.value === 'zip') {
+  if (selectedFileType.value.startsWith('zip')) {
     return {
       accept: acceptStrings.zip,
       maxFilesSelect: 1,
@@ -253,7 +254,7 @@ const handleUpload = async (uploadedFiles: File[] | File) => {
   loadingAndErrorState.isLoading = true
   loadingAndErrorState.msg = 'Please wait, loading file(s)...'
 
-  const isFileTypeZip = selectedFileType.value === 'zip'
+  const isFileTypeZip = selectedFileType.value.startsWith('zip')
 
   const files = Array.isArray(uploadedFiles) ? uploadedFiles : [uploadedFiles]
 
@@ -295,4 +296,13 @@ const handleUpload = async (uploadedFiles: File[] | File) => {
     }
   }
 }
+
+watch(
+  () => props.zipFileToLoad,
+  (newVal) => {
+    if (newVal && selectedFileType.value === 'zip-url') {
+      handleUpload(newVal)
+    }
+  },
+)
 </script>
