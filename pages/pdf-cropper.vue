@@ -1253,7 +1253,7 @@ async function generatePdfCropperOutput() {
 function syncSettingsWithLocalStorage(save: boolean = false) {
   try {
     if (save) {
-      const settingsJson = JSON.stringify(toRaw(settings))
+      const settingsJson = utilCloneJson(settings, true)
       localStorage.setItem(LOCAL_STORAGE_SETTINGS_KEY, settingsJson)
     }
     else {
@@ -1279,6 +1279,8 @@ onMounted(() => {
   mupdfWorker = Comlink.wrap<MuPdfProcessor>(mupdfOgWorker)
 
   syncSettingsWithLocalStorage()
+  zoomScaleDebounced.value = settings.scale
+
   watchEffect(() => {
     const selectionColor = cropperLineState.skipNext
       ? settings.cropSelectionSkipColor
