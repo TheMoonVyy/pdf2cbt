@@ -173,10 +173,16 @@
             v-model:test-state="testState"
             @prepare-test="prepareTest"
           />
-          <LazyCbtInterfacePrepareTest
+          <LazyGenerateTestImages
             v-else-if="testState.currentProcess === 'preparing-imgs'"
-            v-model:test-state="testState"
+            :pdf-uint8-array="testState.pdfFile"
             :question-img-scale="testSettings.questionImgScale"
+            :cropper-sections-data="cropperSectionsData"
+            @current-question-progress="(questionNum) => testState.preparingTestCurrentQuestion = questionNum"
+            @done-generating="() => {
+              testState.currentProcess = 'test-is-ready'
+              testState.pdfFile = null
+            }"
           />
           <CbtInterfaceQuestionPanel
             v-else-if="testState.currentProcess === 'test-is-ready' || testState.currentProcess === 'test-started'"

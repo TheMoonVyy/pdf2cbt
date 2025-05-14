@@ -338,3 +338,9 @@ export type ScoreCardData = Required<Omit<TestResultOverview['overview'], 'accur
   }
   testDuration?: number
 }
+
+export type TestImageBlobs = {
+  [section: TestSectionKey]: {
+    [question: number | string]: Blob[]
+  }
+}

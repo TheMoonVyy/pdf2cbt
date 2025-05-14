@@ -8,9 +8,9 @@ import mupdfWorkerFile from '~/src/worker/mupdf.worker?worker'
 import type { MuPdfProcessor } from '~/src/worker/mupdf.worker'
 
 import type {
-  TestState,
   CropperSectionsData,
   TestSectionKey,
+  TestImageBlobs,
 } from '~/src/types'
 
 interface PdfState {
@@ -33,29 +33,32 @@ type ProcessedCropperData = {
   }[]
 }
 
-const testState = defineModel<TestState>('testState', {
-  type: Object,
-  required: true,
-})
-
 const props = defineProps<{
+  pdfUint8Array: Uint8Array | null
   questionImgScale: number
+  devicePixelRatio?: number
+  cropperSectionsData: CropperSectionsData
+  isImagesForPdfCropper?: boolean
+}>()
+
+const emit = defineEmits<{
+  imageBlobsGenerated: [testImageBlobs: TestImageBlobs]
+  currentQuestionProgress: [questionNum: number]
+  doneGenerating: []
 }>()
 
 const mupdfOgWorker = new mupdfWorkerFile()
 const mupdfWorker = Comlink.wrap<MuPdfProcessor>(mupdfOgWorker)
 
 const pdfState: PdfState = {
-  scale: 1,
+  scale: props.questionImgScale,
 }
 
-const { cropperSectionsData, testSectionsImgUrls } = useCbtTestData()
-
-mupdfOgWorker.addEventListener('message', (event) => {
-  if (event.data.type === 'progress') {
-    testState.value.preparingTestCurrentQuestion = event.data.value
+mupdfOgWorker.onmessage = (e) => {
+  if (e.data.type === 'progress') {
+    emit('currentQuestionProgress', e.data.value)
   }
-})
+}
 
 function processCropperData(
   cropperData: CropperSectionsData,
@@ -92,9 +95,9 @@ function processCropperData(
 
 async function loadPdfFile() {
   try {
-    if (!testState.value.pdfFile) return
+    if (!props.pdfUint8Array) return
 
-    await mupdfWorker.loadPdf(testState.value.pdfFile)
+    await mupdfWorker.loadPdf(props.pdfUint8Array)
 
     generateQuestionImages()
   }
@@ -104,21 +107,7 @@ async function loadPdfFile() {
 }
 
 async function generateQuestionImages() {
-  let cropperData: CropperSectionsData
-  const ogData = cropperSectionsData.value
-  try {
-    cropperData = isReactive(ogData)
-      ? structuredClone(toRaw(ogData))
-      : structuredClone(toValue(ogData))
-  }
-  catch {
-    try {
-      cropperData = JSON.parse(JSON.stringify(ogData))
-    }
-    catch {
-      cropperData = ogData
-    }
-  }
+  const cropperData = utilCloneJson(props.cropperSectionsData)
 
   const processedCropperData = processCropperData(cropperData)
   const scale = pdfState.scale
@@ -126,29 +115,44 @@ async function generateQuestionImages() {
   const questionsBlobs = await mupdfWorker.generateQuestionImages(
     processedCropperData,
     scale,
+    true,
   )
 
   mupdfWorker.close()
 
-  for (const [section, sectionData] of Object.entries(questionsBlobs)) {
-    testSectionsImgUrls.value[section] = {}
+  if (props.isImagesForPdfCropper) {
+    emit('imageBlobsGenerated', questionsBlobs)
+  }
+  else {
+    const { testSectionsImgUrls } = useCbtTestData()
 
-    for (const [question, blobs] of Object.entries(sectionData)) {
-      testSectionsImgUrls.value[section][question] ??= []
+    for (const [section, sectionData] of Object.entries(questionsBlobs)) {
+      testSectionsImgUrls.value[section] = {}
 
-      for (const blob of blobs) {
-        const url = URL.createObjectURL(blob)
-        testSectionsImgUrls.value[section][question].push(url)
+      for (const [question, blobs] of Object.entries(sectionData)) {
+        testSectionsImgUrls.value[section][question] ??= []
+
+        for (const blob of blobs) {
+          const url = URL.createObjectURL(blob)
+          testSectionsImgUrls.value[section][question].push(url)
+        }
       }
     }
+    emit('doneGenerating')
   }
-
-  testState.value.pdfFile = null
-  testState.value.currentProcess = 'test-is-ready'
 }
 
+onBeforeUnmount(() => {
+  try {
+    mupdfWorker.close()
+  }
+  catch {
+    // worker is already closed
+  }
+})
+
 onMounted(() => {
-  const dpr = window.devicePixelRatio || 1
+  const dpr = props.devicePixelRatio ?? (window.devicePixelRatio || 1)
   pdfState.scale = props.questionImgScale * dpr
   loadPdfFile()
 })
