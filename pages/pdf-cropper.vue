@@ -212,17 +212,19 @@
               '--pdf-page-scaled-height': `${currentPageDetails.scaledHeight}px`,
             }"
           >
-            <img
-              ref="imgElem"
-              :src="currentPageDetails.url"
-              class="border border-gray-500 pdf-cropper-img"
-              draggable="false"
-              :style="{
-                backgroundColor: `#${settings.pageBGColor}`,
-              }"
-              @pointerdown="pointerDownHandler"
-              @pointermove="pointerMoveHandler"
-            >
+            <div class="inline-block">
+              <img
+                ref="imgElem"
+                :src="currentPageDetails.url"
+                class="border border-gray-500 pdf-cropper-img"
+                draggable="false"
+                :style="{
+                  backgroundColor: `#${settings.pageBGColor}`,
+                }"
+                @pointerdown="pointerDownHandler"
+                @pointermove="pointerMoveHandler"
+              >
+            </div>
             <div
               class="overlay"
               :class="{ hidden: !isPdfLoaded }"
