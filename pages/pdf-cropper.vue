@@ -294,10 +294,10 @@
     </Dialog>
     <Dialog
       v-model:visible="visibilityState.generateOutputDialog"
-      header="Download Output"
+      header="Generate Test (Cropper) Data"
       :modal="true"
       pt:headerActions:class="ml-5"
-      pt:content:class="p-0 px-3"
+      pt:content:class="p-3 pb-6 flex flex-col max-w-full sm:max-w-md"
     >
       <div class="grid grid-cols-3 w-full gap-2">
         <div class="flex flex-col col-span-2">
@@ -316,7 +316,7 @@
           />
         </div>
         <div class="flex flex-col">
-          <div class="flex gap-2">
+          <div class="flex gap-2 justify-center">
             <label
               class="text-center mb-1"
               for="generate_output_file_type"
@@ -335,21 +335,117 @@
           />
         </div>
       </div>
-      <div class="flex justify-center py-3">
+      <div
+        v-show="generateOutputState.fileType === '.zip'"
+        class="grid grid-cols-3 gap-2 my-6"
+      >
+        <div class="flex flex-col col-span-2">
+          <div class="flex gap-2 justify-center">
+            <label
+              class="text-center mb-1"
+              for="pre_generate_images"
+            >
+              Pre-Generate Images
+            </label>
+            <IconWithTooltip
+              :tooltip-content="tooltipContent.preGenerateImages"
+              icon-class="text-xl"
+            />
+          </div>
+          <Select
+            v-model="generateOutputState.preGenerateImages"
+            label-id="pre_generate_images"
+            :fluid="false"
+            :options="selectOptions.preGenerateImages"
+            option-label="name"
+            option-value="value"
+          />
+        </div>
+        <div class="flex flex-col justify-center">
+          <div class="flex gap-2 justify-center">
+            <label
+              class="text-center mb-1"
+              for="pre_generate_image_scale"
+            >
+              Img Scale
+            </label>
+            <IconWithTooltip
+              :tooltip-content="tooltipContent.preGenerateImagesScale"
+              icon-class="text-xl"
+            />
+          </div>
+          <InputNumber
+            v-model="generateOutputState.preGenerateImagesScale"
+            :disabled="!generateOutputState.preGenerateImages"
+            :min="0.5"
+            :max="5"
+            suffix="x"
+            label-id="pre_generate_image_scale"
+            show-buttons
+            pt:root:class="[&>input]:w-24"
+            :step="0.1"
+          />
+        </div>
+      </div>
+      <h5 class="text-center text-gray-500 dark:text-gray-300 my-5">
+        After downloading once, you can always change the options above to generate &amp; download again with those options
+      </h5>
+      <div
+        v-show="!generateOutputState.generatingImages"
+        class="flex justify-center"
+      >
         <BaseButton
-          label="Download"
+          label="Generate & Download"
           @click="generatePdfCropperOutput()"
         />
       </div>
-      <div class="flex justify-center pb-3">
+      <div class="flex flex-col items-center mt-3 mb-2 text-center">
+        <h3 v-show="generateOutputState.generatingImages">
+          Please wait, generating images...<br>
+        </h3>
+        <h3
+          v-if="generateOutputState.generatingImages && generateOutputState.generationProgress > 0"
+          class="my-4 text-lg font-semibold text-cyan-400"
+        >
+          Currently generating {{ generateOutputState.generationProgress }} of {{ generateOutputState.totalQuestions }} questions...<br>
+        </h3>
+        <h3
+          v-show="generateOutputState.generatingImages"
+          class="mt-2"
+        >
+          If generating progress is stuck, then click on cancel below and try again with a lower img scale value<br><br>
+          If even with a lower scale value, it is stuck then cancel again and just download without pre generated images (i.e. select "No" above)<br><br>
+        </h3>
         <h3 v-show="generateOutputState.preparingDownload">
-          Please wait, preparing download...
+          preparing download...
         </h3>
         <h3 v-show="generateOutputState.downloaded">
           Downloaded!
         </h3>
       </div>
+      <div
+        v-show="generateOutputState.generatingImages"
+        class="flex justify-center mt-5"
+      >
+        <BaseButton
+          label="Cancel Generation"
+          severity="warn"
+          @click="() => {
+            generateOutputState.generatingImages = false
+            generateOutputState.totalQuestions = 0
+          }"
+        />
+      </div>
     </Dialog>
+    <LazyGenerateTestImages
+      v-if="generateOutputState.generatingImages && (generateOutputState.totalQuestions > 0)"
+      :is-images-for-pdf-cropper="true"
+      :pdf-uint8-array="pdfState.fileUint8Array"
+      :question-img-scale="generateOutputState.preGenerateImagesScale"
+      :cropper-sections-data="cropperSectionsDataForPreGenerateImages"
+      @current-question-progress="(questionNum) => generateOutputState.generationProgress = questionNum"
+      @image-blobs-generated="addImageBlobsToZipAndDownload"
+    />
   </div>
 </template>
 
@@ -366,12 +462,15 @@ import type {
   QuestionType,
   CropperOutputData,
   CropperQuestionData,
+  CropperSectionsData,
+  TestImageBlobs,
 } from '~/src/types'
+import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '~/src/shared/constants'
 
 interface PdfState {
   currentPageNum: number
   totalPages: number
-  file: File | null
+  fileUint8Array: Uint8Array | null
 }
 
 interface SettingsState {
@@ -437,25 +536,48 @@ const selectOptions = {
     { name: 'Box', value: 'box' },
   ],
   outputFileType: ['.zip', '.json'],
+  preGenerateImages: [
+    { name: 'Yes', value: true },
+    { name: 'No', value: false },
+  ],
 }
 
 const tooltipContent = {
   outputFileType:
-    '".zip" → Includes both the PDF file and the JSON file\n'
-    + '(Recommended to keep both files together in one archive)\n\n'
-    + '".json" → Downloads only the JSON file',
+    '".zip" → Includes the JSON and PDF/Image files.\n'
+    + '(Recommended to keep files together in one archive).\n\n'
+    + '".json" → Downloads only the JSON file.',
+
+  preGenerateImages:
+    '"Yes" → Pre-Generates Question Images from PDF now itself to store in zip as png files, this will skip the image generation steps in test interface and results page\'s question preview as images in the zip will be used (Recommended).\n'
+    + 'Size of zip file will depend on pdf, questions area and image quality scale. Generally, size of this will be less than the PDF file size.\n\n'
+    + '"No" → Zip will contain pdf instead of png. Generates Question Images from PDF when needed in test interface and results page\'s question preview.\n'
+    + 'Size of zip file will be almost equal to PDF File size.',
+
+  preGenerateImagesScale:
+    'Scale/Quality of the generated images, higher the scale, better the quality but takes more resources.\n'
+    + 'This doesn\'t take Device Pixel Ratio into account, so if you are using a very high DPI screen, then you can set this to a greater value.',
 }
 
 const generateOutputState = shallowReactive({
   filename: 'pdf2cbt_cropperdata',
   fileType: '.zip',
+  preGenerateImages: true,
+  preGenerateImagesScale: 2,
+  generatingImages: false,
+  generationProgress: 0,
+  totalQuestions: 0,
   preparingDownload: false,
   downloaded: false,
 })
 
+const outputFilesToZip = shallowRef<AsyncZippable>({})
+
+const cropperSectionsDataForPreGenerateImages = shallowRef<CropperSectionsData>({})
+
 const { pixelRatio: devicePixelRatio, stop: stopUseDPR } = useDevicePixelRatio()
 
-let mupdfWorker: Comlink.Remote<MuPdfProcessor>
+let mupdfWorker: Comlink.Remote<MuPdfProcessor> | null = null
 
 /// / element refs ////
 const imgElem = ref<HTMLImageElement>()
@@ -465,7 +587,7 @@ const croppedDivContainerElem = shallowRef<HTMLElement>()
 const pdfState = shallowReactive<PdfState>({
   currentPageNum: 0,
   totalPages: 0,
-  file: null,
+  fileUint8Array: null,
 })
 
 const isPdfLoaded = shallowRef(false)
@@ -1104,17 +1226,23 @@ const selectionWatchHandle = watch(
 selectionWatchHandle.pause() // as not required on initial webpage load
 
 const handlePdfFileUpload = (file: File) => {
-  pdfState.file = file
   visibilityState.isLoadingPdf = true
-  loadPdfFile()
+
+  file.arrayBuffer().then((buffer) => {
+    pdfState.fileUint8Array = new Uint8Array(buffer)
+    pdfFileHash = ''
+    loadPdfFile()
+  })
 }
 
-async function loadPdfFile() {
+async function loadPdfFile(isFirstLoad: boolean = true) {
   try {
-    if (!pdfState.file) return
+    if (!pdfState.fileUint8Array) return
+    closeMupdfWorker()
+    mupdfWorker = Comlink.wrap<MuPdfProcessor>(new mupdfWorkerFile())
 
-    const pagesCount = await mupdfWorker.loadPdf(await pdfState.file.arrayBuffer(), true)
-    if (pagesCount) {
+    const pagesCount = await mupdfWorker.loadPdf(pdfState.fileUint8Array, true)
+    if (pagesCount && isFirstLoad) {
       pdfState.totalPages = pagesCount
       pdfState.currentPageNum = 1
 
@@ -1130,6 +1258,10 @@ async function loadPdfFile() {
 
 async function renderPage(pageNum: number, refreshOverlays: boolean = true) {
   if (!imgElem.value) return
+  if (mupdfWorker === null) {
+    await loadPdfFile()
+  }
+  if (!mupdfWorker) return
 
   try {
     const dpr = devicePixelRatio.value || 1
@@ -1207,24 +1339,40 @@ function transformDataToOutputFormat(data: Record<number, QuestionData[]>) {
     pdfFileHash,
   }
 
-  return JSON.stringify(outputData, null, 2)
+  return outputData
 }
 
 async function generatePdfCropperOutput() {
-  const pdfFile = pdfState.file
+  const pdfU8Array = pdfState.fileUint8Array
+  generateOutputState.downloaded = false
+  outputFilesToZip.value = {}
 
-  if (!pdfFile) return
+  if (!pdfU8Array) return
 
-  generateOutputState.preparingDownload = true
+  const fileType = generateOutputState.fileType
+  const preGenerateImages = generateOutputState.preGenerateImages
+  const isPreGenerateImagesMode = fileType === '.zip' && preGenerateImages
 
-  const pdfU8Array = new Uint8Array(await pdfFile.arrayBuffer())
+  if (isPreGenerateImagesMode) {
+    generateOutputState.generatingImages = true
+    generateOutputState.preparingDownload = false
+    generateOutputState.totalQuestions = 0
+    generateOutputState.generationProgress = 0
+    closeMupdfWorker()
+    await nextTick()
+  }
+  else {
+    generateOutputState.preparingDownload = true
+    generateOutputState.generatingImages = false
+  }
+
+  const filename = generateOutputState.filename + fileType
+
   if (!pdfFileHash) pdfFileHash = await utilGetHash(pdfU8Array)
 
   const Data = structuredClone(toRaw(questionsData))
-  const jsonString = transformDataToOutputFormat(Data)
-
-  const fileType = generateOutputState.fileType
-  const filename = generateOutputState.filename + fileType
+  const jsonData = transformDataToOutputFormat(Data)
+  const jsonString = JSON.stringify(jsonData, null, 2)
 
   if (fileType === '.json') {
     const outputBlob = new Blob([jsonString], { type: 'application/json' })
@@ -1234,22 +1382,72 @@ async function generatePdfCropperOutput() {
   }
   else {
     const jsonU8Array = strToU8(jsonString)
-    const zipFiles: AsyncZippable = {}
 
-    zipFiles[DataFileNames.questionsPdf] = pdfU8Array
-    zipFiles[DataFileNames.dataJson] = [jsonU8Array, { level: 6 }]
+    outputFilesToZip.value[DataFileNames.dataJson] = [jsonU8Array, { level: 6 }]
 
-    zip(zipFiles, { level: 0 }, (err, compressedZip) => {
+    if (isPreGenerateImagesMode) {
+      const pdfCropperData = jsonData.pdfCropperData
+      const cropperSectionsData: CropperSectionsData = {}
+
+      let totalQuestions = 0
+      for (const subjectData of Object.values(pdfCropperData)) {
+        for (const [sectionName, sectionData] of Object.entries(subjectData)) {
+          cropperSectionsData[sectionName] = sectionData
+          totalQuestions += Object.keys(sectionData).length
+        }
+      }
+
+      cropperSectionsDataForPreGenerateImages.value = cropperSectionsData
+      generateOutputState.totalQuestions = totalQuestions
+    }
+    else {
+      outputFilesToZip.value[DataFileNames.questionsPdf] = pdfU8Array
+      zipAndDownloadOutput()
+    }
+  }
+}
+
+async function zipAndDownloadOutput() {
+  const filesToZip = outputFilesToZip.value
+
+  if (Object.keys(filesToZip).length > 0) {
+    zip(filesToZip, { level: 0 }, (err, compressedZip) => {
       if (err) {
         console.error('Error creating zip:', err)
+        generateOutputState.preparingDownload = false
         return
       }
       const outputBlob = new Blob([compressedZip], { type: 'application/zip' })
-      utilSaveFile(filename, outputBlob)
+      const { filename, fileType } = generateOutputState
+      utilSaveFile(filename + fileType, outputBlob)
       generateOutputState.preparingDownload = false
       generateOutputState.downloaded = true
     })
   }
+  else {
+    generateOutputState.preparingDownload = false
+  }
+}
+
+async function addImageBlobsToZipAndDownload(testImageBlobs: TestImageBlobs) {
+  generateOutputState.preparingDownload = true
+  generateOutputState.generatingImages = false
+  generateOutputState.totalQuestions = 0
+
+  for (const [sectionName, sectionData] of Object.entries(testImageBlobs)) {
+    for (const [questionNum, questionData] of Object.entries(sectionData)) {
+      for (let i = 0; i < questionData.length; i++) {
+        const imageBuffer = new Uint8Array(await questionData[i].arrayBuffer())
+        const sectionNameWithSeparator = sectionName + IMAGE_FILE_NAME_OF_ZIP_SEPARATOR
+        const questionNameWithSeparator = questionNum + IMAGE_FILE_NAME_OF_ZIP_SEPARATOR
+
+        const filename = `${sectionNameWithSeparator}${questionNameWithSeparator}${i + 1}.png`
+        outputFilesToZip.value[filename] = imageBuffer
+      }
+    }
+  }
+
+  zipAndDownloadOutput()
 }
 
 function syncSettingsWithLocalStorage(save: boolean = false) {
@@ -1277,9 +1475,6 @@ function syncSettingsWithLocalStorage(save: boolean = false) {
 }
 
 onMounted(() => {
-  const mupdfOgWorker = new mupdfWorkerFile()
-  mupdfWorker = Comlink.wrap<MuPdfProcessor>(mupdfOgWorker)
-
   syncSettingsWithLocalStorage()
   zoomScaleDebounced.value = settings.scale
 
@@ -1310,14 +1505,19 @@ onMounted(() => {
   window.addEventListener('keyup', keyUpCallback)
 })
 
-// clean up
-onBeforeUnmount(() => {
+const closeMupdfWorker = () => {
   try {
-    mupdfWorker.close()
+    mupdfWorker?.close()
+    mupdfWorker = null
   }
   catch {
     // maybe worker is not active
   }
+}
+
+// clean up
+onBeforeUnmount(() => {
+  closeMupdfWorker()
   syncSettingsWithLocalStorage(true)
 
   for (const pageData of Object.values(pageImgData)) {

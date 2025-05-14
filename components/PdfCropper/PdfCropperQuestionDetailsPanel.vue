@@ -12,9 +12,10 @@
       >
         <InputText
           id="subject_name"
-          v-model.trim="currentQuestionData.subjectName"
+          v-model="currentQuestionData.subjectName"
           :maxlength="30"
           :disabled="!isPdfLoaded"
+          @blur="() => currentQuestionData.subjectName = currentQuestionData.subjectName.trim()"
         />
       </BaseFloatLabel>
       <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
@@ -28,9 +29,10 @@
       >
         <InputText
           id="section_name"
-          v-model.trim="currentQuestionData.sectionName"
+          v-model="currentQuestionData.sectionName"
           :maxlength="40"
           :disabled="!isPdfLoaded"
+          @blur="() => currentQuestionData.sectionName = currentQuestionData.sectionName.trim()"
         />
       </BaseFloatLabel>
       <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
