@@ -1,0 +1,42 @@
+name: Upload Release Assets
+
+on:
+  release:
+    types: [published]
+
+env:
+  NODE_VERSION: 22.15.0
+  ZIP_NAME: pdf2cbt.zip
+  PUBLIC_DIR: .output/public
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static site
+        run: npm run generate
+
+      - name: Zip generated static site
+        run: |
+          cd $PUBLIC_DIR
+          zip -r ../../$ZIP_NAME ./*
+
+      - name: Upload release asset (pdf2cbt.zip)
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ env.ZIP_NAME }}
+          asset_name: ${{ env.ZIP_NAME }}
+          asset_content_type: application/zip
