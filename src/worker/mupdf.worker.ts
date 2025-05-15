@@ -2,7 +2,7 @@
 
 import * as Comlink from 'comlink'
 import type { Document, Pixmap } from 'mupdf'
-import type { TestSectionKey } from '~/src/types'
+import type { TestSectionKey, TestImageBlobs } from '~/src/types'
 
 interface PdfData {
   page: number
@@ -20,12 +20,6 @@ type ProcessedCropperData = {
     section: TestSectionKey
     question: number | string
   }[]
-}
-
-type TestQuestionsBlobs = {
-  [section: TestSectionKey]: {
-    [question: number | string]: Blob[]
-  }
 }
 
 export class MuPdfProcessor {
@@ -85,15 +79,16 @@ export class MuPdfProcessor {
   async generateQuestionImages(
     processedCropperData: ProcessedCropperData,
     scale: number,
+    transparent: boolean = false,
   ) {
     if (!this.doc) throw new Error('PDF not loaded')
 
     let progressCount = 0
-    const imageBlobs: TestQuestionsBlobs = {}
+    const imageBlobs: TestImageBlobs = {}
 
     for (const pageKey of Object.keys(processedCropperData)) {
       const pageNum = parseInt(pageKey)
-      const pagePixmap = await this.getPagePixmap(pageNum, scale)
+      const pagePixmap = await this.getPagePixmap(pageNum, scale, transparent)
 
       for (const questionData of processedCropperData[pageKey]) {
         const { pdfData, section, question } = questionData

@@ -444,8 +444,14 @@
 <script lang="ts" setup>
 import { strFromU8, unzip } from 'fflate'
 import * as Comlink from 'comlink'
-import type { CropperOutputData, QuestionResult, QuestionStatus, TestResultDataQuestion } from '~/src/types'
-import { LocalStorageKeys, DataFileNames } from '~/src/types/enums'
+import type {
+  CropperOutputData,
+  QuestionResult,
+  QuestionStatus,
+  TestResultDataQuestion,
+  TestImageBlobs,
+} from '~/src/types'
+import { LocalStorageKeys } from '~/src/types/enums'
 import { db } from '~/src/db/cbt-db'
 import mupdfWorkerFile from '~/src/worker/mupdf.worker?worker'
 import type { MuPdfProcessor } from '~/src/worker/mupdf.worker'
@@ -512,12 +518,14 @@ const drawerVisibility = shallowRef(false)
 const fileUploaderState = shallowReactive<{
   pdfUint8Array: Uint8Array | null
   cropperData: PdfCropperJsonData | null
+  testImageBlobs: TestImageBlobs | null
   showLoadPdfDialog: boolean
   showPdfHashMismatchDialog: boolean
   showLoadPdfDataDialog: boolean
 }>({
   pdfUint8Array: null,
   cropperData: null,
+  testImageBlobs: null,
   showLoadPdfDialog: false,
   showPdfHashMismatchDialog: false,
   showLoadPdfDataDialog: false,
@@ -808,16 +816,17 @@ async function loadUploadedFile(file: File, fileType: 'zip' | 'pdf' | 'json') {
       fileUploaderState.cropperData = null
     }
     else if (fileType === 'zip') {
-      const data = await unzipFile(file)
-      fileUploaderState.pdfUint8Array = data.pdfFile
-      fileUploaderState.cropperData = data.jsonData
+      const data = await utilUnzipTestDataFile(file, 'all')
+      fileUploaderState.testImageBlobs = data.testImageBlobs
+      fileUploaderState.pdfUint8Array = data.pdfBuffer
+      fileUploaderState.cropperData = data.jsonData as PdfCropperJsonData | null
     }
     else {
       fileUploaderState.cropperData = JSON.parse(strFromU8(new Uint8Array(await file.arrayBuffer())))
     }
 
-    if (fileUploaderState.pdfUint8Array) {
-      if (fileType !== 'json' && testPdfFileHash) {
+    if (fileUploaderState.pdfUint8Array || fileUploaderState.testImageBlobs) {
+      if (fileUploaderState.pdfUint8Array && fileType !== 'json' && testPdfFileHash) {
         const currentPdfHash = await utilGetHash(fileUploaderState.pdfUint8Array)
         if (currentPdfHash !== testPdfFileHash) {
           fileUploaderState.showLoadPdfDialog = false
@@ -838,43 +847,39 @@ async function startRenderingImgs() {
   fileUploaderState.showPdfHashMismatchDialog = false
   fileUploaderState.showLoadPdfDataDialog = false
 
-  const questionsPdfData = getQuestionsPdfData(allQuestions)
-  if (questionsPdfData) {
+  if (fileUploaderState.testImageBlobs) {
     drawerVisibility.value = true
-    renderPdftoImgs(questionsPdfData)
-  }
-  else if (!fileUploaderState.cropperData) {
-    fileUploaderState.showLoadPdfDataDialog = true
+    pdfRenderingProgress.value = 'loading-pdf'
+
+    const questionSectionsRelations: Record<string | number, { section: string, que: number | string }> = {}
+    for (const question of allQuestions) {
+      const { queId, section, oriQueId } = question
+      questionSectionsRelations[queId] = { section, que: oriQueId }
+    }
+
+    const testId = currentTestResultsId.value
+    testQuestionsImgUrls.value[testId] = utilGetQuestionsUrlsFromTestImageBlobs(
+      fileUploaderState.testImageBlobs,
+      Object.entries(questionSectionsRelations),
+    )
+    pdfRenderingProgress.value = 'done'
+    fileUploaderState.cropperData = null
+    fileUploaderState.pdfUint8Array = null
+    fileUploaderState.testImageBlobs = null
   }
   else {
-    console.error('Error: pdfData not found in questions data')
+    const questionsPdfData = getQuestionsPdfData(allQuestions)
+    if (questionsPdfData) {
+      drawerVisibility.value = true
+      renderPdftoImgs(questionsPdfData)
+    }
+    else if (!fileUploaderState.cropperData) {
+      fileUploaderState.showLoadPdfDataDialog = true
+    }
+    else {
+      console.error('Error: pdfData not found in questions data')
+    }
   }
-}
-
-async function unzipFile(zipFile: File | Blob) {
-  const zipU8Array = new Uint8Array(await zipFile.arrayBuffer())
-
-  return new Promise<{
-    pdfFile: Uint8Array
-    jsonData: PdfCropperJsonData
-  }>((resolve, reject) => {
-    unzip(zipU8Array, (err, files) => {
-      if (err) {
-        reject(err.message)
-        return
-      }
-
-      const pdfFile = files[DataFileNames.questionsPdf] ?? null
-      const jsonFile = files[DataFileNames.dataJson] ?? null
-      if (pdfFile && jsonFile) {
-        const jsonData = JSON.parse(strFromU8(jsonFile))
-        resolve({ pdfFile, jsonData })
-      }
-      else {
-        reject(DataFileNames.questionsPdf + ' is not in ZIP file!')
-      }
-    })
-  })
 }
 
 async function loadDemoImages() {
@@ -1028,6 +1033,7 @@ async function renderPdftoImgs(questionsPdfData: QuestionsPdfData) {
     }
     fileUploaderState.cropperData = null
     fileUploaderState.pdfUint8Array = null
+    fileUploaderState.testImageBlobs = null
   }
 }
 

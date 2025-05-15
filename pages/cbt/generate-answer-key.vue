@@ -67,15 +67,12 @@
       <h3 class="text-xl text-center">
         You can load either zip/json file of PDF Cropper or json file of CBT Interface/Results
       </h3>
-      <CbtFileUpload
-        v-model="fileUploaderState.selectedFileType"
-        :file-options="selectOptions.fileUploader"
-        :validation-function="fileUploaderValidationFunction"
-        file-types="zip-or-json"
-        empty-slot-text-class="top-[35%]"
-        root-class="sm:w-4/5 md:w-3/4 lg:w-2/3 mx-auto"
-        content-class="min-h-48 md:min-h-64"
-        @on-uploaded="(data) => loadFileData(data.jsonData, data.pdfFile)"
+      <BaseSimpleFileUpload
+        accept="application/json,application/zip,.json,.zip"
+        :label="'Select ZIP/JSON File'"
+        invalid-file-type-message="Invalid file. Please select a valid ZIP or JSON file from PDF Cropper Page"
+        icon-name="prime:plus"
+        @upload="handleFileUpload"
       />
     </div>
     <div
@@ -347,11 +344,6 @@ import { DataFileNames } from '~/src/types/enums'
 
 type UnknownRecord = Record<string, unknown>
 
-type FileUploaderData = {
-  pdfFile: Uint8Array | null
-  jsonData: Record<string, unknown>
-}
-
 type SectionListItem = TestSectionListItem & { totalQuestions: number }
 
 type QuestionAnswerKeyData = {
@@ -374,21 +366,6 @@ interface DBTestOutputDataState {
   isDataFromDB: boolean
 }
 
-// if yes then load that and this below will be storing it
-const dbTestOutputDataState = shallowReactive<DBTestOutputDataState>({
-  isDataFound: false, // boolean to indicate if testResultOverviews without results generated is found or not
-  testResultOverviews: [], // list of testResultOverviews without results generated
-  selectedTestResultOverviewIndex: null,
-  isDataFromDB: false, // is data that is loaded (or being used) from db?
-})
-
-// if data to generate from is not found in db then
-// ask user to upload file of cropper/interface/results, this will store the fileUploader related data
-const fileUploaderState = shallowReactive({
-  selectedFileType: 'json',
-  isFileLoaded: false,
-})
-
 const tooltipContent = {
   questionsNumberingOrderType:
     'Select how question numbers appear in the "Q. Num" Column. This is for visual use only (internally all questions are referred by original Q. Num):\n\n'
@@ -405,8 +382,25 @@ const tooltipContent = {
 
 const INPUT_ID_PREFIX = 'input-answer-q-'
 
-// to store raw uploaded file data
-const uploadedFileData = shallowRef<FileUploaderData | null>(null)
+// if yes then load that and this below will be storing it
+const dbTestOutputDataState = shallowReactive<DBTestOutputDataState>({
+  isDataFound: false, // boolean to indicate if testResultOverviews without results generated is found or not
+  testResultOverviews: [], // list of testResultOverviews without results generated
+  selectedTestResultOverviewIndex: null,
+  isDataFromDB: false, // is data that is loaded (or being used) from db?
+})
+
+// if data to generate from is not found in db then
+// ask user to upload file of cropper/interface/results, this will store the fileUploader related data
+const fileUploaderState = shallowReactive<{
+  isFileLoaded: boolean
+  unzippedFiles: AsyncZippable | null
+  jsonData: Record<string, unknown> | null
+}>({
+  isFileLoaded: false,
+  unzippedFiles: null,
+  jsonData: null,
+})
 
 const selectOptions = {
   questionsNumberingOrder: [
@@ -414,24 +408,6 @@ const selectOptions = {
     { name: 'Cumulative', value: 'cumulative' },
     { name: 'Section-wise', value: 'section-wise' },
   ],
-
-  fileUploader: [
-    { name: 'ZIP', value: 'zip' },
-    { name: 'JSON', value: 'json' },
-  ],
-}
-
-const fileUploaderValidationFunction = (data: FileUploaderData): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
-    const status = Boolean(data.jsonData?.pdfCropperData || data.jsonData.testData)
-
-    if (status) {
-      resolve(true)
-    }
-    else {
-      reject('JSON File is not in valid format, are you sure you had selected correct file?')
-    }
-  })
 }
 
 const settingsState = shallowReactive({
@@ -471,10 +447,8 @@ const outputFileTypeOptions = computed(() => {
     { name: '.json (separate)', value: 'json-separate' },
   ]
 
-  if (uploadedFileData.value) {
-    if (uploadedFileData.value.pdfFile && fileUploaderState.selectedFileType === 'zip') {
-      return options
-    }
+  if (fileUploaderState.unzippedFiles) {
+    return options
   }
 
   if (dbTestOutputDataState.isDataFromDB) {
@@ -708,21 +682,19 @@ function getQuestionOptions(questionData: CropperQuestionData | TestOutputDataQu
   return 4
 }
 
-function loadFileData(
-  jsonData: UnknownRecord,
-  pdfFile: Uint8Array | null,
-) {
-  if (jsonData.testData) {
-    subjectsData = jsonData.testData as TestOutputDataSubjects
+function loadFileData() {
+  const jsonData = fileUploaderState.jsonData
+  if (jsonData?.testData) {
+    subjectsData = jsonData.testData as TestOutputDataSubjects ?? null
   }
-  else if (jsonData.testOutputDatas) {
+  else if (jsonData?.testOutputDatas) {
     const testOutputData = (jsonData.testOutputDatas as Record<string, unknown>[])[0]
     if (testOutputData.testData) {
-      subjectsData = testOutputData.testData as TestOutputDataSubjects
+      subjectsData = testOutputData.testData as TestOutputDataSubjects ?? null
     }
   }
   else {
-    subjectsData = jsonData.pdfCropperData as CropperOutputData
+    subjectsData = jsonData?.pdfCropperData as CropperOutputData ?? null
   }
 
   if (subjectsData === null) {
@@ -730,21 +702,34 @@ function loadFileData(
     return
   }
 
-  if (pdfFile && fileUploaderState.selectedFileType === 'zip') {
+  if (fileUploaderState.unzippedFiles) {
     generateOutputState.selectedFileType = 'zip'
   }
 
-  loadDataState(jsonData, pdfFile)
+  loadDataState()
 }
 
-function loadDataState(
-  jsonData: UnknownRecord,
-  pdfFile: Uint8Array | null,
-) {
-  uploadedFileData.value = {
-    pdfFile,
-    jsonData,
+async function handleFileUpload(files: File | File[]) {
+  try {
+    const file = Array.isArray(files) ? files[0] : files
+    const zipFileCheckStatus = await utilIsZipFile(file)
+    if (zipFileCheckStatus > 0) {
+      const { jsonData, unzippedFiles } = await utilUnzipTestDataFile(file, 'json-only', true)
+      fileUploaderState.jsonData = jsonData
+      fileUploaderState.unzippedFiles = unzippedFiles ?? null
+    }
+    else {
+      fileUploaderState.jsonData = await utilParseJsonFile(file)
+    }
+
+    loadFileData()
   }
+  catch (err) {
+    console.error('Error while handling file upload', err)
+  }
+}
+
+function loadDataState() {
   if (!subjectsData) return
 
   for (const [subject, sectionData] of Object.entries(subjectsData)) {
@@ -793,29 +778,28 @@ function generateAnswerKey() {
 }
 
 async function downloadOutput() {
-  if (!uploadedFileData.value) return
+  const selectedFileType = generateOutputState.selectedFileType
+  if (selectedFileType != 'json-separate' && !fileUploaderState.jsonData) return
 
   generateOutputState.preparingDownload = true
   if (Object.keys(testAnswerKeyData).length === 0) {
     generateAnswerKey()
   }
 
-  const uploadedData = toValue(uploadedFileData)!
-
-  uploadedData.jsonData.testAnswerKey = testAnswerKeyData
-
   const filename = generateOutputState.filename
   let fileExtension: '.zip' | '.json' = '.json'
   let outputJsonString = ''
-  const selectedFileType = generateOutputState.selectedFileType
 
   if (selectedFileType === 'json-separate') {
     outputJsonString = JSON.stringify({ testAnswerKey: testAnswerKeyData }, null, 2)
   }
   else {
-    outputJsonString = JSON.stringify(uploadedData.jsonData, null, 2)
+    const jsonData = fileUploaderState.jsonData ?? {}
+    jsonData.testAnswerKey = testAnswerKeyData
 
-    if (selectedFileType === 'zip' && uploadedData.pdfFile) {
+    outputJsonString = JSON.stringify(jsonData, null, 2)
+
+    if (selectedFileType === 'zip' && fileUploaderState.unzippedFiles) {
       fileExtension = '.zip'
     }
   }
@@ -827,17 +811,12 @@ async function downloadOutput() {
     generateOutputState.downloaded = true
   }
   else {
-    const pdfU8Array = uploadedData.pdfFile
-    if (!pdfU8Array) return
+    if (!fileUploaderState.unzippedFiles) return
 
     const jsonU8Array = strToU8(outputJsonString)
+    fileUploaderState.unzippedFiles[DataFileNames.dataJson] = [jsonU8Array, { level: 6 }]
 
-    const zipFiles: AsyncZippable = {}
-
-    zipFiles[DataFileNames.questionsPdf] = pdfU8Array
-    zipFiles[DataFileNames.dataJson] = [jsonU8Array, { level: 6 }]
-
-    zip(zipFiles, { level: 0 }, (err, compressedZip) => {
+    zip(fileUploaderState.unzippedFiles, { level: 0 }, (err, compressedZip) => {
       if (err) {
         console.error('Error creating zip:', err)
         return
@@ -867,7 +846,7 @@ async function loadDataFromDB() {
         if (subjectsData) {
           dbTestOutputDataState.isDataFound = false
           dbTestOutputDataState.testResultOverviews = []
-          loadDataState({}, null)
+          loadDataState()
           dbTestOutputDataState.isDataFromDB = true
           generateOutputState.selectedFileType = 'json-separate'
         }

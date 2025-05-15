@@ -76,7 +76,7 @@ export interface CurrentQuestionData {
   incorrectMarks: number
 }
 
-export type TestSectionKey = string | number
+export type TestSectionKey = string
 
 export type CropperPdfCoords = {
   page: number
@@ -105,7 +105,7 @@ export type CropperSectionsData = {
 }
 
 export type CropperOutputData = {
-  [subject: number | string]: CropperSectionsData
+  [subject: string]: CropperSectionsData
 }
 
 export type QuestionAnswer = number | number[] | string | null
@@ -293,8 +293,15 @@ export type TestResultCommonOutput = TestResultsOutputData | TestOutputData
 export type TestResultsOutputData = Omit<TestOutputData, 'testData' | 'testAnswerKey'>
   & Required<Pick<TestOutputData, 'testResultData'>>
 
+export type TestImageBlobs = {
+  [section: TestSectionKey]: {
+    [question: number | string]: Blob[]
+  }
+}
+
 export interface TestState {
-  pdfFile: null | Uint8Array
+  pdfFile: Uint8Array | null
+  testImageBlobs: TestImageBlobs | null
   pdfFileHash: string
   testAnswerKey: null | TestAnswerKeyData
   isSectionsDataLoaded: boolean
@@ -337,4 +344,14 @@ export type ScoreCardData = Required<Omit<TestResultOverview['overview'], 'accur
     denominator: number
   }
   testDuration?: number
+}
+
+export type UploadedTestData = {
+  pdfBuffer: Uint8Array | null
+  testImageBlobs: TestImageBlobs | null
+  jsonData: Record<string, unknown> | null
+}
+
+export type QuestionsImageUrls = {
+  [queId: number | string]: string[]
 }

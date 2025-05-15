@@ -113,29 +113,22 @@
 </template>
 
 <script lang="ts" setup>
-import { unzip, strFromU8 } from 'fflate'
+import type { UploadedTestData } from '~/src/types'
 import { DataFileNames } from '~/src/types/enums'
-
-interface EmitData {
-  pdfFile: Uint8Array | null
-  jsonData: Record<string, unknown>
-}
 
 const props = defineProps<{
   fileOptions: { name: string, value: string }[]
-  fileTypes: 'zip-or-pdfjson' | 'zip-or-json'
   emptySlotContainerClass?: string
   emptySlotTextClass?: string
   rootClass?: string
   contentClass?: string
   zipFileToLoad?: File | null
-  validationFunction?: (data: EmitData) => Promise<boolean>
 }>()
 
 const selectedFileType = defineModel<string>({ required: true })
 
 const emit = defineEmits<{
-  onUploaded: [data: EmitData]
+  uploaded: [data: UploadedTestData]
 }>()
 
 const acceptStrings = {
@@ -165,19 +158,10 @@ const computedValue = computed(() => {
     }
   }
   else {
-    if (props.fileTypes === 'zip-or-json') {
-      return {
-        accept: acceptStrings.json,
-        maxFilesSelect: 1,
-        errorMsg: errorMsgs.json,
-      }
-    }
-    else {
-      return {
-        accept: acceptStrings.pdfJson,
-        maxFilesSelect: 2,
-        errorMsg: errorMsgs.pdfJson,
-      }
+    return {
+      accept: acceptStrings.pdfJson,
+      maxFilesSelect: 2,
+      errorMsg: errorMsgs.pdfJson,
     }
   }
 })
@@ -188,11 +172,11 @@ const checkForMissingFiles = (pdfFile: unknown, jsonFile: unknown) => {
     errMsg: '',
   }
 
-  if (!pdfFile && !jsonFile && props.fileTypes !== 'zip-or-json') {
+  if (!pdfFile && !jsonFile) {
     returnObj.isErr = true
     returnObj.errMsg = `Missing ${DataFileNames.questionsPdf} and ${DataFileNames.dataJson} files in zip`
   }
-  else if (!pdfFile && props.fileTypes !== 'zip-or-json') {
+  else if (!pdfFile) {
     returnObj.isErr = true
     returnObj.errMsg = `Missing ${DataFileNames.questionsPdf} file in zip`
   }
@@ -210,44 +194,10 @@ const invalidFilesErrorHandler = (msg: string) => {
   loadingAndErrorState.msg = msg
 }
 
-async function unzipFile(zipFile: File | Blob) {
-  const zipU8Array = new Uint8Array(await zipFile.arrayBuffer())
-
-  return new Promise<{
-    pdfFile: Uint8Array | null
-    jsonData: Record<string, unknown>
-  }>((resolve, reject) => {
-    unzip(zipU8Array, (err, files) => {
-      if (err) {
-        reject(err.message)
-        return
-      }
-
-      const pdfFile = files[DataFileNames.questionsPdf] ?? null
-      const jsonFile = files[DataFileNames.dataJson]
-
-      const status = checkForMissingFiles(pdfFile, jsonFile)
-      if (status.isErr) {
-        reject(status.errMsg)
-      }
-
-      const jsonData = JSON.parse(strFromU8(jsonFile))
-      resolve({ pdfFile, jsonData })
-    })
-  })
-}
-
 const emitData = async (
-  data: EmitData,
+  data: UploadedTestData,
 ) => {
-  if (props.validationFunction) {
-    props.validationFunction(data)
-      .then(() => emit('onUploaded', data))
-      .catch(errMsg => invalidFilesErrorHandler(errMsg))
-  }
-  else {
-    emit('onUploaded', data)
-  }
+  emit('uploaded', data)
 }
 
 const handleUpload = async (uploadedFiles: File[] | File) => {
@@ -260,30 +210,30 @@ const handleUpload = async (uploadedFiles: File[] | File) => {
 
   if (isFileTypeZip) {
     const zipFile = files[0]
-    unzipFile(zipFile)
+    utilUnzipTestDataFile(zipFile, 'all')
       .then(data => emitData(data))
       .catch(errMsg => invalidFilesErrorHandler(errMsg))
   }
   else {
-    let pdfFile: Uint8Array | null = null
+    let pdfBuffer: Uint8Array | null = null
     let jsonData: Record<string, unknown> | null = null
 
     try {
       for (const file of files) {
         if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-          pdfFile = new Uint8Array(await file.arrayBuffer())
+          pdfBuffer = new Uint8Array(await file.arrayBuffer())
         }
         else if (file.type === 'application/json' || file.name.toLowerCase().endsWith('.json')) {
           jsonData = await utilParseJsonFile(file)
         }
       }
 
-      const status = checkForMissingFiles(pdfFile, jsonData)
+      const status = checkForMissingFiles(pdfBuffer, jsonData)
       if (status.isErr) {
         invalidFilesErrorHandler(status.errMsg)
       }
       else {
-        emitData({ pdfFile, jsonData: jsonData! })
+        emitData({ pdfBuffer, jsonData: jsonData!, testImageBlobs: null })
       }
     }
     catch (err: unknown) {

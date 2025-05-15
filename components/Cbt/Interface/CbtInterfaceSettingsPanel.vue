@@ -229,28 +229,30 @@
                   pt:label:class="text-center"
                 />
               </div>
-              <div class="flex justify-center gap-3 mt-3 w-full">
-                <label
-                  class="text-center"
-                  for="test_img_quality"
-                >
-                  Questions Image Scale
-                </label>
-                <IconWithTooltip
-                  :tooltip-content="tooltipContent.questionImgScale"
-                  icon-class="text-lg"
-                />
-              </div>
-              <div class="flex gap-3 w-full mt-1.5">
-                <BaseInputNumber
-                  v-model="testSettings.questionImgScale"
-                  :min="1"
-                  :max="10"
-                  :step="0.1"
-                  suffix="x"
-                  size="small"
-                />
-              </div>
+              <template v-if="!testState.testImageBlobs">
+                <div class="flex justify-center gap-3 mt-3 w-full">
+                  <label
+                    class="text-center"
+                    for="test_img_quality"
+                  >
+                    Questions Image Scale
+                  </label>
+                  <IconWithTooltip
+                    :tooltip-content="tooltipContent.questionImgScale"
+                    icon-class="text-lg"
+                  />
+                </div>
+                <div class="flex gap-3 w-full mt-1.5">
+                  <BaseInputNumber
+                    v-model="testSettings.questionImgScale"
+                    :min="1"
+                    :max="10"
+                    :step="0.1"
+                    suffix="x"
+                    size="small"
+                  />
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -267,11 +269,10 @@
               class="flex grow border border-surface-700 rounded-lg"
               autocomplete="off"
             >
-              <CbtFileUpload
+              <CbtInterfaceFileUpload
                 v-if="!hashMismatchDialogState.showDialog"
                 v-model="fileUploaderFileType"
                 :file-options="selectOptions.dataFile"
-                file-types="zip-or-pdfjson"
                 empty-slot-text-class="top-[30%]"
                 :zip-file-to-load="zipFileFromUrlState.zipFile"
                 @update:model-value="(value) => {
@@ -279,7 +280,7 @@
                     zipFileFromUrlState.isDialogOpen = true
                   }
                 }"
-                @on-uploaded="(data) => verifyTestData(data.pdfFile!, data.jsonData)"
+                @uploaded="verifyTestData"
               />
             </form>
           </template>
@@ -1061,10 +1062,10 @@
           @click="() => {
             hashMismatchDialogState.showDialog = false
 
-            const { pdfFile, jsonData, pdfFileHash } = hashMismatchDialogState
-            if (pdfFile && jsonData) {
+            const { pdfBuffer, jsonData, pdfFileHash } = hashMismatchDialogState
+            if (pdfBuffer && jsonData) {
               testState.pdfFileHash = pdfFileHash || ''
-              loadTestData(pdfFile, jsonData)
+              loadTestData({ pdfBuffer, jsonData, testImageBlobs: null })
             }
           }"
         >
@@ -1178,6 +1179,7 @@ import type {
   MiscSettings,
   CbtUiSettings,
   TestAnswerKeyData,
+  UploadedTestData,
 } from '~/src/types'
 import { CBTInterfaceQueryParams } from '~/src/types/enums'
 
@@ -1230,7 +1232,7 @@ const htmlContent = {
 
 const tooltipContent = {
   testDataFileUpload:
-    'Load the file(s) downloaded from the PDF Cropper.\n\n'
+    'Load the file(s) downloaded from the PDF Cropper Page.\n\n'
     + 'If you chose ZIP format, upload only the ZIP file.\n'
     + 'If you chose JSON format, upload both the JSON file and its corresponding PDF.',
 
@@ -1257,7 +1259,8 @@ const tooltipContent = {
     + '"No" → You will not have the ability to pause the test (pause button will not be provided in hidden settings)',
 
   questionImgScale:
-    'The scale of question pdf/image dimensions relative to original dimensions (x).\n'
+    '(This is ignored for Zip file containing Pre Generated Images)\n'
+    + 'The scale of question image dimensions (resolution) to be generated relative to original dimensions (x).\n'
     + 'device pixel ratio (DPR) is also multipled separately.\n\n'
     + 'Higher values increases resolution and improve image clarity but increase file size, '
     + 'requiring more RAM and processing time\n\n'
@@ -1367,12 +1370,12 @@ const importExportDialogState = shallowReactive<ImportExportDialogState>({
 const hashMismatchDialogState = shallowReactive<{
   showDialog: boolean
   pdfFileHash: string
-  pdfFile: Uint8Array | null
+  pdfBuffer: Uint8Array | null
   jsonData: Record<string, unknown> | null
 }>({
   showDialog: false,
   pdfFileHash: '',
-  pdfFile: null,
+  pdfBuffer: null,
   jsonData: null,
 })
 
@@ -1642,25 +1645,43 @@ const processImportExport = (name: ImportExportTypeKey | string, data: Record<st
 }
 
 async function verifyTestData(
-  pdfFile: Uint8Array,
-  jsonData: Record<string, unknown>,
+  uploadedData: UploadedTestData,
 ) {
   try {
-    const currentPdfFileHash = await utilGetHash(pdfFile)
-    const pdfFileHashInJson = jsonData.pdfFileHash as string | undefined
+    const { jsonData, pdfBuffer, testImageBlobs } = uploadedData
+    if (jsonData && (pdfBuffer || testImageBlobs)) {
+      const pdfFileHashInJson = jsonData.pdfFileHash as string | undefined
 
-    if (pdfFileHashInJson && currentPdfFileHash !== pdfFileHashInJson) {
-      hashMismatchDialogState.pdfFile = pdfFile
-      hashMismatchDialogState.jsonData = jsonData
-      hashMismatchDialogState.pdfFileHash = currentPdfFileHash
-      hashMismatchDialogState.showDialog = true
+      if (pdfBuffer) {
+        const currentPdfFileHash = await utilGetHash(pdfBuffer)
+
+        if (pdfFileHashInJson && currentPdfFileHash !== pdfFileHashInJson) {
+          hashMismatchDialogState.pdfBuffer = pdfBuffer
+          hashMismatchDialogState.jsonData = jsonData
+          hashMismatchDialogState.pdfFileHash = currentPdfFileHash
+          hashMismatchDialogState.showDialog = true
+        }
+        else {
+          if (currentPdfFileHash) {
+            testState.value.pdfFileHash = currentPdfFileHash
+          }
+
+          loadTestData(uploadedData)
+        }
+      }
+      else {
+        testState.value.pdfFileHash = pdfFileHashInJson ?? ''
+        loadTestData(uploadedData)
+      }
+    }
+    else if (!jsonData && !pdfBuffer && !testImageBlobs) {
+      throw new Error('PDF/Images and Json Data is returned null by file uploader')
+    }
+    else if (!jsonData) {
+      throw new Error('Json Data is returned null by file uploader')
     }
     else {
-      if (currentPdfFileHash) {
-        testState.value.pdfFileHash = currentPdfFileHash
-      }
-
-      loadTestData(pdfFile, jsonData)
+      throw new Error('PDF/Images is returned null by file uploader')
     }
   }
   catch (err) {
@@ -1669,12 +1690,13 @@ async function verifyTestData(
 }
 
 async function loadTestData(
-  pdfFile: Uint8Array,
-  jsonData: Record<string, unknown>,
+  uploadedData: UploadedTestData,
 ) {
   try {
     zipFileFromUrlState.zipFile = null
-    testState.value.pdfFile = pdfFile
+    const { jsonData, pdfBuffer, testImageBlobs } = uploadedData
+    testState.value.pdfFile = pdfBuffer
+    testState.value.testImageBlobs = testImageBlobs
 
     const newCropperSectionsData: CropperSectionsData = {}
     let newTestSectionsData: TestSectionsData = {}

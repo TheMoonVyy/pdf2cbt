@@ -114,6 +114,9 @@ export const utilGetTestResultOverview = (
 
 export const utilIsPdfFile = (file: File): Promise<0 | 1 | 2> => {
   return new Promise((resolve, reject) => {
+    if (file.size <= 2) {
+      return resolve(0)
+    }
     const reader = new FileReader()
     reader.onload = (e) => {
       const results = e.target?.result
@@ -138,6 +141,9 @@ export const utilIsPdfFile = (file: File): Promise<0 | 1 | 2> => {
 
 export const utilIsZipFile = (file: File | Blob): Promise<0 | 1 | 2> => {
   return new Promise((resolve, reject) => {
+    if (file.size <= 2) {
+      return resolve(0)
+    }
     const reader = new FileReader()
 
     reader.onload = (e) => {
