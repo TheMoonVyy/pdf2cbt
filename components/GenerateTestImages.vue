@@ -38,13 +38,11 @@ const props = defineProps<{
   questionImgScale: number
   devicePixelRatio?: number
   cropperSectionsData: CropperSectionsData
-  isImagesForPdfCropper?: boolean
 }>()
 
 const emit = defineEmits<{
   imageBlobsGenerated: [testImageBlobs: TestImageBlobs]
   currentQuestionProgress: [questionNum: number]
-  doneGenerating: []
 }>()
 
 const mupdfOgWorker = new mupdfWorkerFile()
@@ -120,26 +118,7 @@ async function generateQuestionImages() {
 
   mupdfWorker.close()
 
-  if (props.isImagesForPdfCropper) {
-    emit('imageBlobsGenerated', questionsBlobs)
-  }
-  else {
-    const { testSectionsImgUrls } = useCbtTestData()
-
-    for (const [section, sectionData] of Object.entries(questionsBlobs)) {
-      testSectionsImgUrls.value[section] = {}
-
-      for (const [question, blobs] of Object.entries(sectionData)) {
-        testSectionsImgUrls.value[section][question] ??= []
-
-        for (const blob of blobs) {
-          const url = URL.createObjectURL(blob)
-          testSectionsImgUrls.value[section][question].push(url)
-        }
-      }
-    }
-    emit('doneGenerating')
-  }
+  emit('imageBlobsGenerated', questionsBlobs)
 }
 
 onBeforeUnmount(() => {

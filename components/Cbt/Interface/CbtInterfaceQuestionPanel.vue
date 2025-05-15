@@ -34,7 +34,7 @@ const props = defineProps<{
   isQuestionPalleteCollapsed: boolean
 }>()
 
-const { testQuestionsData, currentTestState, testSectionsImgUrls, lastLoggedAnswer } = useCbtTestData()
+const { testQuestionsData, currentTestState, testQuestionsUrls, lastLoggedAnswer } = useCbtTestData()
 
 const { uiSettings } = useCbtSettings()
 
@@ -48,10 +48,9 @@ const questionImgMaxSize = computed(() => {
 })
 
 const currentQuestionImgUrls = computed(() => {
-  const section = currentTestState.value.section
-  const question = currentTestState.value.question
+  const queId = currentTestState.value.queId
 
-  const questionImgs = testSectionsImgUrls.value?.[section]?.[question]
+  const questionImgs = testQuestionsUrls.value?.[queId]
   if (questionImgs) {
     return questionImgs
   }

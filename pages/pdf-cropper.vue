@@ -439,7 +439,6 @@
     </Dialog>
     <LazyGenerateTestImages
       v-if="generateOutputState.generatingImages && (generateOutputState.totalQuestions > 0)"
-      :is-images-for-pdf-cropper="true"
       :pdf-uint8-array="pdfState.fileUint8Array"
       :question-img-scale="generateOutputState.preGenerateImagesScale"
       :cropper-sections-data="cropperSectionsDataForPreGenerateImages"

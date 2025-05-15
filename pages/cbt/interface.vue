@@ -179,10 +179,7 @@
             :question-img-scale="testSettings.questionImgScale"
             :cropper-sections-data="cropperSectionsData"
             @current-question-progress="(questionNum) => testState.preparingTestCurrentQuestion = questionNum"
-            @done-generating="() => {
-              testState.currentProcess = 'test-is-ready'
-              testState.pdfFile = null
-            }"
+            @image-blobs-generated="loadQuestionsImgUrlsFromBlobs"
           />
           <CbtInterfaceQuestionPanel
             v-else-if="testState.currentProcess === 'test-is-ready' || testState.currentProcess === 'test-started'"
@@ -579,6 +576,7 @@ import type {
   QuestionAnswer,
   TestOutputData,
   TestSummaryDataTableRow,
+  TestImageBlobs,
 } from '~/src/types'
 import { db } from '~/src/db/cbt-db'
 import { CbtUseState } from '~/src/types/enums'
@@ -663,6 +661,7 @@ const testLogger = useCbtLogger(true)
 
 const testState = shallowReactive<TestState>({
   pdfFile: null,
+  testImageBlobs: null,
   pdfFileHash: '',
   testAnswerKey: null,
   isSectionsDataLoaded: false,
@@ -696,7 +695,7 @@ const {
   testQuestionsData,
   testSectionsSummary,
   currentTestState,
-  testSectionsImgUrls,
+  testQuestionsUrls,
 } = useCbtTestData()
 
 useCreateSectionsSummary(testSectionsData, testSectionsSummary)
@@ -1020,7 +1019,19 @@ async function prepareTest() {
     }
   }
 
-  testState.currentProcess = 'preparing-imgs'
+  if (testState.pdfFile) {
+    testState.currentProcess = 'preparing-imgs'
+  }
+  else {
+    loadQuestionsImgUrlsFromBlobs(testState.testImageBlobs!)
+  }
+}
+
+const loadQuestionsImgUrlsFromBlobs = (testImageBlobs: TestImageBlobs) => {
+  testQuestionsUrls.value = utilGetQuestionsUrlsFromTestImageBlobs(testImageBlobs, testQuestionsData.value)
+  testState.testImageBlobs = null
+  testState.pdfFile = null
+  testState.currentProcess = 'test-is-ready'
 }
 
 const pauseTestHandler = () => {
@@ -1190,23 +1201,9 @@ function generateTestOutputData() {
 }
 
 function loadQuestionImgUrlsToResultsUrlsState(testId: number) {
-  const sectionsUrls = testSectionsImgUrls.value
-  const sectionsData = testSectionsData.value
-  const questionsUrls: Record<string | number, string[]> = {}
+  const questionsUrls = testQuestionsUrls.value
 
-  let isAdded = false
-
-  for (const [section, questions] of Object.entries(sectionsUrls)) {
-    for (const [oriQueId, questionUrls] of Object.entries(questions)) {
-      const queId = sectionsData?.[section]?.[oriQueId]?.queId || 0
-      if (queId === 0) return
-
-      questionsUrls[queId] = questionUrls
-      isAdded = true
-    }
-  }
-
-  if (isAdded) {
+  if (Object.keys(questionsUrls).length > 0) {
     const resultsStateUrls = useCbtResultsTestQuestionsImgUrls()
     resultsStateUrls.value[testId] = questionsUrls
   }

@@ -8,7 +8,7 @@ import type {
   TestSectionKey,
   TestQuestionData,
   QuestionStatus,
-  TestSectionsImgUrls,
+  QuestionsImageUrls,
 } from '~/src/types'
 import { CbtUseState } from '~/src/types/enums'
 
@@ -153,7 +153,7 @@ export default () => {
     },
   )
 
-  const testSectionsImgUrls = useState<TestSectionsImgUrls>(
+  const testQuestionsUrls = useState<QuestionsImageUrls>(
     CbtUseState.TestSectionsImgUrls,
     () => ({}),
   )
@@ -170,7 +170,7 @@ export default () => {
     testSectionsData,
     testQuestionsData,
     lastLoggedAnswer,
-    testSectionsImgUrls,
+    testQuestionsUrls,
     testSectionsSummary,
   }
 }

@@ -70,12 +70,11 @@
       <CbtFileUpload
         v-model="fileUploaderState.selectedFileType"
         :file-options="selectOptions.fileUploader"
-        :validation-function="fileUploaderValidationFunction"
         file-types="zip-or-json"
         empty-slot-text-class="top-[35%]"
         root-class="sm:w-4/5 md:w-3/4 lg:w-2/3 mx-auto"
         content-class="min-h-48 md:min-h-64"
-        @on-uploaded="(data) => loadFileData(data.jsonData, data.pdfFile)"
+        @uploaded="(data) => loadFileData(data.jsonData, data.pdfFile)"
       />
     </div>
     <div
