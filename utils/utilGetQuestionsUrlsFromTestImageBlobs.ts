@@ -3,7 +3,7 @@ import type { QuestionsImageUrls, TestImageBlobs, TestQuestionData } from '~/src
 export default (
   testImageBlobs: TestImageBlobs,
   questionsRelationData: Map<number | string, TestQuestionData>
-    | [string | number, { que: number, section: string }][],
+    | [string | number, { que: number | string, section: string }][],
 ): QuestionsImageUrls => {
   const questionsImageUrls: QuestionsImageUrls = {}
 
