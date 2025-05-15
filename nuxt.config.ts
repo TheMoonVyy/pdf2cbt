@@ -1,4 +1,8 @@
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import tailwindVitePlugin from '@tailwindcss/vite'
+
+const projectVersion = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8')).version as string
 
 export default defineNuxtConfig({
   modules: [
@@ -20,6 +24,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       isBackupWebsite: process.env.IS_NETLIFY_BUILD === 'true',
+      projectVersion,
     },
   },
   routeRules: {

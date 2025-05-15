@@ -9,6 +9,7 @@
           class="text-green-500 font-bold text-3xl md:text-[2rem] p-1"
         >
           pdf2cbt
+          <span class="text-cyan-500 font-bold text-base md:text-lg">v{{ projectVersion }}</span>
         </NuxtLink>
         <div class="flex grow flex-row-reverse md:flex-row">
           <div class="flex flex-row justify-center items-center md:mx-auto">
@@ -130,6 +131,8 @@ const router = useRouter()
 router.beforeEach(() => {
   isHamburgerMenuOpen.value = false
 })
+
+const projectVersion = useRuntimeConfig().public.projectVersion
 
 const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
 </script>
