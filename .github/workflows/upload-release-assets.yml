@@ -14,6 +14,9 @@ jobs:
   build-and-upload:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -34,10 +37,21 @@ jobs:
           cd $PUBLIC_DIR
           zip -r ../../$ZIP_NAME ./*
 
-      - name: Upload release asset (pdf2cbt.zip)
+      # Upload when triggered by release
+      - name: Upload release asset trigged by release
+        if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./${{ env.ZIP_NAME }}
           asset_name: ${{ env.ZIP_NAME }}
           asset_content_type: application/zip
+
+      # Upload when triggered manually
+      - name: Upload release asset using GitHub CLI
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME=$(git describe --tags --abbrev=0)
+          gh release upload "$TAG_NAME" "${{ env.ZIP_NAME }}" --clobber
