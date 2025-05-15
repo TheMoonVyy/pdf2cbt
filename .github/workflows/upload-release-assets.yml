@@ -55,5 +55,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git fetch origin 'refs/tags/*:refs/tags/*'
           TAG_NAME=$(git describe --tags --abbrev=0)
           gh release upload "$TAG_NAME" "${{ env.ZIP_NAME }}" --clobber
