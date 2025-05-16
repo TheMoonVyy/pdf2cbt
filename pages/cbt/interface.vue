@@ -663,6 +663,8 @@ const testState = shallowReactive<TestState>({
   pdfFile: null,
   testImageBlobs: null,
   pdfFileHash: '',
+  zipOriginalUrl: '',
+  zipConvertedUrl: '',
   testAnswerKey: null,
   isSectionsDataLoaded: false,
   totalQuestions: 75,
@@ -1145,10 +1147,15 @@ async function submitTest(isAuto: boolean) {
 
 function generateTestOutputData() {
   const { testName, testDuration } = currentTestState.value
-  const testConfig = {
+  const { zipOriginalUrl, zipConvertedUrl } = testState
+  const testConfig: TestOutputData['testConfig'] = {
     testName,
     testDurationInSeconds: testDuration,
     pdfFileHash: testState.pdfFileHash,
+  }
+  if (zipOriginalUrl) {
+    testConfig.zipOriginalUrl = zipOriginalUrl
+    if (zipConvertedUrl) testConfig.zipConvertedUrl = zipConvertedUrl
   }
 
   const testLogs = testLogger.getLogs()

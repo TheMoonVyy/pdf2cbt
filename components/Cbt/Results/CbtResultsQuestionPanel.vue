@@ -168,6 +168,12 @@
             draggable="false"
           >
         </template>
+        <template v-else-if="pdfRenderingProgress === 'loading-zip-from-url'">
+          <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
+            <Icon name="line-md:loading-twotone-loop" />
+            <span>Loading ZIP from URL, please wait...</span>
+          </div>
+        </template>
         <template v-else-if="pdfRenderingProgress === 'loading-pdf'">
           <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
             <Icon name="line-md:loading-twotone-loop" />
@@ -450,6 +456,7 @@ import type {
   QuestionStatus,
   TestResultDataQuestion,
   TestImageBlobs,
+  TestOutputData,
 } from '~/src/types'
 import { LocalStorageKeys } from '~/src/types/enums'
 import { db } from '~/src/db/cbt-db'
@@ -477,7 +484,7 @@ interface Props {
   questionsNumberingOrder: keyof Pick<TestResultDataQuestion, 'oriQueId' | 'queId' | 'secQueId'>
   overallConstants: string[]
   allQuestions: TestResultDataQuestion[]
-  testPdfFileHash: string
+  testConfig: TestOutputData['testConfig']
 }
 
 type QuestionsPdfData = {
@@ -494,6 +501,8 @@ type PdfCropperJsonData = {
   pdfCropperData: CropperOutputData
 }
 
+type PdfRenderingProgress = 'loading-zip-from-url' | 'loading-pdf' | 'generating-img' | 'done' | 'failed'
+
 const showPanel = defineModel<boolean>('showPanel', { required: true })
 const currentQuestionId = shallowRef<string | number>(0)
 
@@ -508,7 +517,7 @@ const {
   questionsNumberingOrder,
   overallConstants,
   allQuestions,
-  testPdfFileHash,
+  testConfig,
 } = defineProps<Props>()
 
 const [TEST_OVERALL, OVERALL] = overallConstants
@@ -531,7 +540,7 @@ const fileUploaderState = shallowReactive<{
   showLoadPdfDataDialog: false,
 })
 
-const pdfRenderingProgress = shallowRef<'loading-pdf' | 'generating-img' | 'done' | 'failed'>('loading-pdf')
+const pdfRenderingProgress = shallowRef<PdfRenderingProgress>('loading-pdf')
 
 // settings for question panel's drawer
 const drawerWidthLocalStorageValue = useLocalStorage(LocalStorageKeys.ResultsQuestionPanelWidth, '60%')
@@ -589,7 +598,30 @@ watch(showPanel,
           drawerVisibility.value = true
         }
         else {
-          fileUploaderState.showLoadPdfDialog = true
+          if (testConfig.zipOriginalUrl) {
+            pdfRenderingProgress.value = 'loading-zip-from-url'
+            drawerVisibility.value = true
+            tryLoadingZipFromUrl()
+              .then((zipFile) => {
+                if (zipFile) {
+                  pdfRenderingProgress.value = 'loading-pdf'
+                  handleFileUpload(zipFile, 'zip-or-pdf', true)
+                }
+                else {
+                  pdfRenderingProgress.value = 'loading-pdf'
+                  fileUploaderState.showLoadPdfDialog = true
+                  drawerVisibility.value = false
+                }
+              })
+              .catch(() => {
+                pdfRenderingProgress.value = 'loading-pdf'
+                fileUploaderState.showLoadPdfDialog = true
+                drawerVisibility.value = false
+              })
+          }
+          else {
+            fileUploaderState.showLoadPdfDialog = true
+          }
         }
       }
       else {
@@ -789,8 +821,11 @@ const resizeImage = (resizeType: 'increase' | 'decrease') => {
   }
 }
 
-const handleFileUpload = async (file: File, type: 'zip-or-pdf' | 'zip-or-json' = 'zip-or-pdf') => {
-  const zipCheckScore = await utilIsZipFile(file)
+const handleFileUpload = async (
+  file: File, type: 'zip-or-pdf' | 'zip-or-json' = 'zip-or-pdf',
+  isZipSoSkipCheckingAgain: boolean = false,
+) => {
+  const zipCheckScore = isZipSoSkipCheckingAgain ? 2 : await utilIsZipFile(file)
   if (zipCheckScore > 0) {
     loadUploadedFile(file, 'zip')
   }
@@ -805,6 +840,27 @@ const handleFileUpload = async (file: File, type: 'zip-or-pdf' | 'zip-or-json' =
       loadUploadedFile(file, 'json')
     }
   }
+}
+
+async function tryLoadingZipFromUrl() {
+  const { zipOriginalUrl, zipConvertedUrl } = testConfig
+  let zipFile: File | null = null
+
+  try {
+    if (zipConvertedUrl) {
+      const data = await utilFetchZipFromUrl(zipConvertedUrl, false)
+      zipFile = data.zipFile ?? null
+    }
+    if (zipOriginalUrl && !zipFile) {
+      const data = await utilFetchZipFromUrl(zipOriginalUrl)
+      zipFile = data.zipFile ?? null
+    }
+  }
+  catch (err) {
+    console.error('Error while fetching zip from url', err)
+  }
+
+  return zipFile
 }
 
 async function loadUploadedFile(file: File, fileType: 'zip' | 'pdf' | 'json') {
@@ -826,9 +882,9 @@ async function loadUploadedFile(file: File, fileType: 'zip' | 'pdf' | 'json') {
     }
 
     if (fileUploaderState.pdfUint8Array || fileUploaderState.testImageBlobs) {
-      if (fileUploaderState.pdfUint8Array && fileType !== 'json' && testPdfFileHash) {
+      if (fileUploaderState.pdfUint8Array && fileType !== 'json' && testConfig.pdfFileHash) {
         const currentPdfHash = await utilGetHash(fileUploaderState.pdfUint8Array)
-        if (currentPdfHash !== testPdfFileHash) {
+        if (currentPdfHash !== testConfig.pdfFileHash) {
           fileUploaderState.showLoadPdfDialog = false
           fileUploaderState.showPdfHashMismatchDialog = true
           return

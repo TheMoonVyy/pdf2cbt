@@ -808,7 +808,7 @@
             <BaseInputNumber
               v-model="timeSpentFilterMinRange"
               :min="0"
-              :max="testDuration"
+              :max="testConfig.testDurationInSeconds"
               label-id="time_spent_filter_min"
               :step="10"
             />
@@ -822,7 +822,7 @@
             <BaseInputNumber
               v-model="timeSpentFilterMaxRange"
               :min="0"
-              :max="testDuration"
+              :max="testConfig.testDurationInSeconds"
               label-id="time_spent_filter_max"
               :step="10"
             />
@@ -857,7 +857,7 @@
       :selected-sub-and-sec="currentSelectedState"
       :overall-constants="[TEST_OVERALL, OVERALL]"
       :all-questions="testQuestions"
-      :test-pdf-file-hash="testPdfFileHash"
+      :test-config="testConfig"
     />
   </div>
 </template>
@@ -873,6 +873,7 @@ import type {
   TestResultData,
   TestResultDataSection,
   TestResultDataQuestion,
+  TestOutputData,
 } from '~/src/types'
 
 interface SelectedSectionKeys {
@@ -1055,12 +1056,11 @@ const settings = shallowReactive<Settings>({
   sortByTimeSpent: null,
 })
 
-const { testResultData, waitUntil, testPdfFileHash, testResultQuestionsData, testDuration } = defineProps<{
+const { testResultData, waitUntil, testConfig, testResultQuestionsData } = defineProps<{
   testResultData: TestResultData
   testResultQuestionsData: Record<string | number, TestResultDataQuestion>
-  testPdfFileHash: string
+  testConfig: TestOutputData['testConfig']
   waitUntil: boolean
-  testDuration: number
 }>()
 
 const showOverallQuestions = shallowRef(false)
@@ -1199,16 +1199,16 @@ const questionResultFilterClasses = computed(() => {
 })
 
 const timeSpentFilterMinRange = computed({
-  get: () => Math.min(Math.max(timeSpentFilterState.min, 0), testDuration),
+  get: () => Math.min(Math.max(timeSpentFilterState.min, 0), testConfig.testDurationInSeconds),
   set: (value) => {
-    timeSpentFilterState.min = Math.min(Math.max(value, 0), testDuration)
+    timeSpentFilterState.min = Math.min(Math.max(value, 0), testConfig.testDurationInSeconds)
   },
 })
 
 const timeSpentFilterMaxRange = computed({
-  get: () => Math.min(timeSpentFilterState.max, testDuration),
+  get: () => Math.min(timeSpentFilterState.max, testConfig.testDurationInSeconds),
   set: (value) => {
-    timeSpentFilterState.max = Math.min(value, testDuration)
+    timeSpentFilterState.max = Math.min(value, testConfig.testDurationInSeconds)
   },
 })
 

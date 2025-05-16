@@ -278,6 +278,8 @@ export interface TestOutputData {
   testConfig: {
     testName: string
     testDurationInSeconds: number
+    zipOriginalUrl?: string
+    zipConvertedUrl?: string
     pdfFileHash: string
   }
   testData: TestOutputDataSubjects
@@ -303,6 +305,8 @@ export interface TestState {
   pdfFile: Uint8Array | null
   testImageBlobs: TestImageBlobs | null
   pdfFileHash: string
+  zipOriginalUrl: string
+  zipConvertedUrl: string
   testAnswerKey: null | TestAnswerKeyData
   isSectionsDataLoaded: boolean
   totalQuestions: number

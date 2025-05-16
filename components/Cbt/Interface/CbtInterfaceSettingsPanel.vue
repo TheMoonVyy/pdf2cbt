@@ -1180,6 +1180,7 @@ import type {
   CbtUiSettings,
   TestAnswerKeyData,
   UploadedTestData,
+  TestOutputData,
 } from '~/src/types'
 import { CBTInterfaceQueryParams } from '~/src/types/enums'
 
@@ -1482,41 +1483,25 @@ const fetchZipFile = async (isRetry: boolean = false) => {
   await nextTick()
 
   try {
-    const parsedUrl = new URL(zipFileFromUrlState.url)
-    const href = parsedUrl.href
+    const data = await utilFetchZipFromUrl(zipFileFromUrlState.url)
 
-    if (!href) {
-      throw new Error('Invalid URL')
-    }
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-      throw new Error('Invalid URL: Only a valid HTTP or HTTPS URL is supported')
-    }
-
-    // Check if the URL is of a GitHub repository and convert it to jsDelivr URL
-    // Conversion to jsDelivr is due to CORS issues with GitHub URLs
-    // else use the original URL
-    const jsDelivrUrl = utilGhUrlToJsDelivrUrl(href)
-    const response = await fetch(jsDelivrUrl ?? parsedUrl)
-    if (!response.ok) {
-      const msg = response.statusText?.trim() ? `:\n${response.statusText}` : ''
-      throw new Error(`Failed to load zip file from url (Status ${response.status})${msg}`)
-    }
-
-    const blob = await response.blob()
-    const isZip = await utilIsZipFile(blob)
-    if (isZip > 0) {
-      zipFileFromUrlState.zipFile = new File([blob], 'testData.zip', { type: 'application/zip' })
+    if (data.zipFile) {
+      zipFileFromUrlState.zipFile = new File([data.zipFile], 'testData.zip', { type: 'application/zip' })
+      testState.value.zipOriginalUrl = data.originalUrl
+      testState.value.zipConvertedUrl = data.convertedUrl || ''
       zipFileFromUrlState.isDialogOpen = false
       zipFileFromUrlState.isLoading = false
     }
     else {
-      throw new Error('Error: The file from the url is not a valid zip file')
+      throw data.err
     }
   }
   catch (error) {
     console.error('Error fetching zip file from url:', error)
     zipFileFromUrlState.errorMsg = error instanceof Error ? error.message : String(error)
     zipFileFromUrlState.isLoading = false
+    testState.value.zipOriginalUrl = ''
+    testState.value.zipConvertedUrl = ''
     if (isRetry) zipFileFromUrlState.retryCount++
   }
 }
@@ -1704,10 +1689,12 @@ async function loadTestData(
 
     const isContinueLastTest = testState.value.continueLastTest
 
-    const { pdfCropperData, testAnswerKey } = jsonData as {
+    const { pdfCropperData, testAnswerKey, testConfig } = jsonData as {
       pdfCropperData: CropperOutputData
       testAnswerKey: TestAnswerKeyData | undefined
+      testConfig?: TestOutputData['testConfig'] & { zipUrl?: string }
     }
+    testState.value.zipOriginalUrl = testConfig?.zipOriginalUrl || testConfig?.zipUrl || ''
 
     if (testAnswerKey) testState.value.testAnswerKey = testAnswerKey
 

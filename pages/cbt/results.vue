@@ -96,8 +96,7 @@
           :wait-until="currentPanelName === ResultsPagePanels.Detailed"
           :test-result-data="testResultsOutputData.testResultData"
           :test-result-questions-data="testResultQuestionsData"
-          :test-pdf-file-hash="testResultsOutputData.testConfig?.pdfFileHash || ''"
-          :test-duration="testResultsOutputData.testConfig.testDurationInSeconds"
+          :test-config="testResultsOutputData.testConfig"
         />
         <CbtResultsMyTestsPanel
           v-show="currentPanelName === ResultsPagePanels.MyTests"
