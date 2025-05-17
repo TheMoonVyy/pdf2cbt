@@ -493,7 +493,7 @@ import type {
   CropperSectionsData,
   TestImageBlobs,
 } from '~/src/types'
-import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '~/src/shared/constants'
+import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '~/shared/constants'
 
 interface PdfState {
   currentPageNum: number

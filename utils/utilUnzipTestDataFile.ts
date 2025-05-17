@@ -1,5 +1,5 @@
 import { unzip, strFromU8, type Unzipped } from 'fflate'
-import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '~/src/shared/constants'
+import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '~/shared/constants'
 import type { CropperOutputData, TestImageBlobs, UploadedTestData } from '~/src/types'
 import { DataFileNames } from '~/src/types/enums'
 

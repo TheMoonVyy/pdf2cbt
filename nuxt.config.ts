@@ -1,8 +1,10 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
 import tailwindVitePlugin from '@tailwindcss/vite'
+import packageJson from './package.json'
 
-const projectVersion = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8')).version as string
+const filterVersion = (version: string) => {
+  const match = version.match(/\d+(\.\d+){0,2}/)
+  return match ? match[0] : 'latest'
+}
 
 export default defineNuxtConfig({
   modules: [
@@ -23,8 +25,8 @@ export default defineNuxtConfig({
   css: ['./src/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      isBackupWebsite: process.env.IS_NETLIFY_BUILD === 'true',
-      projectVersion,
+      isBackupWebsite: import.meta.env.IS_NETLIFY_BUILD === 'true',
+      projectVersion: packageJson.version,
     },
   },
   routeRules: {
@@ -32,6 +34,11 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2025-03-17',
   vite: {
+    define: {
+      __MUPDF_PACKAGE_VERSION__: JSON.stringify(
+        filterVersion(packageJson?.dependencies?.mupdf || ''),
+      ),
+    },
     plugins: [tailwindVitePlugin()],
     esbuild: {
       legalComments: 'none',

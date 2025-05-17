@@ -2,6 +2,7 @@
 
 import * as Comlink from 'comlink'
 import type { Document, Pixmap } from 'mupdf'
+import { MUPDF_VERSION } from '~/shared/constants'
 import type { TestSectionKey, TestImageBlobs } from '~/src/types'
 
 interface PdfData {
@@ -22,15 +23,34 @@ type ProcessedCropperData = {
   }[]
 }
 
+const mupdfLocalUrl = '/assets/_mupdf/mupdf.js'
+const mupdfJsDelivrUrl = `https://cdn.jsdelivr.net/npm/mupdf@${MUPDF_VERSION}/dist/mupdf.js`
+
+const IS_ONLINE_BUILD = Boolean(import.meta.env.VITE_IS_ONLINE)
+
+const mupdfScriptUrl = {
+  firstUrl: IS_ONLINE_BUILD ? mupdfJsDelivrUrl : mupdfLocalUrl,
+  secondUrl: IS_ONLINE_BUILD ? mupdfLocalUrl : mupdfJsDelivrUrl,
+}
+
 export class MuPdfProcessor {
   private mupdf: any = null
   private doc: Document | null = null
 
-  private mupdfScript = '/assets/_mupdf/mupdf.js'
-
   async loadMuPdf() {
     if (!this.mupdf) {
-      this.mupdf = await import(/* @vite-ignore */ this.mupdfScript)
+      try {
+        this.mupdf = await import(/* @vite-ignore */ mupdfScriptUrl.firstUrl)
+      }
+      catch (err) {
+        console.error('Error importing mupdf from first url', err)
+        try {
+          this.mupdf = await import(/* @vite-ignore */ mupdfScriptUrl.secondUrl)
+        }
+        catch (err) {
+          console.error('Error importing mupdf from second url', err)
+        }
+      }
     }
   }
 
