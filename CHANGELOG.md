@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.6.1...v1.7.0) (2025-05-17)
+
+
+### Features
+
+* **pdf-cropper:** save marking scheme of each question type and set it to current marking scheme when question type is changed by user and add more info to generate output dialog ([d4052d2](https://github.com/TheMoonVyy/pdf2cbt/commit/d4052d2e74e9bf4214cc057d9936732c2fda9f56))
+
 ## [1.6.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.6.0...v1.6.1) (2025-05-17)
 
 
