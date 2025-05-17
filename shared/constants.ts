@@ -1,3 +1,1 @@
-export const MUPDF_VERSION = __MUPDF_PACKAGE_VERSION__
-
 export const IMAGE_FILE_NAME_OF_ZIP_SEPARATOR = '__--__'

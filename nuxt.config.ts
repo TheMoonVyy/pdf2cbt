@@ -35,7 +35,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-03-17',
   vite: {
     define: {
-      __MUPDF_PACKAGE_VERSION__: JSON.stringify(
+      'import.meta.env.MUPDF_PACKAGE_VERSION': JSON.stringify(
         filterVersion(packageJson?.dependencies?.mupdf || ''),
       ),
     },

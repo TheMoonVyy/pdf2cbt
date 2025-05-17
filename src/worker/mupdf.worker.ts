@@ -2,7 +2,6 @@
 
 import * as Comlink from 'comlink'
 import type { Document, Pixmap } from 'mupdf'
-import { MUPDF_VERSION } from '~/shared/constants'
 import type { TestSectionKey, TestImageBlobs } from '~/src/types'
 
 interface PdfData {
@@ -23,10 +22,11 @@ type ProcessedCropperData = {
   }[]
 }
 
+const IS_ONLINE_BUILD = Boolean(import.meta.env.VITE_IS_ONLINE)
+const MUPDF_VERSION = import.meta.env.MUPDF_PACKAGE_VERSION as string
+
 const mupdfLocalUrl = '/assets/_mupdf/mupdf.js'
 const mupdfJsDelivrUrl = `https://cdn.jsdelivr.net/npm/mupdf@${MUPDF_VERSION}/dist/mupdf.js`
-
-const IS_ONLINE_BUILD = Boolean(import.meta.env.VITE_IS_ONLINE)
 
 const mupdfScriptUrl = {
   firstUrl: IS_ONLINE_BUILD ? mupdfJsDelivrUrl : mupdfLocalUrl,
