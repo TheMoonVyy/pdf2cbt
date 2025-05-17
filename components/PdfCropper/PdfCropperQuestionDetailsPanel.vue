@@ -172,20 +172,18 @@
 import type { CurrentQuestionData } from '~/src/types'
 
 const currentQuestionData = defineModel<CurrentQuestionData>({ required: true })
-const props = defineProps({
-  isPdfLoaded: {
-    type: Boolean,
-    required: true,
-  },
-})
 
-const optionItems = reactive({
+const props = defineProps<{
+  isPdfLoaded: boolean
+}>()
+
+const optionItems = {
   questionType: [
     { name: 'MCQ', value: 'mcq', tooltip: 'Multiple Choice Question' },
     { name: 'MSQ', value: 'msq', tooltip: 'Multiple Select Question' },
     { name: 'NAT', value: 'nat', tooltip: 'Numerial Answer Type' },
   ],
-})
+}
 
 const tooltipContent = {
   partialMarking:

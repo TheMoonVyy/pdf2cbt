@@ -61,7 +61,7 @@
           </div>
         </Panel>
         <Panel
-          header="Current Page Actions"
+          :header="`Current Page (#${pdfState.currentPageNum}) Actions`"
           :collapsed="true"
           toggleable
           class="w-full"
@@ -387,20 +387,20 @@
           />
         </div>
       </div>
-      <h5 class="text-center text-gray-500 dark:text-gray-300 my-5">
-        After downloading once, you can always change the options above to generate &amp; download again with those options
-      </h5>
       <div
         v-show="!generateOutputState.generatingImages"
-        class="flex justify-center"
+        class="flex justify-center my-5"
       >
         <BaseButton
           label="Generate & Download"
           @click="generatePdfCropperOutput()"
         />
       </div>
-      <div class="flex flex-col items-center mt-3 mb-2 text-center">
-        <h3 v-show="generateOutputState.generatingImages">
+      <div class="flex flex-col items-center mb-2 text-center">
+        <h3
+          v-show="generateOutputState.generatingImages"
+          class="font-semibold"
+        >
           Please wait, generating images...<br>
         </h3>
         <h3
@@ -425,7 +425,7 @@
       </div>
       <div
         v-show="generateOutputState.generatingImages"
-        class="flex justify-center mt-5"
+        class="flex justify-center mb-3"
       >
         <BaseButton
           label="Cancel Generation"
@@ -436,6 +436,30 @@
           }"
         />
       </div>
+      <Accordion
+        :value="[]"
+        multiple
+      >
+        <AccordionPanel value="0">
+          <AccordionHeader>Multiple Downloads</AccordionHeader>
+          <AccordionContent>
+            <h5 class="text-center text-wrap text-gray-500 dark:text-gray-300 mt-4">
+              After downloading once, you can always change the options above to generate &amp; download again with those options
+            </h5>
+          </AccordionContent>
+        </AccordionPanel>
+        <AccordionPanel value="1">
+          <AccordionHeader>Important NOTE</AccordionHeader>
+          <AccordionContent>
+            <h5 class="text-center text-wrap text-gray-500 dark:text-gray-300 my-5">
+              If you want to later on use the zip file via <strong>"zip from url"</strong> feature
+              and you are keeping the <strong>zip files</strong> in your <strong>github public repository</strong>
+              then your <strong>zip file size should not exceed 20MB</strong> for "zip from url" to work.<br>
+              (This is a limitation imposed by jsDelivr, which is the provider from where your zip file will be loaded after the website internally converts github url to jsDelivr url).
+            </h5>
+          </AccordionContent>
+        </AccordionPanel>
+      </Accordion>
     </Dialog>
     <LazyGenerateTestImages
       v-if="generateOutputState.generatingImages && (generateOutputState.totalQuestions > 0)"
@@ -455,6 +479,11 @@ import { zip, strToU8, type AsyncZippable } from 'fflate'
 import mupdfWorkerFile from '~/src/worker/mupdf.worker?worker'
 import type { MuPdfProcessor } from '~/src/worker/mupdf.worker'
 import { DataFileNames } from '~/src/types/enums'
+
+import Accordion from '~/src/volt/Accordion.vue'
+import AccordionPanel from '~/src/volt/AccordionPanel.vue'
+import AccordionHeader from '~/src/volt/AccordionHeader.vue'
+import AccordionContent from '~/src/volt/AccordionContent.vue'
 
 import type {
   CurrentQuestionData,
@@ -650,6 +679,35 @@ const pointerAndInputState = shallowReactive({
   isPointerDown: false,
   isInputInFocus: false,
 })
+
+const savedMarkingScheme: {
+  [questionType in QuestionType]?: {
+    cm: number
+    pm: number
+    im: number
+  }
+} = {}
+
+watch(
+  () => currentQuestionData.questionType,
+  (newQuestionType, oldQuestionType) => {
+    const { correctMarks, partialMarks, incorrectMarks } = currentQuestionData
+
+    savedMarkingScheme[oldQuestionType] = {
+      cm: correctMarks,
+      pm: partialMarks,
+      im: incorrectMarks,
+    }
+
+    const newMarkingScheme = savedMarkingScheme[newQuestionType]
+    if (newMarkingScheme) {
+      const { cm, pm, im } = newMarkingScheme
+      currentQuestionData.correctMarks = cm
+      currentQuestionData.partialMarks = pm
+      currentQuestionData.incorrectMarks = im
+    }
+  },
+)
 
 const zoomScaleDebounced = shallowRef(1)
 

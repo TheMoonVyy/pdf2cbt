@@ -36,7 +36,7 @@ type ProcessedCropperData = {
 const props = defineProps<{
   pdfUint8Array: Uint8Array | null
   questionImgScale: number
-  useDevicePixelRatio?: number
+  useDevicePixelRatio?: boolean
   cropperSectionsData: CropperSectionsData
 }>()
 
