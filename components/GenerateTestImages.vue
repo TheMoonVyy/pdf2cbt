@@ -36,7 +36,7 @@ type ProcessedCropperData = {
 const props = defineProps<{
   pdfUint8Array: Uint8Array | null
   questionImgScale: number
-  devicePixelRatio?: number
+  useDevicePixelRatio?: number
   cropperSectionsData: CropperSectionsData
 }>()
 
@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
 })
 
 onMounted(() => {
-  const dpr = props.devicePixelRatio ?? (window.devicePixelRatio || 1)
+  const dpr = props.useDevicePixelRatio ? (window.devicePixelRatio || 1) : 1
   pdfState.scale = props.questionImgScale * dpr
   loadPdfFile()
 })

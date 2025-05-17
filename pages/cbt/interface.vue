@@ -177,6 +177,7 @@
             v-else-if="testState.currentProcess === 'preparing-imgs'"
             :pdf-uint8-array="testState.pdfFile"
             :question-img-scale="testSettings.questionImgScale"
+            :use-device-pixel-ratio="true"
             :cropper-sections-data="cropperSectionsData"
             @current-question-progress="(questionNum) => testState.preparingTestCurrentQuestion = questionNum"
             @image-blobs-generated="loadQuestionsImgUrlsFromBlobs"
