@@ -22,7 +22,7 @@ export default defineNuxtConfig({
       },
     },
   },
-  css: ['./src/assets/css/main.css'],
+  css: ['./app/assets/css/main.css'],
   runtimeConfig: {
     public: {
       isBackupWebsite: import.meta.env.IS_NETLIFY_BUILD === 'true',
@@ -31,6 +31,9 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/cbt': { redirect: { to: '/cbt/interface', statusCode: 301 } },
+  },
+  future: {
+    compatibilityVersion: 4,
   },
   compatibilityDate: '2025-03-17',
   vite: {
@@ -72,7 +75,7 @@ export default defineNuxtConfig({
     customCollections: [
       {
         prefix: 'my-icon',
-        dir: './src/assets/icons',
+        dir: './app/assets/icons',
         normalizeIconName: false,
       },
     ],
