@@ -1120,16 +1120,16 @@
         </p>
       </div>
       <div v-else>
-        <p class="text-sm text-gray-200 mt-2 mb-7">
+        <p class="text-sm text-gray-200 text-wrap mt-2 mb-7">
           <strong>Note:</strong> The URL must be a direct link to the file and should have CORS setup to allow loading the file.<br>
           URLs that work include links to file on public GitHub repositories.<br>
           For example, here is the URL of demo test data on this project's GitHub repo which will work:<br>
           <a
-            href="https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data.zip"
+            href="https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data_pre_generated.zip"
             target="_blank"
             class="text-blue-400 underline"
           >
-            https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data.zip
+            https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data_pre_generated.zip
           </a>
         </p>
         <p>

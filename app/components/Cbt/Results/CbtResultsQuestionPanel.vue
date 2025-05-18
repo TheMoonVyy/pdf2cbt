@@ -174,7 +174,13 @@
             <span>Loading ZIP from URL, please wait...</span>
           </div>
         </template>
-        <template v-else-if="pdfRenderingProgress === 'loading-pdf'">
+        <template v-else-if="pdfRenderingProgress === 'loading-file'">
+          <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
+            <Icon name="line-md:loading-twotone-loop" />
+            <span>Loading your pdf/zip, please wait...</span>
+          </div>
+        </template>
+        <template v-else-if="pdfRenderingProgress === 'loading-pdf-renderer'">
           <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
             <Icon name="line-md:loading-twotone-loop" />
             <span>Loading PDF Renderer, please wait...</span>
@@ -493,7 +499,12 @@ type PdfCropperJsonData = {
   pdfCropperData: CropperOutputData
 }
 
-type PdfRenderingProgress = 'loading-zip-from-url' | 'loading-pdf' | 'generating-img' | 'done' | 'failed'
+type PdfRenderingProgress = 'loading-zip-from-url'
+  | 'loading-file'
+  | 'loading-pdf-renderer'
+  | 'generating-img'
+  | 'done'
+  | 'failed'
 
 const showPanel = defineModel<boolean>('showPanel', { required: true })
 const currentQuestionId = shallowRef<string | number>(0)
@@ -529,7 +540,7 @@ const fileUploaderState = shallowReactive<{
   showLoadPdfDataDialog: false,
 })
 
-const pdfRenderingProgress = shallowRef<PdfRenderingProgress>('loading-pdf')
+const pdfRenderingProgress = shallowRef<PdfRenderingProgress>('loading-file')
 
 // settings for question panel's drawer
 const drawerWidthLocalStorageValue = useLocalStorage(LocalStorageKeys.ResultsQuestionPanelWidth, '60%')
@@ -583,30 +594,12 @@ watch(showPanel,
       if (!testQuestionsImgUrls.value[testId]) {
         cleanupQuestionImgs()
         if (testId === 0) {
-          loadDemoImages()
-          drawerVisibility.value = true
+          loadDemoTestZip()
         }
         else {
-          if (testConfig.zipOriginalUrl) {
-            pdfRenderingProgress.value = 'loading-zip-from-url'
-            drawerVisibility.value = true
-            tryLoadingZipFromUrl()
-              .then((zipFile) => {
-                if (zipFile) {
-                  pdfRenderingProgress.value = 'loading-pdf'
-                  handleFileUpload(zipFile, 'zip-or-pdf', true)
-                }
-                else {
-                  pdfRenderingProgress.value = 'loading-pdf'
-                  fileUploaderState.showLoadPdfDialog = true
-                  drawerVisibility.value = false
-                }
-              })
-              .catch(() => {
-                pdfRenderingProgress.value = 'loading-pdf'
-                fileUploaderState.showLoadPdfDialog = true
-                drawerVisibility.value = false
-              })
+          const { zipOriginalUrl, zipConvertedUrl } = testConfig
+          if (zipOriginalUrl || zipConvertedUrl) {
+            tryLoadingZipFromUrl(zipOriginalUrl || '', zipConvertedUrl || '')
           }
           else {
             fileUploaderState.showLoadPdfDialog = true
@@ -816,40 +809,66 @@ const handleFileUpload = async (
 ) => {
   const zipCheckScore = isZipSoSkipCheckingAgain ? 2 : await utilIsZipFile(file)
   if (zipCheckScore > 0) {
+    pdfRenderingProgress.value = 'loading-file'
     loadUploadedFile(file, 'zip')
   }
   else {
     if (type === 'zip-or-pdf') {
       const pdfCheckScore = await utilIsPdfFile(file)
       if (pdfCheckScore > 0) {
+        pdfRenderingProgress.value = 'loading-file'
         loadUploadedFile(file, 'pdf')
       }
     }
     else {
+      pdfRenderingProgress.value = 'loading-file'
       loadUploadedFile(file, 'json')
     }
   }
 }
 
-async function tryLoadingZipFromUrl() {
-  const { zipOriginalUrl, zipConvertedUrl } = testConfig
+async function tryLoadingZipFromUrl(
+  zipOriginalUrl: string,
+  zipConvertedUrl: string = '',
+  isDemoZip: boolean = false,
+) {
   let zipFile: File | null = null
+  pdfRenderingProgress.value = 'loading-zip-from-url'
+  drawerVisibility.value = true
 
+  const unableToLoadCallback = () => {
+    if (isDemoZip) {
+      pdfRenderingProgress.value = 'failed'
+    }
+    else {
+      pdfRenderingProgress.value = 'loading-file'
+      fileUploaderState.showLoadPdfDialog = true
+      drawerVisibility.value = false
+    }
+  }
+  
   try {
     if (zipConvertedUrl) {
-      const data = await utilFetchZipFromUrl(zipConvertedUrl, false)
+      const data = await utilFetchZipFromUrl(zipConvertedUrl, false, isDemoZip)
       zipFile = data.zipFile ?? null
     }
     if (zipOriginalUrl && !zipFile) {
-      const data = await utilFetchZipFromUrl(zipOriginalUrl)
+      const data = await utilFetchZipFromUrl(zipOriginalUrl, true, isDemoZip)
       zipFile = data.zipFile ?? null
+    }
+
+    if (zipFile) {
+      pdfRenderingProgress.value = 'loading-file'
+      handleFileUpload(zipFile, 'zip-or-pdf', true)
+    }
+    else {
+      throw new Error(`url: ${zipConvertedUrl || zipOriginalUrl}`)
     }
   }
   catch (err) {
     console.error('Error while fetching zip from url', err)
+    unableToLoadCallback()
   }
-
-  return zipFile
 }
 
 async function loadUploadedFile(file: File, fileType: 'zip' | 'pdf' | 'json') {
@@ -894,7 +913,7 @@ async function startRenderingImgs() {
 
   if (fileUploaderState.testImageBlobs) {
     drawerVisibility.value = true
-    pdfRenderingProgress.value = 'loading-pdf'
+    pdfRenderingProgress.value = 'loading-file'
 
     const questionSectionsRelations: Record<string | number, { section: string, que: number | string }> = {}
     for (const question of allQuestions) {
@@ -927,39 +946,20 @@ async function startRenderingImgs() {
   }
 }
 
-async function loadDemoImages() {
-  pdfRenderingProgress.value = 'loading-pdf'
-  const zipModule = await import('assets/zip/results_demo_pngs.zip?url')
-  const zipUrl = zipModule.default
+async function loadDemoTestZip() {
+  try {
+    pdfRenderingProgress.value = 'loading-zip-from-url'
+    drawerVisibility.value = true
+    
+    const zipModule = await import('assets/zip/demo_test_data_pre_generated.zip?url')
+    const zipUrl = zipModule.default
 
-  const res = await fetch(zipUrl)
-  const buffer = await res.arrayBuffer()
-  const zipU8Array = new Uint8Array(buffer)
-
-  pdfRenderingProgress.value = 'generating-img'
-
-  unzip(zipU8Array, (err, files) => {
-    if (err) {
-      pdfRenderingProgress.value = 'failed'
-      throw err
-    }
-
-    testQuestionsImgUrls.value[0] = {}
-    for (const [filename, imageUint8Array] of Object.entries(files).toSorted()) {
-      const queId = parseInt(filename.split('-')[0]!)
-      const blob = new Blob([imageUint8Array], { type: 'image/png' })
-      const url = URL.createObjectURL(blob)
-      testQuestionsImgUrls.value[0][queId] ||= []
-      testQuestionsImgUrls.value[0][queId].push(url)
-    }
-
-    if (Object.keys(testQuestionsImgUrls.value[0] || {}).length > 0) {
-      pdfRenderingProgress.value = 'done'
-    }
-    else {
-      pdfRenderingProgress.value = 'failed'
-    }
-  })
+    if (zipUrl) tryLoadingZipFromUrl(zipUrl, '', true)
+  }
+  catch (err) {
+    console.error('Error loading Demo Test Zip file', err)
+    pdfRenderingProgress.value = 'failed'
+  }
 }
 
 function getQuestionsPdfData(questions: TestResultDataQuestion[]) {
@@ -999,7 +999,7 @@ async function renderPdftoImgs(questionsPdfData: QuestionsPdfData) {
 
   const testId = currentTestResultsId.value
 
-  pdfRenderingProgress.value = 'loading-pdf'
+  pdfRenderingProgress.value = 'loading-pdf-renderer'
 
   try {
     const mupdfOgWorker = new mupdfWorkerFile()

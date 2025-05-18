@@ -1,7 +1,8 @@
-export default async (
+export default async function (
   originalRawUrl: string,
   convertUrl: boolean = true,
-) => {
+  bypassUrlCheck: boolean = false,
+) {
   const data: { zipFile: File | null, convertedUrl: string, err?: unknown, originalUrl: string } = {
     zipFile: null,
     convertedUrl: '',
@@ -9,21 +10,32 @@ export default async (
   }
 
   try {
-    const parsedUrl = new URL(originalRawUrl)
-    const href = parsedUrl.href
+    let parsedUrl: URL | null = null
+    let parsedHref: string = ''
 
-    if (!href) {
-      throw new Error('Invalid URL')
+    if (bypassUrlCheck) {
+      parsedHref = originalRawUrl
     }
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-      throw new Error('Invalid URL: Only a valid HTTP or HTTPS URL is supported')
-    }
+    else {
+      parsedUrl = new URL(originalRawUrl)
+      parsedHref = parsedUrl.href
 
+      if (!parsedHref) {
+        throw new Error('Invalid URL')
+      }
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        throw new Error('Invalid URL: Only a valid HTTP or HTTPS URL is supported')
+      }
+    }
+    
+    if (!parsedUrl && !parsedHref) throw new Error('Unable to parse URL')
+    
     // Check if the URL is of a GitHub repository and convert it to jsDelivr URL
     // Conversion to jsDelivr is due to CORS issues with GitHub URLs
     // else use the original URL
-    const jsDelivrUrl = convertUrl ? utilGhUrlToJsDelivrUrl(href) : null
-    const response = await fetch(jsDelivrUrl ?? parsedUrl)
+    const jsDelivrUrl = convertUrl && parsedHref ? utilGhUrlToJsDelivrUrl(parsedHref) : null
+
+    const response = await fetch(jsDelivrUrl ?? (parsedUrl ?? parsedHref))
     if (!response.ok) {
       const msg = response.statusText?.trim() ? `:\n${response.statusText}` : ''
       throw new Error(`Failed to load zip file from url (Status ${response.status})${msg}`)
@@ -33,7 +45,7 @@ export default async (
     const isZip = await utilIsZipFile(blob)
     if (isZip > 0) {
       data.zipFile = new File([blob], 'testData.zip', { type: 'application/zip' })
-      data.convertedUrl = href
+      data.convertedUrl = parsedHref
       data.convertedUrl = jsDelivrUrl || ''
     }
     else {
