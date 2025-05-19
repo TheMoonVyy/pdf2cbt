@@ -7,7 +7,7 @@ on:
 
 env:
   NODE_VERSION: ${{ vars.NODE_VERSION }}
-  STATIC_ASSET_ZIP_NAME: ${{ vars.STATIC_ASSET_ZIP_NAME }}
+  STATIC_ASSET_NAME: ${{ vars.STATIC_ASSET_NAME }}
   BUILD_OUTPUT_FOLDER: ${{ vars.BUILD_OUTPUT_FOLDER }}
 
 jobs:
@@ -36,16 +36,17 @@ jobs:
 
       - name: Zip generated static site
         run: |
-          cd "$BUILD_OUTPUT_FOLDER"
-          zip -r ../../$STATIC_ASSET_ZIP_NAME ./*
+          [ ! -d "$BUILD_OUTPUT_FOLDER" ] && echo "Build output not found!" && exit 1
+          mv "$BUILD_OUTPUT_FOLDER" "$STATIC_ASSET_NAME"
+          zip -r "${STATIC_ASSET_NAME}.zip" "$STATIC_ASSET_NAME"
 
       - name: Upload release asset triggered by release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ env.STATIC_ASSET_ZIP_NAME }}
-          asset_name: ${{ env.STATIC_ASSET_ZIP_NAME }}
+          asset_path: ./${{ env.STATIC_ASSET_NAME }}.zip
+          asset_name: ${{ env.STATIC_ASSET_NAME }}.zip
           asset_content_type: application/zip
 
       - name: Upload release asset using GitHub CLI
@@ -55,4 +56,4 @@ jobs:
         run: |
           git fetch origin 'refs/tags/*:refs/tags/*'
           TAG_NAME=$(git describe --tags --abbrev=0)
-          gh release upload "$TAG_NAME" "${{ env.STATIC_ASSET_ZIP_NAME }}" --clobber
+          gh release upload "$TAG_NAME" "${STATIC_ASSET_NAME}.zip" --clobber
