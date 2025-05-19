@@ -24,7 +24,7 @@
     </div>
     <div class="flex w-full mt-4 bg-surface-950 border border-surface-700 rounded-md">
       <BaseFloatLabel
-        label="Section Name"
+        label="Section Name (Optional)"
         label-id="section_name"
       >
         <InputText

@@ -189,7 +189,7 @@
       >
         <div
           v-if="!isPdfLoaded"
-          class="flex justify-center mt-4"
+          class="flex flex-col gap-6 justify-center mt-6"
         >
           <BaseSimpleFileUpload
             accept="application/pdf,.pdf"
@@ -199,6 +199,7 @@
             invalid-file-type-message="Invalid file. Please select a valid PDF"
             @upload="handlePdfFileUpload"
           />
+          <DocsPdfCropper class="mx-4 sm:mx-10 select-text" />
         </div>
         <div
           class="flex"
@@ -620,7 +621,7 @@ let pdfFileHash = ''
 const settings = shallowReactive<SettingsState>({
   cropperMode: 'line',
   scale: 1,
-  splitterPanelSize: 25,
+  splitterPanelSize: 26,
   pageBGColor: 'ffffff', // white
   // For Advanced settings
   // Colors
@@ -963,7 +964,6 @@ function storeCurrentQuestionData(cropCoords: CropCoordinates, incrementQuestion
 function validateQuestionDetails(): boolean {
   const {
     subjectName,
-    sectionName,
     questionType,
     questionNum,
     correctMarks,
@@ -972,7 +972,6 @@ function validateQuestionDetails(): boolean {
   } = currentQuestionData
 
   const passed = subjectName.trim()
-    && sectionName.trim()
     && ['mcq', 'msq', 'nat'].includes(questionType)
     && (Number.isFinite(questionNum) && questionNum !== 0)
     && Number.isFinite(correctMarks)
@@ -1361,6 +1360,7 @@ function transformDataToOutputFormat(data: Record<number, QuestionData[]>) {
 
   for (const questionData of arr) {
     const { sub, sec, que, type, options, cm, pm, im, ...rest } = questionData
+    const section = sec.trim() || sub
 
     const cropperQuesData: CropperQuestionData = {
       que,
@@ -1376,13 +1376,13 @@ function transformDataToOutputFormat(data: Record<number, QuestionData[]>) {
     if (type !== 'msq') delete cropperQuesData.marks.pm
 
     subjectsData[sub] ??= {}
-    subjectsData[sub][sec] ??= {}
+    subjectsData[sub][section] ??= {}
 
-    if (subjectsData[sub][sec][que]) {
-      subjectsData[sub][sec][que].pdfData.push(rest)
+    if (subjectsData[sub][section][que]) {
+      subjectsData[sub][section][que].pdfData.push(rest)
     }
     else {
-      subjectsData[sub][sec][que] = cropperQuesData
+      subjectsData[sub][section][que] = cropperQuesData
     }
   }
 
