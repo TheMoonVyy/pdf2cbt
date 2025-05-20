@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.7.0...v1.7.1) (2025-05-20)
+
+
+### Bug Fixes
+
+* **util-fetch-zip:** assign parsedHref to originalUrl instead of convertedUrl which was then returning original url as empty string ([3a6c1c6](https://github.com/TheMoonVyy/pdf2cbt/commit/3a6c1c6629b454370d7cdb19b4f8a3f08a1d7cb9))
+
 ## [1.7.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.6.1...v1.7.0) (2025-05-17)
 
 
