@@ -1,19 +1,28 @@
 <template>
-  <div class="flex flex-col grow h-full overflow-auto pl-3 pt-1.5">
-    <img
-      v-for="(url, index) in currentQuestionImgUrls"
-      :key="index"
-      :src="url"
-      draggable="false"
-      :style="{
-        maxWidth: questionImgMaxSize,
-      }"
+  <div
+    ref="imageContainerElem"
+    class="flex flex-col grow h-full overflow-auto pl-3 pt-1.5 pb-12"
+  >
+    <template
+      v-for="(urls, queId) in currentQuestionImgUrls"
     >
+      <img
+        v-for="(url, index) in urls"
+        :key="index"
+        :src="url"
+        draggable="false"
+        :style="{
+          width: currentQuestionImgWidths?.[queId]?.[index] + 'px',
+          objectFit: 'contain',
+        }"
+        @load="(e) => handleImageLoad(e, queId, index)"
+      >
+    </template>
     <CbtInterfaceAnswerOptionsDiv
       v-model="currentQuestionOptionsAnswer"
       :question-type="currentQuestionDetails.questionType"
       :total-options="currentQuestionDetails.totalOptions"
-      class="ml-4 mt-1"
+      class="ml-5 mt-1"
       @update:model-value="logCurrentAnswer()"
     />
     <CbtInterfaceAnswerNumericDiv
@@ -21,6 +30,7 @@
       :current-que-id="currentQuestionDetails.currentQueId"
       :question-type="currentQuestionDetails.questionType"
       :last-logged-answer="lastLoggedAnswer"
+      class="ml-5 mt-2"
       :class="{
         hidden: currentQuestionDetails.questionType !== 'nat',
       }"
@@ -30,20 +40,31 @@
 </template>
 
 <script lang="ts" setup>
+type QuestionsImgWidths = {
+  [questionNum: string | number]: {
+    [imageIndex: number | string]: number
+  }
+}
+
 const props = defineProps<{
   isQuestionPalleteCollapsed: boolean
 }>()
+
+const imageContainerElem = templateRef('imageContainerElem')
+const { width: containerWidth } = useElementSize(imageContainerElem)
 
 const { testQuestionsData, currentTestState, testQuestionsUrls, lastLoggedAnswer } = useCbtTestData()
 
 const { uiSettings } = useCbtSettings()
 
+const questionsImgWidths = reactive<QuestionsImgWidths>({})
+
 const questionImgMaxSize = computed(() => {
   if (props.isQuestionPalleteCollapsed) {
-    return uiSettings.value.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed + '%'
+    return uiSettings.value.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed
   }
   else {
-    return uiSettings.value.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteOpened + '%'
+    return uiSettings.value.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteOpened
   }
 })
 
@@ -52,11 +73,42 @@ const currentQuestionImgUrls = computed(() => {
 
   const questionImgs = testQuestionsUrls.value?.[queId]
   if (questionImgs) {
-    return questionImgs
+    return { [queId]: questionImgs }
   }
   else {
-    return []
+    return { [queId]: [] }
   }
+})
+
+const currentQuestionImgWidths = computed(() => {
+  const queId = currentTestState.value.queId
+  const queImgsWidths = questionsImgWidths[queId]
+  const queImgsUrls = currentQuestionImgUrls.value[queId]
+  const maxPercent = questionImgMaxSize.value
+
+  if (
+    !queImgsWidths
+    || !queImgsUrls
+    || queImgsUrls.length === 0
+    || Object.keys(queImgsWidths).length !== queImgsUrls.length
+    || containerWidth.value === 0
+  ) {
+    return {}
+  }
+
+  const maxOriginalWidth = Math.max(...Object.values(queImgsWidths))
+  const maxAllowedWidth = (containerWidth.value * maxPercent) / 100
+  const globalScale = maxAllowedWidth / maxOriginalWidth
+
+  const scaled: QuestionsImgWidths = {
+    [queId]: {},
+  }
+
+  for (const [index, w] of Object.entries(queImgsWidths)) {
+    scaled[queId]![index] = Math.floor(w * globalScale)
+  }
+
+  return scaled
 })
 
 const currentQuestionDetails = computed(() => {
@@ -114,6 +166,21 @@ const currentQuestionOptionsAnswer = computed({
     }
   },
 })
+
+const handleImageLoad = (e: Event, queId: string | number, imgindex: number) => {
+  const w = questionsImgWidths?.[queId]?.[imgindex]
+
+  if (typeof w === 'number' && w > 0) {
+    return
+  }
+
+  questionsImgWidths[queId] ??= {}
+
+  const img = e.target as HTMLImageElement | null
+  if (img) {
+    questionsImgWidths[queId]![imgindex] = img.naturalWidth || 0
+  }
+}
 
 const testLogger = useCbtLogger()
 

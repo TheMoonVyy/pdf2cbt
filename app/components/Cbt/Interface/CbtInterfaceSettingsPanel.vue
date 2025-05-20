@@ -1724,7 +1724,7 @@ async function loadTestData(
     }
     else {
     // for newTestSectionsData
-      let sectionData: Record<string, unknown> = {}
+      let sectionData: TestSectionData = {}
       const firstData: {
         section: TestSectionKey | null
         question: null | number
@@ -1755,8 +1755,10 @@ async function loadTestData(
             status: 'notVisited',
             timeSpent: 0,
           }
-          if (type === 'msq' && options && options !== 4) {
-            sectionData.totalOptions = options
+
+          if ((type === 'mcq' || type === 'msq')
+            && options && options !== 4) {
+            sectionData[question].totalOptions = options
           }
 
           totalQuestions++
