@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.7.1...v1.7.2) (2025-05-20)
+
+
+### Bug Fixes
+
+* **cbt-interface-settings-panel:** fix an issue where zipurl is being overrided with empty url ([79b0d49](https://github.com/TheMoonVyy/pdf2cbt/commit/79b0d4947d109820176f3ea80be4f73b657ccef7))
+
 ## [1.7.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.7.0...v1.7.1) (2025-05-20)
 
 
