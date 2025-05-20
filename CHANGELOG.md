@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.3](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.7.2...v1.7.3) (2025-05-20)
+
+
+### Bug Fixes
+
+* **cbt-interface:** scale question images dynamically and fix mcq options of cropper data not being set and being always fixed to 4 total options ([fa61cf1](https://github.com/TheMoonVyy/pdf2cbt/commit/fa61cf140e4df8d314aded652fc5e11720209304))
+
 ## [1.7.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.7.1...v1.7.2) (2025-05-20)
 
 
