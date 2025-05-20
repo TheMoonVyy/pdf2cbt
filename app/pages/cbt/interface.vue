@@ -561,13 +561,13 @@
 
 <script lang="ts" setup>
 import 'assets/css/cbt-interface.css'
-import ProgressBar from '@/src/volt/ProgressBar.vue'
 import answeredIcon from 'assets/icons/ques-answered.svg?no-inline'
 import notAnsweredIcon from 'assets/icons/ques-notAnswered.svg?no-inline'
 import notVisitedIcon from 'assets/icons/ques-notVisited.svg?no-inline'
 import markedIcon from 'assets/icons/ques-marked.svg?no-inline'
 import markedAnsweredIcon from 'assets/icons/ques-markedAnswered.svg?no-inline'
 import profileIcon from 'assets/icons/profile.svg?no-inline'
+import ProgressBar from '@/src/volt/ProgressBar.vue'
 
 import { db } from '@/src/db/cbt-db'
 import { CbtUseState } from '#shared/enums'

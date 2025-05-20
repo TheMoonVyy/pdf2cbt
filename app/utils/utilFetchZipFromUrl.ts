@@ -27,9 +27,9 @@ export default async function (
         throw new Error('Invalid URL: Only a valid HTTP or HTTPS URL is supported')
       }
     }
-    
+
     if (!parsedUrl && !parsedHref) throw new Error('Unable to parse URL')
-    
+
     // Check if the URL is of a GitHub repository and convert it to jsDelivr URL
     // Conversion to jsDelivr is due to CORS issues with GitHub URLs
     // else use the original URL
@@ -45,7 +45,7 @@ export default async function (
     const isZip = await utilIsZipFile(blob)
     if (isZip > 0) {
       data.zipFile = new File([blob], 'testData.zip', { type: 'application/zip' })
-      data.convertedUrl = parsedHref
+      data.originalUrl = parsedHref
       data.convertedUrl = jsDelivrUrl || ''
     }
     else {
