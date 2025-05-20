@@ -1678,7 +1678,10 @@ async function loadTestData(
       testAnswerKey: TestAnswerKeyData | undefined
       testConfig?: TestOutputData['testConfig'] & { zipUrl?: string }
     }
-    testState.value.zipOriginalUrl = testConfig?.zipOriginalUrl || testConfig?.zipUrl || ''
+
+    if (!testState.value.zipOriginalUrl.trim()) {
+      testState.value.zipOriginalUrl = testConfig?.zipOriginalUrl || testConfig?.zipUrl || ''
+    }
 
     if (testAnswerKey) testState.value.testAnswerKey = testAnswerKey
     if (!pdfCropperData) throw new Error('Error, pdfCropperData not found in json data')
