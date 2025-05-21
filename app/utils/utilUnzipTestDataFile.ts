@@ -8,7 +8,7 @@ type UnzippedData = UploadedTestData & {
 
 export default (
   zipFile: File | Blob,
-  requiredData: 'json-only' | 'pdf-or-images-only' | 'all',
+  requiredData: 'json-only' | 'pdf-or-images-only' | 'pdf-and-json' | 'all',
   alsoReturnUnzippedFiles: boolean = false,
 ) => {
   return new Promise<UnzippedData>((resolve, reject) => {
@@ -30,16 +30,21 @@ export default (
           const jsonData = jsonFile ? JSON.parse(strFromU8(jsonFile)) : null
           const pdfFile = files[DataFileNames.questionsPdf]
 
-          if (requiredData === 'pdf-or-images-only' || requiredData === 'all') {
+          if (
+            requiredData === 'pdf-or-images-only'
+            || requiredData === 'pdf-and-json'
+            || requiredData === 'all'
+          ) {
             if (pdfFile) {
               data.pdfBuffer = pdfFile
             }
-            else if (jsonData && Object.keys(files).length > 1) {
+            else if (jsonData && Object.keys(files).length > 1 && requiredData !== 'pdf-and-json') {
               const pdfCropperData = jsonData.pdfCropperData as CropperOutputData
               if (!pdfCropperData) {
                 reject('Error: PDF Cropper data not found in data.json of Zip file!')
                 return
               }
+
               const imageBlobs: TestImageBlobs = {}
               try {
                 for (const subjectData of Object.values(pdfCropperData)) {
@@ -83,12 +88,27 @@ export default (
               }
             }
             else {
+              if (requiredData === 'pdf-and-json') {
+                if (jsonData) {
+                  reject(`Error: ${DataFileNames.questionsPdf} file is not found in Zip file!`)
+                  return
+                }
+                else {
+                  reject(`Error: ${DataFileNames.questionsPdf} and ${DataFileNames.dataJson} files are not found in Zip file!`)
+                  return
+                }
+              }
+
               reject('Error: PDF/Images files and data.json file are not found in Zip file!')
               return
             }
           }
 
-          if (requiredData === 'json-only' || requiredData === 'all') {
+          if (
+            requiredData === 'json-only'
+            || requiredData === 'pdf-and-json'
+            || requiredData === 'all'
+          ) {
             if (jsonData) {
               data.jsonData = jsonData
             }

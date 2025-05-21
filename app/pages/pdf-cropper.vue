@@ -192,12 +192,12 @@
           class="flex justify-center mt-4"
         >
           <BaseSimpleFileUpload
-            accept="application/pdf,.pdf"
+            accept="application/pdf,application/zip,.pdf,.zip"
             :label="visibilityState.isLoadingPdf ? 'Please wait, loading PDF...' : 'Select a PDF'"
             :icon-name="visibilityState.isLoadingPdf ? 'line-md:loading-twotone-loop' : 'prime:plus'"
             icon-size="1.5rem"
             invalid-file-type-message="Invalid file. Please select a valid PDF"
-            @upload="handlePdfFileUpload"
+            @upload="handleFileUpload"
           />
         </div>
         <div
@@ -548,6 +548,11 @@ type PageImgData = {
   }
 }
 
+type PdfCropperJsonData = {
+  pdfCropperData: CropperOutputData
+  pdfFileHash: string
+}
+
 const LOCAL_STORAGE_SETTINGS_KEY = 'pdf-cropper-settings'
 
 const selectOptions = {
@@ -586,12 +591,15 @@ const generateOutputState = shallowReactive({
   preGenerateImagesScale: 2,
   generatingImages: false,
   generationProgress: 0,
+  isUploadedFileZipFile: false,
   totalQuestions: 0,
   preparingDownload: false,
   downloaded: false,
 })
 
 const outputFilesToZip = shallowRef<AsyncZippable>({})
+
+const userUploadedCropperDataJson = shallowRef<PdfCropperJsonData | null>(null)
 
 const cropperSectionsDataForPreGenerateImages = shallowRef<CropperSectionsData>({})
 
@@ -1279,14 +1287,39 @@ const selectionWatchHandle = watch(
 
 selectionWatchHandle.pause() // as not required on initial webpage load
 
-const handlePdfFileUpload = (file: File) => {
+const handleFileUpload = async (file: File) => {
+  userUploadedCropperDataJson.value = null
+  pdfState.fileUint8Array = null
+  generateOutputState.isUploadedFileZipFile = false
   visibilityState.isLoadingPdf = true
 
-  file.arrayBuffer().then((buffer) => {
-    pdfState.fileUint8Array = new Uint8Array(buffer)
-    pdfFileHash = ''
-    loadPdfFile()
-  })
+  await nextTick()
+
+  pdfFileHash = ''
+  try {
+    const zipCheckStatus = await utilIsZipFile(file)
+    console.log(zipCheckStatus)
+    if (zipCheckStatus > 0) {
+      const unzippedData = await utilUnzipTestDataFile(file, 'pdf-and-json', false)
+      if (unzippedData.pdfBuffer && unzippedData.jsonData) {
+        pdfState.fileUint8Array = unzippedData.pdfBuffer
+        userUploadedCropperDataJson.value = unzippedData.jsonData as PdfCropperJsonData
+        pdfFileHash = userUploadedCropperDataJson.value?.pdfFileHash || ''
+        visibilityState.isLoadingPdf = false
+        generateOutputState.isUploadedFileZipFile = true
+        visibilityState.generateOutputDialog = true
+      }
+    }
+    else {
+      file.arrayBuffer().then((buffer) => {
+        pdfState.fileUint8Array = new Uint8Array(buffer)
+        loadPdfFile()
+      })
+    }
+  }
+  catch (err) {
+    console.error('Error loading uploaded file:', err)
+  }
 }
 
 async function loadPdfFile(isFirstLoad: boolean = true) {
@@ -1424,8 +1457,12 @@ async function generatePdfCropperOutput() {
 
   if (!pdfFileHash) pdfFileHash = await utilGetHash(pdfU8Array)
 
-  const Data = structuredClone(toRaw(questionsData))
-  const jsonData = transformDataToOutputFormat(Data)
+  const jsonData = generateOutputState.isUploadedFileZipFile
+    ? userUploadedCropperDataJson.value!
+    : transformDataToOutputFormat(structuredClone(toRaw(questionsData)))
+
+  jsonData.pdfFileHash = pdfFileHash
+
   const jsonString = JSON.stringify(jsonData, null, 2)
 
   if (fileType === '.json') {

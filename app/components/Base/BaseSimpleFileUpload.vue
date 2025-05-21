@@ -1,5 +1,6 @@
 <template>
   <FileUpload
+    v-if="showFileUploader"
     auto
     custom-upload
     :pt:header:class="'flex flex-col items-center ' + (fluid ? 'w-full ' : '') + headerClass"
@@ -52,9 +53,16 @@ const emit = defineEmits<{
   upload: [files: File]
 }>()
 
-const uploadHandler = (files: File | File[]) => {
+const showFileUploader = shallowRef(true)
+
+const uploadHandler = async (files: File | File[]) => {
   const file = Array.isArray(files) ? files[0] : files
-  if (file) emit('upload', file)
+  if (file) {
+    showFileUploader.value = false
+    await nextTick()
+    emit('upload', file)
+    showFileUploader.value = true
+  }
 }
 </script>
 
