@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.7.3...v1.8.0) (2025-05-21)
+
+
+### Features
+
+* **pdf-cropper:** let user upload cropper data zip file if already present so that it can be used to pre generate images ([e968c00](https://github.com/TheMoonVyy/pdf2cbt/commit/e968c0045e80cc2e0994ea7281c2844a62e54cd5))
+
 ## [1.7.3](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.7.2...v1.7.3) (2025-05-20)
 
 
