@@ -230,6 +230,9 @@ const testResultsOutputData = ref<TestResultsOutputData | null>(null)
 // with queId as the key and questionData as the value
 const testResultQuestionsData = shallowRef<Record<number | string, TestResultDataQuestion>>({})
 
+// This contains questions notes of current test
+const testNotes = useCurrentTestNotes()
+
 // stores data that computed is using for charts option
 const chartDataState = reactive<ChartDataState>({
   testQuestionsSummary: [],
@@ -967,6 +970,7 @@ async function loadTestOutputData(
   verifyId: boolean = true,
 ) {
   let data: TestOutputData | null = null
+  let testNotesData: TestNotes = {}
 
   try {
     if (verifyId) {
@@ -981,6 +985,8 @@ async function loadTestOutputData(
       if (outputData?.testOutputData) {
         data = outputData.testOutputData as TestOutputData
       }
+      const testDBNotes = await db.getTestNotes(id)
+      testNotesData = testDBNotes || {}
     }
   }
   catch (err) {
@@ -995,6 +1001,8 @@ async function loadTestOutputData(
       data = demoData as unknown as TestOutputData
     }
   }
+
+  testNotes.value = testNotesData
 
   if (data) {
     testOutputData.value = data
@@ -1141,8 +1149,8 @@ async function processImportExport(
       }
 
       const testNotesObject: Record<string | number, TestNotes> = {}
-      for (const testNotes of testNotesDBList) {
-        const { id, notes } = testNotes ?? {}
+      for (const notesItem of testNotesDBList) {
+        const { id, notes } = notesItem ?? {}
         if (id && notes) {
           testNotesObject[id] = notes
         }

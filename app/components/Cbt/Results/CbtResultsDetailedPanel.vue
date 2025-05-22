@@ -302,7 +302,7 @@
                 {{ question.section }}
               </td>
               <td>
-                <div class="flex items-center justify-items gap-4">
+                <div class="flex items-center justify-items gap-2.5">
                   <BaseButton
                     variant="text"
                     rounded
@@ -327,6 +327,12 @@
                       )
                     }}
                   </span>
+                  <Icon
+                    v-show="testNotes[question.queId]"
+                    title="Has Notes"
+                    name="mdi:text-box-edit-outline"
+                    class="text-green-300 text-xl"
+                  />
                 </div>
               </td>
               <td>{{ utilMarksWithSign(question.result.marks) }}</td>
@@ -1088,6 +1094,8 @@ const currentLoadState = shallowReactive<{
 }>({
   loadedResultsID: null,
 })
+
+const testNotes = useCurrentTestNotes()
 
 // to store subject -> section -> section stats
 const testStats = shallowRef<TestStats>({})

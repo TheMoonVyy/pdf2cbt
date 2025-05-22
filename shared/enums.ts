@@ -12,6 +12,7 @@ export enum CbtUseState {
   LastLoggedAnswer = 'CBT-LastLoggedAnswer',
   CurrentResultsID = 'CBT-CurrentResultsID',
   ResultsTestQuestionsImgUrls = 'CBT-ResultsTestQuestionsImgUrls',
+  ResultsCurrentTestNotes = 'CBT-ResultsCurrentTestNotes',
 }
 
 export enum DataFileNames {

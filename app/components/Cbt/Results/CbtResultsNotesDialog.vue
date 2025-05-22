@@ -36,7 +36,7 @@
             raised
             title="Discard Changes"
             :disabled="disableDiscardButton"
-            @click="currentNotes = testNotes?.[currentTestId]?.[currentQuestionId] || ''"
+            @click="currentNotes = testNotes[currentQuestionId] || ''"
           >
             <template #icon>
               <Icon
@@ -123,13 +123,11 @@ const { currentQuestionId, displayQuestionNumber } = defineProps<{
 
 const currentTestId = useCbtResultsCurrentID()
 
+const testNotes = useCurrentTestNotes()
+
 const activeTab = shallowRef<'edit' | 'view'>('edit')
 
 const currentNotes = shallowRef('')
-
-const testNotes = reactive<{
-  [testId: string | number]: { [queId: string | number]: string } | null
-}>({ 0: {} })
 
 const md = MarkdownIt({
   breaks: true,
@@ -140,32 +138,20 @@ const md = MarkdownIt({
 const compiledNotesHtml = shallowRef('')
 
 const disableDiscardButton = computed(() => {
-  const testId = currentTestId.value
-  const currentSavedNotes = testNotes[testId]?.[currentQuestionId]
+  const currentSavedNotes = testNotes.value[currentQuestionId]
 
   if (typeof currentSavedNotes === 'string') {
-    if (currentSavedNotes === currentNotes.value) {
-      return true
-    }
-    return false
+    return currentSavedNotes === currentNotes.value
   }
   return !currentNotes.value
 })
 
 watch(showNotesDialog, async (isShowDialog) => {
   const testId = currentTestId.value
-  let currentTestNotes = testNotes[testId]
+  const currentTestNotes = testNotes.value
 
   if (isShowDialog) {
-    if (!currentTestNotes) {
-      currentTestNotes = await db.getTestNotes(testId)
-      testNotes[testId] = currentTestNotes
-    }
-
-    if (currentTestNotes) {
-      currentNotes.value = currentTestNotes[currentQuestionId] || ''
-    }
-
+    currentNotes.value = currentTestNotes[currentQuestionId] || ''
     activeTab.value = currentNotes.value ? 'view' : 'edit'
   }
   else if (currentTestNotes) {
@@ -192,11 +178,11 @@ watchEffect(() => {
 
 const deleteCurrentNote = () => {
   const testId = currentTestId.value
-  const currentSavedNotes = testNotes[testId]?.[currentQuestionId]
+  const currentSavedNotes = testNotes.value[currentQuestionId]
   if (typeof currentSavedNotes === 'string') {
     db.replaceTestQuestionNotes(testId, currentQuestionId, '')
       .then(() => {
-        testNotes![testId]![currentQuestionId] = ''
+        testNotes.value[currentQuestionId] = ''
         currentNotes.value = ''
       })
   }

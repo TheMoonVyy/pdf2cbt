@@ -274,7 +274,7 @@ export type TestResultOverviewsDBSortByOption =
   | 'endTimeAscending'
   | 'endTimeDescending'
 
-type TestNotes = {
+export type TestNotes = {
   [queId: string | number]: string
 }
 

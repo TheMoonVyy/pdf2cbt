@@ -30,6 +30,7 @@
               <template #icon>
                 <Icon
                   name="mdi:text-box-edit-outline"
+                  :class="testNotes[currentQuestionId] ? 'text-green-400' : ''"
                   class="text-3xl"
                 />
               </template>
@@ -573,6 +574,8 @@ const answerOptionsFormat = ref({
   suffix: '',
   counterType: 'upper-latin',
 })
+
+const testNotes = useCurrentTestNotes()
 
 // the urls of questions which will be used for question preview
 const testQuestionsImgUrls = useCbtResultsTestQuestionsImgUrls()
