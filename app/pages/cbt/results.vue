@@ -1134,10 +1134,30 @@ async function processImportExport(
       }
 
       const testOutputDataDBList = await db.getTestOutputDatas(ids)
+      const testNotesDBList = await db.bulkGetTestNotes(ids)
+
+      if (!testOutputDataDBList || !testNotesDBList) {
+        throw new Error('Error: testOutputDataDBList or testNotesDBList is undefined')
+      }
+
+      const testNotesObject: Record<string | number, TestNotes> = {}
+      for (const testNotes of testNotesDBList) {
+        const { id, notes } = testNotes ?? {}
+        if (id && notes) {
+          testNotesObject[id] = notes
+        }
+      }
+
       const testOutputDatas: (TestResultCommonOutput)[] = []
 
       for (const outputData of testOutputDataDBList) {
-        if (outputData?.testOutputData) testOutputDatas.push(outputData.testOutputData)
+        const { id, testOutputData } = outputData ?? {}
+        if (testOutputData) {
+          if (id && testNotesObject[id]) {
+            testOutputData.testNotes = testNotesObject[id]
+          }
+          testOutputDatas.push(testOutputData)
+        }
       }
 
       if (testOutputDatas.length > 0) {
