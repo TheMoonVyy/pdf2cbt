@@ -16,17 +16,24 @@
       <template #header>
         <div class="grow flex justify-between items-center mr-3 sm:mr-5">
           <h3 class="text-xl mx-auto">
-            Question No. {{
-              questionsNumberingOrder === 'oriQueId'
-                ? currentQuestion.oriQueId
-                : (
-                  questionsNumberingOrder === 'secQueId'
-                    ? currentQuestion.secQueId
-                    : currentQuestion.queId
-                )
-            }}
+            Question No. {{ displayQuestionNumber }}
           </h3>
           <div class="flex gap-2 sm:gap-4">
+            <BaseButton
+              variant="text"
+              rounded
+              raised
+              severity="warn"
+              title="Question Notes"
+              @click="() => showNotesDialog = !showNotesDialog"
+            >
+              <template #icon>
+                <Icon
+                  name="mdi:text-box-edit-outline"
+                  class="text-3xl"
+                />
+              </template>
+            </BaseButton>
             <div class="flex items-center justify-center">
               <ColorPicker
                 v-model="questionImgBgColor"
@@ -39,6 +46,7 @@
               variant="text"
               rounded
               raised
+              severity="help"
               title="Increase Width"
               class="hidden! sm:inline-flex!"
               :disabled="drawerWidthLocalStorageValue === '100%'"
@@ -47,7 +55,7 @@
               <template #icon>
                 <Icon
                   name="mdi:arrow-expand-left"
-                  class="text-2xl text-green-400"
+                  class="text-2xl"
                 />
               </template>
             </BaseButton>
@@ -55,6 +63,7 @@
               variant="text"
               rounded
               raised
+              severity="help"
               title="Decrease Width"
               class="hidden! sm:inline-flex!"
               :disabled="drawerWidthLocalStorageValue === '40%'"
@@ -63,7 +72,7 @@
               <template #icon>
                 <Icon
                   name="mdi:arrow-expand-right"
-                  class="text-2xl text-green-400"
+                  class="text-2xl"
                 />
               </template>
             </BaseButton>
@@ -71,6 +80,7 @@
               variant="text"
               rounded
               raised
+              severity="help"
               title="Increase Image Size"
               class="hidden! sm:inline-flex!"
               :disabled="imageWidth >= 100"
@@ -79,7 +89,7 @@
               <template #icon>
                 <Icon
                   name="mdi:file-image-plus"
-                  class="text-2xl text-green-400"
+                  class="text-2xl"
                 />
               </template>
             </BaseButton>
@@ -87,6 +97,7 @@
               variant="text"
               rounded
               raised
+              severity="help"
               title="Decrease Image Size"
               class="hidden! sm:inline-flex!"
               :disabled="imageWidth <= 20"
@@ -95,7 +106,7 @@
               <template #icon>
                 <Icon
                   name="mdi:file-image-minus"
-                  class="text-2xl text-green-400"
+                  class="text-2xl"
                 />
               </template>
             </BaseButton>
@@ -450,11 +461,16 @@
         />
       </div>
     </Dialog>
+    <CbtResultsNotesDialog
+      v-model="showNotesDialog"
+      :current-question-id="currentQuestionId"
+      :display-question-number="displayQuestionNumber"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { strFromU8, unzip } from 'fflate'
+import { strFromU8 } from 'fflate'
 import * as Comlink from 'comlink'
 import { LocalStorageKeys } from '#shared/enums'
 import { db } from '@/src/db/cbt-db'
@@ -508,6 +524,8 @@ type PdfRenderingProgress = 'loading-zip-from-url'
 
 const showPanel = defineModel<boolean>('showPanel', { required: true })
 const currentQuestionId = shallowRef<string | number>(0)
+
+const showNotesDialog = shallowRef(false)
 
 const {
   formattedQuestionStatus,
@@ -682,6 +700,18 @@ const optionsStyle = computed(() => {
   }
 })
 
+const displayQuestionNumber = computed(() => {
+  if (questionsNumberingOrder === 'oriQueId') {
+    return currentQuestion.value.oriQueId
+  }
+  else if (questionsNumberingOrder === 'secQueId') {
+    return currentQuestion.value.secQueId
+  }
+  else {
+    return currentQuestion.value.queId
+  }
+})
+
 // to determine label to show on option's left side, for any question type
 const getCorrectAnswerStatus = (optionNum: number) => {
   if (currentQuestion.value.result.status === 'bonus') {
@@ -846,7 +876,7 @@ async function tryLoadingZipFromUrl(
       drawerVisibility.value = false
     }
   }
-  
+
   try {
     if (zipConvertedUrl) {
       const data = await utilFetchZipFromUrl(zipConvertedUrl, false, isDemoZip)
@@ -950,7 +980,7 @@ async function loadDemoTestZip() {
   try {
     pdfRenderingProgress.value = 'loading-zip-from-url'
     drawerVisibility.value = true
-    
+
     const zipModule = await import('assets/zip/demo_test_data_pre_generated.zip?url')
     const zipUrl = zipModule.default
 

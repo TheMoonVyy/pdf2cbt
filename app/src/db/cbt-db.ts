@@ -10,8 +10,9 @@ import type {
   TestResultOverviewDB,
   TestResultOverviewsDBSortByOption,
   TestResultCommonOutput,
+  TestNotes,
 } from '#shared/types'
-import { utilGetTestResultOverview, utilCloneJson } from '~/utils/utils'
+import { utilGetTestResultOverview, utilCloneJson } from '@/utils/utils'
 
 interface SettingsData {
   id: number
@@ -32,6 +33,11 @@ type TestOutputDataDB = {
   testOutputData: TestResultCommonOutput
 }
 
+type TestNotesDB = {
+  id: number
+  notes: TestNotes
+}
+
 class CBTDatabase extends Dexie {
   settingsData!: EntityTable<SettingsData, 'id'>
   testSectionsList!: EntityTable<TestSectionListItemDB, 'id'>
@@ -40,11 +46,12 @@ class CBTDatabase extends Dexie {
   testLog!: EntityTable<TestLog, 'id'>
   testResultOverviews!: EntityTable<TestResultOverviewDB, 'id'>
   testOutputDatas!: EntityTable<TestOutputDataDB, 'id'>
+  testNotes!: EntityTable<TestNotesDB, 'id'>
 
   constructor() {
     super('CBT-Interface')
 
-    this.version(2).stores({
+    this.version(3).stores({
       settingsData: 'id',
       testSectionsList: 'id++',
       currentTestState: 'id',
@@ -52,6 +59,7 @@ class CBTDatabase extends Dexie {
       testLog: 'id',
       testResultOverviews: 'id,testName,testStartTime,testEndTime,[testName+testStartTime+testEndTime]',
       testOutputDatas: 'id++',
+      testNotes: 'id',
     })
   }
 
@@ -313,43 +321,57 @@ class CBTDatabase extends Dexie {
   async bulkAddTestOutputData(
     testOutputDatas: TestResultCommonOutput[],
     viaJson: boolean = true,
-    checkAndSkipExisting: boolean = false,
   ) {
     const newTestOutputDatas: { testOutputData: TestResultCommonOutput }[] = []
     const newTestResultOverviews: TestResultOverviewDB[] = []
 
-    testOutputDatas = (viaJson && !checkAndSkipExisting)
-      ? utilCloneJson(testOutputDatas)
-      : testOutputDatas
+    testOutputDatas = viaJson ? utilCloneJson(testOutputDatas) : testOutputDatas
+    const testNotes: (TestNotes | null)[] = []
 
     for (const testOutputData of testOutputDatas) {
       testOutputData.testResultOverview = utilGetTestResultOverview(testOutputData)
 
-      if (checkAndSkipExisting) {
-        const existing = await this.getTestResultOverviewByCompoundIndex(testOutputData)
-        if (existing) continue
+      if (testOutputData.testNotes) {
+        testNotes.push(testOutputData.testNotes)
+        delete testOutputData.testNotes
+      }
+      else {
+        testNotes.push(null)
       }
 
-      const dataToSave = (viaJson && checkAndSkipExisting)
-        ? utilCloneJson(testOutputData)
-        : testOutputData
-
-      newTestOutputDatas.push({ testOutputData: dataToSave })
+      newTestOutputDatas.push({ testOutputData })
     }
 
-    const ids = await this.testOutputDatas.bulkAdd(newTestOutputDatas, { allKeys: true })
+    return this.transaction(
+      'rw',
+      [this.testOutputDatas, this.testNotes, this.testResultOverviews],
+      async () => {
+        const ids = await this.testOutputDatas.bulkAdd(newTestOutputDatas, { allKeys: true })
+        const newTestNotes: TestNotesDB[] = []
 
-    newTestOutputDatas.forEach((item, idx) => {
-      const id = ids?.[idx] ?? undefined
-      if (id !== undefined) {
-        newTestResultOverviews.push({
-          id,
-          ...item.testOutputData.testResultOverview,
+        newTestOutputDatas.forEach((item, idx) => {
+          const id = ids?.[idx] ?? undefined
+
+          if (id !== undefined) {
+            newTestResultOverviews.push({
+              id,
+              ...item.testOutputData.testResultOverview,
+            })
+
+            const notes = testNotes[idx]
+            if (notes) {
+              newTestNotes.push({
+                id,
+                notes,
+              })
+            }
+          }
         })
-      }
-    })
 
-    return this.testResultOverviews.bulkPut(newTestResultOverviews, { allKeys: true })
+        await this.testNotes.bulkPut(newTestNotes)
+        return this.testResultOverviews.bulkPut(newTestResultOverviews, { allKeys: true })
+      },
+    )
   }
 
   async replaceTestResultOverview(data: TestResultOverviewDB, viaJson: boolean = true) {
@@ -401,6 +423,33 @@ class CBTDatabase extends Dexie {
     else {
       return updateStatus
     }
+  }
+
+  async getTestNotes(testId: number) {
+    try {
+      const testNotes = await this.testNotes.get(testId)
+      if (testNotes) {
+        return testNotes.notes
+      }
+      else {
+        await this.testNotes.add({ id: testId, notes: {} })
+        return {}
+      }
+    }
+    catch (err) {
+      console.error('Error in getTestNotes function:', err)
+      return null
+    }
+  }
+
+  async bulkGetTestNotes(ids: number[]) {
+    return this.testNotes.bulkGet(ids)
+  }
+
+  async replaceTestQuestionNotes(testId: number, queId: number | string, notesText: string = '') {
+    return db.testNotes.update(testId, {
+      [`notes.${queId}`]: notesText,
+    })
   }
 }
 
