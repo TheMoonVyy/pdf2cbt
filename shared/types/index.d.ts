@@ -274,6 +274,10 @@ export type TestResultOverviewsDBSortByOption =
   | 'endTimeAscending'
   | 'endTimeDescending'
 
+type TestNotes = {
+  [queId: string | number]: string
+}
+
 export interface TestOutputData {
   testConfig: {
     testName: string
@@ -288,12 +292,13 @@ export interface TestOutputData {
   testResultOverview: TestResultOverview
   testResultData?: TestResultData
   testAnswerKey?: TestAnswerKeyData
+  testNotes?: TestNotes
 }
-
-export type TestResultCommonOutput = TestResultsOutputData | TestOutputData
 
 export type TestResultsOutputData = Omit<TestOutputData, 'testData' | 'testAnswerKey'>
   & Required<Pick<TestOutputData, 'testResultData'>>
+
+export type TestResultCommonOutput = TestResultsOutputData | TestOutputData
 
 export type TestImageBlobs = {
   [section: TestSectionKey]: {
