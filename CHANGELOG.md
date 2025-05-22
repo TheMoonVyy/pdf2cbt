@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.8.0...v1.9.0) (2025-05-22)
+
+
+### Features
+
+* **cbt-results:** add feature to add and manage notes per question per test in question panel or preview of results page ([a322437](https://github.com/TheMoonVyy/pdf2cbt/commit/a3224371c254b9ba8fc08d6add98c082c2e6b1fa))
+
 ## [1.8.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.7.3...v1.8.0) (2025-05-21)
 
 
