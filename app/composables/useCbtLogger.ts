@@ -31,6 +31,7 @@ class TestLogger {
   ) {
     const timestamp = Date.now() // in unix time
     const testTime = this.currentTestState.value.remainingSeconds!
+    const questionStartTime = this.currentTestState.value.currentQuestionStartTime
 
     const currentQueId = this.currentTestState.value.queId
 
@@ -50,7 +51,7 @@ class TestLogger {
         question: currentQuestionData.que,
         answer,
         status: currentQuestionData.status,
-        timeSpent: currentQuestionData.timeSpent,
+        timeSpent: questionStartTime - testTime,
       },
     }
 
