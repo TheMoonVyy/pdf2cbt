@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.9.0...v1.9.1) (2025-05-23)
+
+
+### Bug Fixes
+
+* **cbt-interface:** fix current question timeSpent in testLogs of test interface ([b0f5fab](https://github.com/TheMoonVyy/pdf2cbt/commit/b0f5fab3d4ebbf2aa08f7d1f25dc2cb593f600a3))
+
 ## [1.9.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.8.0...v1.9.0) (2025-05-22)
 
 
