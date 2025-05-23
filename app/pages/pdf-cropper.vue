@@ -1298,7 +1298,6 @@ const handleFileUpload = async (file: File) => {
   pdfFileHash = ''
   try {
     const zipCheckStatus = await utilIsZipFile(file)
-    console.log(zipCheckStatus)
     if (zipCheckStatus > 0) {
       const unzippedData = await utilUnzipTestDataFile(file, 'pdf-and-json', false)
       if (unzippedData.pdfBuffer && unzippedData.jsonData) {
