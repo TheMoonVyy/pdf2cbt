@@ -202,7 +202,7 @@
         </div>
         <div
           class="flex"
-          :class="{ hidden: !isPdfLoaded }
+          :class="{ hidden: !isPdfLoaded }"
           @pointerup="pointerUpHandler"
           @pointerleave="pointerLeaveHandler"
         >
