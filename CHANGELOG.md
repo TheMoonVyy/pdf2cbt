@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.10.1...v1.10.2) (2025-05-25)
+
+
+### Bug Fixes
+
+* **cbt-results-ques-panel:** fix result status labels of mcq question type in question panel not showing properly ([7bf1acf](https://github.com/TheMoonVyy/pdf2cbt/commit/7bf1acf688a01f1ee949916b73dee4e7b593b204))
+
 ## [1.10.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.10.0...v1.10.1) (2025-05-25)
 
 
