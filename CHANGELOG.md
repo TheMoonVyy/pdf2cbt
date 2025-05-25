@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.10.2...v1.11.0) (2025-05-25)
+
+
+### Features
+
+* **cbt-interface:** extend UI customization settings with font size settings for question type, number, time spent and marking scheme ([890648f](https://github.com/TheMoonVyy/pdf2cbt/commit/890648f46d268dd041992484e585a7e1ff373858))
+
 ## [1.10.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.10.1...v1.10.2) (2025-05-25)
 
 
