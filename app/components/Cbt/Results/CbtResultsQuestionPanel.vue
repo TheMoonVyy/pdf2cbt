@@ -727,7 +727,12 @@ const getCorrectAnswerStatus = (optionNum: number) => {
   }
 
   if (currentQuestion.value.type === 'mcq') {
-    if (optionNum === currentQuestion.value.result.correctAnswer) {
+    if (optionNum === currentQuestion.value.result.correctAnswer
+      || (
+        Array.isArray(currentQuestion.value.result.correctAnswer)
+        && currentQuestion.value.result.correctAnswer.includes(optionNum)
+      )
+    ) {
       return 'correct'
     }
     else {
