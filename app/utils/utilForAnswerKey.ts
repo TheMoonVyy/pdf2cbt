@@ -1,28 +1,36 @@
 export const utilConvertNumberToChar = (num: number) => String.fromCharCode(64 + num)
 
-// stringify Answer without mutating answer (i.e. when it is an array for msq)
+// stringify Answer without mutating answer (i.e. when it is an array )
 export const utilStringifyAnswer = (
   answer: QuestionAnswer,
-  arrayJoinSeparator: string = ', ',
+  questionType: QuestionType,
   sortArray: boolean = false,
+  arrayJoinSeparator: string = ', ',
 ) => {
   if (answer === null) return 'null'
 
   if (Array.isArray(answer)) {
     const answerArray = sortArray ? answer.toSorted() : answer
+    if (questionType === 'mcq') {
+      return answerArray.join(' or ')
+    }
     return answerArray.map(utilConvertNumberToChar).join(arrayJoinSeparator)
   }
   else if (typeof answer === 'number') {
     return utilConvertNumberToChar(answer)
   }
   else {
-    if (answer.includes('TO')) {
-      return answer.replace('TO', ' to ')
-    }
-    else if (answer.includes(',')) {
-      return answer.split(',').join(' or ')
-    }
-  }
+    const maybeRanges = answer.split(',')
+    const results: string[] = []
 
-  return `${answer}`
+    for (const maybeRange of maybeRanges) {
+      if (maybeRange.includes('TO')) {
+        results.push(maybeRange.replace('TO', ' to '))
+      }
+      else if (maybeRange.trim()) {
+        results.push(maybeRange.trim())
+      }
+    }
+    return results.join(' or ')
+  }
 }

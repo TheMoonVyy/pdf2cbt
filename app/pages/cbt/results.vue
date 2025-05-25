@@ -768,7 +768,9 @@ function getQuestionResult(
     }
 
     if (type === 'mcq') {
-      if (answer === questionCorrectAnswer) {
+      if (answer === questionCorrectAnswer
+        || (Array.isArray(questionCorrectAnswer) && questionCorrectAnswer.includes(answer as number))
+      ) {
         result.marks = marks.cm
         result.status = 'correct'
       }
@@ -780,42 +782,27 @@ function getQuestionResult(
     else if (type === 'nat') {
       const answerFloat = parseFloat(answer + '')
       const correctAnswerStr = questionCorrectAnswer + ''
+      const maybeRangesAnswerStrs = correctAnswerStr.split(',').map(n => n.trim())
+      for (const maybeRangeAnswerStr of maybeRangesAnswerStrs) {
+        if (maybeRangeAnswerStr.includes('TO')) { // range of correct answers
+          const [lowerLimit, upperLimit] = maybeRangeAnswerStr.split('TO').map(n => parseFloat(n.trim()))
 
-      if (correctAnswerStr.includes('TO')) { // range of correct answers
-        const [lowerLimit, upperLimit] = correctAnswerStr.split('TO').map(n => parseFloat(n.trim()))
-
-        if (answerFloat <= upperLimit! && answerFloat >= lowerLimit!) {
+          if (answerFloat <= upperLimit! && answerFloat >= lowerLimit!) {
+            result.marks = marks.cm
+            result.status = 'correct'
+            return result
+          }
+        }
+        else if (parseFloat(maybeRangeAnswerStr) === answerFloat) { // just one correct answer
           result.marks = marks.cm
           result.status = 'correct'
-        }
-        else {
-          result.marks = marks.im
-          result.status = 'incorrect'
+          return result
         }
       }
-      else if (correctAnswerStr.includes(',')) { // multiple correct answers
-        const correctAnswers = correctAnswerStr.split(',').map(n => parseFloat(n.trim()))
-        const isAnswerCorrect = correctAnswers.some(n => n === answerFloat)
-
-        if (isAnswerCorrect) {
-          result.marks = marks.cm
-          result.status = 'correct'
-        }
-        else {
-          result.marks = marks.im
-          result.status = 'incorrect'
-        }
-      }
-      else { // just one correct answer
-        if (answerFloat === parseFloat(correctAnswerStr)) {
-          result.marks = marks.cm
-          result.status = 'correct'
-        }
-        else {
-          result.marks = marks.im
-          result.status = 'incorrect'
-        }
-      }
+      // If none of the above matched, answer is incorrect
+      result.marks = marks.im
+      result.status = 'incorrect'
+      return result
     }
     else { // type is msq
       const userAnswers = new Set(answer as number[])

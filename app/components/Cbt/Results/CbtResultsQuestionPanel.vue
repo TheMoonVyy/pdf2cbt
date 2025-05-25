@@ -314,6 +314,7 @@
                 currentQuestion.result.status === 'correct'
                   ? currentQuestion.result.correctAnswer
                   : (n === 1 ? currentQuestion.answer : currentQuestion.result.correctAnswer),
+                currentQuestion.type,
               )
             }}
           </div>
