@@ -338,8 +338,8 @@
               <td>{{ utilMarksWithSign(question.result.marks) }}</td>
               <td>{{ formattedResultStatus[question.result.status] }}</td>
               <td>{{ question.type.toUpperCase() }}</td>
-              <td>{{ utilStringifyAnswer(question.answer, ', ', true) }}</td>
-              <td>{{ utilStringifyAnswer(question.result.correctAnswer, ', ', true) }}</td>
+              <td>{{ utilStringifyAnswer(question.answer, question.type, true) }}</td>
+              <td>{{ utilStringifyAnswer(question.result.correctAnswer, question.type, true) }}</td>
               <td>{{ utilSecondsToTime(question.timeSpent, 'mmm:ss') }}</td>
               <td>{{ formattedQuestionStatus[question.status] }}</td>
             </tr>

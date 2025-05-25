@@ -333,7 +333,7 @@ const chartOptions = {
 
         const {
           oriQueId, secQueId, subject, section,
-          status, answer, marks, result, timeSpent,
+          status, answer, marks, result, timeSpent, type,
         } = questionData
 
         const { correctAnswer, status: resultStatus, marks: resultMarks } = result
@@ -358,7 +358,7 @@ const chartOptions = {
                   color = chartColors.resultStatus.partial
                 }
                 yourAnswerContentText += `
-                    <span style="color: ${color};">${utilStringifyAnswer(ans)}&nbsp</span>
+                    <span style="color: ${color};">${utilStringifyAnswer(ans, type)}&nbsp</span>
                   `
               })
               yourAnswerContentText += '</p>'
@@ -366,7 +366,7 @@ const chartOptions = {
             else {
               yourAnswerContentText += `
                   <span style="color: ${chartColors.resultStatus[resultStatus]};">
-                    ${utilStringifyAnswer(sortedAnswer, ' ')}
+                    ${utilStringifyAnswer(sortedAnswer, type)}
                   </span></p>
                 `
             }
@@ -374,7 +374,7 @@ const chartOptions = {
           else {
             yourAnswerContentText += `
                 <span style="color: ${chartColors.resultStatus[resultStatus]};">
-                  ${utilStringifyAnswer(answer)}
+                  ${utilStringifyAnswer(answer, type)}
                 </span></p>
               `
           }
@@ -391,7 +391,7 @@ const chartOptions = {
             ${yourAnswerContentText || ''}
             <p>Correct Answer:
               <span style="color: ${chartColors.resultStatus.correct};">
-                ${utilStringifyAnswer(correctAnswer, ' ', true)}
+                ${utilStringifyAnswer(correctAnswer, type, true)}
               </span>
             </p>
             <p>Result:

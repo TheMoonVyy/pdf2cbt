@@ -200,6 +200,7 @@
                 :data-answer="
                   utilStringifyAnswer(
                     subjectsAnswerKeysData![currentPageData.subject]![currentPageData.section]![quesNum]!.savedAnswer,
+                    questionData.type,
                   )"
                 class="relative p-2 sm:p-3 md:px-4
                   before:content-[attr(data-answer)]
@@ -556,8 +557,8 @@ const formatQuestionTypeText = (questionData: CropperQuestionData | TestOutputDa
   }
 }
 
-// parse and convert text to number or null
-const parseMcqInputText = (text: string, totalOptions: number) => {
+// parse and convert string character to number or null
+const parseInputTextChar = (text: string, totalOptions: number) => {
   if (text.length !== 1) return null
 
   let parsedNum: number | null = null
@@ -576,11 +577,11 @@ const parseMcqInputText = (text: string, totalOptions: number) => {
 }
 
 // parse and convert text to number[] or null while removing duplicate chars
-const parseMsqInputText = (text: string, totalOptions: number) => {
+const parseMcqOrMsqInputText = (text: string, totalOptions: number) => {
   const chars = [...text]
   const filteredChars = chars.filter(ch => /[A-Z1-9]/.test(ch))
   const parsedList = filteredChars
-    .map(char => parseMcqInputText(char, totalOptions))
+    .map(char => parseInputTextChar(char, totalOptions))
 
   // Remove duplicates from final numbers and delete null if present
   const uniqueValues = new Set(parsedList)
@@ -594,41 +595,32 @@ const parseMsqInputText = (text: string, totalOptions: number) => {
 const isStringValidNatNumFormat = (text: string) => /^-?\d+(\.\d+)?$/.test(text)
 
 const parseNatInputText = (text: string) => {
-  if (text.includes('TO')) {
-    const answerStrs = text.split('TO').map(n => n.trim())
+  const maybeRangeAnswerStrs = text.split(',').map(n => n.trim())
+  const results: string[] = []
 
-    const isValidFormat = answerStrs.every(isStringValidNatNumFormat)
-    if (isValidFormat && answerStrs.length === 2) {
-      const answerFloats = answerStrs.map(n => parseFloat(n))
-      const [lowerLimit, upperLimit] = answerFloats[0]! <= answerFloats[1]!
-        ? answerStrs
-        : answerStrs.toReversed()
-
-      return `${lowerLimit}TO${upperLimit}`
+  for (const maybeRangeAnswerStr of maybeRangeAnswerStrs) {
+    if (maybeRangeAnswerStr.includes('TO')) {
+      const rangeParts = maybeRangeAnswerStr.split('TO').map(n => n.trim())
+      if (rangeParts.length === 2 && rangeParts.every(isStringValidNatNumFormat)) {
+        const rangeFloats = rangeParts.map(n => parseFloat(n))
+        const lowerLimit = Math.min(...rangeFloats)
+        const upperLimit = Math.max(...rangeFloats)
+        results.push(`${lowerLimit}TO${upperLimit}`)
+      }
+      else {
+        return null
+      }
     }
     else {
-      return null
+      if (isStringValidNatNumFormat(maybeRangeAnswerStr)) {
+        results.push(maybeRangeAnswerStr)
+      }
+      else {
+        return null
+      }
     }
   }
-  else if (text.includes(',')) {
-    const answerStrs = text.split(',').map(n => n.trim())
-    const isValidFormat = answerStrs.every(isStringValidNatNumFormat)
-    if (isValidFormat) {
-      return answerStrs.join(',')
-    }
-    else {
-      return null
-    }
-  }
-  else {
-    const answer = text.trim()
-    if (isStringValidNatNumFormat(answer)) {
-      return answer
-    }
-    else {
-      return null
-    }
-  }
+  return results.length > 0 ? results.join(',') : null
 }
 
 // for parsing Input Answer and then storing it to savedAnswer
@@ -647,14 +639,11 @@ function parseInputAnswer(
       questionData.savedAnswer = 'DROPPED'
     }
     else {
-      if (questionType === 'mcq') {
-        questionData.savedAnswer = parseMcqInputText(inputAnswer[0] ?? '', totalOptions ?? 4)
-      }
-      else if (questionType === 'msq') {
-        questionData.savedAnswer = parseMsqInputText(inputAnswer, totalOptions ?? 4)
+      if (questionType === 'nat') {
+        questionData.savedAnswer = parseNatInputText(inputAnswer)
       }
       else {
-        questionData.savedAnswer = parseNatInputText(inputAnswer)
+        questionData.savedAnswer = parseMcqOrMsqInputText(inputAnswer, totalOptions ?? 4)
       }
     }
   }
