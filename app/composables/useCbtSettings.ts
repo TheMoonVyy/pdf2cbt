@@ -8,8 +8,12 @@ const defaultUiSettings: CbtUiSettings = {
     sectionHeaderScrollPadding: 0.8,
     sectionHeaderAndQuesPanelDividerHeight: 1.7,
     showQuestionType: true,
+    questionTypeFontSize: 1,
     showMarkingScheme: true,
+    markingSchemeFontSize: 0.875,
     showQuestionTimeSpent: false,
+    questionTimeSpentFontSize: 1,
+    questionNumFontSize: 1,
   },
 
   themes: {

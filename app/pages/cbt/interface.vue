@@ -114,13 +114,15 @@
           >
             <span
               v-if="uiSettings.mainLayout.showQuestionType"
-              class="flex items-center text-base"
+              class="flex items-center"
+              :style="{ fontSize: `${uiSettings.mainLayout.questionTypeFontSize}rem` }"
             >
               Question Type: {{ cropperSectionsData[currentTestState.section]?.[currentTestState.question]?.type.toUpperCase() || '' }}
             </span>
             <div
               v-if="uiSettings.mainLayout.showMarkingScheme"
-              class="flex items-center ml-auto text-sm divide-x-2 divide-slate-900"
+              class="flex items-center ml-auto divide-x-2 divide-slate-900"
+              :style="{ fontSize: `${uiSettings.mainLayout.markingSchemeFontSize}rem` }"
             >
               <span class="px-2">
                 Correct:&nbsp;
@@ -151,7 +153,10 @@
             :style="{ height: `${uiSettings.mainLayout.sectionHeaderAndQuesPanelDividerHeight}rem` }"
           />
           <div class="flex px-2 mt-[1px] border-y-2 gap-3 border-gray-300">
-            <span class="flex items-center text-base">
+            <span
+              class="flex items-center"
+              :style="{ fontSize: `${uiSettings.mainLayout.questionNumFontSize}rem` }"
+            >
               Question No.
               {{
                 currentTestState.questionsNumberingOrderType === 'cumulative'
@@ -164,6 +169,7 @@
             <span
               v-if="uiSettings.mainLayout.showQuestionTimeSpent"
               class="pl-3 border-l-[1.5px] border-black"
+              :style="{ fontSize: `${uiSettings.mainLayout.questionTimeSpentFontSize}rem` }"
             >
               {{ questionTimeSpentString }}
             </span>

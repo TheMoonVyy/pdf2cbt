@@ -20,8 +20,12 @@ export interface CbtUiSettings {
     sectionHeaderScrollPadding: number
     sectionHeaderAndQuesPanelDividerHeight: number
     showQuestionType: boolean
+    questionTypeFontSize: number
     showMarkingScheme: boolean
+    markingSchemeFontSize: number
     showQuestionTimeSpent: boolean
+    questionTimeSpentFontSize: number
+    questionNumFontSize: number
   }
 
   themes: {
