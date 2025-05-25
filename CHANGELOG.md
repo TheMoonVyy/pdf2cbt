@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.10.0...v1.10.1) (2025-05-25)
+
+
+### Bug Fixes
+
+* **utils:** fix utilStringifyAnswer to convert the mcq answer number to its respective character ([164fda5](https://github.com/TheMoonVyy/pdf2cbt/commit/164fda50832b3dc1087bf7f4601eb9f0fc847198))
+
 ## [1.10.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.9.1...v1.10.0) (2025-05-25)
 
 
