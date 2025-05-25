@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.9.1...v1.10.0) (2025-05-25)
+
+
+### Features
+
+* **generate-answer-key:** support multiple answers for mcq type and multiple answer ranges for nat type ([05f1640](https://github.com/TheMoonVyy/pdf2cbt/commit/05f164059f3b54e8ce58d158673b63830ecf096f))
+
 ## [1.9.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.9.0...v1.9.1) (2025-05-23)
 
 
