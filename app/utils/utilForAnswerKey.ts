@@ -12,7 +12,7 @@ export const utilStringifyAnswer = (
   if (Array.isArray(answer)) {
     const answerArray = sortArray ? answer.toSorted() : answer
     if (questionType === 'mcq') {
-      return answerArray.join(' or ')
+      return answerArray.map(utilConvertNumberToChar).join(' or ')
     }
     return answerArray.map(utilConvertNumberToChar).join(arrayJoinSeparator)
   }
