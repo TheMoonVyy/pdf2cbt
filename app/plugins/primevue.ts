@@ -15,9 +15,9 @@ const secondaryIconOnlyBtnClasses = {
         p-vertical:flex-col p-fluid:w-full p-fluid:p-icon-only:w-10
         p-icon-only:w-10 p-icon-only:px-0 p-icon-only:gap-0
         p-icon-only:p-rounded:rounded-full p-icon-only:p-rounded:h-10
-        p-small:text-sm p-small:px-[0.625rem] p-small:py-[0.375rem]
-        p-large:text-[1.125rem] p-large:px-[0.875rem] p-large:py-[0.625rem]
-        p-raised:shadow-sm p-rounded:rounded-[2rem]
+        p-small:text-sm p-small:px-2.5 p-small:py-1.5
+        p-large:text-[1.125rem] p-large:px-3.5 p-large:py-2.5
+        p-raised:shadow-sm p-rounded:rounded-4xl
         p-outlined:bg-transparent enabled:hover:p-outlined:bg-surface-50 enabled:active:p-outlined:bg-surface-100
         p-outlined:border-surface-200 enabled:hover:p-outlined:border-surface-200 enabled:active:p-outlined:border-surface-200
         p-outlined:text-surface-500 enabled:hover:p-outlined:text-surface-500 enabled:active:p-outlined:text-surface-500
@@ -106,14 +106,14 @@ export default defineNuxtPlugin((nuxtApp) => {
           p-contrast:p-simple:text-surface-950 dark:p-contrast:p-simple:text-surface-0
         `,
         content: `flex items-center p-simple:p-0 px-3 py-2 gap-2 h-full
-          p-small:px-2.5 p-small:py-[0.375rem] p-large:px-3.5 p-large:py-2.5
+          p-small:px-2.5 p-small:py-1.5 p-large:px-3.5 p-large:py-2.5
         `,
-        icon: `flex-shrink-0 text-lg w-[1.125rem] h-[1.125rem]
-          p-small:w-[0.875rem] p-small:h-[0.875rem] p-small:text-sm
+        icon: `shrink-0 text-lg w-4.5 h-4.5
+          p-small:w-3.5 p-small:h-3.5 p-small:text-sm
           p-large:w-5 p-large:h-5 p-large:text-xl
         `,
         text: `mx-auto text-base font-medium p-small:text-sm p-large:text-xl`,
-        closeButton: `flex items-center justify-center flex-shrink-0 ms-auto overflow-hidden relative cursor-pointer select-none
+        closeButton: `flex items-center justify-center shrink-0 ms-auto overflow-hidden relative cursor-pointer select-none
           w-7 h-7 rounded-full bg-transparent transition-colors duration-200 text-inherit p-0 border-none
           focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2
           p-info:hover:bg-blue-100 p-info:focus-visible:outline-blue-600 dark:p-info:hover:bg-white/5 dark:p-info:focus-visible:outline-blue-500
@@ -126,14 +126,14 @@ export default defineNuxtPlugin((nuxtApp) => {
         `,
         closeIcon: `w-4 h-4 text-base
           p-small:w-3.5 p-small:h-3.5 p-small:text-sm 
-          p-large:w-[1.125rem] p-large:h-[1.125rem] p-large:text-xl
+          p-large:w-4.5 p-large:h-4.5 p-large:text-xl
         `,
         transition: {
           enterFromClass: 'opacity-0',
           enterActiveClass: 'transition-opacity duration-300',
           leaveFromClass: 'max-h-40',
           leaveActiveClass: 'overflow-hidden transition-all duration-300 ease-in',
-          leaveToClass: 'max-h-0 opacity-0 !m-0',
+          leaveToClass: 'max-h-0 opacity-0 m-0!',
         },
       },
       fileUpload: {
@@ -190,7 +190,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         group-p-disabled:text-surface-500 dark:group-p-disabled:text-surface-400 group-p-disabled:pointer-events-none
         p-disabled:opacity-60 p-disabled:pointer-events-none
         transition-colors duration-200`,
-        optionCheckIcon: `relative -ms-[0.375rem] me-[0.375rem] text-surface-700 dark:text-surface-0`,
+        optionCheckIcon: `relative -ms-1.5 me-1.5 text-surface-700 dark:text-surface-0`,
         optionBlankIcon: ``,
         emptyMessage: `px-3 py-2`,
       },
@@ -218,6 +218,68 @@ export default defineNuxtPlugin((nuxtApp) => {
       },
       popover: {
         root: 'p-popover',
+      },
+      contextmenu: {
+        root: {
+          class: [
+            'bg-surface-0 dark:bg-surface-900',
+            'text-surface-700 dark:text-surface-0',
+            'border border-surface-200 dark:border-surface-700',
+            'rounded-md min-w-52',
+            'shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)]',
+          ],
+        },
+        rootList: {
+          class: 'm-0 p-1 list-none outline-none flex flex-col gap-[2px]',
+        },
+        item: {
+          class: [
+            'relative font-normal',
+            'hover:bg-surface-100 hover:text-surface-800',
+            'hover:dark:bg-surface-800 hover:dark:text-surface-0 hover:dark:font-semibold',
+            'focus:bg-surface-100 focus:text-surface-800',
+            'focus:dark:bg-surface-800 focus:dark:text-surface-0 focus:dark:font-semibold',
+            'data-[p-active=true]:bg-surface-100 data-[p-active=true]:text-surface-800',
+            'data-[p-active=true]:dark:bg-surface-800 data-[p-active=true]:dark:text-surface-0 data-[p-active=true]:dark:font-semibold',
+          ],
+        },
+        itemContent: {
+          class: [
+            'transition-colors duration-200 rounded-sm',
+            'text-surface-700 dark:text-surface-0',
+          ],
+        },
+        itemLink: {
+          class: [
+            'cursor-pointer flex items-center no-underline overflow-hidden relative text-inherit',
+            'px-3 py-2 gap-2 select-none outline-none',
+          ],
+        },
+        itemIcon: {
+          class: [
+            'text-surface-400 dark:text-surface-500',
+            'group-hover:text-surface-500 group-hover:dark:text-surface-400',
+          ],
+        },
+        submenuIcon: {
+          class: [
+            'text-surface-400 dark:text-surface-500',
+            'ms-auto text-sm w-3.5 h-3.5',
+            'group-hover:text-surface-500 group-hover:dark:text-surface-400',
+          ],
+        },
+        separator: {
+          class: 'border-t border-surface-200 dark:border-surface-700 my-1',
+        },
+        submenu: {
+          class: [
+            'absolute min-w-full z-10 rounded-md',
+            'bg-surface-0 dark:bg-surface-900',
+            'text-surface-700 dark:text-surface-0',
+            'border border-surface-200 dark:border-surface-700',
+            'shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)]',
+          ],
+        },
       },
     },
   })

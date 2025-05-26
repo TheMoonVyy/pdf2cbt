@@ -720,7 +720,7 @@
       </div>
       <Popover
         ref="popOverStatusFilterElem"
-        pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+        pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]"
       >
         <div
           v-for="(label, key) in formattedQuestionStatus"
@@ -745,7 +745,7 @@
       </Popover>
       <Popover
         ref="popOverResultFilterElem"
-        pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+        pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]"
       >
         <div
           v-for="(label, key) in formattedResultStatus"
@@ -770,7 +770,7 @@
       </Popover>
       <Popover
         ref="popOverQNumOrderElem"
-        pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+        pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]"
       >
         <div class="flex flex-col gap-2">
           <div
@@ -797,7 +797,7 @@
       </Popover>
       <Popover
         ref="popOverTimeSpentFilterElem"
-        pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]
+        pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]
           max-w-3xs"
       >
         <div class="flex flex-col">

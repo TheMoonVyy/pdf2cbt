@@ -7,7 +7,7 @@
       v-if="dbTestOutputDataState.isDataFound"
       class="flex flex-col gap-5 py-15 items-center"
     >
-      <h3 class="w-full text-lg mx-auto px-6 text-center max-w-[60rem]">
+      <h3 class="w-full text-lg mx-auto px-6 text-center max-w-240">
         These test data entries were found in your local database<br>
         that may not contain answer key data
         (and therefore do not have results yet).
@@ -24,7 +24,7 @@
           <CbtResultsOverviewCard
             :test-result-overview="testResultOverview"
             read-only
-            class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-[15rem] cursor-pointer select-none"
+            class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-60 cursor-pointer select-none"
             :selected="dbTestOutputDataState.selectedTestResultOverviewIndex === index"
             @click="() => dbTestOutputDataState.selectedTestResultOverviewIndex = index"
           />

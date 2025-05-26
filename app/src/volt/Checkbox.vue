@@ -44,7 +44,7 @@ const theme = ref<CheckboxPassThroughOptions>({
         shadow-[0_1px_2px_0_rgba(18,18,23,0.05)] transition-colors duration-200
         p-small:w-4 p-small:h-4
         p-large:w-6 p-large:h-6`,
-    icon: `text-sm w-[0.875rem] h-[0.875rem] transition-none
+    icon: `text-sm w-3.5 h-3.5 transition-none
         p-small:w-3 p-small:h-3
         p-large:w-4 p-large:h-4`
 });

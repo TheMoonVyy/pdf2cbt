@@ -14,7 +14,7 @@
     :class="showTooltipContent ? 'flex' : 'hidden'"
   >
     <span
-      class="block font-bold text-base p-[0.125rem] content-center text-nowrap border-b-2 border-slate-300"
+      class="block font-bold text-base p-0.5 content-center text-nowrap border-b-2 border-slate-300"
     >
       {{ props.sectionName }}
     </span>

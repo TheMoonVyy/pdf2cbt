@@ -47,13 +47,13 @@ const theme = ref<SelectPassThroughOptions>({
         shadow-[0_1px_2px_0_rgba(18,18,23,0.05)]
         transition-colors duration-200`,
     label: `block whitespace-nowrap overflow-hidden flex-auto w-[1%]
-        py-2 px-3 overflow-ellipsis 
+        py-2 px-3 text-ellipsis 
         p-clearable:pe-7 p-empty:overflow-hidden p-empty:opacity-0 p-editable:cursor-default
         text-surface-700 dark:text-surface-0 bg-transparent border-none outline-none
         p-placeholder:text-surface-500 dark:p-placeholder:text-surface-400
         p-disabled:text-surface-500 dark:p-disabled:text-surface-400
-        p-small:text-sm p-small:px-[0.625rem] p-small:py-[0.375rem]
-        p-large:text-lg p-large:px-[0.875rem] p-large:py-[0.625rem]`,
+        p-small:text-sm p-small:px-2.5 p-small:py-1.5
+        p-large:text-lg p-large:px-3.5 p-large:py-2.5`,
     dropdown: `flex items-center justify-center shrink-0 bg-transparent
         text-surface-400 w-10 rounded-e-md`,
     overlay: `absolute top-0 left-0 rounded-md p-portal-self:min-w-full
@@ -91,13 +91,13 @@ const theme = ref<SelectPassThroughOptions>({
         p-selected:bg-highlight p-focus:p-selected:bg-highlight-emphasis
         transition-colors duration-200`,
     optionLabel: ``,
-    optionCheckIcon: `relative -ms-[0.375rem] me-[0.375rem] text-surface-700 dark:text-surface-0`,
+    optionCheckIcon: `relative -ms-1.5 me-1.5 text-surface-700 dark:text-surface-0`,
     optionBlankIcon: ``,
     emptyMessage: `px-3 py-2`,
     virtualScroller: ``,
     transition: {
         enterFromClass: 'opacity-0 scale-y-75',
-        enterActiveClass: 'transition duration-120 ease-[cubic-bezier(0,0,0.2,1)]',
+        enterActiveClass: 'transition duration-120 ease-out',
         leaveActiveClass: 'transition-opacity duration-100 ease-linear',
         leaveToClass: 'opacity-0'
     }

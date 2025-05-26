@@ -34,9 +34,9 @@ const theme = ref<ButtonPassThroughOptions>({
     p-vertical:flex-col p-fluid:w-full p-fluid:p-icon-only:w-10
     p-icon-only:w-10 p-icon-only:px-0 p-icon-only:gap-0
     p-icon-only:p-rounded:rounded-full p-icon-only:p-rounded:h-10
-    p-small:text-sm p-small:px-[0.625rem] p-small:py-[0.375rem]
-    p-large:text-[1.125rem] p-large:px-[0.875rem] p-large:py-[0.625rem]
-    p-raised:shadow-sm p-rounded:rounded-[2rem]
+    p-small:text-sm p-small:px-2.5 p-small:py-1.5
+    p-large:text-[1.125rem] p-large:px-3.5 p-large:py-2.5
+    p-raised:shadow-sm p-rounded:rounded-4xl
     p-outlined:bg-transparent enabled:hover:p-outlined:bg-orange-50 enabled:active:p-outlined:bg-orange-100
     p-outlined:border-orange-200 enabled:hover:p-outlined:border-orange-200 enabled:active:p-outlined:border-orange-200
     p-outlined:text-orange-500 enabled:hover:p-outlined:text-orange-500 enabled:active:p-outlined:text-orange-500

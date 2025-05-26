@@ -60,7 +60,7 @@ const theme = ref<TreePassThroughOptions>({
         dark:hover:p-selectable:not-p-selected:bg-surface-800 dark:hover:p-selectable:not-p-selected:text-surface-0
         p-selected:bg-highlight 
         p-selectable:cursor-pointer p-selectable:select-none`,
-    nodeToggleButton: `cursor-pointer select-none inline-flex justify-center rounded-full items-center overflow-hidden relative flex-shrink-0
+    nodeToggleButton: `cursor-pointer select-none inline-flex justify-center rounded-full items-center overflow-hidden relative shrink-0
         w-7 h-7 p-0 p-leaf:invisible transition-colors duration-200 border-none
         bg-transparent hover:bg-surface-100 dark:hover:bg-surface-800
         group-p-selected:hover:bg-surface-0 dark:group-p-selected:hover:bg-surface-900 group-p-selected:hover:text-primary
@@ -85,7 +85,7 @@ const theme = ref<TreePassThroughOptions>({
             p-checked:border-primary p-checked:bg-primary p-checked:text-primary-contrast
             peer-enabled:peer-hover:p-checked:bg-primary-emphasis peer-enabled:peer-hover:p-checked:border-primary-emphasis
             shadow-[0_1px_2px_0_rgba(18,18,23,0.05)] transition-colors duration-200`,
-        icon: `text-sm w-[0.875rem] h-[0.875rem] transition-none`
+        icon: `text-sm w-3.5 h-3.5 transition-none`
     },
     nodeChildren: `flex flex-col list-none m-0 gap-[2px] pt-[2px] pe-0 pb-0 ps-4`,
     mask: `bg-black/50 text-surface-200 absolute z-10 flex items-center justify-center`,

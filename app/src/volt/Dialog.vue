@@ -53,8 +53,8 @@ const theme = ref<DialogPassThroughOptions>({
     mask: `p-modal:bg-black/50 p-modal:fixed p-modal:top-0 p-modal:start-0 p-modal:w-full p-modal:h-full`,
     transition: {
         enterFromClass: 'opacity-0 scale-75',
-        enterActiveClass: 'transition-all duration-150 ease-[cubic-bezier(0,0,0.2,1)]',
-        leaveActiveClass: 'transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
+        enterActiveClass: 'transition-all duration-150 ease-out',
+        leaveActiveClass: 'transition-all duration-150 ease-in-out',
         leaveToClass: 'opacity-0 scale-75'
     }
 });

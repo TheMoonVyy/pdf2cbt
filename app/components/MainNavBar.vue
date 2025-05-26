@@ -16,13 +16,13 @@
             <Icon
               :name="isHamburgerMenuOpen ? 'material-symbols:close-rounded' : 'material-symbols:menu-rounded'"
               size="1.8rem"
-              class="peer cursor-pointer md:!hidden"
+              class="peer cursor-pointer md:hidden!"
               :data-active="isHamburgerMenuOpen"
               @click="isHamburgerMenuOpen = !isHamburgerMenuOpen"
             />
             <div
               class="dark:bg-surface-900 dark:text-surface-0
-              hidden w-full peer-data-[active=true]:!flex flex-col absolute z-50 left-0 top-full py-3
+              hidden w-full peer-data-[active=true]:flex! flex-col absolute z-50 left-0 top-full py-3
               md:flex md:flex-row md:static md:py-0"
             >
               <NuxtLink

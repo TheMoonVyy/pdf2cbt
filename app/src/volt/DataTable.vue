@@ -120,7 +120,7 @@ const theme = ref<DataTablePassThroughOptions>({
                 peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary peer-focus-visible:outline 
                 p-disabled:bg-surface-200 dark:p-disabled:bg-surface-400 p-disabled:border-surface-300 dark:p-disabled:border-surface-700 p-disabled:text-surface-700 dark:p-disabled:text-surface-400
                 shadow-[0_1px_2px_0_rgba(18,18,23,0.05)] transition-colors duration-200`,
-            icon: `text-sm w-[0.875rem] h-[0.875rem] transition-none`
+            icon: `text-sm w-3.5 h-3.5 transition-none`
         },
         pcRowRadiobutton: {
             root: `relative inline-flex select-none w-5 h-5`,
@@ -158,7 +158,7 @@ const theme = ref<DataTablePassThroughOptions>({
                 peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary peer-focus-visible:outline 
                 p-disabled:bg-surface-200 dark:p-disabled:bg-surface-400 p-disabled:border-surface-300 dark:p-disabled:border-surface-700 p-disabled:text-surface-700 dark:p-disabled:text-surface-400
                 shadow-[0_1px_2px_0_rgba(18,18,23,0.05)] transition-colors duration-200`,
-            icon: `text-sm w-[0.875rem] h-[0.875rem] transition-none`
+            icon: `text-sm w-3.5 h-3.5 transition-none`
         },
         rowToggleButton: `inline-flex items-center justify-center overflow-hidden relative w-7 h-7 cursor-pointer select-none
             transition-colors duration-200 rounded-full border-none bg-transparent

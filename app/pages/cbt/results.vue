@@ -11,7 +11,7 @@
       />
       <div
         ref="mainContainerElem"
-        class="flex flex-col w-full flex-grow overflow-auto h-screen"
+        class="flex flex-col w-full grow overflow-auto h-screen"
       >
         <div
           class="py-4 px-2"

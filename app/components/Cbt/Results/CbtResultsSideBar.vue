@@ -28,7 +28,7 @@
     <!-- Sidebar -->
     <aside
       class="fixed top-0 left-0 h-full w-44 text-white z-30 transform transition-transform duration-300
-        [background:color-mix(in_srgb,_theme(colors.neutral.900),_white_3%)]"
+        [background:color-mix(in_srgb,var(--color-neutral-900),white_3%)]"
       :class="isShowSidebar ? 'sm:static block sm:z-auto translate-x-0' : '-translate-x-full'"
     >
       <nav class="px-1 pt-14 divide-y divide-green-400 divide-dashed">
@@ -36,7 +36,7 @@
           class="py-2 rounded select-none flex flex-col
              has-data-selected:[&>.flex-row]:text-green-500
              has-data-selected:[&>.flex-row]:font-bold
-             has-data-selected:[&>.flex-row]:[background:color-mix(in_srgb,_theme(colors.green.900),_theme(colors.neutral.800)_96%)]
+             has-data-selected:[&>.flex-row]:[background:color-mix(in_srgb,var(--color-green-900),var(--color-neutral-800)_96%)]
              not-has-data-selected:[&>.flex-row]:hover:font-bold"
         >
           <div
@@ -57,7 +57,7 @@
             :key="item.name"
             tabindex="0"
             class="cursor-pointer ml-4 py-1.75 rounded text-sm select-none flex items-center gap-2 text-nowrap transition-all
-              data-[selected=true]:[background:color-mix(in_srgb,_theme(colors.green.900),_theme(colors.neutral.800)_90%)]
+              data-[selected=true]:[background:color-mix(in_srgb,var(--color-green-900),var(--color-neutral-800)_90%)]
               data-[selected=true]:text-green-500
               data-[selected=true]:font-bold
               data-[selected=false]:hover:text-white
@@ -77,7 +77,7 @@
         <div
           tabindex="0"
           class="cursor-pointer p-2 rounded select-none flex items-center gap-2 transition-all
-            data-[selected=true]:[background:color-mix(in_srgb,_theme(colors.green.900),_theme(colors.neutral.800)_90%)]
+            data-[selected=true]:[background:color-mix(in_srgb,var(--color-green-900),var(--color-neutral-800)_90%)]
             data-[selected=true]:text-green-500
             data-[selected=true]:font-bold
             data-[selected=false]:hover:text-white

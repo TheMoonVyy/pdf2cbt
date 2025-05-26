@@ -152,7 +152,7 @@
             class="block shrink-0 primary-theme"
             :style="{ height: `${uiSettings.mainLayout.sectionHeaderAndQuesPanelDividerHeight}rem` }"
           />
-          <div class="flex px-2 mt-[1px] border-y-2 gap-3 border-gray-300">
+          <div class="flex px-2 mt-px border-y-2 gap-3 border-gray-300">
             <span
               class="flex items-center"
               :style="{ fontSize: `${uiSettings.mainLayout.questionNumFontSize}rem` }"

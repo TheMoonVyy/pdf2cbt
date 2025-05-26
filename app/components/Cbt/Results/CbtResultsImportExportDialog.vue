@@ -30,7 +30,7 @@
         <CbtResultsOverviewCard
           :test-result-overview="testOutputData.testResultOverview!"
           read-only
-          class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-[15rem] cursor-pointer select-none"
+          class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-60 cursor-pointer select-none"
           :selected="selectedKeys.has(index)"
           @click="() => selectedKeys.has(index) ? selectedKeys.delete(index) : selectedKeys.add(index)"
         />

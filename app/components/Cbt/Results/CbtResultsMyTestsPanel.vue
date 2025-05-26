@@ -36,14 +36,14 @@
       <CbtResultsOverviewCard
         :is-current-results-id="testResultOverview.id === currentResultsID"
         :test-result-overview="testResultOverview"
-        class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-[15rem]"
+        class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-60"
         @menu-btn-click="(e: Event) => cardMenuToggleHandler(testResultOverview.id, e)"
         @view-results-btn-click="(bool) => viewResultsBtnHandler(bool, testResultOverview.id)"
       />
     </div>
     <Popover
       ref="menuPopOverElem"
-      pt:root:class="dark:[background:color-mix(in_srgb,_theme(colors.neutral.900),_white_2%)]"
+      pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]"
       @show="cardMenuState.isPopOverShown = true"
       @hide="cardMenuState.isPopOverShown = false"
     >

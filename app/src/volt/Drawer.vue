@@ -40,9 +40,9 @@ const theme = ref<DrawerPassThroughOptions>({
         p-top:h-40 p-top:w-full p-top:border-b
         p-bottom:h-40 p-bottom:w-full p-bottom:border-t
         p-full-screen:transition-opacity p-full-screen:transform-none p-full-screen:w-screen p-full-screen:h-screen p-full-screen:max-h-full p-full-screen:top-0 p-full-screen:left-0`,
-    header: `flex items-center justify-between flex-shrink-0 p-5`,
+    header: `flex items-center justify-between shrink-0 p-5`,
     title: `font-semibold text-2xl`,
-    content: `overflow-y-auto flex-grow pt-0 pb-5 px-5`,
+    content: `overflow-y-auto grow pt-0 pb-5 px-5`,
     footer: `p-5`,
     mask: `p-modal:bg-black/50`,
     transition: {
