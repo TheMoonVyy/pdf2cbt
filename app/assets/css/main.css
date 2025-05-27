@@ -16,6 +16,20 @@
   }
 }
 
+@theme {
+  --container-4xs: 14rem;
+  --container-5xs: 12rem;
+  --container-6xs: 10rem;
+  --container-7xs: 8rem;
+  --text-2xs: 0.7rem;
+  --text-3xs: 0.65rem;
+  --text-4xs: 0.55rem;
+  --text-5xs: 0.5rem;
+  --text-6xs: 0.45rem;
+  --text-7xs: 0.4rem;
+  --text-8xs: 0.35rem;
+}
+
 :root {
   --p-primary-50: var(--color-emerald-50);
   --p-primary-100: var(--color-emerald-100);

@@ -6,9 +6,11 @@
     />
     <Splitter pt:root:class="flex-1 flex-nowrap min-h-0 min-w-0 rounded-none select-none">
       <SplitterPanel
+        ref="leftSidePanelElem"
         pt:root:class="flex flex-col items-center overflow-y-auto!"
         :size="settings.splitterPanelSize"
         :min-size="15"
+        @click="() => editingState.maybeIsEditingQuesDetails = true"
       >
         <Panel
           header="Settings"
@@ -136,7 +138,79 @@
         >
           <div class="grid grid-cols-2 col-span-3 gap-3 mt-2 label-selecter">
             <BaseFloatLabel
-              v-for="key in Object.keys(coords)"
+              class="w-full"
+              label="Left"
+              label-id="coords_left"
+              label-class="text-xs"
+            >
+              <InputNumber
+                v-model="currentQuestionCoords.l"
+                :min="0"
+                :max="currentQuestionCoords.r"
+                :fluid="true"
+                label-id="coords_left"
+                size="small"
+                show-buttons
+                :step="1"
+                :disabled="!isPdfLoaded"
+              />
+            </BaseFloatLabel>
+            <BaseFloatLabel
+              class="w-full"
+              label="Right"
+              label-id="coords_right"
+              label-class="text-xs"
+            >
+              <InputNumber
+                v-model="currentQuestionCoords.r"
+                :min="currentQuestionCoords.l"
+                :max="currentPageDetails.width"
+                :fluid="true"
+                label-id="coords_right"
+                size="small"
+                show-buttons
+                :step="1"
+                :disabled="!isPdfLoaded"
+              />
+            </BaseFloatLabel>
+            <BaseFloatLabel
+              class="w-full"
+              label="Top"
+              label-id="coords_top"
+              label-class="text-xs"
+            >
+              <InputNumber
+                v-model="currentQuestionCoords.t"
+                :min="0"
+                :max="currentQuestionCoords.b"
+                :fluid="true"
+                label-id="coords_top"
+                size="small"
+                show-buttons
+                :step="1"
+                :disabled="!isPdfLoaded"
+              />
+            </BaseFloatLabel>
+            <BaseFloatLabel
+              class="w-full"
+              label="Bottom"
+              label-id="coords_bottom"
+              label-class="text-xs"
+            >
+              <InputNumber
+                v-model="currentQuestionCoords.b"
+                :min="currentQuestionCoords.t"
+                :max="currentPageDetails.height"
+                :fluid="true"
+                label-id="coords_bottom"
+                size="small"
+                show-buttons
+                :step="1"
+                :disabled="!isPdfLoaded"
+              />
+            </BaseFloatLabel>
+            <!-- <BaseFloatLabel
+              v-for="key in (['l', 'r', 't','b'] as const)"
               :key="key"
               class="w-full"
               :label="key.toUpperCase()"
@@ -144,20 +218,20 @@
               label-class="text-xs"
             >
               <InputNumber
-                v-model="coords[key as keyof CropCoordinates]"
+                v-model="currentQuestionCoords[key]"
                 :min="0"
-                :max="key.startsWith('x') ? currentPageDetails.width : currentPageDetails.height"
+                :max="(key === 'l' || key === 'r') ? currentPageDetails.width : currentPageDetails.height"
                 :fluid="true"
                 :label-id="`coords_${key}`"
                 size="small"
                 show-buttons
                 :step="1"
-                :disabled="!isPdfLoaded || (cropperMode.isLine && cropperLineState.currentCoord !== key)"
-                @value-change="syncCoordsAndSelection()"
+                :disabled="!isPdfLoaded"
+              />
+              @value-change="syncCoordsAndSelection()"
                 @focus="updateInputFocusState(true)"
                 @blur="updateInputFocusState(false)"
-              />
-            </BaseFloatLabel>
+            </BaseFloatLabel> -->
           </div>
           <div class="flex justify-center items-center">
             <BaseButton
@@ -172,6 +246,7 @@
         <PdfCropperQuestionDetailsPanel
           v-model="currentQuestionData"
           :is-pdf-loaded="isPdfLoaded"
+          :current-overlay-img-num="activeCropperOverlay.imgNum"
         />
         <BaseButton
           label="Generate Output"
@@ -208,9 +283,14 @@
         >
           <div
             class="relative mx-auto cursor-cell mt-4"
+            :class="{
+              'blur-cropped': settings.blurCroppedRegion,
+            }"
             :style="{
               '--pdf-page-scaled-width': `${currentPageDetails.scaledWidth}px`,
               '--pdf-page-scaled-height': `${currentPageDetails.scaledHeight}px`,
+              '--pdf-page-scale': zoomScaleDebounced,
+              '--pdf-cropped-blur-intensity': settings.blurIntensity,
             }"
           >
             <div class="inline-block">
@@ -226,6 +306,20 @@
                 @pointermove="pointerMoveHandler"
               >
             </div>
+            <PdfCropperOverlay
+              v-if="currentPageDetails.url"
+              v-model="cropperOverlayDatas"
+              v-model:active-overlay="activeCropperOverlay"
+              v-model:maybe-is-editing-ques-details="editingState.maybeIsEditingQuesDetails"
+              v-model:blur-cropped-region="settings.blurCroppedRegion"
+              :current-mode="currentMode"
+              :current-page-num="pdfState.currentPageNum"
+              :page-scale="zoomScaleDebounced"
+              :page-width="currentPageDetails.width"
+              :page-height="currentPageDetails.height"
+              :selection-throttle-interval="settings.selectionThrottleInterval"
+              :move-on-key-press-distance="settings.moveOnKeyPressDistance"
+            />
             <div
               class="overlay"
               :class="{ hidden: !isPdfLoaded }"
@@ -273,6 +367,7 @@
       </SplitterPanel>
     </Splitter>
     <Dialog
+      v-if="visibilityState.questionDetailsDialog"
       v-model:visible="visibilityState.questionDetailsDialog"
       header="Invalid Question Details"
       :modal="true"
@@ -285,6 +380,7 @@
       <PdfCropperQuestionDetailsPanel
         v-model="currentQuestionData"
         :is-pdf-loaded="isPdfLoaded"
+        :current-overlay-img-num="activeCropperOverlay.imgNum"
       />
       <div class="flex justify-center my-3">
         <BaseButton
@@ -494,19 +590,6 @@ interface PdfState {
   fileUint8Array: Uint8Array | null
 }
 
-interface SettingsState {
-  cropperMode: 'box' | 'line'
-  scale: number
-  splitterPanelSize: number
-  pageBGColor: string
-  cropSelectionGuideColor: string
-  cropSelectedRegionColor: string
-  cropSelectionSkipColor: string
-  qualityFactor: number
-  selectionThrottleInterval: number
-  minCropDimension: number
-}
-
 interface CropCoordinates {
   x1: number
   y1: number
@@ -613,11 +696,19 @@ const imgElem = ref<HTMLImageElement>()
 const boxSelectionElem = shallowRef<HTMLElement>()
 const croppedDivContainerElem = shallowRef<HTMLElement>()
 
+const leftSidePanelElem = templateRef('leftSidePanelElem')
+
 const pdfState = shallowReactive<PdfState>({
   currentPageNum: 0,
   totalPages: 0,
   fileUint8Array: null,
 })
+
+const editingState = shallowReactive({
+  maybeIsEditingQuesDetails: false,
+})
+
+const currentMode = shallowRef<'crop' | 'edit'>('edit')
 
 const isPdfLoaded = shallowRef(false)
 
@@ -626,20 +717,23 @@ const isPdfLoaded = shallowRef(false)
 let pdfFileHash = ''
 
 // Default settings
-const settings = shallowReactive<SettingsState>({
-  cropperMode: 'line',
+const settings = shallowReactive({
+  cropperMode: 'line' as 'line' | 'box',
   scale: 1,
-  splitterPanelSize: 25,
-  pageBGColor: 'ffffff', // white
+  splitterPanelSize: 25, // %
+  pageBGColor: 'ffffff',
   // For Advanced settings
   // Colors
   cropSelectionGuideColor: '0000ff', // blue
   cropSelectedRegionColor: '004D00', // dark variant of green
   cropSelectionSkipColor: '8B0000', // dark red
   // Rendering & Input
-  qualityFactor: 2,
+  qualityFactor: 1.5,
   selectionThrottleInterval: 30, // in milliseconds
   minCropDimension: 3, // units of coords
+  moveOnKeyPressDistance: 10, // units of coords
+  blurCroppedRegion: true,
+  blurIntensity: 4, // px
 })
 
 const visibilityState = shallowReactive({
@@ -650,7 +744,7 @@ const visibilityState = shallowReactive({
 
 })
 
-const currentQuestionData = shallowReactive<CurrentQuestionData>({
+const currentQuestionDatass = shallowReactive<CurrentQuestionData>({
   subjectName: '',
   sectionName: '',
   questionType: 'mcq',
@@ -664,6 +758,29 @@ const currentQuestionData = shallowReactive<CurrentQuestionData>({
 const coords = shallowReactive<CropCoordinates>({ x1: 0, y1: 0, x2: 0, y2: 0 })
 
 const pageImgData = reactive<PageImgData>({})
+
+// reactive Map of overlay datas keyed by id
+const cropperOverlayDatas = reactive(new Map<string, PdfCroppedOverlayData>())
+
+const activeCropperOverlay = shallowReactive<ActiveCroppedOverlay>({
+  id: '',
+  imgNum: 0,
+})
+
+const mainOverlayData = reactive<PdfCroppedOverlayData>({
+  id: '',
+  subject: '',
+  section: '',
+  que: 1,
+  type: 'mcq',
+  options: 4,
+  pdfData: [{ l: 0, r: 0, t: 0, b: 0, page: 1 }],
+  marks: {
+    cm: 4,
+    pm: 1,
+    im: -1,
+  },
+})
 
 // Stores all data related to questions for output
 const questionsData = reactive<Record<number, QuestionData[]>>({})
@@ -689,28 +806,52 @@ const savedMarkingScheme: {
   }
 } = {}
 
+onClickOutside(leftSidePanelElem as unknown as Ref<HTMLElement>, () => {
+  editingState.maybeIsEditingQuesDetails = false
+})
+
 watch(
-  () => currentQuestionData.questionType,
+  () => mainOverlayData.type,
   (newQuestionType, oldQuestionType) => {
-    const { correctMarks, partialMarks, incorrectMarks } = currentQuestionData
+    const { cm, pm, im } = mainOverlayData.marks
 
     savedMarkingScheme[oldQuestionType] = {
-      cm: correctMarks,
-      pm: partialMarks,
-      im: incorrectMarks,
+      cm,
+      pm,
+      im,
     }
 
     const newMarkingScheme = savedMarkingScheme[newQuestionType]
     if (newMarkingScheme) {
       const { cm, pm, im } = newMarkingScheme
-      currentQuestionData.correctMarks = cm
-      currentQuestionData.partialMarks = pm
-      currentQuestionData.incorrectMarks = im
+      mainOverlayData.marks.cm = cm
+      mainOverlayData.marks.pm = pm
+      mainOverlayData.marks.im = im
     }
   },
 )
 
-const zoomScaleDebounced = shallowRef(1)
+const zoomScaleDebounced = shallowRef(settings.scale)
+
+const currentQuestionData = computed<PdfCroppedOverlayData>(() => {
+  const id = activeCropperOverlay.id
+  const imgNum = activeCropperOverlay.imgNum
+  if (id && imgNum > 0) {
+    const overlayData = cropperOverlayDatas.get(id)
+    if (overlayData) {
+      return overlayData
+    }
+  }
+  return mainOverlayData
+})
+
+const currentQuestionCoords = computed(() => {
+  const imgNum = activeCropperOverlay.imgNum
+  if (imgNum > 0) {
+    return currentQuestionData.value.pdfData[activeCropperOverlay.imgNum - 1]!
+  }
+  return currentQuestionData.value.pdfData[0]!
+})
 
 const currentPageDetails = computed(() => {
   let { url, width, height } = pageImgData[pdfState.currentPageNum] ?? {}
@@ -955,7 +1096,7 @@ function storeCurrentQuestionData(cropCoords: CropCoordinates, incrementQuestion
     correctMarks: cm,
     partialMarks: pm,
     incorrectMarks: im,
-  } = currentQuestionData
+  } = currentQuestionDatass
 
   const questionData: QuestionData = {
     page, sub, sec, type, options, que,
@@ -966,7 +1107,7 @@ function storeCurrentQuestionData(cropCoords: CropCoordinates, incrementQuestion
   if (!questionsData[page]) questionsData[page] = []
   questionsData[page].push(questionData)
 
-  if (incrementQuestion) currentQuestionData.questionNum++
+  if (incrementQuestion) currentQuestionDatass.questionNum++
 }
 
 function validateQuestionDetails(): boolean {
@@ -978,7 +1119,7 @@ function validateQuestionDetails(): boolean {
     correctMarks,
     partialMarks,
     incorrectMarks,
-  } = currentQuestionData
+  } = currentQuestionDatass
 
   const passed = subjectName.trim()
     && sectionName.trim()
@@ -1057,16 +1198,16 @@ const clearCurrentPageQuestions = () => {
 
     const recentQuestion = getLastQuestionData()
     if (recentQuestion) {
-      currentQuestionData.subjectName = recentQuestion.sub
-      currentQuestionData.sectionName = recentQuestion.sec
-      currentQuestionData.questionType = recentQuestion.type
-      currentQuestionData.questionNum = recentQuestion.que + 1
-      currentQuestionData.correctMarks = recentQuestion.cm
-      currentQuestionData.partialMarks = recentQuestion.pm
-      currentQuestionData.incorrectMarks = recentQuestion.im
+      currentQuestionDatass.subjectName = recentQuestion.sub
+      currentQuestionDatass.sectionName = recentQuestion.sec
+      currentQuestionDatass.questionType = recentQuestion.type
+      currentQuestionDatass.questionNum = recentQuestion.que + 1
+      currentQuestionDatass.correctMarks = recentQuestion.cm
+      currentQuestionDatass.partialMarks = recentQuestion.pm
+      currentQuestionDatass.incorrectMarks = recentQuestion.im
     }
     else {
-      currentQuestionData.questionNum = 1
+      currentQuestionDatass.questionNum = 1
     }
   }
 }
@@ -1109,7 +1250,7 @@ const clearCurrentPageLastQuestion = () => {
       }
     }
     if (currentPageLastQuestion) {
-      currentQuestionData.questionNum--
+      currentQuestionDatass.questionNum--
       clearCroppedDivContainerElem(true)
     }
   }

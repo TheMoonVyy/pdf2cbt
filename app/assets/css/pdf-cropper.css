@@ -73,3 +73,110 @@
   background: rgba(0, 255, 0, 0.05);
   pointer-events: none;
 }
+
+.resizer {
+  height: 10px;
+  width: 10px;
+  position: absolute;
+  background: blue;
+  border: 1px solid white;
+}
+.resizer.top-left {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+
+.resizer.top-right {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+
+.resizer.bottom-left {
+  bottom: -5px;
+  left: -5px;
+  cursor: nesw-resize;
+}
+
+.resizer.bottom-right {
+  bottom: -5px;
+  right: -5px;
+  cursor: nwse-resize;
+}
+
+.resizer.left {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resizer.right {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resizer.top {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resizer.bottom {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.cropped-overlay {
+  position: absolute;
+  z-index: 10;
+  cursor: move;
+  display: inline-flex;
+  transform: translate(
+    calc(var(--l) * var(--pdf-page-scale) * 1px),
+    calc(var(--t) * var(--pdf-page-scale) * 1px)
+  );
+  width: calc((var(--r) - var(--l)) * var(--pdf-page-scale) * 1px);
+  height: calc((var(--b) - var(--t)) * var(--pdf-page-scale) * 1px);
+  outline: 2px solid var(--crop-selected-region-color);
+  outline-offset: -1px;
+  background: rgba(0, 200, 0, 0.1);
+}
+
+.blur-cropped .cropped-overlay {
+  backdrop-filter: blur(calc(var(--pdf-cropped-blur-intensity) * 1px));
+}
+
+.overlay-label {
+  display: flex;
+  color: black;
+  font-weight: bold;
+  text-align: center;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  margin: auto;
+  font-size: min(
+    clamp(6px, calc((var(--r) - var(--l)) * var(--pdf-page-scale) * 0.1px), 18px),
+    calc((var(--b) - var(--t)) * var(--pdf-page-scale) * 0.5px)
+  );
+}
+
+.cropped-overlay.active {
+  z-index: 30;
+  outline: 2px solid var(--crop-selection-guide-color);
+  outline-offset: -1px;
+  background: rgba(0, 0, 255, 0.05);
+}
+
+.cropped-overlay.active.editing {
+  outline: 2px solid var(--color-amber-600);
+  background: rgba(255, 196, 0, 0.1);
+}

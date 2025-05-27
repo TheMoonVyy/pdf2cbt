@@ -1,6 +1,6 @@
 <template>
   <Panel
-    :header="`Question Details ( #${currentQuestionData.questionNum} )`"
+    :header="questionDetailsHeader"
     toggleable
     class="w-full"
     pt:content:class="px-4"
@@ -12,14 +12,14 @@
       >
         <InputText
           id="subject_name"
-          v-model="currentQuestionData.subjectName"
+          v-model="currentData.subject"
           :maxlength="30"
           :disabled="!isPdfLoaded"
-          @blur="() => currentQuestionData.subjectName = currentQuestionData.subjectName.trim()"
+          @blur="() => currentData.subject = currentData.subject.trim()"
         />
       </BaseFloatLabel>
       <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
-        {{ currentQuestionData.subjectName?.length }}/30
+        {{ currentData.subject?.length }}/30
       </span>
     </div>
     <div class="flex w-full mt-4 bg-surface-950 border border-surface-700 rounded-md">
@@ -29,14 +29,14 @@
       >
         <InputText
           id="section_name"
-          v-model="currentQuestionData.sectionName"
+          v-model="currentData.section"
           :maxlength="40"
           :disabled="!isPdfLoaded"
-          @blur="() => currentQuestionData.sectionName = currentQuestionData.sectionName.trim()"
+          @blur="() => currentData.section = currentData.section.trim()"
         />
       </BaseFloatLabel>
       <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
-        {{ currentQuestionData.sectionName?.length }}/40
+        {{ currentData.section?.length }}/40
       </span>
     </div>
     <div class="flex flex-wrap gap-2 mt-4">
@@ -47,7 +47,7 @@
         label-class="text-xs"
       >
         <Select
-          v-model="currentQuestionData.questionType"
+          v-model="currentData.type"
           :disabled="!props.isPdfLoaded"
           label-id="question_type"
           :options="optionItems.questionType"
@@ -67,14 +67,14 @@
         </Select>
       </BaseFloatLabel>
       <BaseFloatLabel
-        v-show="currentQuestionData.questionType !== 'nat'"
+        v-show="currentData.type !== 'nat'"
         class="min-w-24 flex-1"
         label="Answer Options"
         label-id="answer_options"
         label-class="text-xs"
       >
         <InputNumber
-          v-model="currentQuestionData.totalOptions"
+          v-model="currentData.options"
           :disabled="!props.isPdfLoaded"
           :min="1"
           :max="9"
@@ -93,7 +93,7 @@
       label-class="start-1/2! -translate-x-1/2"
     >
       <BaseInputNumber
-        v-model="currentQuestionData.questionNum"
+        v-model="currentData.que"
         :disabled="!props.isPdfLoaded"
         :min="1"
         :max="9999"
@@ -114,7 +114,7 @@
           label-class="start-1/2! -translate-x-1/2 text-xs"
         >
           <BaseInputNumber
-            v-model="currentQuestionData.correctMarks"
+            v-model="currentData.marks.cm"
             :disabled="!props.isPdfLoaded"
             :min="1"
             :max="99"
@@ -124,7 +124,7 @@
           />
         </BaseFloatLabel>
         <div
-          v-if="currentQuestionData.questionType === 'msq'"
+          v-if="currentData.type === 'msq'"
           class="flex gap-3"
         >
           <IconWithTooltip
@@ -138,7 +138,7 @@
             label-class="start-1/2! -translate-x-1/2 text-xs"
           >
             <BaseInputNumber
-              v-model="currentQuestionData.partialMarks"
+              v-model="currentData.marks.pm"
               :disabled="!props.isPdfLoaded"
               :min="0"
               :max="99"
@@ -155,7 +155,7 @@
           label-class="start-1/2! -translate-x-1/2 text-xs"
         >
           <BaseInputNumber
-            v-model="currentQuestionData.incorrectMarks"
+            v-model="currentData.marks.im"
             :disabled="!props.isPdfLoaded"
             :min="-99"
             :max="0"
@@ -169,11 +169,25 @@
 </template>
 
 <script setup lang="ts">
-const currentQuestionData = defineModel<CurrentQuestionData>({ required: true })
+const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
 
 const props = defineProps<{
   isPdfLoaded: boolean
+  currentOverlayImgNum: number
 }>()
+
+const questionDetailsHeader = computed(() => {
+  const { id, que, pdfData } = currentData.value
+  let imgNumStr = ''
+  if (id && pdfData.length > 1) {
+    imgNumStr = `(${props.currentOverlayImgNum}) `
+  }
+  else if (pdfData.length > 1) {
+    imgNumStr = `(${pdfData.length + 1}) `
+  }
+
+  return `Question Details [ #${que} ${imgNumStr}]`
+})
 
 const optionItems = {
   questionType: [

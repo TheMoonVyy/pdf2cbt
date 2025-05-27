@@ -90,15 +90,17 @@ export type CropperPdfCoords = {
   y2: number
 }
 
+type QuestionMarks = {
+  cm: number // correct marks
+  pm?: number // partial marks
+  im: number // incorrect marks
+}
+
 export interface CropperQuestionData {
   que: number
   type: QuestionType
   options?: number
-  marks: {
-    cm: number
-    pm?: number
-    im: number
-  }
+  marks: QuestionMarks
   pdfData: CropperPdfCoords[]
 }
 
@@ -122,6 +124,25 @@ export type TestQuestionData = Pick<CropperQuestionData, 'que' | 'type'> & {
   answer: QuestionAnswer
   timeSpent: number
   totalOptions?: number
+}
+
+export type PdfCroppedOverlayData = Omit<CropperQuestionData, 'marks' | 'pdfData'> & {
+  id: string
+  subject: string
+  section: string
+  marks: Required<QuestionMarks>
+  pdfData: {
+    l: number // left
+    r: number // right
+    t: number // top
+    b: number // bottom
+    page: number // page number
+  }[]
+}
+
+export type ActiveCroppedOverlay = {
+  id: string
+  imgNum: number
 }
 
 export type LogTestStateViaType = 'testStarted' | 'testResumed' | 'testFinished'
