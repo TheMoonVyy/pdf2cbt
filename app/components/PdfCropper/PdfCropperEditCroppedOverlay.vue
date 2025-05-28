@@ -118,8 +118,7 @@ const resizeDirections = [
 ] as const
 
 const magicKeys = useMagicKeys()
-const isCtrlCPressed = magicKeys['Ctrl+C']!
-const isCtrlVPressed = magicKeys['Ctrl+V']!
+const isHoldingCtrl = magicKeys['Ctrl']!
 const isEscapePressed = magicKeys['Escape']!
 
 const resizeDir = shallowRef<string | null>(null)
@@ -252,20 +251,8 @@ watch(isEscapePressed, (isPressed) => {
   }
 })
 
-watch(isCtrlCPressed, (isPressed) => {
-  if (isPressed && props.currentMode === 'edit' && !ignoreKeyBoardShortcuts.value) {
-    copyRegion()
-  }
-})
-
-watch(isCtrlVPressed, (isPressed) => {
-  if (isPressed && props.currentMode === 'edit' && !ignoreKeyBoardShortcuts.value) {
-    pasteRegion()
-  }
-})
-
 watch(() => props.currentMode, (newMode) => {
-  if (newMode === 'crop') {
+  if (newMode !== 'edit') {
     cleanUpEventListeners()
     ignoreKeyBoardShortcuts.value = false
     contextMenuState.copiedCoords = null
@@ -347,6 +334,22 @@ const onPointerUp = () => {
 }
 
 const onKeyDown = (e: KeyboardEvent) => {
+  if (ignoreKeyBoardShortcuts.value) return
+
+  if (isHoldingCtrl.value) {
+    const key = e.key.toLowerCase()
+    if (key === 'c') {
+      e.preventDefault()
+      copyRegion()
+      return
+    }
+    else if (key === 'v') {
+      e.preventDefault()
+      pasteRegion()
+      return
+    }
+  }
+
   const { id, imgNum } = active.value
   if (!id || !imgNum) return
 

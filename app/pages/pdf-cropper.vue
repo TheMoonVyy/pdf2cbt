@@ -15,14 +15,24 @@
         <Panel
           header="Settings"
           toggleable
-          class="w-full gap-2"
+          class="w-full"
         >
-          <SelectButton
-            v-model="currentMode"
-            :options="(['crop', 'edit'] as const)"
-            :allow-empty="false"
-          />
-          <div class="flex flex-wrap gap-x-2 gap-y-3 mt-2">
+          <div class="flex flex-wrap gap-3">
+            <div class="flex items-center justify-center">
+              <BaseButton
+                label="Advance settings"
+                severity="help"
+                size="small"
+                @click="visibilityState.advanceSettings = true"
+              />
+            </div>
+            <SelectButton
+              v-model="currentMode"
+              :options="(['crop', 'edit'] as const)"
+              :allow-empty="false"
+            />
+          </div>
+          <div class="flex flex-wrap gap-x-2 gap-y-3 mt-5">
             <BaseFloatLabel
               class="flex-[1_1_60%] min-w-[55%]"
               label="Cropper Mode"
@@ -58,14 +68,21 @@
               />
             </BaseFloatLabel>
           </div>
-          <div class="flex items-center justify-center mt-3">
-            <BaseButton
-              label="Advance settings"
-              severity="help"
-              size="small"
-              @click="visibilityState.advanceSettings = true"
+          <BaseFloatLabel
+            class="w-full mt-5"
+            label="Page Number"
+            label-id="pdf_page_num"
+            label-class="start-1/2! -translate-x-1/2"
+          >
+            <BaseInputNumber
+              v-model="pdfState.currentPageNum"
+              :disabled="!pdfState.currentPageNum"
+              :min="1"
+              :max="pdfState.totalPages"
+              label-id="pdf_page_num"
+              :step="1"
             />
-          </div>
+          </BaseFloatLabel>
         </Panel>
         <PdfCropperQuestionDetailsPanel
           v-model="currentQuestionData"
@@ -206,6 +223,7 @@
               '--pdf-cropped-blur-intensity': settings.blurIntensity,
               '--crop-selection-guide-color': `#${settings.cropSelectionGuideColor}`,
               '--crop-selected-region-color': `#${settings.cropSelectedRegionColor}`,
+              '--crop-selection-skip-color': `#${settings.cropSelectionSkipColor}`,
             }"
           >
             <div class="inline-block">
@@ -225,7 +243,7 @@
               v-model:ignore-key-board-shortcuts="ignoreKeyBoardShortcuts"
               v-model:blur-cropped-region="settings.blurCroppedRegion"
               :current-mode="currentMode"
-              :current-page-num="pdfState.currentPageNum"
+              :current-page-num="pdfState.currentThrottledPageNum"
               :page-scale="zoomScaleDebounced"
               :page-width="currentPageDetails.width"
               :page-height="currentPageDetails.height"
@@ -240,7 +258,7 @@
               v-model:blur-cropped-region="settings.blurCroppedRegion"
               :cropper-mode="cropperMode"
               :current-mode="currentMode"
-              :current-page-num="pdfState.currentPageNum"
+              :current-page-num="pdfState.currentThrottledPageNum"
               :page-scale="zoomScaleDebounced"
               :page-width="currentPageDetails.width"
               :page-height="currentPageDetails.height"
@@ -471,12 +489,6 @@ import SelectButton from '@/src/volt/SelectButton.vue'
 
 import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '#shared/constants'
 
-type PdfState = {
-  currentPageNum: number
-  totalPages: number
-  fileUint8Array: Uint8Array | null
-}
-
 type CropperMode = {
   isBox: boolean
   isLine: boolean
@@ -552,10 +564,11 @@ let mupdfWorker: Comlink.Remote<MuPdfProcessor> | null = null
 
 const leftSidePanelElem = useTemplateRef('leftSidePanelElem')
 
-const pdfState = shallowReactive<PdfState>({
+const pdfState = shallowReactive({
   currentPageNum: 0,
+  currentThrottledPageNum: 0,
   totalPages: 0,
-  fileUint8Array: null,
+  fileUint8Array: null as Uint8Array | null,
 })
 
 const ignoreKeyBoardShortcuts = shallowRef(false)
@@ -582,10 +595,10 @@ const settings = shallowReactive<PdfCropperSettings>({
   // Rendering & Input
   qualityFactor: 1.5,
   selectionThrottleInterval: 30, // in milliseconds
-  minCropDimension: 3, // units of coords
+  minCropDimension: 10, // units of coords
   moveOnKeyPressDistance: 10, // units of coords
   blurCroppedRegion: true,
-  blurIntensity: 4, // px
+  blurIntensity: 2, // px
 })
 
 const visibilityState = shallowReactive({
@@ -677,7 +690,7 @@ const currentQuestionCoords = computed(() => {
 })
 
 const currentPageDetails = computed(() => {
-  const { url = '', width = 0, height = 0 } = pageImgData[pdfState.currentPageNum] ?? {}
+  const { url = '', width = 0, height = 0 } = pageImgData[pdfState.currentThrottledPageNum] ?? {}
   const zoomScale = zoomScaleDebounced.value
 
   const data = {
@@ -715,16 +728,19 @@ function storeCurrentQuestionData(
   const { subject, section, que } = mainOverlayData
   if (!subject && !section) return
 
-  if (!pdfData) pdfData = mainOverlayData.pdfData[0]!
+  if (!pdfData) pdfData = { ...mainOverlayData.pdfData[0]! }
 
-  const id = `${subject || section}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
+  if ((Math.abs(pdfData.l - pdfData.r) < settings.minCropDimension)
+    || (Math.abs(pdfData.b - pdfData.t) < settings.minCropDimension)) {
+    return
+  }
 
   pdfData.l = Math.min(pdfData.l, pdfData.r)
   pdfData.r = Math.max(pdfData.l, pdfData.r)
   pdfData.t = Math.min(pdfData.t, pdfData.b)
   pdfData.b = Math.max(pdfData.t, pdfData.b)
-  mainOverlayData.pdfData[0] = pdfData
 
+  const id = `${subject || section}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
   const existingOverlayData = cropperOverlayDatas.get(id)
 
   if (existingOverlayData) {
@@ -1004,13 +1020,29 @@ onMounted(() => {
     ([oldScale], [newScale]) => {
       if (oldScale !== newScale) {
         zoomScaleDebounced.value = settings.scale
-        renderPage(pdfState.currentPageNum)
+        renderPage(pdfState.currentThrottledPageNum)
       }
       else {
-        renderPage(pdfState.currentPageNum)
+        renderPage(pdfState.currentThrottledPageNum)
       }
     },
     { debounce: 500, maxWait: 3000 },
+  )
+
+  watchThrottled(() => pdfState.currentPageNum,
+    (prevNum, newNum) => {
+      if (prevNum !== newNum) {
+        const newPageNum = pdfState.currentPageNum
+        pdfState.currentThrottledPageNum = newPageNum
+
+        if (newPageNum <= 1) return
+
+        if (!pageImgData[newPageNum]) {
+          renderPage(newPageNum)
+        }
+      }
+    },
+    { throttle: 1000, trailing: true, leading: true },
   )
 })
 

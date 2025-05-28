@@ -29,6 +29,10 @@
   outline: 1px solid var(--crop-selected-region-color);
 }
 
+.line-cropper.b.skip-line {
+  outline: 1px solid var(--crop-selection-skip-color) !important;
+}
+
 .line-cropper.l, .line-cropper.r {
   top: 0px;
   width: 0px;

@@ -47,6 +47,9 @@
       <div
         v-show="lineCropperState.currentCoord === 'b'"
         class="line-cropper b"
+        :class="{
+          'skip-line': isHoldingShift,
+        }"
       />
     </template>
     <div
@@ -108,7 +111,8 @@ const boxCropperState = shallowReactive({
 })
 
 const magicKeys = useMagicKeys()
-const isCtrlZ = magicKeys['Ctrl+Z']!
+const isHoldingCtrl = magicKeys['Ctrl']!
+const isHoldingShift = magicKeys['Shift']!
 
 const undoLastCoordLine = () => {
   if (props.currentMode !== 'crop' || !props.cropperMode.isLine || ignoreKeyBoardShortcuts.value) return
@@ -124,8 +128,6 @@ const undoLastCoordLine = () => {
       break
   }
 }
-
-watch(isCtrlZ, isUndo => isUndo && undoLastCoordLine())
 
 const contextMenuItems = ref([
   {
@@ -161,12 +163,14 @@ const eventListenersToCleanup: {
   pointerdown: (() => void) | null
   click: (() => void) | null
   keydown: (() => void) | null
+  keyup: (() => void) | null
 } = {
   pointermove: null,
   pointerup: null,
   pointerdown: null,
   click: null,
   keydown: null,
+  keyup: null,
 }
 
 const cleanUpEventListeners = (
@@ -262,9 +266,10 @@ const onBoxPointerUp = (e: PointerEvent) => {
   onPointerMove(e)
   cleanUpEventListeners(null, ['pointerdown'])
   boxCropperState.isDragging = false
-  const pdfData = currentOverlayData.value.pdfData[0]
+  const pdfData = utilCloneJson(currentOverlayData.value.pdfData[0])
   if (pdfData) {
-    emit('setPdfData', { ...pdfData })
+    pdfData.page = props.currentPageNum
+    emit('setPdfData', pdfData)
   }
 }
 
@@ -285,16 +290,24 @@ const setLineCropperCoord = () => {
     case 'b': {
       const pdfData = currentOverlayData.value.pdfData[0]
       if (!pdfData) return
-      emit('setPdfData', { ...pdfData })
+      const { t, b } = pdfData
+      pdfData.t = Math.min(b, t)
+      pdfData.b = Math.max(b, t)
+
+      if (!isHoldingShift.value) {
+        const pdfDataToEmit = utilCloneJson(pdfData)
+        pdfDataToEmit.page = props.currentPageNum
+        emit('setPdfData', pdfDataToEmit)
+      }
+
       pdfData.t = pdfData.b
       break
     }
   }
 }
 
-const onClick = (e: MouseEvent) => {
+const onClick = () => {
   if (props.cropperMode.isLine) {
-    onPointerMove(e as PointerEvent)
     setLineCropperCoord()
   }
 }
@@ -308,12 +321,19 @@ const onKeyDown = (e: KeyboardEvent) => {
     && key !== 'ArrowLeft'
     && key !== 'ArrowRight'
     && key !== 'Enter'
+    && key.toLowerCase() !== 'z'
   ) return
 
   const currentCoord = lineCropperState.currentCoord
   if (key === 'Enter') {
     e.preventDefault()
     setLineCropperCoord()
+    return
+  }
+
+  if (key.toLowerCase() === 'z' && isHoldingCtrl.value) {
+    e.preventDefault()
+    undoLastCoordLine()
     return
   }
 
@@ -400,7 +420,7 @@ watchEffect(() => {
   cleanUpEventListeners()
   if (props.currentMode === 'crop') {
     if (props.cropperMode.isLine) {
-      addEventListeners(['pointermove', 'click', 'keydown'])
+      addEventListeners(['pointermove', 'click', 'keydown', 'keyup'])
     }
     else if (props.cropperMode.isBox) {
       addEventListeners(['pointerdown'])
