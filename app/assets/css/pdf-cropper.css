@@ -1,6 +1,6 @@
 .pdf-cropper-img {
-  width: var(--pdf-page-scaled-width);
-  height: var(--pdf-page-scaled-height);
+  width: calc(var(--pdf-page-width) * var(--pdf-page-scale) * 1px);
+  height: calc(var(--pdf-page-height) * var(--pdf-page-scale) * 1px);
   max-width: none;
   max-height: none;
 }
@@ -55,54 +55,6 @@
 
 .line-cropper.b {
   top: calc(var(--b) * var(--pdf-page-scale) * 1px);
-}
-
-.line-selection.x {
-  top: 0px;
-  width: 0px;
-  left: var(--line-selection-x);
-  height: var(--pdf-page-scaled-height);
-}
-.line-selection.y {
-  left: 0px;
-  height: 0px;
-  top: var(--line-selection-y);
-  width: var(--pdf-page-scaled-width);
-}
-
-.line-selected {
-  position: absolute;
-  pointer-events: none;
-  outline: 1px solid var(--crop-selected-region-color);
-}
-
-.line-selected.x1 {
-  top: 0px;
-  width: 0px;
-  left: var(--line-selected-x1);
-  height: var(--pdf-page-scaled-height);
-}
-
-.line-selected.x2 {
-  top: 0px;
-  width: 0px;
-  left: var(--line-selected-x2);
-  height: var(--pdf-page-scaled-height);
-}
-
-.line-selected.y1 {
-  left: 0px;
-  height: 0px;
-  top: var(--line-selected-y1);
-  width: var(--pdf-page-scaled-width);
-}
-
-.final-rectangle {
-  position: absolute;
-  outline: 2px solid var(--crop-selected-region-color);
-  outline-offset: -1px;
-  background: rgba(0, 255, 0, 0.05);
-  pointer-events: none;
 }
 
 .resizer {

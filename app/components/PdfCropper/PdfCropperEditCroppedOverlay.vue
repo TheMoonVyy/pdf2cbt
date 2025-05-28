@@ -5,7 +5,7 @@
       'pointer-events-none': currentMode === 'crop',
     }"
     @contextmenu.prevent="(e) => {
-      maybeIsEditingQuesDetails = false
+      ignoreKeyBoardShortcuts = false
       if (contextMenuState.copiedCoords) contextMenuElem?.show(e)
     }"
     @click="setActiveOverlayToNone"
@@ -21,7 +21,7 @@
         class="cropped-overlay"
         :class="{
           active: active.id === id && (imgIndex + 1) === active.imgNum,
-          editing: active.id === id && (imgIndex + 1) === active.imgNum && maybeIsEditingQuesDetails,
+          editing: active.id === id && (imgIndex + 1) === active.imgNum && ignoreKeyBoardShortcuts,
         }"
         :style="{
           '--l': pdfData.l,
@@ -71,7 +71,7 @@
     </template>
     <ContextMenu
       ref="contextMenuElem"
-      :model="items"
+      :model="contextMenuItems"
     >
       <template #itemicon="{ item }">
         <Icon
@@ -101,9 +101,13 @@ const overlays = defineModel<Map<string, PdfCroppedOverlayData>>({ required: tru
 
 const active = defineModel<ActiveCroppedOverlay>('activeOverlay', { required: true })
 
-const maybeIsEditingQuesDetails = defineModel<boolean>('maybeIsEditingQuesDetails', { required: true })
+const ignoreKeyBoardShortcuts = defineModel<boolean>('ignoreKeyBoardShortcuts', { required: true })
 
 const blurCroppedRegion = defineModel<boolean>('blurCroppedRegion', { required: true })
+
+const emit = defineEmits<{
+  setPdfData: [data: PdfCroppedOverlayData['pdfData'][number]]
+}>()
 
 const contextMenuElem = templateRef('contextMenuElem')
 
@@ -117,64 +121,6 @@ const magicKeys = useMagicKeys()
 const isCtrlCPressed = magicKeys['Ctrl+C']!
 const isCtrlVPressed = magicKeys['Ctrl+V']!
 const isEscapePressed = magicKeys['Escape']!
-
-const subjects = ['Physics', 'Chemistry', 'Maths'] as const
-
-function getRandomSubject(): PdfCroppedOverlayData['subject'] {
-  return subjects[Math.floor(Math.random() * subjects.length)]!
-}
-
-function getSection(subject: PdfCroppedOverlayData['subject']): string {
-  const secNum = getRandomInt(1, 4)
-  return `${subject} Section ${secNum}`
-}
-
-function getRandomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-// populate overlays Map with 300 random overlays
-for (let i = 0; i < 75; i++) {
-  const subject = getRandomSubject()
-  const section = getSection(subject)
-  const que = getRandomInt(1, 30)
-  const id = `${section}--${que}`
-
-  const pdfData = []
-  const blocks = Math.random() < 0.5 ? 1 : 2 // 50% chance of 1 or 2 blocks
-
-  for (let j = 0; j < blocks; j++) {
-    const l = Math.floor(Math.random() * 500)
-    const t = Math.floor(Math.random() * 700)
-    const width = 50 + Math.floor(Math.random() * 150)
-    const height = 30 + Math.floor(Math.random() * 100)
-
-    pdfData.push({
-      page: getRandomInt(1, 60),
-      l,
-      t,
-      r: l + width,
-      b: t + height,
-    })
-  }
-
-  const overlay: PdfCroppedOverlayData = {
-    pdfData,
-    subject,
-    section,
-    que,
-    type: 'mcq',
-    options: 4,
-    marks: {
-      cm: 1,
-      pm: 0,
-      im: -5,
-    },
-    id,
-  }
-
-  overlays.value.set(id, overlay)
-}
 
 const resizeDir = shallowRef<string | null>(null)
 const startPointer = shallowReactive({ x: 0, y: 0 })
@@ -250,17 +196,11 @@ const copyRegion = () => {
 
 const pasteRegion = () => {
   if (!contextMenuState.copiedCoords) return
-  const { id, imgNum } = active.value
-  if (!id || !imgNum) return
-
-  const newPdfData = { ...contextMenuState.copiedCoords }
-  newPdfData.page = overlays.value.get(id)?.pdfData[imgNum - 1]?.page ?? 1
-  overlays.value.get(id)?.pdfData.push(newPdfData)
-  console.log('Pasted coords:', newPdfData)
+  emit('setPdfData', { ...contextMenuState.copiedCoords })
   contextMenuState.copiedCoords = null
 }
 
-const items = ref([
+const contextMenuItems = ref([
   {
     label: 'Delete',
     icon: 'prime:trash',
@@ -306,20 +246,20 @@ const items = ref([
 watch(isEscapePressed, (isPressed) => {
   if (isPressed && props.currentMode === 'edit' && active.value.id && active.value.imgNum) {
     cleanUpEventListeners()
-    maybeIsEditingQuesDetails.value = false
+    ignoreKeyBoardShortcuts.value = false
     active.value.id = ''
     active.value.imgNum = 0
   }
 })
 
 watch(isCtrlCPressed, (isPressed) => {
-  if (isPressed && props.currentMode === 'edit' && !maybeIsEditingQuesDetails.value) {
+  if (isPressed && props.currentMode === 'edit' && !ignoreKeyBoardShortcuts.value) {
     copyRegion()
   }
 })
 
 watch(isCtrlVPressed, (isPressed) => {
-  if (isPressed && props.currentMode === 'edit' && !maybeIsEditingQuesDetails.value) {
+  if (isPressed && props.currentMode === 'edit' && !ignoreKeyBoardShortcuts.value) {
     pasteRegion()
   }
 })
@@ -327,7 +267,7 @@ watch(isCtrlVPressed, (isPressed) => {
 watch(() => props.currentMode, (newMode) => {
   if (newMode === 'crop') {
     cleanUpEventListeners()
-    maybeIsEditingQuesDetails.value = false
+    ignoreKeyBoardShortcuts.value = false
     contextMenuState.copiedCoords = null
     active.value.id = ''
     active.value.imgNum = 0
@@ -399,7 +339,7 @@ const onPointerMove = (e: PointerEvent) => {
   }
 }
 
-const throttledOnPointerMove = useThrottleFn(onPointerMove, () => props.selectionThrottleInterval)
+const throttledOnPointerMove = useThrottleFn(onPointerMove, () => props.selectionThrottleInterval, true)
 
 const onPointerUp = () => {
   resizeDir.value = null
@@ -487,7 +427,6 @@ const addEventListeners = (
 
 function onPointerDown(e: PointerEvent, id: string, imgNum: number) {
   if (e.pointerType === 'mouse' && e.buttons !== 1 && e.buttons !== 2) return
-  maybeIsEditingQuesDetails.value = false
   const { id: activeId, imgNum: activeImgNum } = active.value
 
   if (activeId !== id || activeImgNum !== imgNum) {

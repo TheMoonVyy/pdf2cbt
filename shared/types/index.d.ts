@@ -69,17 +69,6 @@ export interface CbtUiSettings {
 
 export type QuestionType = 'mcq' | 'msq' | 'nat'
 
-export interface CurrentQuestionData {
-  subjectName: string
-  sectionName: string
-  questionType: QuestionType
-  totalOptions: number
-  questionNum: number
-  correctMarks: number
-  partialMarks: number
-  incorrectMarks: number
-}
-
 export type TestSectionKey = string
 
 export type CropperPdfCoords = {
@@ -88,6 +77,14 @@ export type CropperPdfCoords = {
   y1: number
   x2: number
   y2: number
+}
+
+export type PdfSidesCoordsWithPage = {
+  l: number // left
+  r: number // right
+  t: number // top
+  b: number // bottom
+  page: number // page number
 }
 
 type QuestionMarks = {
@@ -101,7 +98,7 @@ export interface CropperQuestionData {
   type: QuestionType
   options?: number
   marks: QuestionMarks
-  pdfData: CropperPdfCoords[]
+  pdfData: CropperPdfCoords[] | PdfSidesCoordsWithPage[]
 }
 
 export type CropperSectionsData = {
@@ -131,13 +128,7 @@ export type PdfCroppedOverlayData = Omit<CropperQuestionData, 'marks' | 'pdfData
   subject: string
   section: string
   marks: Required<QuestionMarks>
-  pdfData: {
-    l: number // left
-    r: number // right
-    t: number // top
-    b: number // bottom
-    page: number // page number
-  }[]
+  pdfData: PdfSidesCoordsWithPage[]
 }
 
 export type ActiveCroppedOverlay = {

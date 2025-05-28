@@ -10,7 +10,7 @@
         pt:root:class="flex flex-col items-center overflow-y-auto!"
         :size="settings.splitterPanelSize"
         :min-size="15"
-        @click="() => editingState.maybeIsEditingQuesDetails = true"
+        @click="() => ignoreKeyBoardShortcuts = true"
       >
         <Panel
           header="Settings"
@@ -67,73 +67,11 @@
             />
           </div>
         </Panel>
-        <Panel
-          :header="`Current Page (#${pdfState.currentPageNum}) Actions`"
-          :collapsed="true"
-          toggleable
-          class="w-full"
-        >
-          <div class="flex gap-3 text-nowrap justify-center">
-            <BaseButton
-              label="Prev Page"
-              severity="help"
-              :disabled="pdfState.currentPageNum <= 1 || !isCurrentPageClean || !isPdfLoaded"
-              @click="pdfPageNavigation(-1)"
-            >
-              <template #icon>
-                <Icon name="material-symbols:arrow-back-ios-new-rounded" />
-              </template>
-            </BaseButton>
-            <BaseButton
-              class="flex flex-row-reverse"
-              label="Next Page"
-              icon-pos="right"
-              severity="help"
-              :disabled="pdfState.currentPageNum >= pdfState.totalPages"
-              @click="pdfPageNavigation(1)"
-            >
-              <template #icon>
-                <Icon name="material-symbols:arrow-forward-ios-rounded" />
-              </template>
-            </BaseButton>
-          </div>
-          <div
-            v-if="cropperMode.isLine"
-            class="flex mt-3 justify-center items-center"
-          >
-            <BaseButton
-              :label="cropperLineState.skipNext ? 'Skipping Next coordinate...' : 'Skip Next (y2) coordinate'"
-              :disabled="cropperLineState.currentCoord !== 'y2' || !cropperMode.isLine"
-              severity="warn"
-              @click="cropperLineState.skipNext = !cropperLineState.skipNext"
-            />
-          </div>
-          <div class="flex gap-5 text-nowrap justify-center mt-3">
-            <BaseButton
-              label="Undo"
-              :disabled="isCurrentPageClean || !isPdfLoaded"
-              severity="warn"
-              @click="clearCurrentPageLastQuestion()"
-            >
-              <template #icon>
-                <Icon
-                  name="material-symbols:undo-rounded"
-                  size="1.3rem"
-                />
-              </template>
-            </BaseButton>
-            <BaseButton
-              label="Clear All"
-              severity="danger"
-              :disabled="isCurrentPageClean || !isPdfLoaded"
-              @click="clearCurrentPageQuestions()"
-            >
-              <template #icon>
-                <Icon name="material-symbols:refresh" />
-              </template>
-            </BaseButton>
-          </div>
-        </Panel>
+        <PdfCropperQuestionDetailsPanel
+          v-model="currentQuestionData"
+          :is-pdf-loaded="isPdfLoaded"
+          :current-overlay-img-num="activeCropperOverlay.imgNum"
+        />
         <Panel
           header="Crop Coordinates"
           toggleable
@@ -214,29 +152,6 @@
                 :disabled="!isPdfLoaded"
               />
             </BaseFloatLabel>
-            <!-- <BaseFloatLabel
-              v-for="key in (['l', 'r', 't','b'] as const)"
-              :key="key"
-              class="w-full"
-              :label="key.toUpperCase()"
-              :label-id="`coords_${key}`"
-              label-class="text-xs"
-            >
-              <InputNumber
-                v-model="currentQuestionCoords[key]"
-                :min="0"
-                :max="(key === 'l' || key === 'r') ? currentPageDetails.width : currentPageDetails.height"
-                :fluid="true"
-                :label-id="`coords_${key}`"
-                size="small"
-                show-buttons
-                :step="1"
-                :disabled="!isPdfLoaded"
-              />
-              @value-change="syncCoordsAndSelection()"
-                @focus="updateInputFocusState(true)"
-                @blur="updateInputFocusState(false)"
-            </BaseFloatLabel> -->
           </div>
           <div class="flex justify-center items-center">
             <BaseButton
@@ -244,15 +159,9 @@
               severity="help"
               :disabled="!isPdfLoaded"
               size="small"
-              @click="handleCropperCoordinates()"
             />
           </div>
         </Panel>
-        <PdfCropperQuestionDetailsPanel
-          v-model="currentQuestionData"
-          :is-pdf-loaded="isPdfLoaded"
-          :current-overlay-img-num="activeCropperOverlay.imgNum"
-        />
         <BaseButton
           label="Generate Output"
           class="my-3 mb-5 shrink-0"
@@ -283,7 +192,6 @@
         <div
           class="flex"
           :class="{ hidden: !isPdfLoaded }"
-          @pointerup="pointerUpHandler"
           @pointerleave="pointerLeaveHandler"
         >
           <div
@@ -294,15 +202,14 @@
             :style="{
               '--pdf-page-width': currentPageDetails.width,
               '--pdf-page-height': currentPageDetails.height,
-              '--pdf-page-scaled-width': `${currentPageDetails.scaledWidth}px`,
-              '--pdf-page-scaled-height': `${currentPageDetails.scaledHeight}px`,
               '--pdf-page-scale': zoomScaleDebounced,
               '--pdf-cropped-blur-intensity': settings.blurIntensity,
+              '--crop-selection-guide-color': `#${settings.cropSelectionGuideColor}`,
+              '--crop-selected-region-color': `#${settings.cropSelectedRegionColor}`,
             }"
           >
             <div class="inline-block">
               <img
-                ref="imgElem"
                 :src="currentPageDetails.url"
                 class="border border-gray-500 pdf-cropper-img"
                 draggable="false"
@@ -315,7 +222,7 @@
               v-if="isPdfLoaded"
               v-model="cropperOverlayDatas"
               v-model:active-overlay="activeCropperOverlay"
-              v-model:maybe-is-editing-ques-details="editingState.maybeIsEditingQuesDetails"
+              v-model:ignore-key-board-shortcuts="ignoreKeyBoardShortcuts"
               v-model:blur-cropped-region="settings.blurCroppedRegion"
               :current-mode="currentMode"
               :current-page-num="pdfState.currentPageNum"
@@ -324,10 +231,11 @@
               :page-height="currentPageDetails.height"
               :selection-throttle-interval="settings.selectionThrottleInterval"
               :move-on-key-press-distance="settings.moveOnKeyPressDistance"
+              @set-pdf-data="storeCurrentQuestionData"
             />
             <PdfCropperCropOverlay
               v-if="isPdfLoaded"
-              v-model:maybe-is-editing-ques-details="editingState.maybeIsEditingQuesDetails"
+              v-model:ignore-key-board-shortcuts="ignoreKeyBoardShortcuts"
               v-model:current-overlay-data="mainOverlayData"
               v-model:blur-cropped-region="settings.blurCroppedRegion"
               :cropper-mode="cropperMode"
@@ -338,49 +246,8 @@
               :page-height="currentPageDetails.height"
               :selection-throttle-interval="settings.selectionThrottleInterval"
               :move-on-key-press-distance="settings.moveOnKeyPressDistance"
+              @set-pdf-data="storeCurrentQuestionData"
             />
-            <!-- <div
-              class="overlay"
-              :class="{ hidden: !isPdfLoaded }"
-            >
-              <div
-                ref="boxSelectionElem"
-                class="box-selection"
-                :class="{
-                  hidden: !cropperMode.isBox || (
-                    !pointerAndInputState.isPointerDown && !pointerAndInputState.isInputInFocus
-                  ),
-                }"
-              />
-              <div
-                class="line-selection"
-                :class="[
-                  { hidden: !cropperMode.isLine },
-                  cropperLineState.currentCoord.startsWith('x') ? 'x' : 'y',
-                ]"
-              />
-            </div>
-            <div
-              class="overlay"
-              :class="{ hidden: Boolean(!cropperMode.isLine || !isPdfLoaded) }"
-            >
-              <div
-                class="line-selected x1"
-                :class="{ hidden: cropperLineState.currentCoord === 'x1' }"
-              />
-              <div
-                class="line-selected x2"
-                :class="{ hidden: cropperLineState.currentCoord.startsWith('x') }"
-              />
-              <div
-                class="line-selected y1"
-                :class="{ hidden: cropperLineState.currentCoord !== 'y2' }"
-              />
-            </div>
-            <div
-              ref="croppedDivContainerElem"
-              class="overlay"
-            /> -->
           </div>
         </div>
       </SplitterPanel>
@@ -604,41 +471,13 @@ import SelectButton from '@/src/volt/SelectButton.vue'
 
 import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '#shared/constants'
 
-interface PdfState {
+type PdfState = {
   currentPageNum: number
   totalPages: number
   fileUint8Array: Uint8Array | null
 }
 
-interface CropCoordinates {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-}
-
-interface QuestionData {
-  page: number
-  sub: string
-  sec: string
-  type: QuestionType
-  options: number
-  que: number
-  cm: number
-  pm: number
-  im: number
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-}
-
-interface CropperLineState {
-  currentCoord: 'x1' | 'x2' | 'y1' | 'y2'
-  skipNext: boolean
-}
-
-interface CropperMode {
+type CropperMode = {
   isBox: boolean
   isLine: boolean
 }
@@ -711,12 +550,7 @@ const { pixelRatio: devicePixelRatio, stop: stopUseDPR } = useDevicePixelRatio()
 
 let mupdfWorker: Comlink.Remote<MuPdfProcessor> | null = null
 
-/// / element refs ////
-const imgElem = ref<HTMLImageElement>()
-const boxSelectionElem = shallowRef<HTMLElement>()
-const croppedDivContainerElem = shallowRef<HTMLElement>()
-
-const leftSidePanelElem = templateRef('leftSidePanelElem')
+const leftSidePanelElem = useTemplateRef('leftSidePanelElem')
 
 const pdfState = shallowReactive<PdfState>({
   currentPageNum: 0,
@@ -724,9 +558,7 @@ const pdfState = shallowReactive<PdfState>({
   fileUint8Array: null,
 })
 
-const editingState = shallowReactive({
-  maybeIsEditingQuesDetails: false,
-})
+const ignoreKeyBoardShortcuts = shallowRef(false)
 
 const currentMode = shallowRef<'crop' | 'edit'>('crop')
 
@@ -764,19 +596,6 @@ const visibilityState = shallowReactive({
 
 })
 
-const currentQuestionDatass = shallowReactive<CurrentQuestionData>({
-  subjectName: '',
-  sectionName: '',
-  questionType: 'mcq',
-  totalOptions: 4,
-  questionNum: 1,
-  correctMarks: 4,
-  partialMarks: 1,
-  incorrectMarks: -1,
-})
-
-const coords = shallowReactive<CropCoordinates>({ x1: 0, y1: 0, x2: 0, y2: 0 })
-
 const pageImgData = reactive<PageImgData>({})
 
 // reactive Map of overlay datas keyed by id
@@ -802,22 +621,6 @@ const mainOverlayData = reactive<PdfCroppedOverlayData>({
   },
 })
 
-// Stores all data related to questions for output
-const questionsData = reactive<Record<number, QuestionData[]>>({})
-
-// State variables for 'Line' cropper mode
-const cropperLineState = reactive<CropperLineState>({
-  currentCoord: 'x1',
-  skipNext: false,
-})
-
-const pointerAndInputState = shallowReactive({
-  x: 0,
-  y: 0,
-  isPointerDown: false,
-  isInputInFocus: false,
-})
-
 const savedMarkingScheme: {
   [questionType in QuestionType]?: {
     cm: number
@@ -827,7 +630,7 @@ const savedMarkingScheme: {
 } = {}
 
 onClickOutside(leftSidePanelElem as unknown as Ref<HTMLElement>, () => {
-  editingState.maybeIsEditingQuesDetails = false
+  ignoreKeyBoardShortcuts.value = false
 })
 
 watch(
@@ -874,62 +677,18 @@ const currentQuestionCoords = computed(() => {
 })
 
 const currentPageDetails = computed(() => {
-  let { url, width, height } = pageImgData[pdfState.currentPageNum] ?? {}
-  url ??= ''
-  width ??= 0
-  height ??= 0
-
+  const { url = '', width = 0, height = 0 } = pageImgData[pdfState.currentPageNum] ?? {}
   const zoomScale = zoomScaleDebounced.value
 
   const data = {
-    url: url,
-    width: width,
-    height: height,
+    url,
+    width,
+    height,
     zoomScale,
-    scaledWidth: Math.floor(width * zoomScale),
-    scaledHeight: Math.floor(height * zoomScale),
   }
 
   return data
 })
-
-// CSS var() that are being used
-const cssVars = reactive({
-  cropSelectionGuideColor: useCssVar('--crop-selection-guide-color'),
-  cropSelectedRegionColor: useCssVar('--crop-selected-region-color'),
-  lineSelectionX: useCssVar('--line-selection-x'),
-  lineSelectionY: useCssVar('--line-selection-y'),
-  lineSelectedX1: useCssVar('--line-selected-x1'),
-  lineSelectedX2: useCssVar('--line-selected-x2'),
-  lineSelectedY1: useCssVar('--line-selected-y1'),
-})
-
-const imgDrawerCoords = ref<null | { x: number, y: number }>(null)
-
-// pointer coordinates relative to img element
-const updateImgDrawerCoords = (e: PointerEvent) => {
-  if (imgElem.value && !visibilityState.advanceSettings) {
-    const rect = imgElem.value.getBoundingClientRect()
-    const xRel = e.clientX - rect.left
-    const yRel = e.clientY - rect.top
-
-    const {
-      zoomScale,
-      width, height,
-      scaledWidth, scaledHeight,
-    } = currentPageDetails.value
-
-    if (xRel < 0 || yRel < 0 || xRel > scaledWidth || yRel > scaledHeight) {
-      imgDrawerCoords.value = null
-    }
-    else {
-      const x = utilClampNumber(xRel, 0, width, zoomScale)
-      const y = utilClampNumber(yRel, 0, height, zoomScale)
-
-      imgDrawerCoords.value = { x, y }
-    }
-  }
-}
 
 /*
   Following computered properties are just boolean values being used frequently
@@ -940,514 +699,43 @@ const cropperMode = computed<CropperMode>(() => ({
   isLine: settings.cropperMode === 'line',
 }))
 
-// Check if current Page has any crop overlays, if not then true else false
-const isCurrentPageClean = computed((): boolean => {
-  const containsQuestionData = questionsData[pdfState.currentPageNum]?.length ? true : false
-  if (cropperMode.value.isBox) {
-    return !containsQuestionData
-  }
-  else if (cropperMode.value.isLine) {
-    return !containsQuestionData && cropperLineState.currentCoord === 'x1'
-  }
-  return false
-})
-
 // Flag for generate ouput btn
-const hasQuestionsData = computed<boolean>(() =>
-  Object.values(questionsData).some(arr => arr.length > 0),
+const hasQuestionsData = computed<boolean>(
+  () => cropperOverlayDatas.size > 0,
 )
-
-// Callbacks
-const updateInputFocusState = (inFocus: boolean) => {
-  if (cropperMode.value.isBox) {
-    if (inFocus) {
-      const scale = currentPageDetails.value.zoomScale
-
-      const { x1, y1, x2, y2 } = coords
-      setBoxSelectionElemStyles(x1 * scale, y1 * scale, x2 * scale, y2 * scale)
-      pointerAndInputState.isInputInFocus = true
-    }
-    else {
-      setBoxSelectionElemStyles(0, 0, 0, 0)
-      pointerAndInputState.isInputInFocus = false
-    }
-  }
-  else {
-    pointerAndInputState.isInputInFocus = false
-  }
-}
-
-const pointerDownHandler = (e: PointerEvent) => {
-  if (!isPdfLoaded.value) return
-
-  updateImgDrawerCoords(e)
-
-  if (imgElem.value?.hasPointerCapture(e.pointerId)) {
-    imgElem.value.releasePointerCapture(e.pointerId)
-  }
-
-  if (e.isPrimary && imgDrawerCoords.value) {
-    if (cropperMode.value.isBox) {
-      const { x, y } = imgDrawerCoords.value
-      coords.x1 = x
-      coords.y1 = y
-    }
-
-    pointerAndInputState.isPointerDown = true
-  }
-}
-
-const pointerMoveHandler = (e: PointerEvent) => {
-  if (!isPdfLoaded.value) return
-
-  updateImgDrawerCoords(e)
-}
-
-const pointerUpHandler = (e: PointerEvent) => {
-  if (!isPdfLoaded.value) return
-  if (e.isPrimary && pointerAndInputState.isPointerDown)
-    handleCropperCoordinates()
-}
 
 const pointerLeaveHandler = () => {
   if (!isPdfLoaded.value) return
-
-  pointerAndInputState.isPointerDown = false
-  if (cropperMode.value.isBox) setBoxSelectionElemStyles(0, 0, 0, 0)
 }
 
-function handleCropperCoordinates() {
-  pointerAndInputState.isPointerDown = false
-  pointerAndInputState.isInputInFocus = false
+function storeCurrentQuestionData(
+  pdfData: PdfCroppedOverlayData['pdfData'][number] | null = null,
+  incrementQuestion: boolean = true,
+) {
+  const { subject, section, que } = mainOverlayData
+  if (!subject && !section) return
 
-  const { x1, y1, x2, y2 } = coords
-  const x = Math.abs(x1 - x2)
-  const y = Math.abs(y1 - y2)
-  const minCropDimension = settings.minCropDimension
+  if (!pdfData) pdfData = mainOverlayData.pdfData[0]!
 
-  if (cropperMode.value.isLine) {
-    const currentCoord = cropperLineState.currentCoord
+  const id = `${subject || section}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
 
-    if (currentCoord === 'x2') {
-      if (x < minCropDimension) return
-    }
-    else if (currentCoord === 'y2') {
-      if (y < minCropDimension) return
+  pdfData.l = Math.min(pdfData.l, pdfData.r)
+  pdfData.r = Math.max(pdfData.l, pdfData.r)
+  pdfData.t = Math.min(pdfData.t, pdfData.b)
+  pdfData.b = Math.max(pdfData.t, pdfData.b)
+  mainOverlayData.pdfData[0] = pdfData
 
-      if (validateQuestionDetails()) processAndSaveCoords()
-      return
-    }
+  const existingOverlayData = cropperOverlayDatas.get(id)
 
-    processAndSaveCoords()
-  }
-  else if (cropperMode.value.isBox) {
-    setBoxSelectionElemStyles(0, 0, 0, 0)
-
-    if (x > minCropDimension && y > minCropDimension) {
-      if (validateQuestionDetails()) processAndSaveCoords()
-    }
-  }
-}
-
-function processAndSaveCoords() {
-  if (cropperMode.value.isLine) {
-    const currentCoord = cropperLineState.currentCoord
-
-    switch (currentCoord) {
-      case 'x1':
-        updateLineSelectedCss('x2', false)
-        cropperLineState.currentCoord = 'x2'
-        break
-      case 'x2':
-        updateLineSelectedCss('y1', false)
-        cssVars.lineSelectionX = '0px'
-        cssVars.lineSelectionY = '0px'
-        cropperLineState.currentCoord = 'y1'
-        break
-      case 'y1':
-        updateLineSelectedCss('y2', false)
-        cropperLineState.currentCoord = 'y2'
-        break
-      case 'y2':
-        if (!cropperLineState.skipNext) {
-          storeCurrentQuestionData(coords)
-          renderCurrentPageCroppedOverlays(true)
-        }
-        cropperLineState.skipNext = false
-        coords.y1 = coords.y2
-        updateLineSelectedCss('y2', false)
-        break
-    }
-  }
-  else if (cropperMode.value.isBox) {
-    storeCurrentQuestionData(coords)
-    renderCurrentPageCroppedOverlays(true)
-  }
-}
-
-function storeCurrentQuestionData(cropCoords: CropCoordinates, incrementQuestion: boolean = true) {
-  let x1: number, y1: number, x2: number, y2: number
-
-  if (cropCoords.x1 < cropCoords.x2) {
-    x1 = cropCoords.x1
-    x2 = cropCoords.x2
+  if (existingOverlayData) {
+    existingOverlayData.pdfData.push(pdfData)
   }
   else {
-    x1 = cropCoords.x2
-    x2 = cropCoords.x1
+    cropperOverlayDatas.set(id, utilCloneJson(mainOverlayData))
   }
 
-  if (cropCoords.y1 < cropCoords.y2) {
-    y1 = cropCoords.y1
-    y2 = cropCoords.y2
-  }
-  else {
-    y1 = cropCoords.y2
-    y2 = cropCoords.y1
-  }
-
-  const page = pdfState.currentPageNum
-  const {
-    subjectName: sub,
-    sectionName: sec,
-    questionType: type,
-    questionNum: que,
-    totalOptions: options,
-    correctMarks: cm,
-    partialMarks: pm,
-    incorrectMarks: im,
-  } = currentQuestionDatass
-
-  const questionData: QuestionData = {
-    page, sub, sec, type, options, que,
-    cm, pm, im,
-    x1, y1, x2, y2,
-  }
-
-  if (!questionsData[page]) questionsData[page] = []
-  questionsData[page].push(questionData)
-
-  if (incrementQuestion) currentQuestionDatass.questionNum++
+  if (incrementQuestion) mainOverlayData.que++
 }
-
-function validateQuestionDetails(): boolean {
-  const {
-    subjectName,
-    sectionName,
-    questionType,
-    questionNum,
-    correctMarks,
-    partialMarks,
-    incorrectMarks,
-  } = currentQuestionDatass
-
-  const passed = subjectName.trim()
-    && sectionName.trim()
-    && ['mcq', 'msq', 'nat'].includes(questionType)
-    && (Number.isFinite(questionNum) && questionNum !== 0)
-    && Number.isFinite(correctMarks)
-    && Number.isFinite(partialMarks)
-    && Number.isFinite(incorrectMarks)
-
-  if (passed) {
-    return true
-  }
-  else {
-    visibilityState.questionDetailsDialog = true
-    return false
-  }
-}
-
-function renderCurrentPageCroppedOverlays(renderOnlyLastOverlay: boolean = false) {
-  const pageQuestionsData = questionsData[pdfState.currentPageNum]
-  if (pageQuestionsData?.length) {
-    const n = pageQuestionsData.length
-    let i = renderOnlyLastOverlay ? (n - 1) : 0
-
-    for (; i < n; i++) {
-      const data = pageQuestionsData[i]
-      if (data) {
-        const { x1, y1, x2, y2 } = data
-        addCroppedOverlayElem({ x1, y1, x2, y2 })
-      }
-    }
-  }
-}
-
-function addCroppedOverlayElem(cropCoords: CropCoordinates) {
-  const scale = currentPageDetails.value.zoomScale
-  const { x1, y1, x2, y2 } = cropCoords
-  const div = document.createElement('div')
-  div.className = 'final-rectangle'
-  div.style.left = `${x1 * scale}px`
-  div.style.top = `${y1 * scale}px`
-  div.style.width = `${(x2 - x1) * scale}px`
-  div.style.height = `${(y2 - y1) * scale}px`
-
-  croppedDivContainerElem.value!.appendChild(div)
-}
-
-function clearCroppedDivContainerElem(onlyLastChild: boolean = false) {
-  if (croppedDivContainerElem.value) {
-    if (onlyLastChild) {
-      const lastElementChild = croppedDivContainerElem.value.lastElementChild
-      if (lastElementChild) {
-        croppedDivContainerElem.value.removeChild(lastElementChild)
-      }
-    }
-    else {
-      croppedDivContainerElem.value.replaceChildren()
-    }
-  }
-}
-
-const clearCurrentPageQuestions = () => {
-  if (isPdfLoaded.value) {
-    const currentPageNum = pdfState.currentPageNum
-    const currentPageQuestions = questionsData[currentPageNum]
-    if (currentPageQuestions) {
-      currentPageQuestions.length = 0
-    }
-    coords.x1 = 0
-    coords.y1 = 0
-    coords.x2 = 0
-    coords.y2 = 0
-
-    cropperLineState.currentCoord = 'x1'
-    clearCroppedDivContainerElem()
-
-    const recentQuestion = getLastQuestionData()
-    if (recentQuestion) {
-      currentQuestionDatass.subjectName = recentQuestion.sub
-      currentQuestionDatass.sectionName = recentQuestion.sec
-      currentQuestionDatass.questionType = recentQuestion.type
-      currentQuestionDatass.questionNum = recentQuestion.que + 1
-      currentQuestionDatass.correctMarks = recentQuestion.cm
-      currentQuestionDatass.partialMarks = recentQuestion.pm
-      currentQuestionDatass.incorrectMarks = recentQuestion.im
-    }
-    else {
-      currentQuestionDatass.questionNum = 1
-    }
-  }
-}
-
-const clearCurrentPageLastQuestion = () => {
-  if (isPdfLoaded.value) {
-    const currentPageNum = pdfState.currentPageNum
-    const currentPageQuestions = questionsData[currentPageNum]
-    const currentPageLastQuestion = currentPageQuestions?.pop()
-
-    if (cropperMode.value.isLine) {
-      coords.y2 = 0
-      if (currentPageLastQuestion) {
-        coords.x1 = currentPageLastQuestion.x1
-        coords.x2 = currentPageLastQuestion.x2
-        const y1 = currentPageLastQuestion.y1
-        coords.y1 = y1
-        updateLineSelectedCss('y2', false)
-      }
-      else {
-        const currentCoord = cropperLineState.currentCoord
-
-        switch (currentCoord) {
-          case 'y2':
-            coords.y1 = 0
-            cropperLineState.currentCoord = 'y1'
-            break
-          case 'y1':
-            coords.y1 = 0
-            coords.x2 = 0
-            cropperLineState.currentCoord = 'x2'
-            break
-          case 'x2':
-            coords.y1 = 0
-            coords.x2 = 0
-            coords.x1 = 0
-            cropperLineState.currentCoord = 'x1'
-            break
-        }
-      }
-    }
-    if (currentPageLastQuestion) {
-      currentQuestionDatass.questionNum--
-      clearCroppedDivContainerElem(true)
-    }
-  }
-}
-
-function updateLineSelectedCss(currentCoord: string, fallthrough: boolean = false) {
-  const scale = currentPageDetails.value.zoomScale
-  switch (currentCoord) {
-    case 'y2':
-      cssVars.lineSelectedY1 = `${coords.y1 * scale}px`
-      if (!fallthrough) break
-    // fallthrough
-    case 'y1':
-      cssVars.lineSelectedX2 = `${coords.x2 * scale}px`
-      if (!fallthrough) break
-    // fallthrough
-    case 'x2':
-      cssVars.lineSelectedX1 = `${coords.x1 * scale}px`
-  }
-}
-
-async function pdfPageNavigation(pageDelta: number) {
-  const newPage = pdfState.currentPageNum + pageDelta
-
-  if (pageDelta === 0 || newPage < 0 || newPage > pdfState.totalPages) return
-
-  pdfState.currentPageNum = newPage
-  await renderPage(newPage, true)
-
-  if (pageDelta > 0) {
-    if (cropperMode.value.isLine) {
-      const lastQuestionData = getLastQuestionData()
-      if (lastQuestionData) {
-        const { x1, x2 } = lastQuestionData
-
-        coords.x1 = x1
-        coords.x2 = x2
-        coords.y1 = 0
-        coords.y2 = 0
-
-        cropperLineState.currentCoord = 'y1'
-      }
-      else {
-        cropperLineState.currentCoord = 'x1'
-      }
-    }
-  }
-  else {
-    const pageLastQuestionData = getLastQuestionData(newPage)
-    if (pageLastQuestionData) {
-      renderCurrentPageCroppedOverlays(false)
-
-      if (cropperMode.value.isLine) {
-        const { x1, x2, y2 } = pageLastQuestionData
-
-        coords.x1 = x1
-        coords.x2 = x2
-        coords.y1 = y2
-        coords.y2 = 0
-
-        updateLineSelectedCss('y2', true)
-        cropperLineState.currentCoord = 'y2'
-      }
-    }
-    else {
-      cropperLineState.currentCoord = 'x1'
-    }
-  }
-}
-
-function getLastQuestionData(pageNum: number = 0) {
-  if (pageNum === 0) {
-    const decreasingOrderPageNumkeys = Object.keys(questionsData).map(Number).sort((a, b) => b - a)
-
-    for (let i = 0; i < decreasingOrderPageNumkeys.length; i++) {
-      const n = decreasingOrderPageNumkeys[i]
-      if (n === undefined) continue
-
-      const questionData = questionsData[n]?.at(-1)
-      if (questionData) {
-        return questionData
-      }
-    }
-  }
-  else {
-    const questionData = questionsData[pageNum]?.at(-1)
-    if (questionData) {
-      return questionData
-    }
-  }
-  return null
-}
-
-const keydownCallback = (e: KeyboardEvent) => {
-  if (e.ctrlKey && cropperMode.value.isLine && cropperLineState.currentCoord === 'y2') {
-    cropperLineState.skipNext = true
-  }
-}
-
-const keyUpCallback = () => {
-  cropperLineState.skipNext = false
-}
-
-const syncCoordsAndSelection = useThrottleFn(
-  (updateCoords: boolean = false) => {
-    if (updateCoords) {
-      if (imgDrawerCoords.value) {
-        if (cropperMode.value.isLine) {
-          const { x, y } = imgDrawerCoords.value
-          const currentCoord = cropperLineState.currentCoord
-
-          coords[currentCoord] = currentCoord.startsWith('x') ? x : y
-          drawCropperSelection()
-        }
-        else if (cropperMode.value.isBox && pointerAndInputState.isPointerDown) {
-          const { x, y } = imgDrawerCoords.value
-          coords.x2 = x
-          coords.y2 = y
-          drawCropperSelection()
-        }
-      }
-    }
-    else {
-      drawCropperSelection()
-    }
-  },
-  () => settings.selectionThrottleInterval, // Throttle
-  true, // call fn when time is up as well
-)
-
-function drawCropperSelection() {
-  if (cropperMode.value.isBox) {
-    const scale = currentPageDetails.value.zoomScale
-    const x1 = coords.x1 * scale
-    const y1 = coords.y1 * scale
-    const x2 = coords.x2 * scale
-    const y2 = coords.y2 * scale
-    const width = x2 - x1
-    const height = y2 - y1
-    const left = width > 0 ? x1 : x2
-    const top = height > 0 ? y1 : y2
-    const absWidth = Math.abs(width)
-    const absHeight = Math.abs(height)
-
-    setBoxSelectionElemStyles(left, top, absWidth, absHeight)
-  }
-  else if (cropperMode.value.isLine) {
-    const scale = currentPageDetails.value.zoomScale
-    const currentCoord = cropperLineState.currentCoord
-    const val = coords[currentCoord] * scale
-
-    if (currentCoord === 'x1' || currentCoord === 'x2') {
-      cssVars.lineSelectionX = `${val}px`
-    }
-    else if (currentCoord === 'y1' || currentCoord === 'y2') {
-      cssVars.lineSelectionY = `${val}px`
-    }
-  }
-}
-
-function setBoxSelectionElemStyles(left: number, top: number, width: number, height: number) {
-  if (boxSelectionElem.value && cropperMode.value.isBox) {
-    boxSelectionElem.value.style.left = `${left}px`
-    boxSelectionElem.value.style.top = `${top}px`
-    boxSelectionElem.value.style.width = `${width}px`
-    boxSelectionElem.value.style.height = `${height}px`
-  }
-}
-
-// For ongoing crop selection
-const selectionWatchHandle = watch(
-  [cropperMode, imgDrawerCoords],
-  () => syncCoordsAndSelection(true),
-  { deep: true },
-)
-
-selectionWatchHandle.pause() // as not required on initial webpage load
 
 const handleFileUpload = async (file: File) => {
   userUploadedCropperDataJson.value = null
@@ -1494,9 +782,8 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
       pdfState.totalPages = pagesCount
       pdfState.currentPageNum = 1
 
-      await renderPage(pdfState.currentPageNum, true)
+      await renderPage(pdfState.currentPageNum)
       isPdfLoaded.value = true
-      selectionWatchHandle.resume()
     }
   }
   catch (err) {
@@ -1504,8 +791,7 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
   }
 }
 
-async function renderPage(pageNum: number, refreshOverlays: boolean = true) {
-  if (!imgElem.value) return
+async function renderPage(pageNum: number) {
   if (mupdfWorker === null) {
     await loadPdfFile()
   }
@@ -1516,8 +802,6 @@ async function renderPage(pageNum: number, refreshOverlays: boolean = true) {
     const qualityFactor = settings.qualityFactor
 
     const pageScale = dpr * qualityFactor
-
-    if (refreshOverlays) clearCroppedDivContainerElem()
 
     const maybeExistingPage = pageImgData[pageNum]
     if (!maybeExistingPage || maybeExistingPage.pageScale !== pageScale) {
@@ -1534,36 +818,23 @@ async function renderPage(pageNum: number, refreshOverlays: boolean = true) {
         pageScale,
       }
     }
-    if (refreshOverlays) {
-      renderCurrentPageCroppedOverlays(false)
-      if (cropperMode.value.isLine) {
-        const currentCoord = cropperLineState.currentCoord
-        updateLineSelectedCss(currentCoord, true)
-      }
-    }
   }
   catch (err) {
     console.error('Error rendering page:', err)
-    clearCroppedDivContainerElem()
   }
 }
 
-function transformDataToOutputFormat(data: Record<number, QuestionData[]>) {
-  const arr = Object.values(data).flat()
-
+function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>) {
   const subjectsData: CropperOutputData = {}
 
-  for (const questionData of arr) {
-    const { sub, sec, que, type, options, cm, pm, im, ...rest } = questionData
+  for (const questionData of data.values()) {
+    const { subject: sub, section, que, id, type, ...rest } = questionData
+    const sec = section || sub
 
     const cropperQuesData: CropperQuestionData = {
       que,
       type,
-      options,
-      marks: { cm, pm, im },
-      pdfData: [
-        { ...rest },
-      ],
+      ...rest,
     }
 
     if (type === 'nat') delete cropperQuesData.options
@@ -1572,12 +843,7 @@ function transformDataToOutputFormat(data: Record<number, QuestionData[]>) {
     subjectsData[sub] ??= {}
     subjectsData[sub][sec] ??= {}
 
-    if (subjectsData[sub][sec][que]) {
-      subjectsData[sub][sec][que].pdfData.push(rest)
-    }
-    else {
-      subjectsData[sub][sec][que] = cropperQuesData
-    }
+    subjectsData[sub][sec][que] = cropperQuesData
   }
 
   const pdfCropperData = subjectsData
@@ -1620,7 +886,7 @@ async function generatePdfCropperOutput() {
 
   const jsonData = generateOutputState.isUploadedFileZipFile
     ? userUploadedCropperDataJson.value!
-    : transformDataToOutputFormat(structuredClone(toRaw(questionsData)))
+    : transformDataToOutputFormat(structuredClone(toRaw(cropperOverlayDatas)))
 
   jsonData.pdfFileHash = pdfFileHash
 
@@ -1733,31 +999,19 @@ onMounted(() => {
   syncSettingsWithLocalStorage()
   zoomScaleDebounced.value = settings.scale
 
-  watchEffect(() => {
-    const selectionColor = cropperLineState.skipNext
-      ? settings.cropSelectionSkipColor
-      : settings.cropSelectionGuideColor
-
-    cssVars.cropSelectionGuideColor = `#${selectionColor}`
-    cssVars.cropSelectedRegionColor = `#${settings.cropSelectedRegionColor}`
-  })
-
   watchDebounced(
     [() => settings.scale, () => settings.qualityFactor],
     ([oldScale], [newScale]) => {
       if (oldScale !== newScale) {
         zoomScaleDebounced.value = settings.scale
-        renderPage(pdfState.currentPageNum, true)
+        renderPage(pdfState.currentPageNum)
       }
       else {
-        renderPage(pdfState.currentPageNum, false)
+        renderPage(pdfState.currentPageNum)
       }
     },
     { debounce: 500, maxWait: 3000 },
   )
-
-  window.addEventListener('keydown', keydownCallback)
-  window.addEventListener('keyup', keyUpCallback)
 })
 
 const closeMupdfWorker = () => {
@@ -1783,7 +1037,5 @@ onBeforeUnmount(() => {
   }
 
   stopUseDPR()
-  window.removeEventListener('keydown', keydownCallback)
-  window.removeEventListener('keyup', keyUpCallback)
 })
 </script>
