@@ -1,4 +1,4 @@
-export default function* range(start: number, end?: number, step: number = 1) {
+export default function* (start: number, end?: number, step: number = 1) {
   if (end === undefined) {
     end = start
     start = 0

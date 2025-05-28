@@ -17,6 +17,11 @@
           toggleable
           class="w-full gap-2"
         >
+          <SelectButton
+            v-model="currentMode"
+            :options="(['crop', 'edit'] as const)"
+            :allow-empty="false"
+          />
           <div class="flex flex-wrap gap-x-2 gap-y-3 mt-2">
             <BaseFloatLabel
               class="flex-[1_1_60%] min-w-[55%]"
@@ -287,6 +292,8 @@
               'blur-cropped': settings.blurCroppedRegion,
             }"
             :style="{
+              '--pdf-page-width': currentPageDetails.width,
+              '--pdf-page-height': currentPageDetails.height,
               '--pdf-page-scaled-width': `${currentPageDetails.scaledWidth}px`,
               '--pdf-page-scaled-height': `${currentPageDetails.scaledHeight}px`,
               '--pdf-page-scale': zoomScaleDebounced,
@@ -302,12 +309,10 @@
                 :style="{
                   backgroundColor: `#${settings.pageBGColor}`,
                 }"
-                @pointerdown="pointerDownHandler"
-                @pointermove="pointerMoveHandler"
               >
             </div>
-            <PdfCropperOverlay
-              v-if="currentPageDetails.url"
+            <PdfCropperEditCroppedOverlay
+              v-if="isPdfLoaded"
               v-model="cropperOverlayDatas"
               v-model:active-overlay="activeCropperOverlay"
               v-model:maybe-is-editing-ques-details="editingState.maybeIsEditingQuesDetails"
@@ -320,7 +325,21 @@
               :selection-throttle-interval="settings.selectionThrottleInterval"
               :move-on-key-press-distance="settings.moveOnKeyPressDistance"
             />
-            <div
+            <PdfCropperCropOverlay
+              v-if="isPdfLoaded"
+              v-model:maybe-is-editing-ques-details="editingState.maybeIsEditingQuesDetails"
+              v-model:current-overlay-data="mainOverlayData"
+              v-model:blur-cropped-region="settings.blurCroppedRegion"
+              :cropper-mode="cropperMode"
+              :current-mode="currentMode"
+              :current-page-num="pdfState.currentPageNum"
+              :page-scale="zoomScaleDebounced"
+              :page-width="currentPageDetails.width"
+              :page-height="currentPageDetails.height"
+              :selection-throttle-interval="settings.selectionThrottleInterval"
+              :move-on-key-press-distance="settings.moveOnKeyPressDistance"
+            />
+            <!-- <div
               class="overlay"
               :class="{ hidden: !isPdfLoaded }"
             >
@@ -361,7 +380,7 @@
             <div
               ref="croppedDivContainerElem"
               class="overlay"
-            />
+            /> -->
           </div>
         </div>
       </SplitterPanel>
@@ -581,6 +600,7 @@ import Accordion from '@/src/volt/Accordion.vue'
 import AccordionPanel from '@/src/volt/AccordionPanel.vue'
 import AccordionHeader from '@/src/volt/AccordionHeader.vue'
 import AccordionContent from '@/src/volt/AccordionContent.vue'
+import SelectButton from '@/src/volt/SelectButton.vue'
 
 import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '#shared/constants'
 
@@ -708,7 +728,7 @@ const editingState = shallowReactive({
   maybeIsEditingQuesDetails: false,
 })
 
-const currentMode = shallowRef<'crop' | 'edit'>('edit')
+const currentMode = shallowRef<'crop' | 'edit'>('crop')
 
 const isPdfLoaded = shallowRef(false)
 
@@ -717,8 +737,8 @@ const isPdfLoaded = shallowRef(false)
 let pdfFileHash = ''
 
 // Default settings
-const settings = shallowReactive({
-  cropperMode: 'line' as 'line' | 'box',
+const settings = shallowReactive<PdfCropperSettings>({
+  cropperMode: 'line',
   scale: 1,
   splitterPanelSize: 25, // %
   pageBGColor: 'ffffff',

@@ -1,0 +1,394 @@
+<template>
+  <div
+    v-show="currentMode === 'crop'"
+    ref="overlayContainerElem"
+    class="absolute top-0 left-0 w-full h-full"
+    :class="{
+      'pointer-events-none': currentMode === 'edit',
+    }"
+    :style="{
+      '--l': currentOverlayData.pdfData[0]!.l,
+      '--t': currentOverlayData.pdfData[0]!.t,
+      '--r': currentOverlayData.pdfData[0]!.r,
+      '--b': currentOverlayData.pdfData[0]!.b,
+    }"
+    @contextmenu.prevent="(e) => {
+      maybeIsEditingQuesDetails = false
+      contextMenuElem?.show(e)
+    }"
+  >
+    <!-- line selection div -->
+    <template v-if="cropperMode.isLine">
+      <div
+        class="line-cropper l"
+        :class="{
+          selected: lineCropperState.currentCoord !== 'l',
+        }"
+      />
+      <div
+        v-show="lineCropperState.currentCoord !== 'l'"
+        class="line-cropper r"
+        :class="{
+          selected: lineCropperState.currentCoord === 't' || lineCropperState.currentCoord === 'b',
+        }"
+      />
+      <div
+        v-show="lineCropperState.currentCoord === 't' || lineCropperState.currentCoord === 'b'"
+        class="line-cropper t"
+        :class="{
+          selected: lineCropperState.currentCoord === 'b',
+        }"
+      />
+      <div
+        v-show="lineCropperState.currentCoord === 'b'"
+        class="line-cropper b"
+      />
+    </template>
+    <div
+      v-else-if="props.cropperMode.isBox"
+      v-show="boxCropperState.isDragging"
+      class="box-cropper"
+    />
+
+    <ContextMenu
+      ref="contextMenuElem"
+      :model="items"
+    >
+      <template #itemicon="{ item }">
+        <Icon
+          v-if="item.icon"
+          :name="item.icon"
+          class="text-lg"
+        />
+      </template>
+    </ContextMenu>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import ContextMenu from 'primevue/contextmenu'
+
+const props = defineProps<{
+  currentPageNum: number
+  pageWidth: number
+  pageHeight: number
+  pageScale: number
+  selectionThrottleInterval: number
+  moveOnKeyPressDistance: number
+  currentMode: 'crop' | 'edit'
+  cropperMode: { isLine: boolean, isBox: boolean }
+}>()
+
+const currentOverlayData = defineModel<PdfCroppedOverlayData>('currentOverlayData', { required: true })
+
+const maybeIsEditingQuesDetails = defineModel<boolean>('maybeIsEditingQuesDetails', { required: true })
+
+const blurCroppedRegion = defineModel<boolean>('blurCroppedRegion', { required: true })
+
+const emit = defineEmits<{
+  setPdfData: [data: PdfCroppedOverlayData['pdfData'][number]]
+}>()
+
+const overlayContainerElem = useTemplateRef('overlayContainerElem')
+const contextMenuElem = useTemplateRef('contextMenuElem')
+
+const lineCropperState = shallowReactive({
+  currentCoord: 'l' as 'l' | 'r' | 't' | 'b',
+})
+
+const boxCropperState = shallowReactive({
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+})
+
+const magicKeys = useMagicKeys()
+const isCtrlZ = magicKeys['Ctrl+Z']!
+
+watch(isCtrlZ, (isUndo) => {
+  if (!isUndo) return
+  if (props.currentMode !== 'crop' || !props.cropperMode.isLine || maybeIsEditingQuesDetails.value) return
+
+  switch (lineCropperState.currentCoord) {
+    case 'b':
+      lineCropperState.currentCoord = 't'
+      break
+    case 't':
+      lineCropperState.currentCoord = 'r'
+      break
+    case 'r':
+      lineCropperState.currentCoord = 'l'
+      break
+  }
+})
+
+const eventListenersToCleanup: {
+  pointermove: (() => void) | null
+  pointerup: (() => void) | null
+  pointerdown: (() => void) | null
+  click: (() => void) | null
+  keydown: (() => void) | null
+} = {
+  pointermove: null,
+  pointerup: null,
+  pointerdown: null,
+  click: null,
+  keydown: null,
+}
+
+const cleanUpEventListeners = (
+  listenersToClean: (keyof (typeof eventListenersToCleanup))[] | null = null,
+) => {
+  if (!listenersToClean) {
+    listenersToClean = Object.keys(eventListenersToCleanup) as (keyof (typeof eventListenersToCleanup))[]
+  }
+  for (const key of listenersToClean) {
+    const listener = eventListenersToCleanup[key]
+    if (listener) {
+      listener()
+      eventListenersToCleanup[key] = null
+    }
+  }
+}
+
+const onBoxPointerDown = (e: PointerEvent) => {
+  if (!props.cropperMode.isBox || props.currentMode !== 'crop') return
+  if (!overlayContainerElem.value) return
+
+  const pdfData = currentOverlayData.value.pdfData[0]
+  if (!pdfData) return
+
+  const rect = overlayContainerElem.value.getBoundingClientRect()
+  const xRel = e.clientX - rect.left
+  const yRel = e.clientY - rect.top
+
+  const x = utilClampNumber(xRel, 0, props.pageWidth, props.pageScale)
+  const y = utilClampNumber(yRel, 0, props.pageHeight, props.pageScale)
+
+  boxCropperState.startX = x
+  boxCropperState.startY = y
+  pdfData.l = x
+  pdfData.r = x
+  pdfData.t = y
+  pdfData.b = y
+
+  boxCropperState.isDragging = true
+  cleanUpEventListeners()
+  addEventListeners(['pointermove', 'pointerup', 'pointerdown'], true)
+}
+
+const onPointerMove = (e: PointerEvent) => {
+  if (!overlayContainerElem.value) return
+
+  const rect = overlayContainerElem.value.getBoundingClientRect()
+  // pointer coordinates relative to overlay container/img element
+  const xRel = e.clientX - rect.left
+  const yRel = e.clientY - rect.top
+
+  if (props.cropperMode.isBox && boxCropperState.isDragging) {
+    const pdfData = currentOverlayData.value.pdfData[0]
+    if (!pdfData) return
+
+    const x = utilClampNumber(xRel, 0, props.pageWidth, props.pageScale)
+    const y = utilClampNumber(yRel, 0, props.pageHeight, props.pageScale)
+
+    pdfData.l = Math.min(boxCropperState.startX, x)
+    pdfData.r = Math.max(boxCropperState.startX, x)
+    pdfData.t = Math.min(boxCropperState.startY, y)
+    pdfData.b = Math.max(boxCropperState.startY, y)
+  }
+  else if (props.cropperMode.isLine) {
+    const currentCoord = lineCropperState.currentCoord
+    const pdfData = currentOverlayData.value.pdfData[0]
+    if (!pdfData) return
+
+    switch (currentCoord) {
+      case 'l':
+        pdfData.l = utilClampNumber(xRel, 0, props.pageWidth, props.pageScale)
+        break
+      case 'r':
+        pdfData.r = utilClampNumber(xRel, 0, props.pageWidth, props.pageScale)
+        break
+      case 't':
+        pdfData.t = utilClampNumber(yRel, 0, props.pageHeight, props.pageScale)
+        break
+      case 'b':
+        pdfData.b = utilClampNumber(yRel, 0, props.pageHeight, props.pageScale)
+        break
+    }
+  }
+}
+
+const onBoxPointerUp = (e: PointerEvent) => {
+  if (!boxCropperState.isDragging || !props.cropperMode.isBox || props.currentMode !== 'crop') return
+  onPointerMove(e)
+  boxCropperState.isDragging = false
+  const pdfData = currentOverlayData.value.pdfData[0]
+  if (pdfData) {
+    emit('setPdfData', { ...pdfData })
+  }
+}
+
+const throttledOnPointerMove = useThrottleFn(onPointerMove, props.selectionThrottleInterval, true)
+
+const onClick = (e: MouseEvent) => {
+  maybeIsEditingQuesDetails.value = false
+
+  if (props.cropperMode.isLine) {
+    onPointerMove(e as PointerEvent)
+    const currentCoord = lineCropperState.currentCoord
+    switch (currentCoord) {
+      case 'l':
+        lineCropperState.currentCoord = 'r'
+        break
+      case 'r':
+        lineCropperState.currentCoord = 't'
+        break
+      case 't':
+        lineCropperState.currentCoord = 'b'
+        break
+      case 'b': {
+        const pdfData = currentOverlayData.value.pdfData[0]
+        if (!pdfData) return
+        emit('setPdfData', { ...pdfData })
+        pdfData.t = pdfData.b
+        break
+      }
+    }
+  }
+}
+
+const onKeyDown = (e: KeyboardEvent) => {
+  if (props.currentMode !== 'crop' || !props.cropperMode.isLine || maybeIsEditingQuesDetails.value) return
+  const key = e.key
+
+  if (key !== 'ArrowUp' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowRight' && 'Enter') return
+  const currentCoord = lineCropperState.currentCoord
+  if (currentCoord === 'b' && key === 'Enter') {
+    const pdfData = currentOverlayData.value.pdfData[0]
+    if (!pdfData) return
+    e.preventDefault()
+    emit('setPdfData', { ...pdfData })
+    return
+  }
+
+  let moveAmount = props.moveOnKeyPressDistance
+
+  if (currentCoord === 'l' || currentCoord === 'r') {
+    if (key === 'ArrowLeft') {
+      moveAmount = -moveAmount
+    }
+    else if (key !== 'ArrowRight') {
+      return
+    }
+  }
+  else if (currentCoord === 't' || currentCoord === 'b') {
+    if (key === 'ArrowUp') {
+      moveAmount = -moveAmount
+    }
+    else if (key !== 'ArrowDown') {
+      return
+    }
+  }
+  else {
+    return
+  }
+
+  e.preventDefault()
+
+  const pdfData = currentOverlayData.value.pdfData[0]
+  if (!pdfData) return
+
+  if (currentCoord === 'l' || currentCoord === 'r') {
+    const { l, r } = pdfData
+    const oldValue = currentCoord === 'l' ? l : r
+    const newValue = utilClampNumber(oldValue + moveAmount, 0, props.pageWidth)
+    if (currentCoord === 'l') {
+      pdfData.l = newValue
+    }
+    else {
+      pdfData.r = newValue
+    }
+  }
+  else {
+    const { t, b } = pdfData
+    const oldValue = currentCoord === 't' ? t : b
+    const newValue = utilClampNumber(oldValue + moveAmount, 0, props.pageHeight)
+    if (currentCoord === 't') {
+      pdfData.t = newValue
+    }
+    else {
+      pdfData.b = newValue
+    }
+  }
+}
+
+function addEventListeners(
+  listenersToAdd: (keyof (typeof eventListenersToCleanup))[],
+  skipPreCleanup: boolean = false,
+) {
+  if (!skipPreCleanup) cleanUpEventListeners(listenersToAdd)
+  maybeIsEditingQuesDetails.value = false
+
+  for (const key of listenersToAdd) {
+    switch (key) {
+      case 'pointerdown':
+        eventListenersToCleanup.pointerdown = useEventListener(overlayContainerElem, 'pointerdown', onBoxPointerDown)
+        break
+      case 'pointermove':
+        eventListenersToCleanup.pointermove = useEventListener(overlayContainerElem, 'pointermove', throttledOnPointerMove)
+        break
+      case 'keydown':
+        eventListenersToCleanup.keydown = useEventListener(window, 'keydown', onKeyDown)
+        break
+      case 'click':
+        eventListenersToCleanup.click = useEventListener(overlayContainerElem, 'click', onClick)
+        break
+      case 'pointerup':
+        eventListenersToCleanup.pointerup = useEventListener(window, 'pointerup', onBoxPointerUp)
+        break
+    }
+  }
+}
+
+const items = ref([
+  {
+    label: 'Blur Cropped Regions',
+    icon: 'mdi:eye',
+    visible: () => !blurCroppedRegion.value,
+    command: () => {
+      blurCroppedRegion.value = true
+    },
+  },
+  {
+    label: 'Unblur Cropped Regions',
+    icon: 'mdi:eye-off',
+    visible: () => blurCroppedRegion.value,
+    command: () => {
+      blurCroppedRegion.value = false
+    },
+  },
+])
+
+watchEffect(() => {
+  cleanUpEventListeners()
+  if (props.currentMode === 'crop') {
+    if (props.cropperMode.isLine) {
+      addEventListeners(['pointermove', 'click', 'keydown'])
+    }
+    else if (props.cropperMode.isBox) {
+      addEventListeners(['pointerdown'])
+    }
+  }
+})
+
+watch(() => props.currentPageNum,
+  () => {
+    if (props.currentMode === 'crop' && props.cropperMode.isLine) {
+      if (lineCropperState.currentCoord === 'b') {
+        lineCropperState.currentCoord = 't'
+      }
+    }
+  },
+)
+</script>

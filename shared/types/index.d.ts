@@ -389,3 +389,19 @@ export type UploadedTestData = {
 export type QuestionsImageUrls = {
   [queId: number | string]: string[]
 }
+
+export type PdfCropperSettings = {
+  cropperMode: 'line' | 'box'
+  scale: number
+  splitterPanelSize: number
+  pageBGColor: string
+  cropSelectionGuideColor: string
+  cropSelectedRegionColor: string
+  cropSelectionSkipColor: string
+  qualityFactor: number
+  selectionThrottleInterval: number
+  minCropDimension: number
+  moveOnKeyPressDistance: number
+  blurCroppedRegion: boolean
+  blurIntensity: number
+}

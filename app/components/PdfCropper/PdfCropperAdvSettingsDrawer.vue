@@ -115,6 +115,25 @@
         class="w-full"
         pt:content:class="px-2"
       >
+        <div class="grid grid-cols-4 mt-4 gap-3">
+          <BaseFloatLabel
+            class="w-full col-start-1 col-span-3"
+            label="Blur Cropped Region"
+            label-id="blur_cropped_region"
+            label-class="text-xs"
+          >
+            <Select
+              v-model="settings.blurCroppedRegion"
+              label-id="blur_cropped_region"
+              :options="selectOptions.blurCroppedRegion"
+              option-label="name"
+              option-value="value"
+              :fluid="true"
+              size="small"
+            />
+          </BaseFloatLabel>
+          <IconWithTooltip :tooltip-content="tooltipContent.blurCroppedRegion" />
+        </div>
         <div
           v-for="(item, index) in inputSettings"
           :key="index"
@@ -127,7 +146,7 @@
             label-class="text-xs"
           >
             <InputNumber
-              v-model="settings[item.model]"
+              v-model="(settings[item.model] as number)"
               :min="item.min"
               :max="item.max"
               :step="item.step"
@@ -144,17 +163,18 @@
 </template>
 
 <script setup lang="ts">
-const settings = defineModel('settings', {
-  type: Object,
-  required: true,
-})
-const advanceSettingsVisible = defineModel('advanceSettingsVisible', {
-  type: Boolean,
-  required: true,
-})
+const settings = defineModel<PdfCropperSettings>('settings', { required: true })
+const advanceSettingsVisible = defineModel<boolean>('advanceSettingsVisible', { required: true })
 
 type ToolTipContent = {
   [name: string]: string
+}
+
+const selectOptions = {
+  blurCroppedRegion: [
+    { name: 'Yes', value: true },
+    { name: 'No', value: false },
+  ],
 }
 
 const tooltipContent: ToolTipContent = {
@@ -166,6 +186,8 @@ const tooltipContent: ToolTipContent = {
     'Color of the selected crop region. This is the final selection that determines the area to be cropped and saved.',
   cropSelectionSkipColor:
     '(Only for Line Mode) Color of the Crop Selection Guide when the next selection needs to be skipped in Line Cropper Mode. This indicates that the next Y coordinate will be skipped, allowing you to \'jump\' over parts like section/subject names or any content you don\'t want included in the question.',
+  blurCroppedRegion:
+    'Whether to blur the cropped region. This is useful for hiding pdf region behind the cropped area to make question details on it more visible.',
   qualityFactor:
     'Quality (sharpness) of the rendered PDF. Higher values make the page clearer and sharper but increases resource usage (rendering time, processing, memory, etc.). Lower values make the page blurrier and reduces resource consumption.',
   selectionThrottleInterval:
@@ -176,7 +198,15 @@ const tooltipContent: ToolTipContent = {
 
 const inputSettings = [
   {
-    model: 'qualityFactor',
+    model: 'blurIntensity' as keyof PdfCropperSettings,
+    min: 0.1,
+    max: 10,
+    step: 0.1,
+    labelId: 'blur_intensity',
+    label: 'Region Blur Intensity',
+  },
+  {
+    model: 'qualityFactor' as keyof PdfCropperSettings,
     min: 0.1,
     max: 5,
     step: 0.1,
@@ -184,7 +214,7 @@ const inputSettings = [
     label: 'PDF Viewer Quality',
   },
   {
-    model: 'selectionThrottleInterval',
+    model: 'selectionThrottleInterval' as keyof PdfCropperSettings,
     min: 0,
     max: 500,
     step: 1,
@@ -192,7 +222,7 @@ const inputSettings = [
     label: 'Selection Update Interval (ms)',
   },
   {
-    model: 'minCropDimension',
+    model: 'minCropDimension' as keyof PdfCropperSettings,
     min: 0,
     max: 50,
     step: 1,

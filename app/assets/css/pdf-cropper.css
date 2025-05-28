@@ -5,25 +5,56 @@
   max-height: none;
 }
 
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-}
-
-.box-selection {
+.box-cropper {
   position: absolute;
   outline: 2px solid var(--crop-selection-guide-color);
   outline-offset: -1px;
   background: rgba(0, 0, 255, 0.05);
-  pointer-events: none;
+  z-index: 15;
+  transform: translate(
+    calc(var(--l) * var(--pdf-page-scale) * 1px),
+    calc(var(--t) * var(--pdf-page-scale) * 1px)
+  );
+  width: calc((var(--r) - var(--l)) * var(--pdf-page-scale) * 1px);
+  height: calc((var(--b) - var(--t)) * var(--pdf-page-scale) * 1px);
 }
 
-.line-selection {
+.line-cropper {
   position: absolute;
-  pointer-events: none;
   outline: 1px solid var(--crop-selection-guide-color);
+  z-index: 15;
+}
+
+.line-cropper.selected {
+  outline: 1px solid var(--crop-selected-region-color);
+}
+
+.line-cropper.l, .line-cropper.r {
+  top: 0px;
+  width: 0px;
+  height: calc(var(--pdf-page-height) * var(--pdf-page-scale) * 1px);
+}
+
+.line-cropper.t, .line-cropper.b {
+  left: 0px;
+  height: 0px;
+  width: calc(var(--pdf-page-width) * var(--pdf-page-scale) * 1px);
+}
+
+.line-cropper.l {
+  left: calc(var(--l) * var(--pdf-page-scale) * 1px);
+}
+
+.line-cropper.r {
+  left: calc(var(--r) * var(--pdf-page-scale) * 1px);
+}
+
+.line-cropper.t {
+  top: calc(var(--t) * var(--pdf-page-scale) * 1px);
+}
+
+.line-cropper.b {
+  top: calc(var(--b) * var(--pdf-page-scale) * 1px);
 }
 
 .line-selection.x {
