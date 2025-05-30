@@ -188,6 +188,8 @@ const tooltipContent: ToolTipContent = {
     '(Only for Line Mode) Color of the Crop Selection Guide when the next selection needs to be skipped in Line Cropper Mode. This indicates that the next Y coordinate will be skipped, allowing you to \'jump\' over parts like section/subject names or any content you don\'t want included in the question.',
   blurCroppedRegion:
     'Whether to blur the cropped region. This is useful for hiding pdf region behind the cropped area to make question details on it more visible.',
+  blurIntensity:
+  'Blur intensity. Higher values result in a stronger blur effect over the cropped region. Value of 0 applies no effect.',
   qualityFactor:
     'Quality (sharpness) of the rendered PDF. Higher values make the page clearer and sharper but increases resource usage (rendering time, processing, memory, etc.). Lower values make the page blurrier and reduces resource consumption.',
   selectionThrottleInterval:

@@ -71,20 +71,12 @@ export type QuestionType = 'mcq' | 'msq' | 'nat'
 
 export type TestSectionKey = string
 
-export type CropperPdfCoords = {
+export type PdfCropperCoords = {
   page: number
   x1: number
   y1: number
   x2: number
   y2: number
-}
-
-export type PdfSidesCoordsWithPage = {
-  l: number // left
-  r: number // right
-  t: number // top
-  b: number // bottom
-  page: number // page number
 }
 
 type QuestionMarks = {
@@ -93,12 +85,12 @@ type QuestionMarks = {
   im: number // incorrect marks
 }
 
-export interface CropperQuestionData {
+export type CropperQuestionData = {
   que: number
   type: QuestionType
   options?: number
   marks: QuestionMarks
-  pdfData: CropperPdfCoords[] | PdfSidesCoordsWithPage[]
+  pdfData: PdfCropperCoords[]
 }
 
 export type CropperSectionsData = {
@@ -128,7 +120,13 @@ export type PdfCroppedOverlayData = Omit<CropperQuestionData, 'marks' | 'pdfData
   subject: string
   section: string
   marks: Required<QuestionMarks>
-  pdfData: PdfSidesCoordsWithPage[]
+  pdfData: {
+    l: number // left
+    r: number // right
+    t: number // top
+    b: number // bottom
+    page: number // page number
+  }[]
 }
 
 export type ActiveCroppedOverlay = {

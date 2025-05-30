@@ -13,7 +13,6 @@
       '--b': currentOverlayData.pdfData[0]!.b,
     }"
     @contextmenu.prevent="(e) => {
-      ignoreKeyBoardShortcuts = false
       if (cropperMode.isBox) {
         boxCropperState.isDragging = false
         cleanUpEventListeners()
@@ -48,7 +47,7 @@
         v-show="lineCropperState.currentCoord === 'b'"
         class="line-cropper b"
         :class="{
-          'skip-line': isHoldingShift,
+          'skip-line': skipNextLine,
         }"
       />
     </template>
@@ -67,6 +66,7 @@
           v-if="item.icon"
           :name="item.icon"
           class="text-lg"
+          :class="item.iconClass"
         />
       </template>
     </ContextMenu>
@@ -77,6 +77,7 @@
 import ContextMenu from 'primevue/contextmenu'
 
 const props = defineProps<{
+  mainImgPanelElem: HTMLDivElement | null
   currentPageNum: number
   pageWidth: number
   pageHeight: number
@@ -89,8 +90,6 @@ const props = defineProps<{
 
 const currentOverlayData = defineModel<PdfCroppedOverlayData>('currentOverlayData', { required: true })
 
-const ignoreKeyBoardShortcuts = defineModel<boolean>('ignoreKeyBoardShortcuts', { required: true })
-
 const blurCroppedRegion = defineModel<boolean>('blurCroppedRegion', { required: true })
 
 const emit = defineEmits<{
@@ -102,6 +101,7 @@ const contextMenuElem = useTemplateRef('contextMenuElem')
 
 const lineCropperState = shallowReactive({
   currentCoord: 'l' as 'l' | 'r' | 't' | 'b',
+  skipNextLine: false,
 })
 
 const boxCropperState = shallowReactive({
@@ -114,8 +114,17 @@ const magicKeys = useMagicKeys()
 const isHoldingCtrl = magicKeys['Ctrl']!
 const isHoldingShift = magicKeys['Shift']!
 
+const skipNextLine = computed({
+  get: () => {
+    return isHoldingShift.value || lineCropperState.skipNextLine
+  },
+  set: (value) => {
+    lineCropperState.skipNextLine = value
+  },
+})
+
 const undoLastCoordLine = () => {
-  if (props.currentMode !== 'crop' || !props.cropperMode.isLine || ignoreKeyBoardShortcuts.value) return
+  if (props.currentMode !== 'crop' || !props.cropperMode.isLine) return
   switch (lineCropperState.currentCoord) {
     case 'b':
       lineCropperState.currentCoord = 't'
@@ -132,9 +141,26 @@ const undoLastCoordLine = () => {
 const contextMenuItems = ref([
   {
     label: 'Undo Line',
-    icon: 'mdi:eye',
+    icon: 'mdi:undo-variant',
     visible: () => props.cropperMode.isLine && lineCropperState.currentCoord !== 'l',
     command: undoLastCoordLine,
+  },
+  {
+    label: 'Skip Next Line',
+    icon: 'mdi:jump',
+    visible: () => props.cropperMode.isLine
+      && lineCropperState.currentCoord === 'b'
+      && !skipNextLine.value,
+    command: () => skipNextLine.value = true,
+  },
+  {
+    label: 'Unskip Next Line',
+    icon: 'mdi:jump',
+    iconClass: 'scale-x-[-1]',
+    visible: () => props.cropperMode.isLine
+      && lineCropperState.currentCoord === 'b'
+      && skipNextLine.value,
+    command: () => skipNextLine.value = false,
   },
   {
     separator: true,
@@ -219,13 +245,12 @@ const onBoxPointerDown = (e: PointerEvent) => {
 
 const onPointerMove = (e: PointerEvent) => {
   if (!overlayContainerElem.value) return
+  e.preventDefault()
 
   const rect = overlayContainerElem.value.getBoundingClientRect()
 
   const xRel = e.clientX - rect.left
   const yRel = e.clientY - rect.top
-
-  e.preventDefault()
 
   if (props.cropperMode.isBox && boxCropperState.isDragging) {
     const pdfData = currentOverlayData.value.pdfData[0]
@@ -294,11 +319,12 @@ const setLineCropperCoord = () => {
       pdfData.t = Math.min(b, t)
       pdfData.b = Math.max(b, t)
 
-      if (!isHoldingShift.value) {
+      if (!skipNextLine.value) {
         const pdfDataToEmit = utilCloneJson(pdfData)
         pdfDataToEmit.page = props.currentPageNum
         emit('setPdfData', pdfDataToEmit)
       }
+      skipNextLine.value = false
 
       pdfData.t = pdfData.b
       break
@@ -313,7 +339,7 @@ const onClick = () => {
 }
 
 const onKeyDown = (e: KeyboardEvent) => {
-  if (props.currentMode !== 'crop' || !props.cropperMode.isLine || ignoreKeyBoardShortcuts.value) return
+  if (props.currentMode !== 'crop' || !props.cropperMode.isLine) return
   const key = e.key
 
   if (key !== 'ArrowUp'
@@ -324,18 +350,19 @@ const onKeyDown = (e: KeyboardEvent) => {
     && key.toLowerCase() !== 'z'
   ) return
 
-  const currentCoord = lineCropperState.currentCoord
   if (key === 'Enter') {
     e.preventDefault()
     setLineCropperCoord()
     return
   }
 
-  if (key.toLowerCase() === 'z' && isHoldingCtrl.value) {
+  if (isHoldingCtrl.value && key.toLowerCase() === 'z') {
     e.preventDefault()
     undoLastCoordLine()
     return
   }
+
+  const currentCoord = lineCropperState.currentCoord
 
   let moveAmount = props.moveOnKeyPressDistance
 
@@ -393,7 +420,6 @@ function addEventListeners(
   skipPreCleanup: boolean = false,
 ) {
   if (!skipPreCleanup) cleanUpEventListeners(listenersToAdd)
-  ignoreKeyBoardShortcuts.value = false
 
   for (const key of listenersToAdd) {
     switch (key) {
@@ -404,7 +430,7 @@ function addEventListeners(
         eventListenersToCleanup.pointermove = useEventListener(overlayContainerElem, 'pointermove', throttledOnPointerMove)
         break
       case 'keydown':
-        eventListenersToCleanup.keydown = useEventListener(window, 'keydown', onKeyDown)
+        eventListenersToCleanup.keydown = useEventListener(props.mainImgPanelElem, 'keydown', onKeyDown)
         break
       case 'click':
         eventListenersToCleanup.click = useEventListener(overlayContainerElem, 'click', onClick)
@@ -420,6 +446,7 @@ watchEffect(() => {
   cleanUpEventListeners()
   if (props.currentMode === 'crop') {
     if (props.cropperMode.isLine) {
+      skipNextLine.value = false
       addEventListeners(['pointermove', 'click', 'keydown', 'keyup'])
     }
     else if (props.cropperMode.isBox) {
@@ -432,6 +459,7 @@ watch(() => props.currentPageNum,
   () => {
     if (props.currentMode === 'crop' && props.cropperMode.isLine) {
       if (lineCropperState.currentCoord === 'b') {
+        skipNextLine.value = false
         lineCropperState.currentCoord = 't'
       }
     }

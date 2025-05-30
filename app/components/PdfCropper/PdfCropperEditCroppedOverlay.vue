@@ -5,7 +5,6 @@
       'pointer-events-none': currentMode === 'crop',
     }"
     @contextmenu.prevent="(e) => {
-      ignoreKeyBoardShortcuts = false
       if (contextMenuState.copiedCoords) contextMenuElem?.show(e)
     }"
     @click="setActiveOverlayToNone"
@@ -21,7 +20,6 @@
         class="cropped-overlay"
         :class="{
           active: active.id === id && (imgIndex + 1) === active.imgNum,
-          editing: active.id === id && (imgIndex + 1) === active.imgNum && ignoreKeyBoardShortcuts,
         }"
         :style="{
           '--l': pdfData.l,
@@ -88,6 +86,7 @@
 import ContextMenu from 'primevue/contextmenu'
 
 const props = defineProps<{
+  mainImgPanelElem: HTMLDivElement | null
   currentPageNum: number
   pageWidth: number
   pageHeight: number
@@ -100,8 +99,6 @@ const props = defineProps<{
 const overlays = defineModel<Map<string, PdfCroppedOverlayData>>({ required: true })
 
 const active = defineModel<ActiveCroppedOverlay>('activeOverlay', { required: true })
-
-const ignoreKeyBoardShortcuts = defineModel<boolean>('ignoreKeyBoardShortcuts', { required: true })
 
 const blurCroppedRegion = defineModel<boolean>('blurCroppedRegion', { required: true })
 
@@ -245,7 +242,6 @@ const contextMenuItems = ref([
 watch(isEscapePressed, (isPressed) => {
   if (isPressed && props.currentMode === 'edit' && active.value.id && active.value.imgNum) {
     cleanUpEventListeners()
-    ignoreKeyBoardShortcuts.value = false
     active.value.id = ''
     active.value.imgNum = 0
   }
@@ -254,7 +250,6 @@ watch(isEscapePressed, (isPressed) => {
 watch(() => props.currentMode, (newMode) => {
   if (newMode !== 'edit') {
     cleanUpEventListeners()
-    ignoreKeyBoardShortcuts.value = false
     contextMenuState.copiedCoords = null
     active.value.id = ''
     active.value.imgNum = 0
@@ -334,8 +329,6 @@ const onPointerUp = () => {
 }
 
 const onKeyDown = (e: KeyboardEvent) => {
-  if (ignoreKeyBoardShortcuts.value) return
-
   if (isHoldingCtrl.value) {
     const key = e.key.toLowerCase()
     if (key === 'c') {
@@ -415,7 +408,7 @@ const addEventListeners = (
         eventListenersToCleanup.pointerup = useEventListener(window, 'pointerup', onPointerUp)
         break
       case 'keydown':
-        eventListenersToCleanup.keydown = useEventListener(window, 'keydown', onKeyDown)
+        eventListenersToCleanup.keydown = useEventListener(props.mainImgPanelElem, 'keydown', onKeyDown)
         break
       case 'contextmenu':
         eventListenersToCleanup.contextmenu = useEventListener(target, 'contextmenu', (e: PointerEvent) => {

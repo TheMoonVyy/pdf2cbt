@@ -10,7 +10,6 @@
         pt:root:class="flex flex-col items-center overflow-y-auto!"
         :size="settings.splitterPanelSize"
         :min-size="15"
-        @click="() => ignoreKeyBoardShortcuts = true"
       >
         <Panel
           header="Settings"
@@ -76,11 +75,13 @@
           >
             <BaseInputNumber
               v-model="pdfState.currentPageNum"
-              :disabled="!pdfState.currentPageNum"
+              :disabled="pdfState.currentPageNum === 0 || !isPdfLoaded"
               :min="1"
               :max="pdfState.totalPages"
               label-id="pdf_page_num"
               :step="1"
+              increment-icon="material-symbols:arrow-forward-ios-rounded"
+              decrement-icon="material-symbols:arrow-back-ios-new-rounded"
             />
           </BaseFloatLabel>
         </Panel>
@@ -207,9 +208,10 @@
           />
         </div>
         <div
+          ref="mainImgPanelElem"
           class="flex"
+          tabindex="-1"
           :class="{ hidden: !isPdfLoaded }"
-          @pointerleave="pointerLeaveHandler"
         >
           <div
             class="relative mx-auto cursor-cell mt-4"
@@ -240,8 +242,8 @@
               v-if="isPdfLoaded"
               v-model="cropperOverlayDatas"
               v-model:active-overlay="activeCropperOverlay"
-              v-model:ignore-key-board-shortcuts="ignoreKeyBoardShortcuts"
               v-model:blur-cropped-region="settings.blurCroppedRegion"
+              :main-img-panel-elem="mainImgPanelElem"
               :current-mode="currentMode"
               :current-page-num="pdfState.currentThrottledPageNum"
               :page-scale="zoomScaleDebounced"
@@ -253,9 +255,9 @@
             />
             <PdfCropperCropOverlay
               v-if="isPdfLoaded"
-              v-model:ignore-key-board-shortcuts="ignoreKeyBoardShortcuts"
               v-model:current-overlay-data="mainOverlayData"
               v-model:blur-cropped-region="settings.blurCroppedRegion"
+              :main-img-panel-elem="mainImgPanelElem"
               :cropper-mode="cropperMode"
               :current-mode="currentMode"
               :current-page-num="pdfState.currentThrottledPageNum"
@@ -563,6 +565,7 @@ const { pixelRatio: devicePixelRatio, stop: stopUseDPR } = useDevicePixelRatio()
 let mupdfWorker: Comlink.Remote<MuPdfProcessor> | null = null
 
 const leftSidePanelElem = useTemplateRef('leftSidePanelElem')
+const mainImgPanelElem = useTemplateRef('mainImgPanelElem')
 
 const pdfState = shallowReactive({
   currentPageNum: 0,
@@ -570,8 +573,6 @@ const pdfState = shallowReactive({
   totalPages: 0,
   fileUint8Array: null as Uint8Array | null,
 })
-
-const ignoreKeyBoardShortcuts = shallowRef(false)
 
 const currentMode = shallowRef<'crop' | 'edit'>('crop')
 
@@ -641,10 +642,6 @@ const savedMarkingScheme: {
     im: number
   }
 } = {}
-
-onClickOutside(leftSidePanelElem as unknown as Ref<HTMLElement>, () => {
-  ignoreKeyBoardShortcuts.value = false
-})
 
 watch(
   () => mainOverlayData.type,
@@ -717,10 +714,6 @@ const hasQuestionsData = computed<boolean>(
   () => cropperOverlayDatas.size > 0,
 )
 
-const pointerLeaveHandler = () => {
-  if (!isPdfLoaded.value) return
-}
-
 function storeCurrentQuestionData(
   pdfData: PdfCroppedOverlayData['pdfData'][number] | null = null,
   incrementQuestion: boolean = true,
@@ -730,15 +723,17 @@ function storeCurrentQuestionData(
 
   if (!pdfData) pdfData = { ...mainOverlayData.pdfData[0]! }
 
-  if ((Math.abs(pdfData.l - pdfData.r) < settings.minCropDimension)
-    || (Math.abs(pdfData.b - pdfData.t) < settings.minCropDimension)) {
+  const { l, r, b, t } = pdfData
+
+  if ((Math.abs(l - r) < settings.minCropDimension)
+    || (Math.abs(b - t) < settings.minCropDimension)) {
     return
   }
 
-  pdfData.l = Math.min(pdfData.l, pdfData.r)
-  pdfData.r = Math.max(pdfData.l, pdfData.r)
-  pdfData.t = Math.min(pdfData.t, pdfData.b)
-  pdfData.b = Math.max(pdfData.t, pdfData.b)
+  pdfData.l = Math.min(l, r)
+  pdfData.r = Math.max(l, r)
+  pdfData.t = Math.min(t, b)
+  pdfData.b = Math.max(t, b)
 
   const id = `${subject || section}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
   const existingOverlayData = cropperOverlayDatas.get(id)
@@ -747,7 +742,9 @@ function storeCurrentQuestionData(
     existingOverlayData.pdfData.push(pdfData)
   }
   else {
-    cropperOverlayDatas.set(id, utilCloneJson(mainOverlayData))
+    const dataToSet = utilCloneJson(mainOverlayData)
+    dataToSet.pdfData[0] = pdfData
+    cropperOverlayDatas.set(id, dataToSet)
   }
 
   if (incrementQuestion) mainOverlayData.que++
@@ -844,12 +841,18 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>) {
   const subjectsData: CropperOutputData = {}
 
   for (const questionData of data.values()) {
-    const { subject: sub, section, que, id, type, ...rest } = questionData
+    const { subject: sub, section, que, id, type, pdfData, ...rest } = questionData
     const sec = section || sub
+
+    const formattedPdfData = pdfData.map((data) => {
+      const { l, r, t, b, ...restProps } = data
+      return { x1: l, x2: r, y1: t, y2: b, ...restProps }
+    })
 
     const cropperQuesData: CropperQuestionData = {
       que,
       type,
+      pdfData: formattedPdfData,
       ...rest,
     }
 

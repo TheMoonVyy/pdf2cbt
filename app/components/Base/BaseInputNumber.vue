@@ -1,6 +1,14 @@
 <script lang="ts" setup>
 const model = defineModel<number>({ required: true })
 
+const {
+  incrementIcon = 'prime:plus',
+  decrementIcon = 'prime:minus',
+} = defineProps<{
+  incrementIcon?: string
+  decrementIcon?: string
+}>()
+
 // hack to prevent vkeyboard from popping up
 //  when clicked/tapped on inc/dec buttons in touch screens
 const preventVKeyboard = (e: Event) => {
@@ -26,14 +34,14 @@ const preventVKeyboard = (e: Event) => {
   >
     <template #incrementicon>
       <Icon
-        name="prime:plus"
+        :name="incrementIcon"
         size="1.4em"
         class="pointer-events-none"
       />
     </template>
     <template #decrementicon>
       <Icon
-        name="prime:minus"
+        :name="decrementIcon"
         size="1.4em"
         class="pointer-events-none"
       />
