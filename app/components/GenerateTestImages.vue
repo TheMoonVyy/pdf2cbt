@@ -1,15 +1,11 @@
 <template>
-  <div />
+  <div class="hidden" />
 </template>
 
 <script lang="ts" setup>
 import * as Comlink from 'comlink'
 import mupdfWorkerFile from '@/src/worker/mupdf.worker?worker'
 import type { MuPdfProcessor } from '@/src/worker/mupdf.worker'
-
-interface PdfState {
-  scale: number
-}
 
 type PageNumKey = number | string
 
@@ -42,7 +38,7 @@ const emit = defineEmits<{
 const mupdfOgWorker = new mupdfWorkerFile()
 const mupdfWorker = Comlink.wrap<MuPdfProcessor>(mupdfOgWorker)
 
-const pdfState: PdfState = {
+const pdfState = {
   scale: props.questionImgScale,
 }
 
