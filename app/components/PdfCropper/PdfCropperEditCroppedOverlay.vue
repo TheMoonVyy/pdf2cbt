@@ -183,6 +183,8 @@ const copyRegion = () => {
   if (!pdfDataCoords) return
 
   contextMenuState.copiedCoords = { ...pdfDataCoords }
+  active.value.id = ''
+  active.value.imgNum = 0
 }
 
 const pasteRegion = () => {

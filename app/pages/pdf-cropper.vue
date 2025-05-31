@@ -41,6 +41,7 @@
                 v-model="settings.cropperMode"
                 label-id="cropperModeDD"
                 :options="selectOptions.cropperMode"
+                :disabled="currentMode !== 'crop'"
                 option-label="name"
                 option-value="value"
                 :fluid="true"
