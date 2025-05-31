@@ -4,7 +4,7 @@
     ref="overlayContainerElem"
     class="absolute top-0 left-0 w-full h-full"
     :class="{
-      'pointer-events-none': currentMode === 'edit',
+      'pointer-events-none': currentMode !== 'crop',
     }"
     :style="{
       '--l': currentOverlayData.pdfData[0]!.l,
@@ -21,7 +21,6 @@
       contextMenuElem?.show(e)
     }"
   >
-    <!-- line selection div -->
     <template v-if="cropperMode.isLine">
       <div
         class="line-cropper l"
@@ -125,15 +124,22 @@ const skipNextLine = computed({
 
 const undoLastCoordLine = () => {
   if (props.currentMode !== 'crop' || !props.cropperMode.isLine) return
+  const pdfData = currentOverlayData.value.pdfData[0]!
   switch (lineCropperState.currentCoord) {
     case 'b':
       lineCropperState.currentCoord = 't'
+      pdfData.b = 0
+      pdfData.t = 0
       break
     case 't':
       lineCropperState.currentCoord = 'r'
+      pdfData.t = 0
+      pdfData.r = 0
       break
     case 'r':
       lineCropperState.currentCoord = 'l'
+      pdfData.r = 0
+      pdfData.l = 0
       break
   }
 }
@@ -325,8 +331,9 @@ const setLineCropperCoord = () => {
         emit('setPdfData', pdfDataToEmit)
       }
       skipNextLine.value = false
-
-      pdfData.t = pdfData.b
+      if (currentOverlayData.value.subject) {
+        pdfData.t = pdfData.b
+      }
       break
     }
   }
@@ -461,6 +468,8 @@ watch(() => props.currentPageNum,
       if (lineCropperState.currentCoord === 'b') {
         skipNextLine.value = false
         lineCropperState.currentCoord = 't'
+        const pdfData = currentOverlayData.value.pdfData[0]
+        if (pdfData) pdfData.b = 0
       }
     }
   },

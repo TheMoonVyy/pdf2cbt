@@ -9,36 +9,55 @@
       <BaseFloatLabel
         label="Subject Name"
         label-id="subject_name"
+        class="flex grow"
       >
         <InputText
           id="subject_name"
           v-model="currentData.subject"
+          fluid
           :maxlength="30"
           :disabled="!isPdfLoaded"
           @blur="() => currentData.subject = currentData.subject.trim()"
         />
       </BaseFloatLabel>
-      <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
+      <span class="flex items-center px-2 w-16 justify-center border-l border-surface-700 bg-surface-900 text-surface-300">
         {{ currentData.subject?.length }}/30
       </span>
     </div>
     <div class="flex w-full mt-4 bg-surface-950 border border-surface-700 rounded-md">
       <BaseFloatLabel
-        label="Section Name"
+        label="Section Name (Optional)"
         label-id="section_name"
+        class="flex grow"
       >
         <InputText
           id="section_name"
           v-model="currentData.section"
+          fluid
           :maxlength="40"
           :disabled="!isPdfLoaded"
           @blur="() => currentData.section = currentData.section.trim()"
         />
       </BaseFloatLabel>
-      <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
+      <span class="flex items-center px-2 w-16 justify-center border-l border-surface-700 bg-surface-900 text-surface-300">
         {{ currentData.section?.length }}/40
       </span>
     </div>
+    <BaseFloatLabel
+      class="w-full mt-4"
+      label="Question Number"
+      label-id="question_num"
+      label-class="start-1/2! -translate-x-1/2"
+    >
+      <BaseInputNumber
+        v-model="currentData.que"
+        :disabled="!props.isPdfLoaded"
+        :min="1"
+        :max="9999"
+        label-id="question_num"
+        :step="1"
+      />
+    </BaseFloatLabel>
     <div class="flex flex-wrap gap-2 mt-4">
       <BaseFloatLabel
         class="min-w-24 flex-1"
@@ -86,21 +105,6 @@
         />
       </BaseFloatLabel>
     </div>
-    <BaseFloatLabel
-      class="w-full mt-4"
-      label="Question Number"
-      label-id="question_num"
-      label-class="start-1/2! -translate-x-1/2"
-    >
-      <BaseInputNumber
-        v-model="currentData.que"
-        :disabled="!props.isPdfLoaded"
-        :min="1"
-        :max="9999"
-        label-id="question_num"
-        :step="1"
-      />
-    </BaseFloatLabel>
     <Panel
       header="Marking Scheme"
       toggleable
@@ -169,22 +173,32 @@
 </template>
 
 <script setup lang="ts">
+import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '#shared/constants'
+
 const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
 
 const props = defineProps<{
+  overlayDatas: Map<string, PdfCroppedOverlayData>
   isPdfLoaded: boolean
-  currentOverlayImgNum: number
 }>()
 
 const questionDetailsHeader = computed(() => {
-  const { id, que, pdfData } = currentData.value
-  let imgNumStr = ''
-  if (id && pdfData.length > 1) {
-    imgNumStr = `(${props.currentOverlayImgNum}) `
+  const id = currentData.value.id
+  const subject = currentData.value.subject
+  const section = currentData.value.section
+  const que = currentData.value.que
+
+  const newID = `${section || subject}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
+  const imgLength = props.overlayDatas.get(newID)?.pdfData.length
+  let imgNum = imgLength || 1
+
+  if (id !== newID && imgLength !== undefined) {
+    imgNum = imgLength + 1
   }
-  else if (pdfData.length > 1) {
-    imgNumStr = `(${pdfData.length + 1}) `
-  }
+
+  const imgNumStr = imgNum > 1
+    ? `(${imgNum}) `
+    : ''
 
   return `Question Details [ #${que} ${imgNumStr}]`
 })

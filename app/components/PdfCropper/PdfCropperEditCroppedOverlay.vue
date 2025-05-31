@@ -2,7 +2,7 @@
   <div
     class="absolute top-0 left-0 w-full h-full"
     :class="{
-      'pointer-events-none': currentMode === 'crop',
+      'pointer-events-none': currentMode !== 'edit',
     }"
     @contextmenu.prevent="(e) => {
       if (contextMenuState.copiedCoords) contextMenuElem?.show(e)
@@ -34,7 +34,7 @@
           class="overlay-label w-fit flex flex-wrap divide-x divide-current"
         >
           <span class="px-1">
-            {{ item.section }}
+            {{ item.section || item.subject }}
           </span>
           <span class="px-1">
             Q: {{ item.que }}
@@ -50,7 +50,7 @@
           </span>
           <span class="px-1">
             M: ({{ utilMarksWithSign(item.marks.cm) }}
-            <template v-if="item.type === 'mcq'">
+            <template v-if="item.type === 'msq'">
               {{ utilMarksWithSign(item.marks.pm as number) }}
             </template>
             {{ utilMarksWithSign(item.marks.im) }})
@@ -140,10 +140,6 @@ const eventListenersToCleanup: {
   keydown: null,
 }
 
-function clamp(val: number, min: number, max: number) {
-  return Math.min(Math.max(val, min), max)
-}
-
 const cleanUpEventListeners = (
   listenersToClean: (keyof (typeof eventListenersToCleanup))[] | null = null,
 ) => {
@@ -160,7 +156,6 @@ const cleanUpEventListeners = (
 }
 
 const setActiveOverlayToNone = () => {
-  console.log('Setting active overlay to none')
   active.value.id = ''
   active.value.imgNum = 0
   cleanUpEventListeners()
@@ -267,8 +262,8 @@ const onPointerMove = (e: PointerEvent) => {
     // Dragging
     const width = startBox.r - startBox.l
     const height = startBox.b - startBox.t
-    const newL = clamp(startBox.l + dw, 0, props.pageWidth - width)
-    const newT = clamp(startBox.t + dh, 0, props.pageHeight - height)
+    const newL = utilClampNumber(startBox.l + dw, 0, props.pageWidth - width)
+    const newT = utilClampNumber(startBox.t + dh, 0, props.pageHeight - height)
     pdfDataCoords.l = newL
     pdfDataCoords.t = newT
     pdfDataCoords.r = newL + width
@@ -309,10 +304,10 @@ const onPointerMove = (e: PointerEvent) => {
         break
     }
 
-    l = clamp(l, 0, props.pageWidth)
-    r = clamp(r, 0, props.pageWidth)
-    t = clamp(t, 0, props.pageHeight)
-    b = clamp(b, 0, props.pageHeight)
+    l = utilClampNumber(l, 0, props.pageWidth)
+    r = utilClampNumber(r, 0, props.pageWidth)
+    t = utilClampNumber(t, 0, props.pageHeight)
+    b = utilClampNumber(b, 0, props.pageHeight)
 
     pdfDataCoords.l = Math.min(l, r)
     pdfDataCoords.t = Math.min(t, b)
