@@ -1,6 +1,6 @@
 <template>
   <Panel
-    :header="`Question Details ( #${currentQuestionData.questionNum} )`"
+    :header="questionDetailsHeader"
     toggleable
     class="w-full"
     pt:content:class="px-4"
@@ -9,36 +9,51 @@
       <BaseFloatLabel
         label="Subject Name"
         label-id="subject_name"
+        class="grow"
       >
-        <InputText
-          id="subject_name"
-          v-model="currentQuestionData.subjectName"
-          :maxlength="30"
+        <Select
+          v-model="currentData.subject"
+          editable
+          fluid
           :disabled="!isPdfLoaded"
-          @blur="() => currentQuestionData.subjectName = currentQuestionData.subjectName.trim()"
+          :options="subjects"
+          placeholder="Enter/Select subject name"
+          @blur="() => currentData.subject = currentData.subject.trim()"
         />
       </BaseFloatLabel>
-      <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
-        {{ currentQuestionData.subjectName?.length }}/30
-      </span>
     </div>
     <div class="flex w-full mt-4 bg-surface-950 border border-surface-700 rounded-md">
       <BaseFloatLabel
-        label="Section Name"
+        label="Section Name (Optional)"
         label-id="section_name"
+        class="grow"
       >
-        <InputText
-          id="section_name"
-          v-model="currentQuestionData.sectionName"
-          :maxlength="40"
+        <Select
+          v-model="currentData.section"
+          editable
+          fluid
           :disabled="!isPdfLoaded"
-          @blur="() => currentQuestionData.sectionName = currentQuestionData.sectionName.trim()"
+          :options="sections"
+          placeholder="Enter/Select section name or leave it blank"
+          @blur="() => currentData.section = currentData.section.trim()"
         />
       </BaseFloatLabel>
-      <span class="flex items-center justify-center grow border-l border-surface-700 bg-surface-900 text-surface-300">
-        {{ currentQuestionData.sectionName?.length }}/40
-      </span>
     </div>
+    <BaseFloatLabel
+      class="w-full mt-4"
+      label="Question Number"
+      label-id="question_num"
+      label-class="start-1/2! -translate-x-1/2"
+    >
+      <BaseInputNumber
+        v-model="currentData.que"
+        :disabled="!props.isPdfLoaded"
+        :min="1"
+        :max="9999"
+        label-id="question_num"
+        :step="1"
+      />
+    </BaseFloatLabel>
     <div class="flex flex-wrap gap-2 mt-4">
       <BaseFloatLabel
         class="min-w-24 flex-1"
@@ -47,7 +62,7 @@
         label-class="text-xs"
       >
         <Select
-          v-model="currentQuestionData.questionType"
+          v-model="currentData.type"
           :disabled="!props.isPdfLoaded"
           label-id="question_type"
           :options="optionItems.questionType"
@@ -67,14 +82,14 @@
         </Select>
       </BaseFloatLabel>
       <BaseFloatLabel
-        v-show="currentQuestionData.questionType !== 'nat'"
+        v-show="currentData.type !== 'nat'"
         class="min-w-24 flex-1"
         label="Answer Options"
         label-id="answer_options"
         label-class="text-xs"
       >
         <InputNumber
-          v-model="currentQuestionData.totalOptions"
+          v-model="currentData.options"
           :disabled="!props.isPdfLoaded"
           :min="1"
           :max="9"
@@ -86,21 +101,6 @@
         />
       </BaseFloatLabel>
     </div>
-    <BaseFloatLabel
-      class="w-full mt-4"
-      label="Question Number"
-      label-id="question_num"
-      label-class="start-1/2! -translate-x-1/2"
-    >
-      <BaseInputNumber
-        v-model="currentQuestionData.questionNum"
-        :disabled="!props.isPdfLoaded"
-        :min="1"
-        :max="9999"
-        label-id="question_num"
-        :step="1"
-      />
-    </BaseFloatLabel>
     <Panel
       header="Marking Scheme"
       toggleable
@@ -114,7 +114,7 @@
           label-class="start-1/2! -translate-x-1/2 text-xs"
         >
           <BaseInputNumber
-            v-model="currentQuestionData.correctMarks"
+            v-model="currentData.marks.cm"
             :disabled="!props.isPdfLoaded"
             :min="1"
             :max="99"
@@ -124,7 +124,7 @@
           />
         </BaseFloatLabel>
         <div
-          v-if="currentQuestionData.questionType === 'msq'"
+          v-if="currentData.type === 'msq'"
           class="flex gap-3"
         >
           <IconWithTooltip
@@ -138,7 +138,7 @@
             label-class="start-1/2! -translate-x-1/2 text-xs"
           >
             <BaseInputNumber
-              v-model="currentQuestionData.partialMarks"
+              v-model="currentData.marks.pm"
               :disabled="!props.isPdfLoaded"
               :min="0"
               :max="99"
@@ -155,7 +155,7 @@
           label-class="start-1/2! -translate-x-1/2 text-xs"
         >
           <BaseInputNumber
-            v-model="currentQuestionData.incorrectMarks"
+            v-model="currentData.marks.im"
             :disabled="!props.isPdfLoaded"
             :min="-99"
             :max="0"
@@ -169,11 +169,59 @@
 </template>
 
 <script setup lang="ts">
-const currentQuestionData = defineModel<CurrentQuestionData>({ required: true })
+import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '#shared/constants'
+
+const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
 
 const props = defineProps<{
+  overlayDatas: Map<string, PdfCroppedOverlayData>
   isPdfLoaded: boolean
 }>()
+
+const questionDetailsHeader = computed(() => {
+  const id = currentData.value.id
+  const subject = currentData.value.subject
+  const section = currentData.value.section
+  const que = currentData.value.que
+
+  const newID = `${section || subject}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
+  const imgLength = props.overlayDatas.get(newID)?.pdfData.length
+  let imgNum = imgLength || 1
+
+  if (id !== newID && imgLength !== undefined) {
+    imgNum = imgLength + 1
+  }
+
+  const imgNumStr = imgNum > 1
+    ? `(${imgNum}) `
+    : ''
+
+  return `Question Details [ #${que} ${imgNumStr}]`
+})
+
+const subjects = ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English', 'Logical Reasoning', 'English & LR']
+
+const sections = computed(() => {
+  const subject = currentData.value.subject
+
+  const subjectList: string[] = []
+  const sectionsList: string[] = []
+
+  if (subject) {
+    subjectList.push(subject)
+  }
+  else {
+    subjectList.push(...subjects.slice(0, 3))
+  }
+
+  for (const subjectName of subjectList) {
+    for (const n of utilRange(1, 5)) {
+      sectionsList.push(`${subjectName} Section ${n}`)
+    }
+  }
+
+  return sectionsList
+})
 
 const optionItems = {
   questionType: [
