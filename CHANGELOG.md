@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.11.0...v1.12.0) (2025-06-01)
+
+
+### Features
+
+* **pdf-cropper:** separate crop and edit logic into separate new components, improve scaling logic by using css vars and make pdf cropper more versatile ([b108c69](https://github.com/TheMoonVyy/pdf2cbt/commit/b108c69de72dbc5ff71bb2b6ece818fad6362091))
+
 ## [1.11.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.10.2...v1.11.0) (2025-05-25)
 
 
