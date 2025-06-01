@@ -69,20 +69,9 @@ export interface CbtUiSettings {
 
 export type QuestionType = 'mcq' | 'msq' | 'nat'
 
-export interface CurrentQuestionData {
-  subjectName: string
-  sectionName: string
-  questionType: QuestionType
-  totalOptions: number
-  questionNum: number
-  correctMarks: number
-  partialMarks: number
-  incorrectMarks: number
-}
-
 export type TestSectionKey = string
 
-export type CropperPdfCoords = {
+export type PdfCropperCoords = {
   page: number
   x1: number
   y1: number
@@ -90,16 +79,18 @@ export type CropperPdfCoords = {
   y2: number
 }
 
-export interface CropperQuestionData {
+type QuestionMarks = {
+  cm: number // correct marks
+  pm?: number // partial marks
+  im: number // incorrect marks
+}
+
+export type CropperQuestionData = {
   que: number
   type: QuestionType
   options?: number
-  marks: {
-    cm: number
-    pm?: number
-    im: number
-  }
-  pdfData: CropperPdfCoords[]
+  marks: QuestionMarks
+  pdfData: PdfCropperCoords[]
 }
 
 export type CropperSectionsData = {
@@ -122,6 +113,25 @@ export type TestQuestionData = Pick<CropperQuestionData, 'que' | 'type'> & {
   answer: QuestionAnswer
   timeSpent: number
   totalOptions?: number
+}
+
+export type PdfCroppedOverlayData = Omit<CropperQuestionData, 'marks' | 'pdfData'> & {
+  id: string
+  subject: string
+  section: string
+  marks: Required<QuestionMarks>
+  pdfData: {
+    l: number // left
+    r: number // right
+    t: number // top
+    b: number // bottom
+    page: number // page number
+  }[]
+}
+
+export type ActiveCroppedOverlay = {
+  id: string
+  imgNum: number
 }
 
 export type LogTestStateViaType = 'testStarted' | 'testResumed' | 'testFinished'
@@ -367,4 +377,23 @@ export type UploadedTestData = {
 
 export type QuestionsImageUrls = {
   [queId: number | string]: string[]
+}
+
+export type PdfCropperSettings = {
+  cropperMode: 'line' | 'box'
+  scale: number
+  splitterPanelSize: number
+  pageBGColor: string
+  cropSelectionGuideColor: string
+  cropSelectionBgOpacity: number
+  cropSelectedRegionColor: string
+  cropSelectedRegionBgOpacity: number
+  cropSelectionSkipColor: string
+  qualityFactor: number
+  selectionThrottleInterval: number
+  minCropDimension: number
+  moveOnKeyPressDistance: number
+  blurCroppedRegion: boolean
+  blurIntensity: number
+  showQuestionDetailsOnOverlay: boolean
 }
