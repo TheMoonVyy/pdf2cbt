@@ -152,7 +152,7 @@ const contextMenuItems = ref([
     command: undoLastCoordLine,
   },
   {
-    label: 'Skip Next Line',
+    label: 'Skip Next Bottom Line',
     icon: 'mdi:jump',
     visible: () => props.cropperMode.isLine
       && lineCropperState.currentCoord === 'b'
@@ -160,7 +160,7 @@ const contextMenuItems = ref([
     command: () => skipNextLine.value = true,
   },
   {
-    label: 'Unskip Next Line',
+    label: 'Unskip Next Bottom Line',
     icon: 'mdi:jump',
     iconClass: 'scale-x-[-1]',
     visible: () => props.cropperMode.isLine

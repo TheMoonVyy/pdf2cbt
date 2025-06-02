@@ -61,42 +61,11 @@
           >
             PDF Cropper
           </NuxtLink>
-          to upload your PDF containing questions and mark each question area along with its details like subject name, section name, and question type (MCQ, MSQ, NAT) etc.
+          to upload your PDF containing questions and mark each question area along with its details like subject name, section name, and question type (MCQ, MSQ, NAT) etc.<br>
+          Instructions/Docs for that are on PDF Cropper page itself.
         </p>
         <p class="mt-2 text-left">
-          You can choose between <strong>Line mode</strong> and <strong>Box mode</strong> for cropping:
-        </p>
-        <ul class="list-disc list-inside mt-2 text-left ml-4">
-          <li>
-            <strong>Line mode</strong> is ideal if your PDF has questions in a consistent layout. It helps reduce repetitive work.
-          </li>
-          <li>
-            <strong>Box mode</strong> works like cropping an image — simply draw a box around the question to crop it.
-          </li>
-        </ul>
-        <p class="mt-2 text-left">
-          You can also watch this demo video on how to use it:
-          <NuxtLink
-            to="https://www.youtube.com/watch?v=JlzG9X_Z1NU"
-            class="underline text-green-400"
-            target="_blank"
-          >
-            📺 PDF Cropper Demo Video
-          </NuxtLink>
-        </p>
-        <p class="mt-2 text-left">
-          After cropping, click on <strong>Generate Output</strong> to download the cropper data. You can choose to:
-        </p>
-        <ul class="list-disc list-inside mt-2 text-left ml-4">
-          <li>
-            Download a <strong>JSON file</strong> containing only the cropper data.
-          </li>
-          <li>
-            Download a <strong>ZIP file</strong> that includes both the original PDF and the JSON cropper data.
-          </li>
-        </ul>
-        <p class="mt-2 text-left">
-          This data is essential for the
+          The Output data of PDF Cropper is essential for the
           <NuxtLink
             to="/cbt/interface"
             class="underline text-green-400"
@@ -105,29 +74,6 @@
             Test Interface
           </NuxtLink>
           to display and manage the questions accurately.
-        </p>
-        <p class="mt-3 text-left">
-          <strong>NOTE:</strong><br>
-          If your PDF has question that is split across two pages, you can merge two cropped images into a single question as mentioned below (here's a video:
-          <NuxtLink
-            to="https://www.youtube.com/watch?v=MSHy26Cg4-o"
-            class="underline text-green-400"
-            target="_blank"
-          >
-            📺Merge cropped images into one question
-          </NuxtLink>
-          ):<br><br>
-
-          When two or more cropped images have the <strong>same question details</strong> (subject, section, and question number), they are treated as part of the <strong>same question</strong>.<br><br>
-
-          Basically, crop the half part of the question that appears on the current page as usual.<br>
-          Then go to the next page and make sure to use the <strong>same question number</strong> (you'll need to manually decrease it by 1, because it auto-increments after every crop).<br><br>
-
-          <strong>Example:</strong><br>
-          Say the current question number is 3.<br>
-          You crop the first half on the current page — the question number will be auto-incremented to 4.<br>
-          Now go to the next page and set the question number back to 3, then crop the second half.<br>
-          Both images will now be grouped as one question since they share the same subject, section, and question number.
         </p>
       </div>
       <!-- After Step 1 -->

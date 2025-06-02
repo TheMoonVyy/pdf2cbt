@@ -6,7 +6,7 @@
     />
     <Splitter pt:root:class="flex-1 flex-nowrap min-h-0 min-w-0 rounded-none select-none">
       <SplitterPanel
-        pt:root:class="flex flex-col items-center overflow-y-auto!"
+        pt:root:class="flex flex-col items-center overflow-y-auto! w-1/4"
         :size="settings.splitterPanelSize"
         :min-size="15"
       >
@@ -188,7 +188,7 @@
       >
         <div
           v-if="!isPdfLoaded"
-          class="flex justify-center mt-4"
+          class="flex flex-col gap-6 justify-center mt-6"
         >
           <BaseSimpleFileUpload
             accept="application/pdf,application/zip,.pdf,.zip"
@@ -198,6 +198,7 @@
             invalid-file-type-message="Invalid file. Please select a valid PDF"
             @upload="handleFileUpload"
           />
+          <DocsPdfCropper class="mx-4 sm:mx-10 select-text" />
         </div>
         <div
           ref="mainImgPanelElem"
