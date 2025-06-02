@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.12.0...v1.13.0) (2025-06-02)
+
+
+### Features
+
+* **pdf-cropper:** add docs to pdf cropper page to be shown until pdf file is selected by user, make the docs a separate component under components/Docs folder, refactor homepage to point to the docs on pdf cropper instead ([f47ee51](https://github.com/TheMoonVyy/pdf2cbt/commit/f47ee5172e4430f860e05c55b510c5d3faa14805))
+
 ## [1.12.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.11.0...v1.12.0) (2025-06-01)
 
 
