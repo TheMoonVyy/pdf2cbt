@@ -31,7 +31,7 @@
         accept="application/json,application/zip,.json,.zip"
         :label="'Select Answer Key Data'"
         invalid-file-type-message="Invalid file. Please select a valid JSON or ZIP file from Generate Answer Key Page"
-        icon-name="prime:plus"
+        icon-name="line-md:plus"
         @upload="handleFileUpload"
       />
     </div>

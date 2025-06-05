@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="border border-green-500 rounded-2xl p-4 text-center">
+    <div class="border border-green-500 rounded-2xl p-4 text-center text-foreground bg-background">
       <h2 class="text-xl font-semibold text-green-500">
         This page/tool is used to define test questions and their locations in the PDF.
       </h2>
@@ -13,17 +13,17 @@
         >this video</NuxtLink>
         to learn how to use this page/tool.
       </h3>
-      <Accordion
-        :value="expandedValues"
-        :multiple="multiple"
+      <UiAccordion
+        type="multiple"
+        :default-value="expandedValues"
+        :unmount-on-hide="false"
+        class="w-full"
       >
-        <AccordionPanel value="1">
-          <AccordionHeader
-            class="text-xl"
-          >
-            <span class="mx-auto">About This Page/Tool</span>
-          </AccordionHeader>
-          <AccordionContent>
+        <UiAccordionItem value="1">
+          <UiAccordionTrigger>
+            About This Page/Tool
+          </UiAccordionTrigger>
+          <UiAccordionContent>
             <div class="flex flex-col gap-4 text-left leading-[2rem]">
               <div>
                 <strong>Purpose:</strong>
@@ -62,23 +62,16 @@
                     <strong>cropper data</strong> (also referred to as <strong>test data</strong>).
                   </li>
                   <li>
-                    <Tag
-                      severity="info"
-                      value="Recommended"
-                      rounded
-                      pt:root:class="py-0.5"
-                    />
+                    <UiBadge variant="info">
+                      Recommended
+                    </UiBadge>
                     When you choose <strong>ZIP</strong> as the output:
                     <ul class="list-disc ml-6">
                       <li>
-                        <Tag
-                          severity="info"
-                          value="Recommended"
-                          rounded
-                          pt:root:class="py-0.5"
-                        />
-                        <strong>With Pre-generated Images</strong>:
-                        The ZIP will contain <strong>JSON</strong> and <strong>PNG</strong> files.
+                        <UiBadge variant="info">
+                          Recommended
+                        </UiBadge>
+                        <strong> With Pre-generate Images</strong>: ZIP will contain <strong>JSON and PNG</strong> files.
                       </li>
                       <li>
                         <strong>Without Pre-generated Images</strong>:
@@ -97,16 +90,14 @@
                 </ul>
               </div>
             </div>
-          </AccordionContent>
-        </AccordionPanel>
+          </UiAccordionContent>
+        </UiAccordionItem>
 
-        <AccordionPanel value="2">
-          <AccordionHeader
-            class="text-xl"
-          >
-            <span class="mx-auto">About things on the left panel</span>
-          </AccordionHeader>
-          <AccordionContent>
+        <UiAccordionItem value="2">
+          <UiAccordionTrigger>
+            About things on the left panel
+          </UiAccordionTrigger>
+          <UiAccordionContent>
             <div class="flex flex-col gap-2 text-left leading-[2.1rem]">
               <div>
                 <strong>Current Mode:</strong>
@@ -174,17 +165,15 @@
                 The result can be used directly in the CBT Interface.
               </div>
             </div>
-          </AccordionContent>
-        </AccordionPanel>
+          </UiAccordionContent>
+        </UiAccordionItem>
 
         <!-- Question Details -->
-        <AccordionPanel value="3">
-          <AccordionHeader
-            class="text-xl"
-          >
-            <span class="mx-auto">Question Details</span>
-          </AccordionHeader>
-          <AccordionContent>
+        <UiAccordionItem value="3">
+          <UiAccordionTrigger>
+            Question Details
+          </UiAccordionTrigger>
+          <UiAccordionContent>
             <div class="flex flex-col gap-4 text-left leading-[2rem]">
               <div>
                 <strong>Question Details Header Format Info:</strong><br>
@@ -220,12 +209,9 @@
                     (e.g. COMEDK, BITSAT), then you can <strong>leave this blank</strong>.
                   </li>
                   <li>
-                    <Tag
-                      severity="warn"
-                      value="IMPORTANT NOTE"
-                      rounded
-                      pt:root:class="py-0.5"
-                    />
+                    <UiBadge variant="warn">
+                      IMPORTANT NOTE
+                    </UiBadge>
                     If you enter a section name, make sure it's unique across all sections,
                     even those in other subjects.<br>
                     It is recommended to follow the <strong>"SubjectName Section 1"</strong> format as
@@ -235,17 +221,15 @@
                   <li>This groups questions by section.</li>
                 </ul>
               </div>
+
               <div>
                 <strong>Question Number:</strong>
                 <ul class="list-disc ml-6">
                   <li>This number must be unique within a section.</li>
                   <li>
-                    <Tag
-                      severity="info"
-                      value="Recommended"
-                      rounded
-                      pt:root:class="py-0.5"
-                    />
+                    <UiBadge variant="info">
+                      Recommended
+                    </UiBadge>
                     It's recommended to use the same question number as in your source PDF.
                     This helps you map questions easily.<br>
                     If you're wondering about following your target exam's numbering style,
@@ -293,17 +277,15 @@
                 </ul>
               </div>
             </div>
-          </AccordionContent>
-        </AccordionPanel>
+          </UiAccordionContent>
+        </UiAccordionItem>
 
         <!-- Steps for Using the PDF Cropper -->
-        <AccordionPanel value="4">
-          <AccordionHeader
-            class="text-xl"
-          >
-            <span class="mx-auto">Steps for Using the PDF Cropper</span>
-          </AccordionHeader>
-          <AccordionContent>
+        <UiAccordionItem value="4">
+          <UiAccordionTrigger>
+            Steps for Using the PDF Cropper
+          </UiAccordionTrigger>
+          <UiAccordionContent>
             <div class="text-left leading-[2rem]">
               <ul class="list-decimal ml-6 [&>li]:mb-3">
                 <li>
@@ -336,17 +318,15 @@
                 </li>
               </ul>
             </div>
-          </AccordionContent>
-        </AccordionPanel>
+          </UiAccordionContent>
+        </UiAccordionItem>
 
         <!-- Context menus and keyboard shortcuts -->
-        <AccordionPanel value="5">
-          <AccordionHeader
-            class="text-xl"
-          >
-            <span class="mx-auto">Context menus and keyboard shortcuts</span>
-          </AccordionHeader>
-          <AccordionContent>
+        <UiAccordionItem value="5">
+          <UiAccordionTrigger>
+            Context menus and keyboard shortcuts
+          </UiAccordionTrigger>
+          <UiAccordionContent>
             <div class="text-left leading-[2rem]">
               <strong>Context Menu is the menu that pops up when you right-click (or long-press on touch screens).</strong><br>
               When you open the context menu on the PDF page here,
@@ -368,11 +348,9 @@
                       <ul class="list-disc ml-6">
                         <li>
                           <strong>Undo Line</strong>
-                          ( <Tag
-                            value="CTRL + Z"
-                            rounded
-                            pt:root:class="py-0.5"
-                          /> ):<br>
+                          ( <UiBadge variant="success">
+                            CTRL + Z
+                          </UiBadge> ):<br>
                           Undo the last selection line (boundary) set.
                           This option doesn't appear if no lines are set.<br>
                           This reverts to the previous boundary selection.<br>
@@ -381,11 +359,9 @@
                         </li>
                         <li>
                           <strong>Skip Next Bottom Line</strong>
-                          ( <Tag
-                            value="hold SHIFT key"
-                            rounded
-                            pt:root:class="py-0.5"
-                          /> ):<br>
+                          ( <UiBadge variant="success">
+                            hold CTRL + V
+                          </UiBadge> ):<br>
                           Signal the tool to skip the next bottom line.<br>
                           Use this to jump over parts of the PDF
                           you don't want included in the cropped question.<br>
@@ -402,32 +378,26 @@
                   <ul class="list-disc ml-6">
                     <li>
                       <strong>Delete</strong>
-                      ( <Tag
-                        value="Delete key"
-                        rounded
-                        pt:root:class="py-0.5"
-                      /> ):<br>
+                      ( <UiBadge variant="success">
+                        Delete key
+                      </UiBadge> ):<br>
                       Deletes the selected cropped region.
                       This action is irreversible, so use it carefully.
                     </li>
                     <li>
                       <strong>Copy Region</strong>
-                      ( <Tag
-                        value="CTRL + C"
-                        rounded
-                        pt:root:class="py-0.5"
-                      /> ):<br>
+                      ( <UiBadge variant="success">
+                        CTRL + C
+                      </UiBadge> ):<br>
                       Copies the selected region's location (coordinates and page number).<br>
                       You can then paste it into your current question details.<br>
                       Mainly <strong>useful</strong> when cropping <strong>Paragraph type questions</strong>.
                     </li>
                     <li>
                       <strong>Paste Region</strong>
-                      ( <Tag
-                        value="CTRL + V"
-                        rounded
-                        pt:root:class="py-0.5"
-                      /> ):<br>
+                      ( <UiBadge variant="success">
+                        CTRL + V
+                      </UiBadge> ):<br>
                       Pastes the copied region into your current question details.<br>
                       This creates a new cropped region with the copied location
                       but uses the current question details.<br>
@@ -437,25 +407,23 @@
                 </li>
               </ul>
             </div>
-          </AccordionContent>
-        </AccordionPanel>
-        <AccordionPanel value="6">
-          <AccordionHeader
-            class="text-xl"
-          >
-            <span class="mx-auto">Dealing with some special/weird question formats</span>
-          </AccordionHeader>
-          <AccordionContent>
-            <Accordion
-              :value="['3']"
-              multiple
-              lazy
+          </UiAccordionContent>
+        </UiAccordionItem>
+        <UiAccordionItem value="6">
+          <UiAccordionTrigger>
+            Dealing with some special/weird question formats
+          </UiAccordionTrigger>
+          <UiAccordionContent>
+            <UiAccordion
+              type="multiple"
+              :default-value="['3']"
+              class="w-full"
             >
-              <AccordionPanel value="1">
-                <AccordionHeader class="text-xl">
-                  <span class="mx-auto">Image 1</span>
-                </AccordionHeader>
-                <AccordionContent>
+              <UiAccordionItem value="1">
+                <UiAccordionTrigger>
+                  Image 1
+                </UiAccordionTrigger>
+                <UiAccordionContent>
                   <div v-if="!imageLoadingState.isImage1Loaded">
                     Please wait, loading Image 1...
                   </div>
@@ -473,14 +441,14 @@
                       }
                     }"
                   >
-                </AccordionContent>
-              </AccordionPanel>
+                </UiAccordionContent>
+              </UiAccordionItem>
 
-              <AccordionPanel value="2">
-                <AccordionHeader class="text-xl">
-                  <span class="mx-auto">Image 2</span>
-                </AccordionHeader>
-                <AccordionContent>
+              <UiAccordionItem value="2">
+                <UiAccordionTrigger>
+                  Image 2
+                </UiAccordionTrigger>
+                <UiAccordionContent>
                   <div v-if="!imageLoadingState.isImage2Loaded">
                     Please wait, loading Image 2...
                   </div>
@@ -498,8 +466,8 @@
                       }
                     }"
                   >
-                </AccordionContent>
-              </AccordionPanel>
+                </UiAccordionContent>
+              </UiAccordionItem>
               <div class="text-left leading-[2rem] pt-5">
                 <span class="text-xl font-semibold text-center mx-auto">
                   Edge cases and how to deal with them:
@@ -575,26 +543,20 @@
                   </li>
                 </ul>
               </div>
-            </Accordion>
-          </AccordionContent>
-        </AccordionPanel>
-      </Accordion>
+            </UiAccordion>
+          </UiAccordionContent>
+        </UiAccordionItem>
+      </UiAccordion>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import Accordion from '@/src/volt/Accordion.vue'
-import AccordionPanel from '@/src/volt/AccordionPanel.vue'
-import AccordionHeader from '@/src/volt/AccordionHeader.vue'
-import AccordionContent from '@/src/volt/AccordionContent.vue'
-import Tag from '@/src/volt/Tag.vue'
 import Image1 from '@/assets/images/pdf-cropper/docs-image-1.svg?no-inline'
 import Image2 from '@/assets/images/pdf-cropper/docs-image-2.svg?no-inline'
 
-const { expandedValues = ['3'], multiple = true } = defineProps<{
+const { expandedValues = ['3'] } = defineProps<{
   expandedValues?: string[]
-  multiple?: boolean
 }>()
 
 const imageLoadingState = shallowReactive({

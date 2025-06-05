@@ -123,7 +123,7 @@ export type PdfCroppedOverlayData = {
   section: string
   imgNum: number
   type: QuestionType
-  options?: number
+  options: number
   marks: Required<QuestionMarks>
   pdfData: {
     l: number // left

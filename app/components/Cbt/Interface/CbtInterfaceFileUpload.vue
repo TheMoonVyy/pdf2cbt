@@ -46,7 +46,7 @@
           >
             <template #icon>
               <Icon
-                name="prime:plus"
+                name="line-md:plus"
                 size="1.4rem"
               />
             </template>

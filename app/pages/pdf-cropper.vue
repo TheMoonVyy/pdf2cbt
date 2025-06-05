@@ -4,459 +4,409 @@
       v-model:settings="settings"
       v-model:advance-settings-visible="visibilityState.advanceSettings"
     />
-    <Splitter pt:root:class="flex-1 flex-nowrap min-h-0 min-w-0 rounded-none select-none">
-      <SplitterPanel
-        pt:root:class="flex flex-col items-center overflow-y-auto! w-1/4"
-        :size="settings.splitterPanelSize"
+    <UiResizablePanelGroup
+      direction="horizontal"
+      auto-save-id="pdf-cropper-resizable-key"
+      class="rounded border border-t-0 grow"
+    >
+      <UiResizablePanel
+        :default-size="26"
+        :collapsible="false"
         :min-size="15"
       >
-        <div class="flex flex-col items-center p-4 gap-5 w-full">
-          <div class="flex flex-wrap gap-8">
-            <div class="flex items-center justify-center">
-              <BaseButton
-                label="Settings"
-                severity="help"
-                size="small"
-                @click="visibilityState.advanceSettings = true"
-              />
+        <UiScrollArea
+          class="h-full w-full rounded-md border"
+        >
+          <div class="flex flex-col items-center">
+            <div class="flex flex-col items-center p-4 pb-0 gap-5 w-full">
+              <div class="flex flex-wrap gap-8">
+                <div class="flex items-center justify-center">
+                  <BaseButton
+                    variant="help"
+                    label="Settings"
+                    icon-name="material-symbols:settings"
+                    icon-size="1.2rem"
+                    @click="visibilityState.advanceSettings = true"
+                  />
+                </div>
+                <UiTabs
+                  v-model="currentMode"
+                >
+                  <UiTabsList class="grid w-full grid-cols-2 h-10 px-1 gap-0.5">
+                    <UiTabsTrigger
+                      v-for="option in currentModeSelectOptions"
+                      :key="option.value"
+                      class="cursor-pointer py-1.5"
+                      :value="option.value"
+                      :disabled="option.disable || !isPdfLoaded"
+                    >
+                      {{ option.name }}
+                    </UiTabsTrigger>
+                  </UiTabsList>
+                </UiTabs>
+              </div>
+              <div class="flex flex-wrap gap-x-2 gap-y-3">
+                <BaseFloatLabel
+                  class="flex-[1_1_48%] min-w-[45%]"
+                  label="Cropper Mode"
+                  label-id="cropperModeDD"
+                  label-class="text-xs start-1/2! -translate-x-1/2"
+                >
+                  <BaseSelect
+                    id="pre_generate_images"
+                    v-model="settings.cropperMode"
+                    :options="selectOptions.cropperMode"
+                    :disabled="currentMode !== 'crop'"
+                  />
+                </BaseFloatLabel>
+                <BaseFloatLabel
+                  class="flex-[1_1_48%] min-w-[45%]"
+                  label="Zoom"
+                  label-id="settings_scale"
+                  label-class="text-xs start-1/2! -translate-x-1/2"
+                >
+                  <BaseInputNumber
+                    id="settings_scale"
+                    v-model="settings.scale"
+                    :disabled="!isPdfLoaded"
+                    :min="0.3"
+                    :max="2.5"
+                    :step="0.1"
+                  />
+                </BaseFloatLabel>
+              </div>
+              <BaseFloatLabel
+                class="w-full"
+                label="Page Number"
+                label-id="pdf_page_num"
+                label-class="start-1/2! -translate-x-1/2"
+              >
+                <BaseInputNumber
+                  id="pdf_page_num"
+                  v-model="pdfState.currentPageNum"
+                  input-class="h-10 text-base"
+                  :disabled="pdfState.currentPageNum === 0 || !isPdfLoaded"
+                  :min="1"
+                  :max="pdfState.totalPages"
+                />
+              </BaseFloatLabel>
             </div>
-            <SelectButton
-              v-model="currentMode"
-              :options="currentModeSelectOptions"
-              option-label="name"
-              option-value="value"
-              option-disabled="disable"
-              :disabled="!isPdfLoaded"
-              :allow-empty="false"
+            <BaseButton
+              class="my-3.5 shrink-0"
+              icon-name="mdi:rocket-launch"
+              label="Generate Output"
+              :disabled="!hasQuestionsData"
+              @click="() => {
+                generateOutputState.downloaded = false
+                visibilityState.generateOutputDialog = true
+              }"
+            />
+            <PdfCropperQuestionDetailsPanel
+              v-model="currentQuestionData"
+              :overlays-per-question-data="overlaysPerQuestionData"
+              :is-current-question-main-overlay="!activeCropperOverlayId"
+              :is-pdf-loaded="isPdfLoaded"
+              :overlay-datas="cropperOverlayDatas"
+              :page-width="currentPageDetails.width"
+              :page-height="currentPageDetails.height"
             />
           </div>
-          <div class="flex flex-wrap gap-x-2 gap-y-3">
-            <BaseFloatLabel
-              class="flex-[1_1_60%] min-w-[55%]"
-              label="Cropper Mode"
-              label-id="cropperModeDD"
-              label-class="text-xs"
-            >
-              <Select
-                v-model="settings.cropperMode"
-                label-id="cropperModeDD"
-                :options="selectOptions.cropperMode"
-                :disabled="currentMode !== 'crop'"
-                option-label="name"
-                option-value="value"
-                :fluid="true"
-                size="small"
-              />
-            </BaseFloatLabel>
-            <BaseFloatLabel
-              class="flex-[1_1_35%] min-w-[30%]"
-              label="Zoom"
-              label-id="settings_scale"
-              label-class="text-xs"
-            >
-              <InputNumber
-                v-model="settings.scale"
-                :disabled="!isPdfLoaded"
-                :min="0.5"
-                :max="2"
-                :fluid="true"
-                label-id="settings_scale"
-                size="small"
-                show-buttons
-                :step="0.1"
-              />
-            </BaseFloatLabel>
-          </div>
-          <BaseFloatLabel
-            class="w-full"
-            label="Page Number"
-            label-id="pdf_page_num"
-            label-class="start-1/2! -translate-x-1/2"
-          >
-            <BaseInputNumber
-              v-model="pdfState.currentPageNum"
-              :disabled="pdfState.currentPageNum === 0 || !isPdfLoaded"
-              :min="1"
-              :max="pdfState.totalPages"
-              label-id="pdf_page_num"
-              :step="1"
-              increment-icon="material-symbols:arrow-forward-ios-rounded"
-              decrement-icon="material-symbols:arrow-back-ios-new-rounded"
-            />
-          </BaseFloatLabel>
-        </div>
-        <PdfCropperQuestionDetailsPanel
-          v-model="currentQuestionData"
-          :overlays-per-question-data="overlaysPerQuestionData"
-          :is-current-question-main-overlay="!activeCropperOverlayId"
-          :is-pdf-loaded="isPdfLoaded"
-          :overlay-datas="cropperOverlayDatas"
-        />
-        <Panel
-          header="Crop Coordinates"
-          toggleable
-          :collapsed="true"
-          class="w-full"
-          pt:content:class="flex gap-2 px-5"
-        >
-          <div class="grid grid-cols-2 col-span-3 gap-5 mt-2 label-selecter">
-            <BaseFloatLabel
-              class="w-full"
-              label="Left"
-              label-id="coords_left"
-              label-class="text-xs"
-            >
-              <InputNumber
-                v-model="currentQuestionData.pdfData.l"
-                :min="0"
-                :max="currentQuestionData.pdfData.r"
-                :fluid="true"
-                label-id="coords_left"
-                size="small"
-                show-buttons
-                :step="1"
-                :disabled="!isPdfLoaded"
-              />
-            </BaseFloatLabel>
-            <BaseFloatLabel
-              class="w-full"
-              label="Right"
-              label-id="coords_right"
-              label-class="text-xs"
-            >
-              <InputNumber
-                v-model="currentQuestionData.pdfData.r"
-                :min="currentQuestionData.pdfData.l"
-                :max="currentPageDetails.width"
-                :fluid="true"
-                label-id="coords_right"
-                size="small"
-                show-buttons
-                :step="1"
-                :disabled="!isPdfLoaded"
-              />
-            </BaseFloatLabel>
-            <BaseFloatLabel
-              class="w-full"
-              label="Top"
-              label-id="coords_top"
-              label-class="text-xs"
-            >
-              <InputNumber
-                v-model="currentQuestionData.pdfData.t"
-                :min="0"
-                :max="currentQuestionData.pdfData.b"
-                :fluid="true"
-                label-id="coords_top"
-                size="small"
-                show-buttons
-                :step="1"
-                :disabled="!isPdfLoaded"
-              />
-            </BaseFloatLabel>
-            <BaseFloatLabel
-              class="w-full"
-              label="Bottom"
-              label-id="coords_bottom"
-              label-class="text-xs"
-            >
-              <InputNumber
-                v-model="currentQuestionData.pdfData.b"
-                :min="currentQuestionData.pdfData.t"
-                :max="currentPageDetails.height"
-                :fluid="true"
-                label-id="coords_bottom"
-                size="small"
-                show-buttons
-                :step="1"
-                :disabled="!isPdfLoaded"
-              />
-            </BaseFloatLabel>
-          </div>
-        </Panel>
-        <BaseButton
-          label="Generate Output"
-          class="my-3 mb-5 shrink-0"
-          :disabled="!hasQuestionsData"
-          @click="() => {
-            generateOutputState.downloaded = false
-            visibilityState.generateOutputDialog = true
-          }"
-        />
-      </SplitterPanel>
-      <SplitterPanel
-        pt:root:class="flex flex-col overflow-auto! focus-visible:outline-hidden"
-        :size="75"
+        </UiScrollArea>
+      </UiResizablePanel>
+      <UiResizableHandle />
+      <UiResizablePanel
+        :default-size="74"
+        :min-size="40"
+        :collapsible="false"
       >
-        <div
-          v-if="!isPdfLoaded"
-          class="flex flex-col gap-6 justify-center mt-6"
+        <UiScrollArea
+          class="w-full h-full rounded border"
+          type="auto"
         >
-          <BaseSimpleFileUpload
-            accept="application/pdf,application/zip,.pdf,.zip"
-            :label="visibilityState.isLoadingPdf ? 'Please wait, loading PDF...' : 'Select a PDF'"
-            :icon-name="visibilityState.isLoadingPdf ? 'line-md:loading-twotone-loop' : 'prime:plus'"
-            icon-size="1.5rem"
-            invalid-file-type-message="Invalid file. Please select a valid PDF"
-            @upload="handleFileUpload"
-          />
-          <DocsPdfCropper class="mx-4 sm:mx-10 select-text" />
-        </div>
-        <div
-          ref="mainImgPanelElem"
-          class="flex"
-          tabindex="-1"
-          :class="{ hidden: !isPdfLoaded }"
-        >
-          <div
-            class="relative mx-auto cursor-cell mt-4"
-            :class="{
-              'blur-cropped': settings.blurCroppedRegion,
-            }"
-            :style="{
-              '--pdf-page-width': currentPageDetails.width,
-              '--pdf-page-height': currentPageDetails.height,
-              '--pdf-page-scale': zoomScaleDebounced,
-              '--pdf-cropped-blur-intensity': settings.blurIntensity,
-              '--crop-selection-guide-color': `#${settings.cropSelectionGuideColor}`,
-              '--crop-selected-region-color': `#${settings.cropSelectedRegionColor}`,
-              '--crop-selection-skip-color': `#${settings.cropSelectionSkipColor}`,
-              '--crop-selection-bg-opacity': settings.cropSelectionBgOpacity,
-              '--crop-selected-region-bg-opacity': settings.cropSelectedRegionBgOpacity,
-            }"
-          >
-            <div class="inline-block">
-              <img
-                :src="currentPageDetails.url"
-                class="border border-gray-500 pdf-cropper-img"
-                draggable="false"
+          <div class="flex flex-col focus-visible:outline-hidden">
+            <div
+              v-if="!isPdfLoaded"
+              class="flex flex-col gap-6 justify-center mt-6"
+            >
+              <BaseSimpleFileUpload
+                class="mx-auto"
+                accept="application/pdf,application/zip,.pdf,.zip"
+                :label="visibilityState.isLoadingPdf ? 'Please wait, loading PDF...' : 'Select a PDF'"
+                :icon-name="visibilityState.isLoadingPdf ? 'line-md:loading-twotone-loop' : 'line-md:plus'"
+                invalid-file-type-message="Invalid file. Please select a valid PDF"
+                @upload="handleFileUpload"
+              />
+              <DocsPdfCropper class="mx-4 sm:mx-10 select-text" />
+            </div>
+            <div
+              ref="mainImgPanelElem"
+              class="flex"
+              tabindex="-1"
+              :class="{ hidden: !isPdfLoaded }"
+            >
+              <div
+                class="relative mx-auto cursor-cell mt-4"
+                :class="{
+                  'blur-cropped': settings.blurCroppedRegion,
+                }"
                 :style="{
-                  backgroundColor: `#${settings.pageBGColor}`,
+                  '--pdf-page-width': currentPageDetails.width,
+                  '--pdf-page-height': currentPageDetails.height,
+                  '--pdf-page-scale': zoomScaleDebounced,
+                  '--pdf-cropped-blur-intensity': settings.blurIntensity,
+                  '--crop-selection-guide-color': settings.cropSelectionGuideColor,
+                  '--crop-selected-region-color': settings.cropSelectedRegionColor,
+                  '--crop-selection-skip-color': settings.cropSelectionSkipColor,
+                  '--crop-selection-bg-opacity': settings.cropSelectionBgOpacity,
+                  '--crop-selected-region-bg-opacity': settings.cropSelectedRegionBgOpacity,
                 }"
               >
+                <div class="inline-block">
+                  <img
+                    :src="currentPageDetails.url"
+                    class="border border-gray-500 pdf-cropper-img"
+                    draggable="false"
+                    :style="{
+                      backgroundColor: settings.pageBGColor,
+                    }"
+                  >
+                </div>
+                <PdfCropperEditCroppedOverlay
+                  v-if="isPdfLoaded"
+                  v-model="cropperOverlayDatas"
+                  v-model:overlays-per-question-data="overlaysPerQuestionData"
+                  v-model:active-overlay-id="activeCropperOverlayId"
+                  v-model:blur-cropped-region="settings.blurCroppedRegion"
+                  :show-question-details-on-overlay="settings.showQuestionDetailsOnOverlay"
+                  :main-img-panel-elem="mainImgPanelElem"
+                  :current-mode="currentMode"
+                  :current-page-num="pdfState.currentThrottledPageNum"
+                  :page-scale="zoomScaleDebounced"
+                  :page-width="currentPageDetails.width"
+                  :page-height="currentPageDetails.height"
+                  :selection-throttle-interval="settings.selectionThrottleInterval"
+                  :move-on-key-press-distance="settings.moveOnKeyPressDistance"
+                  @set-pdf-data="storeCurrentQuestionData"
+                />
+                <PdfCropperCropOverlay
+                  v-if="isPdfLoaded"
+                  v-model:current-overlay-data="mainOverlayData"
+                  v-model:blur-cropped-region="settings.blurCroppedRegion"
+                  :main-img-panel-elem="mainImgPanelElem"
+                  :cropper-mode="cropperMode"
+                  :current-mode="currentMode"
+                  :current-page-num="pdfState.currentThrottledPageNum"
+                  :page-scale="zoomScaleDebounced"
+                  :page-width="currentPageDetails.width"
+                  :page-height="currentPageDetails.height"
+                  :selection-throttle-interval="settings.selectionThrottleInterval"
+                  :move-on-key-press-distance="settings.moveOnKeyPressDistance"
+                  @set-pdf-data="storeCurrentQuestionData"
+                />
+              </div>
             </div>
-            <PdfCropperEditCroppedOverlay
-              v-if="isPdfLoaded"
-              v-model="cropperOverlayDatas"
-              v-model:overlays-per-question-data="overlaysPerQuestionData"
-              v-model:active-overlay-id="activeCropperOverlayId"
-              v-model:blur-cropped-region="settings.blurCroppedRegion"
-              :show-question-details-on-overlay="settings.showQuestionDetailsOnOverlay"
-              :main-img-panel-elem="mainImgPanelElem"
-              :current-mode="currentMode"
-              :current-page-num="pdfState.currentThrottledPageNum"
-              :page-scale="zoomScaleDebounced"
-              :page-width="currentPageDetails.width"
-              :page-height="currentPageDetails.height"
-              :selection-throttle-interval="settings.selectionThrottleInterval"
-              :move-on-key-press-distance="settings.moveOnKeyPressDistance"
-              @set-pdf-data="storeCurrentQuestionData"
-            />
-            <PdfCropperCropOverlay
-              v-if="isPdfLoaded"
-              v-model:current-overlay-data="mainOverlayData"
-              v-model:blur-cropped-region="settings.blurCroppedRegion"
-              :main-img-panel-elem="mainImgPanelElem"
-              :cropper-mode="cropperMode"
-              :current-mode="currentMode"
-              :current-page-num="pdfState.currentThrottledPageNum"
-              :page-scale="zoomScaleDebounced"
-              :page-width="currentPageDetails.width"
-              :page-height="currentPageDetails.height"
-              :selection-throttle-interval="settings.selectionThrottleInterval"
-              :move-on-key-press-distance="settings.moveOnKeyPressDistance"
-              @set-pdf-data="storeCurrentQuestionData"
-            />
           </div>
+        </UiScrollArea>
+      </UiResizablePanel>
+    </UiResizablePanelGroup>
+    <UiDialog
+      v-model:open="visibilityState.questionDetailsDialog"
+    >
+      <UiDialogContent>
+        <UiDialogHeader>
+          <UiDialogTitle class="mx-auto">
+            Invalid Question Details
+          </UiDialogTitle>
+        </UiDialogHeader>
+        <p class="text-center text-lg mb-2">
+          Some question details are missing.<br>
+          Make sure all required fields are filled out.
+        </p>
+        <div class="flex justify-center my-3">
+          <BaseButton
+            label="Okay"
+            @click="visibilityState.questionDetailsDialog = false"
+          />
         </div>
-      </SplitterPanel>
-    </Splitter>
-    <Dialog
-      v-if="visibilityState.questionDetailsDialog"
-      v-model:visible="visibilityState.questionDetailsDialog"
-      header="Invalid Question Details"
-      :modal="true"
+      </UiDialogContent>
+    </UiDialog>
+    <UiDialog
+      v-model:open="visibilityState.generateOutputDialog"
     >
-      <p class="text-center text-lg mb-2">
-        Some question details are missing.<br>
-        Make sure all required fields are filled out.
-      </p>
-      <div class="flex justify-center my-3">
-        <BaseButton
-          label="Okay"
-          @click="visibilityState.questionDetailsDialog = false"
-        />
-      </div>
-    </Dialog>
-    <Dialog
-      v-model:visible="visibilityState.generateOutputDialog"
-      header="Generate Test (Cropper) Data"
-      :modal="true"
-      pt:headerActions:class="ml-5"
-      pt:content:class="p-3 pb-6 flex flex-col max-w-full sm:max-w-md"
-    >
-      <div class="grid grid-cols-3 w-full gap-2">
-        <div class="flex flex-col col-span-2">
-          <label
-            class="text-center mb-1"
-            for="generate_output_filename"
+      <UiDialogContent class="max-w-full sm:max-w-md px-0">
+        <UiDialogHeader class="mb-4">
+          <UiDialogTitle class="text-xl font-bold text-center">
+            Generate Test (Cropper) Data
+          </UiDialogTitle>
+        </UiDialogHeader>
+        <UiScrollArea class="max-h-128 w-full px-6">
+          <div class="grid grid-cols-7 w-full gap-2">
+            <div class="flex flex-col col-span-4 gap-1">
+              <UiLabel
+                for="generate_output_filename"
+              >
+                File Name
+              </UiLabel>
+              <UiInput
+                id="generate_output_filename"
+                v-model.trim="generateOutputState.filename"
+                class="md:text-base h-10"
+                type="text"
+                :maxlength="50"
+              />
+            </div>
+            <div class="flex flex-col gap-1 col-span-3">
+              <div class="flex gap-2 justify-center">
+                <UiLabel
+                  for="generate_output_file_type"
+                >
+                  File Type
+                </UiLabel>
+                <IconWithTooltip
+                  :tooltip-content="tooltipContent.outputFileType"
+                  icon-class="text-xl"
+                />
+              </div>
+              <BaseSelect
+                id="generate_output_file_type"
+                v-model="generateOutputState.fileType"
+                :options="selectOptions.outputFileType"
+                size="base"
+              />
+            </div>
+          </div>
+          <div
+            v-show="generateOutputState.fileType === '.zip'"
+            class="grid grid-cols-3 gap-2 my-6"
           >
-            File Name
-          </label>
-          <InputText
-            v-model.trim="generateOutputState.filename"
-            type="text"
-            label-id="generate_output_filename"
-            :fluid="true"
-            :maxlength="50"
-          />
-        </div>
-        <div class="flex flex-col">
-          <div class="flex gap-2 justify-center">
-            <label
-              class="text-center mb-1"
-              for="generate_output_file_type"
-            >
-              File Type
-            </label>
-            <IconWithTooltip
-              :tooltip-content="tooltipContent.outputFileType"
-              icon-class="text-xl"
+            <div class="flex flex-col col-span-2 gap-1">
+              <div class="flex gap-2 justify-center">
+                <UiLabel
+                  for="pre_generate_images"
+                >
+                  Pre-Generate Images
+                </UiLabel>
+                <IconWithTooltip
+                  :tooltip-content="tooltipContent.preGenerateImages"
+                  icon-class="text-xl"
+                />
+              </div>
+              <BaseSelect
+                id="pre_generate_images"
+                v-model="generateOutputState.preGenerateImages"
+                :options="selectOptions.preGenerateImages"
+              />
+            </div>
+            <div class="flex flex-col justify-center gap-1">
+              <div class="flex gap-2 justify-center">
+                <UiLabel
+                  for="pre_generate_image_scale"
+                >
+                  Img Scale
+                </UiLabel>
+                <IconWithTooltip
+                  :tooltip-content="tooltipContent.preGenerateImagesScale"
+                  icon-class="text-xl"
+                />
+              </div>
+              <BaseInputNumber
+                id="pre_generate_image_scale"
+                v-model="generateOutputState.preGenerateImagesScale"
+                :disabled="!generateOutputState.preGenerateImages"
+                :min="0.5"
+                :max="5"
+                :step="0.1"
+              />
+            </div>
+          </div>
+          <div
+            v-show="!generateOutputState.generatingImages"
+            class="flex justify-center my-5"
+          >
+            <BaseButton
+              label="Generate & Download"
+              @click="generatePdfCropperOutput()"
             />
           </div>
-          <Select
-            v-model="generateOutputState.fileType"
-            label-id="generate_output_file_type"
-            :options="selectOptions.outputFileType"
-          />
-        </div>
-      </div>
-      <div
-        v-show="generateOutputState.fileType === '.zip'"
-        class="grid grid-cols-3 gap-2 my-6"
-      >
-        <div class="flex flex-col col-span-2">
-          <div class="flex gap-2 justify-center">
-            <label
-              class="text-center mb-1"
-              for="pre_generate_images"
+          <div class="flex flex-col items-center mb-2 text-center">
+            <h3
+              v-show="generateOutputState.generatingImages"
+              class="font-semibold"
             >
-              Pre-Generate Images
-            </label>
-            <IconWithTooltip
-              :tooltip-content="tooltipContent.preGenerateImages"
-              icon-class="text-xl"
+              Please wait, generating images...<br>
+            </h3>
+            <h3
+              v-if="generateOutputState.generatingImages && generateOutputState.generationProgress > 0"
+              class="my-4 text-lg font-semibold text-cyan-400"
+            >
+              Currently generating {{ generateOutputState.generationProgress }} of {{ generateOutputState.totalQuestions }} questions...<br>
+            </h3>
+            <h3
+              v-show="generateOutputState.generatingImages"
+              class="mt-2"
+            >
+              If generating progress is stuck,
+              then click on cancel below and try again with a lower img scale value<br><br>
+              If even with a lower scale value,
+              it is stuck then cancel again and just download without pre generated images
+              (i.e. select "No" above)<br><br>
+            </h3>
+            <h3 v-show="generateOutputState.preparingDownload">
+              preparing download...
+            </h3>
+            <h3 v-show="generateOutputState.downloaded">
+              Downloaded!
+            </h3>
+          </div>
+          <div
+            v-show="generateOutputState.generatingImages"
+            class="flex justify-center mb-3"
+          >
+            <BaseButton
+              variant="warn"
+              label="Cancel Generation"
+              @click="() => {
+                generateOutputState.generatingImages = false
+                generateOutputState.totalQuestions = 0
+              }"
             />
           </div>
-          <Select
-            v-model="generateOutputState.preGenerateImages"
-            label-id="pre_generate_images"
-            :fluid="false"
-            :options="selectOptions.preGenerateImages"
-            option-label="name"
-            option-value="value"
-          />
-        </div>
-        <div class="flex flex-col justify-center">
-          <div class="flex gap-2 justify-center">
-            <label
-              class="text-center mb-1"
-              for="pre_generate_image_scale"
-            >
-              Img Scale
-            </label>
-            <IconWithTooltip
-              :tooltip-content="tooltipContent.preGenerateImagesScale"
-              icon-class="text-xl"
-            />
-          </div>
-          <InputNumber
-            v-model="generateOutputState.preGenerateImagesScale"
-            :disabled="!generateOutputState.preGenerateImages"
-            :min="0.5"
-            :max="5"
-            suffix="x"
-            label-id="pre_generate_image_scale"
-            show-buttons
-            pt:root:class="[&>input]:w-24"
-            :step="0.1"
-          />
-        </div>
-      </div>
-      <div
-        v-show="!generateOutputState.generatingImages"
-        class="flex justify-center my-5"
-      >
-        <BaseButton
-          label="Generate & Download"
-          @click="generatePdfCropperOutput()"
-        />
-      </div>
-      <div class="flex flex-col items-center mb-2 text-center">
-        <h3
-          v-show="generateOutputState.generatingImages"
-          class="font-semibold"
-        >
-          Please wait, generating images...<br>
-        </h3>
-        <h3
-          v-if="generateOutputState.generatingImages && generateOutputState.generationProgress > 0"
-          class="my-4 text-lg font-semibold text-cyan-400"
-        >
-          Currently generating {{ generateOutputState.generationProgress }} of {{ generateOutputState.totalQuestions }} questions...<br>
-        </h3>
-        <h3
-          v-show="generateOutputState.generatingImages"
-          class="mt-2"
-        >
-          If generating progress is stuck, then click on cancel below and try again with a lower img scale value<br><br>
-          If even with a lower scale value, it is stuck then cancel again and just download without pre generated images (i.e. select "No" above)<br><br>
-        </h3>
-        <h3 v-show="generateOutputState.preparingDownload">
-          preparing download...
-        </h3>
-        <h3 v-show="generateOutputState.downloaded">
-          Downloaded!
-        </h3>
-      </div>
-      <div
-        v-show="generateOutputState.generatingImages"
-        class="flex justify-center mb-3"
-      >
-        <BaseButton
-          label="Cancel Generation"
-          severity="warn"
-          @click="() => {
-            generateOutputState.generatingImages = false
-            generateOutputState.totalQuestions = 0
-          }"
-        />
-      </div>
-      <Accordion
-        :value="[]"
-        multiple
-      >
-        <AccordionPanel value="0">
-          <AccordionHeader>Multiple Downloads</AccordionHeader>
-          <AccordionContent>
-            <h5 class="text-center text-wrap text-gray-500 dark:text-gray-300 mt-4">
-              After downloading once, you can always change the options above to generate &amp; download again with those options
-            </h5>
-          </AccordionContent>
-        </AccordionPanel>
-        <AccordionPanel value="1">
-          <AccordionHeader>Important NOTE</AccordionHeader>
-          <AccordionContent>
-            <h5 class="text-center text-wrap text-gray-500 dark:text-gray-300 my-5">
-              If you want to later on use the zip file via <strong>"zip from url"</strong> feature
-              and you are keeping the <strong>zip files</strong> in your <strong>github public repository</strong>
-              then your <strong>zip file size should not exceed 20MB</strong> for "zip from url" to work.<br>
-              (This is a limitation imposed by jsDelivr, which is the provider from where your zip file will be loaded after the website internally converts github url to jsDelivr url).
-            </h5>
-          </AccordionContent>
-        </AccordionPanel>
-      </Accordion>
-    </Dialog>
+          <UiAccordion
+            type="multiple"
+            :default-value="[]"
+            :unmount-on-hide="false"
+            class="w-full"
+          >
+            <UiAccordionItem value="1">
+              <UiAccordionTrigger>
+                Multiple Downloads
+              </UiAccordionTrigger>
+              <UiAccordionContent>
+                <h5 class="text-center text-wrap text-gray-500 dark:text-gray-300 mt-4">
+                  After downloading once,
+                  you can always change the options above to generate &amp; download again with those options
+                </h5>
+              </UiAccordionContent>
+            </UiAccordionItem>
+            <UiAccordionItem value="2">
+              <UiAccordionTrigger>
+                Important NOTE
+              </UiAccordionTrigger>
+              <UiAccordionContent>
+                <h5 class="text-center text-wrap text-gray-500 dark:text-gray-300 my-5">
+                  If you want to later on use the zip file via <strong>"zip from url"</strong> feature
+                  and you are keeping the <strong>zip files</strong> in your <strong>github public repository</strong>
+                  then your <strong>zip file size should not exceed 20MB</strong> for "zip from url" to work.<br>
+                  (This is a limitation imposed by jsDelivr,
+                  which is the provider from where your zip file will be loaded after the website internally
+                  converts github url to jsDelivr url).
+                </h5>
+              </UiAccordionContent>
+            </UiAccordionItem>
+          </UiAccordion>
+        </UiScrollArea>
+      </UiDialogContent>
+    </UiDialog>
     <LazyGenerateTestImages
       v-if="generateOutputState.generatingImages && (generateOutputState.totalQuestions > 0)"
       :pdf-uint8-array="pdfState.fileUint8Array"
@@ -475,12 +425,6 @@ import { zip, strToU8, type AsyncZippable } from 'fflate'
 import mupdfWorkerFile from '@/src/worker/mupdf.worker?worker'
 import type { MuPdfProcessor } from '@/src/worker/mupdf.worker'
 import { DataFileNames, Constants } from '#shared/enums'
-
-import Accordion from '@/src/volt/Accordion.vue'
-import AccordionPanel from '@/src/volt/AccordionPanel.vue'
-import AccordionHeader from '@/src/volt/AccordionHeader.vue'
-import AccordionContent from '@/src/volt/AccordionContent.vue'
-import SelectButton from '@/src/volt/SelectButton.vue'
 
 type CropperMode = {
   isBox: boolean
@@ -580,16 +524,16 @@ const settings = shallowReactive<PdfCropperSettings>({
   /* For settings Drawer */
   // General Settings
   qualityFactor: 1.5,
-  pageBGColor: 'ffffff',
+  pageBGColor: '#ffffff',
   minCropDimension: 10, // units of coords
   moveOnKeyPressDistance: 10, // units of coords
   // Crop Selection
-  cropSelectionGuideColor: '0000ff', // blue
+  cropSelectionGuideColor: '#0000ff', // blue
   cropSelectionBgOpacity: 15, // in %
-  cropSelectionSkipColor: '8B0000', // dark red
+  cropSelectionSkipColor: '#8B0000', // dark red
   selectionThrottleInterval: 30, // in milliseconds
   // Cropped Region
-  cropSelectedRegionColor: '004D00', // dark variant of green
+  cropSelectedRegionColor: '#004D00', // dark variant of green
   cropSelectedRegionBgOpacity: 15, // in %
   showQuestionDetailsOnOverlay: true,
   blurCroppedRegion: true,
@@ -1143,7 +1087,21 @@ function syncSettingsWithLocalStorage(save: boolean = false) {
       const localSettingsData = localStorage.getItem(LOCAL_STORAGE_SETTINGS_KEY)
 
       if (localSettingsData) {
-        const parsedData = JSON.parse(localSettingsData)
+        const parsedData = JSON.parse(localSettingsData) as PdfCropperSettings
+        const colorKeys = [
+          'pageBGColor',
+          'cropSelectedRegionColor',
+          'cropSelectionGuideColor',
+          'cropSelectionSkipColor',
+        ] as const
+
+        for (const key of colorKeys) {
+          const value = parsedData[key]
+          if (typeof value === 'string') {
+            parsedData[key] = utilEnsureHashInHexColor(value)
+          }
+        }
+
         utilSelectiveMergeObj(
           settings as unknown as Record<string, unknown>,
           parsedData,

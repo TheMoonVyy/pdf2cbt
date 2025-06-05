@@ -1,5 +1,4 @@
 import SplitterPanel from 'primevue/splitterpanel'
-import ColorPicker from 'primevue/colorpicker'
 import FileUpload from 'primevue/fileupload'
 
 import OrderList from 'primevue/orderlist'
@@ -29,6 +28,5 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     .component('Message', Message)
 
-    .component('ColorPicker', ColorPicker)
     .component('OrderList', OrderList)
 })

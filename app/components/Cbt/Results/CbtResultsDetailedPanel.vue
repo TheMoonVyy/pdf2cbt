@@ -4,59 +4,63 @@
       v-if="loadDataNow"
       class="flex flex-col w-full grow pb-50"
     >
-      <Tabs
-        :value="currentSelectedState.subject"
-        scrollable
-        @update:value="subjectChangeHandler"
+      <UiTabs
+        v-model="currentSelectedState.subject"
+        class="border-b border-border"
+        @update:model-value="(val) => subjectChangeHandler(val as string)"
       >
-        <TabList
-          pt:nextButton:class="shadow-[0px_0px_5px_8px]!"
-          pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
-        >
-          <Tab
-            v-if="Object.keys(testOverallStats ?? {}).length > 1"
-            :value="TEST_OVERALL"
-          >
-            Test Overall
-          </Tab>
-          <Tab
-            v-for="(subject, idx) in Object.keys(testResultData)"
-            :key="idx"
-            :value="subject"
-          >
-            {{ subject }}
-          </Tab>
-        </TabList>
-      </Tabs>
-      <Tabs
-        :value="selectedTabs[currentSelectedState.subject]!"
+        <UiScrollArea class="w-full">
+          <BaseTabsListWithIndicator class="flex flex-nowrap gap-x-1 px-3 max-w-max">
+            <BaseTabsTriggerWithIndicator
+              v-if="Object.keys(testOverallStats ?? {}).length > 1"
+              :value="TEST_OVERALL"
+              class="cursor-pointer p-2.5 text-lg"
+            >
+              Test Overall
+            </BaseTabsTriggerWithIndicator>
+            <BaseTabsTriggerWithIndicator
+              v-for="(subject, idx) in Object.keys(testResultData)"
+              :key="idx"
+              :value="subject"
+              class="cursor-pointer p-2.5 text-lg"
+            >
+              {{ subject }}
+            </BaseTabsTriggerWithIndicator>
+          </BaseTabsListWithIndicator>
+          <UiScrollBar orientation="horizontal" />
+        </UiScrollArea>
+      </UiTabs>
+      <UiTabs
+        v-model="selectedTabs[currentSelectedState.subject]"
+        class="border-b border-border"
         :class="{
           'sticky top-0 z-20': settings.freezeMode === 'sectionHeader',
         }"
-        scrollable
-        @update:value="sectionChangeHandler"
+        @update:model-value="(val) => sectionChangeHandler(val as string)"
       >
-        <TabList
-          pt:nextButton:class="shadow-[0px_0px_5px_8px]!"
-          pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
-        >
-          <Tab
-            v-if="
-              (currentSelectedState.subject !== TEST_OVERALL)
-                && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1"
-            :value="currentSelectedState.subject + OVERALL"
-          >
-            {{ currentSelectedState.subject + ' Overall' }}
-          </Tab>
-          <Tab
-            v-for="(section, index) in currentSectionTabs"
-            :key="index"
-            :value="section"
-          >
-            {{ section }}
-          </Tab>
-        </TabList>
-      </Tabs>
+        <UiScrollArea class="w-full">
+          <BaseTabsListWithIndicator class="flex flex-nowrap px-3 gap-x-1 max-w-max">
+            <BaseTabsTriggerWithIndicator
+              v-if="
+                (currentSelectedState.subject !== TEST_OVERALL)
+                  && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1"
+              :value="currentSelectedState.subject + OVERALL"
+              class="cursor-pointer p-2.5 text-lg"
+            >
+              {{ currentSelectedState.subject + ' Overall' }}
+            </BaseTabsTriggerWithIndicator>
+            <BaseTabsTriggerWithIndicator
+              v-for="(section, index) in currentSectionTabs"
+              :key="index"
+              :value="section"
+              class="cursor-pointer p-2.5 text-lg"
+            >
+              {{ section }}
+            </BaseTabsTriggerWithIndicator>
+          </BaseTabsListWithIndicator>
+          <UiScrollBar orientation="horizontal" />
+        </UiScrollArea>
+      </UiTabs>
       <div
         class="px-4 pt-3 pb-15 flex flex-col gap-5 text-nowrap max-w-full overflow-auto"
       >
@@ -868,9 +872,6 @@
 </template>
 
 <script lang="ts" setup>
-import Tabs from '@/src/volt/Tabs.vue'
-import TabList from '@/src/volt/TabList.vue'
-import Tab from '@/src/volt/Tab.vue'
 import Popover from '@/src/volt/Popover.vue'
 import { TEST_OVERALL, OVERALL } from '#shared/constants'
 
@@ -1507,12 +1508,10 @@ function getStatsTotal(statsArray: Stats[]): Stats {
 }
 
 const sectionChangeHandler = (section: string) => {
-  selectedTabs.value[currentSelectedState.subject] = section
   currentSelectedState.section = section
 }
 
 const subjectChangeHandler = (subject: string) => {
-  currentSelectedState.subject = subject
   if (subject === TEST_OVERALL) {
     currentSelectedState.section = ''
   }

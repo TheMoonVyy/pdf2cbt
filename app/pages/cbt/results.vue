@@ -1,6 +1,6 @@
 <template>
   <div
-    class="max-h-dvh min-h-dvh w-full border-t-2 border-surface-700 dark:bg-surface-900 dark:text-surface-0"
+    class="max-h-dvh min-h-dvh w-full text-foreground bg-background"
   >
     <div class="relative flex flex-row w-full">
       <CbtResultsSideBar
@@ -90,13 +90,18 @@
           :test-result-questions-data="testResultQuestionsData"
           :chart-colors="chartColors"
         />
-        <CbtResultsDetailedPanel
+        <!-- <CbtResultsDetailedPanel
           v-if="testResultsOutputData?.testResultData"
           v-show="currentPanelName === ResultsPagePanels.Detailed"
           :wait-until="currentPanelName === ResultsPagePanels.Detailed"
           :test-result-data="testResultsOutputData.testResultData"
           :test-result-questions-data="testResultQuestionsData"
           :test-config="testResultsOutputData.testConfig"
+        /> -->
+        <CbtResultsQuestionsTable
+          v-if="testResultsOutputData?.testResultData"
+          v-show="currentPanelName === ResultsPagePanels.Detailed"
+          :questions-data="Object.values(testResultQuestionsData)"
         />
         <CbtResultsMyTestsPanel
           v-show="currentPanelName === ResultsPagePanels.MyTests"

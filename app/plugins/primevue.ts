@@ -202,17 +202,6 @@ export default defineNuxtPlugin((nuxtApp) => {
         pcMoveTopButton: secondaryIconOnlyBtnClasses,
         pcMoveBottomButton: secondaryIconOnlyBtnClasses,
       },
-      colorpicker: {
-        root: 'inline-block relative',
-        preview: 'w-6 h-6 p-0 border-none rounded-md transition-colors duration-200 cursor-pointer disabled:cursor-auto focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary',
-        overlay: 'bg-surface-800 dark:bg-surface-900 border border-surface-900 dark:border-surface-700 rounded-md shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] w-[193px] h-[166px] absolute top-0 start-0',
-        content: 'relative',
-        colorSelector: 'w-[150px] h-[150px] top-[8px] start-[8px] absolute',
-        colorBackground: 'w-full h-full bg-[linear-gradient(to_top,#000_0%,rgba(0,0,0,0)_100%),linear-gradient(to_right,#fff_0%,rgba(255,255,255,0)_100%)]',
-        colorHandle: 'absolute top-0 start-[150px] rounded-full w-[10px] h-[10px] border border-surface-0 -mt-[5px] me-0 mb-0 -ms-[5px] cursor-pointer opacity-85',
-        hue: 'w-[17px] h-[150px] top-[8px] start-[167px] absolute opacity-85 bg-[linear-gradient(0deg,red_0,#ff0_17%,#0f0_33%,#0ff_50%,#00f_67%,#f0f_83%,red)]',
-        hueHandle: 'absolute top-[150px] start-0 w-[21px] -ms-[2px] -mt-[5px] h-[10px] border-2 opacity-85 border-surface-0 cursor-pointer',
-      },
       tab: {
         root: 'p-active:dark:text-white! p-active:font-bold!',
       },
