@@ -28,10 +28,15 @@
               <div>
                 <strong>Purpose:</strong>
                 <ul class="list-disc ml-6">
-                  <li>This tool is designed to help you define test questions and their locations in a PDF.</li>
-                  <li>It allows you to crop specific areas of the PDF that correspond to questions and assign question details to them (i.e. subject, section, question type, marking scheme etc).</li>
                   <li>
-                    The <strong>output</strong> from this tool is <strong>essential input for </strong>
+                    This tool is designed to help you define test questions and their locations within a PDF.
+                  </li>
+                  <li>
+                    It allows you to crop specific areas of the PDF that correspond to questions
+                    and assign details to them (e.g. subject, section, question type, marking scheme, etc.).
+                  </li>
+                  <li>
+                    The <strong>output</strong> from this tool is an <strong>essential input for </strong>
                     <NuxtLink
                       to="/cbt/interface"
                       class="underline text-green-400"
@@ -43,13 +48,19 @@
               <div>
                 <strong>Input File:</strong>
                 <ul class="list-disc ml-6">
-                  <li>You need a <strong>PDF file</strong> containing the questions you want to give mock test for.</li>
+                  <li>
+                    You need a <strong>PDF file </strong>
+                    containing the questions you want to usefor the mock test.
+                  </li>
                 </ul>
               </div>
               <div>
                 <strong>Output:</strong>
                 <ul class="list-disc ml-6">
-                  <li>The tool mainly generates a <strong>JSON</strong> file containing the <strong>cropper data</strong> (also known as <strong>test data</strong>).</li>
+                  <li>
+                    The tool mainly generates a <strong>JSON</strong> file containing the
+                    <strong>cropper data</strong> (also referred to as <strong>test data</strong>).
+                  </li>
                   <li>
                     <Tag
                       severity="info"
@@ -57,7 +68,7 @@
                       rounded
                       pt:root:class="py-0.5"
                     />
-                    When you choose <strong>ZIP</strong> as output:
+                    When you choose <strong>ZIP</strong> as the output:
                     <ul class="list-disc ml-6">
                       <li>
                         <Tag
@@ -66,13 +77,23 @@
                           rounded
                           pt:root:class="py-0.5"
                         />
-                        <strong> With Pre Generate Images</strong>: ZIP will contain <strong>JSON and PNG</strong> files.
+                        <strong>With Pre-generated Images</strong>:
+                        The ZIP will contain <strong>JSON</strong> and <strong>PNG</strong> files.
                       </li>
-                      <li><strong>Without Pre Generate Images</strong>: ZIP will contain <strong>JSON and PDF</strong> (the one you upload).</li>
+                      <li>
+                        <strong>Without Pre-generated Images</strong>:
+                        The ZIP will contain <strong>JSON</strong> and the uploaded <strong>PDF</strong>.
+                      </li>
                     </ul>
                   </li>
-                  <li>When you choose <strong>JSON</strong> as output, it will just be a JSON file.</li>
-                  <li>Output of this page/tool is essential for the CBT Interface to display and manage the questions.</li>
+                  <li>
+                    If you choose <strong>JSON</strong> as the output,
+                    it will include only the JSON file.
+                  </li>
+                  <li>
+                    This output is essential for the CBT Interface to
+                    properly display and manage the questions.
+                  </li>
                 </ul>
               </div>
             </div>
@@ -91,13 +112,19 @@
                 <strong>Current Mode:</strong>
                 <ul class="list-disc ml-6">
                   <li>
-                    <strong>Crop:</strong> In this mode, you can crop areas of the PDF that contain questions.<br>
-                    Two cropping methods, <strong>Line Mode</strong> and <strong>Box Mode</strong> are available for you to choose.
+                    <strong>Crop:</strong> In this mode,
+                    you can crop areas of the PDF that contain questions.<br>
+                    Two cropping methods,
+                    <strong>Line Mode</strong> and <strong>Box Mode</strong> are available for you to choose from.
                   </li>
                   <li>
                     <strong>Edit:</strong>
-                    Allows you to modify previously cropped regions, you can update either by repositioning or resizing their coordinates, or by updating their question details.<br>
-                    <strong>Note:</strong> If you edit a question's subject/section/question-number and there already exists such question then this new one will be merged to it.
+                    Allows you to modify previously cropped regions.<br>
+                    You can update them by repositioning/resizing the crop area,
+                    or by changing the question details.<br>
+                    <strong>Note:</strong> If you edit a question's subject, section, or number and
+                    another question with the same details already exists,
+                    then the two will be <strong>merged</strong>.
                   </li>
                 </ul>
               </div>
@@ -105,30 +132,46 @@
                 <strong>Cropper Mode:</strong>
                 <ul class="list-disc ml-6">
                   <li>
-                    <strong>Line Mode:</strong> Ideal for PDFs with consistent layouts. Allows you to define vertical and horizontal lines to crop questions.
+                    <strong>Line Mode:</strong> Ideal for PDFs with consistent layouts.
+                    This mode lets you define vertical and horizontal lines to crop questions.
                     <ul class="list-disc ml-6">
-                      <li><strong>How it works:</strong> You set the boundaries in the following order: left, right, top, and bottom. After cropping one region, you can continue cropping the next ones using the same left and right boundaries by default. You can skip a region while setting the bottom boundary by right-clicking and selecting <strong>Skip Next Line</strong>, or by holding the <strong>SHIFT key</strong>.</li>
+                      <li>
+                        <strong>How it works:</strong> You set the boundaries in this order:
+                        left, right, top, and bottom. After cropping one region,
+                        the left and right boundaries are reused by default.
+                        You can skip a region when setting the bottom boundary by
+                        right-clicking and selecting
+                        <strong>Skip Next Bottom Line</strong>,
+                        or by holding the <strong>SHIFT key</strong>.
+                      </li>
                     </ul>
                   </li>
-                  <li><strong>Box Mode:</strong> Works like cropping an image. Simply draw a box around the question to crop it.</li>
+                  <li>
+                    <strong>Box Mode:</strong> Works like image cropping.
+                    Simply draw a box around the question to define the crop area.
+                  </li>
                 </ul>
               </div>
               <div>
                 <strong>Zoom:</strong>
-                Adjusts the zoom level of the PDF Viewer.
+                Adjusts the zoom level of the PDF viewer.
               </div>
               <div>
                 <strong>Page Number:</strong>
-                Current Page Number of PDF, you can navigate to any page using this.
+                Displays the current page number. You can navigate to any page using this.
               </div>
               <div>
-                <strong>Question Details:</strong> See "Question Details" below for info of this.<br>
+                <strong>Question Details:</strong>
+                See the “Question Details” section below for more information.
               </div>
               <div>
-                <strong>Crop Coordinates:</strong> Left, Right, Top and Bottom boundaries of the crop area.
+                <strong>Crop Coordinates:</strong>
+                Displays the left, right, top, and bottom boundaries of the crop area.
               </div>
               <div>
-                <strong>Generate Output:</strong> After you are done cropping, click on this to generate the output of this tool so that you can use it on CBT Interface.
+                <strong>Generate Output:</strong>
+                Once you're done cropping, click this to generate the tool's output.
+                The result can be used directly in the CBT Interface.
               </div>
             </div>
           </AccordionContent>
@@ -145,32 +188,49 @@
             <div class="flex flex-col gap-4 text-left leading-[2rem]">
               <div>
                 <strong>Question Details Header Format Info:</strong><br>
-                In <strong>Question Questions [ #q (r) ]</strong> format,<br>
-                here q is question number and r is the number of cropped regions/areas/images that are (or will be) in that given question.<br>
-                If r = 1, then <strong>(r)</strong> is not shown as that by default implies there are only 1 cropped region (which is what most questions will have).<br>
-                So if you see r = 2, then that means that question has (or will have) 2 cropped regions.<br>
+                The format <strong>Question Details [ #q (r) ]</strong> means:<br>
+                <strong>q</strong> is the question number, and <strong>r</strong> is the number of
+                cropped regions/areas/images that are (or will be) assigned to that question.<br>
+                If <strong>r = 1</strong>, then <strong>(r)</strong> is not shown,
+                as most questions requires only one region.<br>
+                If you see <strong>(r = 2)</strong>,
+                it means the question has (or will have) 2 cropped regions.
               </div>
+
               <div>
                 <strong>Subject Name:</strong>
                 <ul class="list-disc ml-6">
-                  <li>Enter or Select the subject name from dropdown for the question (e.g. Physics, Chemistry, Mathematics etc).</li>
-                  <li>This helps grouping sections by subject.</li>
+                  <li>
+                    Select or enter the subject name for the question
+                    (e.g. Physics, Chemistry, Mathematics, etc.).
+                  </li>
+                  <li>This helps in grouping sections by subject.</li>
                 </ul>
               </div>
+
               <div>
                 <strong>Section Name:</strong>
                 <ul class="list-disc ml-6">
-                  <li>Enter or Select the section name from dropdown for that subject (e.g. Physics Section 1, Physics Section 2 etc).</li>
-                  <li>If your <strong>test format has no concept of sections</strong> like JEE has, for example in COMEDK, BITSAT etc then <strong>leave the section name blank</strong>.</li>
+                  <li>
+                    Select or enter the section name for that subject
+                    (e.g. Physics Section 1, Physics Section 2, etc.).
+                  </li>
+                  <li>
+                    If your <strong>test format does not use sections</strong>
+                    (e.g. COMEDK, BITSAT), then you can <strong>leave this blank</strong>.
+                  </li>
                   <li>
                     <Tag
                       severity="warn"
                       value="IMPORTANT NOTE"
                       rounded
                       pt:root:class="py-0.5"
-                    />:
-                    If you enter a section name, make sure the section name is unique across all sections even sections of other subjects.<br>
-                    Hence it is recommended to use the "SubjectName Section 1" etc format to name it, as Subject name keeps the section unique among sections of other subjects and section number makes it unique among sections in its own subject.
+                    />
+                    If you enter a section name, make sure it's unique across all sections,
+                    even those in other subjects.<br>
+                    It is recommended to follow the <strong>"SubjectName Section 1"</strong> format as
+                    the subject name keeps it unique across subjects,
+                    and the section number ensures uniqueness within the subject.
                   </li>
                   <li>This groups questions by section.</li>
                 </ul>
@@ -178,7 +238,7 @@
               <div>
                 <strong>Question Number:</strong>
                 <ul class="list-disc ml-6">
-                  <li>Number of the question, this number has to be unique within that section.</li>
+                  <li>This number must be unique within a section.</li>
                   <li>
                     <Tag
                       severity="info"
@@ -186,44 +246,49 @@
                       rounded
                       pt:root:class="py-0.5"
                     />
-                    It is recommened to enter the same question number as it is in your source pdf,
-                    this will help you in identifying which question corresponds to which.<br>
-                    If you are wondering about keeping the question numbering format similar to your target exam,
-                    for example say for JEE Mains,
-                    which has 75 questions they follow the format where question number is continuous (cumulative) across sections
-                    (i.e. 1st question is Q No. 1 and 75th question is Q No. 75)
-                    but your source has it differently (i.e. they have 1-25, 1-25, 1-25 numbering),
-                    then don't worry as changing the numbering format is provided as a setting option in CBT Interface.
+                    It's recommended to use the same question number as in your source PDF.
+                    This helps you map questions easily.<br>
+                    If you're wondering about following your target exam's numbering style,
+                    for example, in <strong>JEE Main</strong>,
+                    the question numbers are continuous across sections (i.e. from Q1 to Q75)
+                    but say your source PDF has separate numbering (1-25, 1-25, 1-25) then don't worry as
+                    CBT Interface provides an option to reformat how numbering appears during test configuration.
                   </li>
                 </ul>
               </div>
               <div>
                 <strong>Question Type:</strong>
                 <ul class="list-disc ml-6">
-                  <li><strong>MCQ:</strong> Multiple Choice Question, i.e. single correct option in question.</li>
-                  <li><strong>MSQ:</strong> Multiple Select Question, i.e. one or more correct options in question.</li>
-                  <li>
-                    <strong>NAT:</strong> Numerical Answer Type, i.e. a real number (can be integer or with demicals).
-                  </li>
+                  <li><strong>MCQ:</strong> Multiple Choice Question, only one correct option.</li>
+                  <li><strong>MSQ:</strong> Multiple Select Question, one or more correct options.</li>
+                  <li><strong>NAT:</strong> Numerical Answer Type, answer is a number (integer or decimal).</li>
                 </ul>
               </div>
               <div>
                 <strong>Answer Options:</strong>
                 <ul class="list-disc ml-6">
-                  <li>Only for MCQ and MSQ, specify the number of answer options (e.g. 4 for A, B, C, D).</li>
+                  <li>
+                    Applicable only for MCQ and MSQ. Specify the number of answer options
+                    (e.g. 4 for A, B, C, D).
+                  </li>
                 </ul>
               </div>
+
               <div>
                 <strong>Marking Scheme:</strong>
                 <ul class="list-disc ml-6">
-                  <li><strong>Correct:</strong> Marks awarded when the answer is correct.</li>
-                  <li><strong>Incorrect:</strong> Marks penalized when the answer is incorrect.</li>
+                  <li><strong>Correct:</strong> Marks awarded for a correct answer.</li>
+                  <li><strong>Incorrect:</strong> Marks deducted for an incorrect answer.</li>
                   <li>
-                    <strong>Partial</strong> <strong>(Only for MSQ):</strong> Marks awarded <strong>per correct answer option</strong>.<br>
-                    This applies only when your selected options form a subset of the correct answers (i.e., the answer is partially correct).<br>
-                    <strong>JEE Advanced</strong> uses the same logic, awarding <strong>+1</strong> per correct option in such cases.<br>
-                    For example, if you answered A and B, and the correct answers are A, B, and D,<br>
-                    then you'll be awarded 2 x partial marks. If partial marks = +1, then you'll receive 2 x (+1) = +2 marks.
+                    <strong>Partial (Only for MSQ):</strong> Marks awarded
+                    <strong>per correct option</strong>.<br>
+                    This applies when the selected options are a subset of the correct ones
+                    (i.e. partially correct).<br>
+                    For example, <strong>JEE Advanced</strong> uses this logic, awarding
+                    <strong>+1</strong> per correct option.<br>
+                    If the correct answers are A, B, and D, and you select A and B,
+                    then you'll receive 2 x partial marks.
+                    If partial marks = +1, you'll receive <strong>+2</strong>.
                   </li>
                 </ul>
               </div>
@@ -243,25 +308,31 @@
               <ul class="list-decimal ml-6 [&>li]:mb-3">
                 <li>
                   <strong>Upload the PDF:</strong><br>
-                  Upload your PDF file by clicking on <strong>Select a PDF</strong> that is on at the top of the page.<br>
+                  Upload your PDF file by clicking on
+                  <strong>Select a PDF</strong> at the top of the page.<br>
                   Wait for the PDF to load completely.
                 </li>
                 <li>
                   <strong>Crop Questions:</strong><br>
                   Navigate to the page containing the question you want to crop.<br>
                   Use the cropping tool to define the question area.<br>
-                  Fill in the details for the cropped question, such as subject name, section name, question type, and marks.<br>
+                  Fill in the details for the cropped question, such as
+                  subject name, section name, question type, and marks.<br>
                   Repeat this process for all questions in the PDF.
                 </li>
                 <li>
                   <strong>Generate Output:</strong><br>
-                  Once all questions are cropped, click on the "Generate Output" button that is at the bottom of the Left Panel (you may need to scroll down for that).<br>
-                  A Generate Output Dialog will open, just choose the options/settings you want.<br>
+                  Once all questions are cropped, click the <strong>Generate Output</strong>
+                  button at the bottom of the Left Panel (you may need to scroll down).<br>
+                  A Generate Output dialog will open, choose the options/settings you want.<br>
                   Download the generated file.
                 </li>
                 <li>
                   <strong>Use the Output File:</strong><br>
-                  Use the generated file in the Test Interface to give your test (in this case you will have to generate answer key data after the test) or first go to Generate Answer Key page to generate answer key data and then use the file it gives to give the test.
+                  Use the generated file in the Test Interface to give your test
+                  (you will need to generate answer key data after the test),
+                  or first go to the Generate Answer Key page to generate the answer key data
+                  and then use the file it provides to give the test.
                 </li>
               </ul>
             </div>
@@ -277,18 +348,20 @@
           </AccordionHeader>
           <AccordionContent>
             <div class="text-left leading-[2rem]">
-              <strong>Context Menu is the menu that pops up when you right click (or long press on touch screens).</strong><br>
-              When you will open context menu on the pdf page here, this will show a custom menu options which can be used.<br>
-              Options will depend on the mode, and type of action you are currently doing.<br>
-              Most options also have keyboard shortcuts for them as well.<br>
-              <strong>So here are all options and under what condition they appear and what they do:</strong>
+              <strong>Context Menu is the menu that pops up when you right-click (or long-press on touch screens).</strong><br>
+              When you open the context menu on the PDF page here,
+              it will show custom menu options you can use.<br>
+              Options depend on the current mode and the action you are performing.<br>
+              Most options also have keyboard shortcuts.<br>
+              <strong>Here are all the options, the conditions under which they appear, and what they do:</strong>
               <ul class="list-disc ml-6 mt-4 [&>li]:mb-3">
                 <li>
-                  <strong>When on "Crop" mode:</strong>
+                  <strong>When in "Crop" mode:</strong>
                   <ul class="list-disc ml-6">
                     <li>
                       <strong>Blur/Unblur Cropped Regions:</strong><br>
-                      Toggle Blur for cropped regions, blur strength is decided by <strong>Blur Intensity</strong> settings.
+                      Toggle blur for cropped regions; blur strength is controlled by the
+                      <strong>Blur Intensity</strong> setting.
                     </li>
                     <li>
                       <strong>With "Line" Cropper Mode:</strong>
@@ -300,27 +373,32 @@
                             rounded
                             pt:root:class="py-0.5"
                           /> ):<br>
-                          Undo the last selection line (boundary) that was set, this menu option doesn't appear if no lines are set.<br>
-                          This basically falls back be to previous boundary selection.<br>
-                          This will only undo the line, it won't delete/remove the cropped areas (before v1.13.0 undo used to delete it as well).
+                          Undo the last selection line (boundary) set.
+                          This option doesn't appear if no lines are set.<br>
+                          This reverts to the previous boundary selection.<br>
+                          Note: This only undoes the line; it does not delete cropped areas
+                          (before v1.12.0, undo would delete them as well).
                         </li>
                         <li>
-                          <strong>Skip Next Line</strong>
+                          <strong>Skip Next Bottom Line</strong>
                           ( <Tag
                             value="hold SHIFT key"
                             rounded
                             pt:root:class="py-0.5"
                           /> ):<br>
-                          Signal the tool that you want to skip the next Bottom Line.<br>
-                          Effectively to jump over an area your pdf may have that you don't want to be included in the cropped question.<br>
-                          <strong>To Cancel this</strong> choose the <strong>Unskip Next Bottom Line</strong> option or just press shift and release it.
+                          Signal the tool to skip the next bottom line.<br>
+                          Use this to jump over parts of the PDF
+                          you don't want included in the cropped question.<br>
+                          <strong>To cancel this,</strong> choose
+                          <strong>Unskip Next Bottom Line</strong>
+                          or simply press and release Shift key.
                         </li>
                       </ul>
                     </li>
                   </ul>
                 </li>
                 <li>
-                  <strong>When on "Edit" mode:</strong>
+                  <strong>When in "Edit" mode:</strong>
                   <ul class="list-disc ml-6">
                     <li>
                       <strong>Delete</strong>
@@ -329,7 +407,8 @@
                         rounded
                         pt:root:class="py-0.5"
                       /> ):<br>
-                      Deletes the selected cropped region. You can't get the deleted region back so use it wisely.
+                      Deletes the selected cropped region.
+                      This action is irreversible, so use it carefully.
                     </li>
                     <li>
                       <strong>Copy Region</strong>
@@ -339,8 +418,8 @@
                         pt:root:class="py-0.5"
                       /> ):<br>
                       Copies the selected region's location (coordinates and page number).<br>
-                      You can then Paste it for it to be used in your current question details.<br>
-                      Mainly <strong>useful</strong> when you are <strong>cropping Paragraph type question</strong>
+                      You can then paste it into your current question details.<br>
+                      Mainly <strong>useful</strong> when cropping <strong>Paragraph type questions</strong>.
                     </li>
                     <li>
                       <strong>Paste Region</strong>
@@ -349,9 +428,10 @@
                         rounded
                         pt:root:class="py-0.5"
                       /> ):<br>
-                      Pastes the copied region to your current question details.<br>
-                      This will create a new cropped region having the location (coordinates and page num) of copied region but having question details of you current question details.<br>
-                      Mainly <strong>useful</strong> when you are <strong>cropping Paragraph type question</strong>.
+                      Pastes the copied region into your current question details.<br>
+                      This creates a new cropped region with the copied location
+                      but uses the current question details.<br>
+                      Mainly <strong>useful</strong> when cropping <strong>Paragraph type questions</strong>.
                     </li>
                   </ul>
                 </li>
@@ -421,64 +501,77 @@
                 </AccordionContent>
               </AccordionPanel>
               <div class="text-left leading-[2rem] pt-5">
-                <span class="text-xl font-semibold text-center mx-auto">Edges cases and how to deal with them:</span>
+                <span class="text-xl font-semibold text-center mx-auto">
+                  Edge cases and how to deal with them:
+                </span>
                 <ul class="list-decimal ml-6 mt-4 [&>li]:mb-3">
                   <li>
                     <strong>Merging two cropped regions (or areas) into one question:</strong><br>
-                    You can merge two cropped regions into one question by given them same <strong>Subject Name</strong>, <strong>Section Name</strong> and <strong>Question Number</strong>.<br>
-                    use cases of this is when a question has first part in current page and the other part being in next page.<br>
-
-                    Basically, crop the first part of the question that appears on the current page as usual.<br>
-                    Then go to the next page to crop the other part and make sure to use the <strong>same question number</strong> (you'll need to manually decrease it by 1, because it auto-increments after every crop).<br><br>
-
+                    You can merge two cropped regions into one question by giving them the same
+                    <strong>Subject Name</strong>, <strong>Section Name</strong>,
+                    and <strong>Question Number</strong>.<br>
+                    This is useful when a question's parts span across multiple pages.<br>
+                    Crop the first part on the current page as usual.<br>
+                    Then go to the next page to crop the other part and
+                    make sure to use the <strong>same question number</strong>
+                    (you'll need to manually decrease it by 1,
+                    because it auto-increments after every crop).<br><br>
                     <strong>Example:</strong><br>
                     Say the current question number is 3.<br>
-                    You crop the first part on the current page — the question number will be auto-incremented to 4.<br>
-                    Now go to the next page and set the question number back to 3, then crop the other part.<br>
-                    Both images will now be grouped as one question since they share the same subject, section, and question number.
+                    You crop the first part on the current page,
+                    the tool will auto-increment the question number by 1 making it 4.<br>
+                    Now go to the next page and set the question number back to 3,
+                    then crop the other part.<br>
+                    Both images will now be grouped as one question
+                    since they share the same subject, section, and question number.
                   </li>
                   <li>
-                    <strong>How to crop questions that are divided by columns using Line Cropper Mode:</strong><br>
-                    <strong>Image 1</strong> above is an example of this.<br>
-                    We have question 6 to 8 on Left Hand Side and then 9 to 12 on right hand side.<br>
-                    Now in Box Cropper Mode, cropping this is not an issue due to its free style nature. But it is in Line Cropper Mode.<br>
-                    As Line Cropper works by defining Left, Right Boundaies,
-                    you first need to define them on the questions on the left,
-                    after we are done cropping from 6 to 8,
-                    we need to undo the Left, Right
-                    and Top boundaries so that we can set it around the questions on right side.
-                    Check <strong>Context Menus</strong> Panel that is given above on how to do it.
+                    <strong>How to crop questions divided by columns using Line Cropper Mode:</strong><br>
+                    <strong>Image 1</strong> above is an example.<br>
+                    Questions 6 to 8 are on the left side and 9 to 12 on the right side.<br>
+                    In Box Cropper Mode, cropping this is easy due to its free-style nature,
+                    but it's trickier in Line Cropper Mode.<br>
+                    Since Line Cropper works by defining left and right boundaries,
+                    you first set them for the questions on the left.<br>
+                    After cropping questions 6 to 8, you need to undo the left, right
+                    and top boundaries to set new ones around the questions on the right side.<br>
+                    Check the <strong>Context Menus</strong> panel above for instructions on how to do this.
                   </li>
                   <li>
-                    <strong>How to crop paragraph/table types questions:</strong><br>
-                    <strong>Image 2</strong> above is an example of this.<br>
-                    A Paragraph/Table type questions typically has a para/table based on which more than 1 questions are given to answer.<br>
-                    In <strong>Image 2</strong> you can see we have a table and then Question 13, 14, 15 which are questions based on that table.<br><br>
-                    So we have this structure:<br>
-                    <span class="text-center mx-auto">
-                      ----- Para / Table -----<br>
-                      ----- Q 13 -----<br>
-                      ----- Q 14 -----<br>
-                      ----- Q 15 -----<br>
-                    </span><br>
-                    We want to convert it into this structure:<br>
-                    <span class="text-center mx-auto">
-                      ----- Para / Table -----<br>
-                      ----- Q 13 -----<br>
-                      ----- Para / Table -----<br>
-                      ----- Q 14 -----<br>
-                      ----- Para / Table -----<br>
-                      ----- Q 15 -----<br>
-                    </span><br>
-                    So we basically want Para/Table part to appear in all 3 questions.<br>
-                    Here is how we do it:<br>
-                    First Crop the Para giving it question number of 13 in question details.<br>
-                    Now Crop Q 13 giving it question number 13 as well, this will merge that para and Q 13 as Question 13.<br>
-                    Now switch to <strong>Edit</strong> mode, right click (or long press on touch screens) on that Para/Table cropped region, click on copy to copy its location.<br>
-                    Now press the ESC key on keyboard or click on some blank space to unselect any region, and now set question number as 14 in question details, and right click and select paste.<br>
-                    This will now make a new region on the same para, making it so that there are two regions on the para (for question 13, and question 14).<br>
-                    Now switch back to <strong>Crop</strong> Mode and then crop Q 14 while giving it Question number of 14 (so that para and Q 14 can be merged as Question 14).<br>
-                    Repeat the same steps for Q 15 as we did for Q 14, and that's it.
+                    <strong>How to crop paragraph/table type questions:</strong><br>
+                    <strong>Image 2</strong> above shows an example.<br>
+                    Paragraph or table type questions usually have a paragraph/table
+                    followed by multiple questions based on it.<br>
+                    In <strong>Image 2</strong>, you see a table followed by Questions 13, 14, and 15.<br><br>
+                    The original structure is:<br>
+                    ----- Para / Table -----<br>
+                    ----- Q 13 -----<br>
+                    ----- Q 14 -----<br>
+                    ----- Q 15 -----<br><br>
+
+                    We want to convert it into:<br>
+
+                    ----- Para / Table -----<br>
+                    ----- Q 13 -----<br>
+                    ----- Para / Table -----<br>
+                    ----- Q 14 -----<br>
+                    ----- Para / Table -----<br>
+                    ----- Q 15 -----<br><br>
+
+                    So we want the Para/Table to appear in each question.<br>
+                    Here's how we do it:<br>
+                    First, crop the Para and give it question number 13.<br>
+                    Then crop Q13, also assigning it question number 13,
+                    this merges the Para and Q13 as one question.<br>
+                    Switch to <strong>Edit</strong> mode, right-click (or long-press on touch)
+                    the Para/Table cropped region, and copy its location.<br>
+                    Press ESC or click blank space to unselect, set the question number to 14,
+                    then right-click and paste.<br>
+                    This creates a new region on the same Para for question 14.<br>
+                    Switch back to <strong>Crop</strong> mode,
+                    crop Q14 with question number 14 to merge it with the Para.<br>
+                    Repeat the same for Q15.<br>
+                    That's it!
                   </li>
                 </ul>
               </div>
