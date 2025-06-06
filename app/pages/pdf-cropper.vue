@@ -884,19 +884,22 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>) {
   const subjectsData: CropperOutputData = {}
 
   for (const questionData of data.values()) {
-    const { subject: sub, section, que, id, type, pdfData, ...rest } = questionData
+    const { subject: sub, section, que, type, pdfData, options, marks } = questionData
     const sec = section || sub
 
     const formattedPdfData = pdfData.map((data) => {
-      const { l, r, t, b, ...restProps } = data
-      return { x1: l, x2: r, y1: t, y2: b, ...restProps }
+      const { l, r, t, b, page } = data
+      return { x1: l, x2: r, y1: t, y2: b, page }
     })
 
     const cropperQuesData: CropperQuestionData = {
       que,
       type,
       pdfData: formattedPdfData,
-      ...rest,
+      options,
+      marks: {
+        ...marks,
+      },
     }
 
     if (type === 'nat') delete cropperQuesData.options
@@ -948,7 +951,7 @@ async function generatePdfCropperOutput() {
 
   const jsonData = generateOutputState.isUploadedFileZipFile
     ? userUploadedCropperDataJson.value!
-    : transformDataToOutputFormat(structuredClone(toRaw(cropperOverlayDatas)))
+    : transformDataToOutputFormat(toRaw(cropperOverlayDatas))
 
   jsonData.pdfFileHash = pdfFileHash
 
