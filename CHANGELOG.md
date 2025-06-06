@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.13.0...v1.13.1) (2025-06-06)
+
+
+### Bug Fixes
+
+* **pdf-cropper:** replace structuredClone with explicit object creation to avoid proxy error ([67d981f](https://github.com/TheMoonVyy/pdf2cbt/commit/67d981f4027bfdf555ac4e522c5461737827d1de))
+
 ## [1.13.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.12.0...v1.13.0) (2025-06-02)
 
 
