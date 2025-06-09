@@ -87,6 +87,8 @@
         </div>
         <PdfCropperQuestionDetailsPanel
           v-model="currentQuestionData"
+          :overlays-per-question-data="overlaysPerQuestionData"
+          :is-current-question-main-overlay="!activeCropperOverlayId"
           :is-pdf-loaded="isPdfLoaded"
           :overlay-datas="cropperOverlayDatas"
         />
@@ -105,9 +107,9 @@
               label-class="text-xs"
             >
               <InputNumber
-                v-model="currentQuestionCoords.l"
+                v-model="currentQuestionData.pdfData.l"
                 :min="0"
-                :max="currentQuestionCoords.r"
+                :max="currentQuestionData.pdfData.r"
                 :fluid="true"
                 label-id="coords_left"
                 size="small"
@@ -123,8 +125,8 @@
               label-class="text-xs"
             >
               <InputNumber
-                v-model="currentQuestionCoords.r"
-                :min="currentQuestionCoords.l"
+                v-model="currentQuestionData.pdfData.r"
+                :min="currentQuestionData.pdfData.l"
                 :max="currentPageDetails.width"
                 :fluid="true"
                 label-id="coords_right"
@@ -141,9 +143,9 @@
               label-class="text-xs"
             >
               <InputNumber
-                v-model="currentQuestionCoords.t"
+                v-model="currentQuestionData.pdfData.t"
                 :min="0"
-                :max="currentQuestionCoords.b"
+                :max="currentQuestionData.pdfData.b"
                 :fluid="true"
                 label-id="coords_top"
                 size="small"
@@ -159,8 +161,8 @@
               label-class="text-xs"
             >
               <InputNumber
-                v-model="currentQuestionCoords.b"
-                :min="currentQuestionCoords.t"
+                v-model="currentQuestionData.pdfData.b"
+                :min="currentQuestionData.pdfData.t"
                 :max="currentPageDetails.height"
                 :fluid="true"
                 label-id="coords_bottom"
@@ -236,7 +238,8 @@
             <PdfCropperEditCroppedOverlay
               v-if="isPdfLoaded"
               v-model="cropperOverlayDatas"
-              v-model:active-overlay="activeCropperOverlay"
+              v-model:overlays-per-question-data="overlaysPerQuestionData"
+              v-model:active-overlay-id="activeCropperOverlayId"
               v-model:blur-cropped-region="settings.blurCroppedRegion"
               :show-question-details-on-overlay="settings.showQuestionDetailsOnOverlay"
               :main-img-panel-elem="mainImgPanelElem"
@@ -471,15 +474,13 @@ import * as Comlink from 'comlink'
 import { zip, strToU8, type AsyncZippable } from 'fflate'
 import mupdfWorkerFile from '@/src/worker/mupdf.worker?worker'
 import type { MuPdfProcessor } from '@/src/worker/mupdf.worker'
-import { DataFileNames } from '#shared/enums'
+import { DataFileNames, Constants } from '#shared/enums'
 
 import Accordion from '@/src/volt/Accordion.vue'
 import AccordionPanel from '@/src/volt/AccordionPanel.vue'
 import AccordionHeader from '@/src/volt/AccordionHeader.vue'
 import AccordionContent from '@/src/volt/AccordionContent.vue'
 import SelectButton from '@/src/volt/SelectButton.vue'
-
-import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '#shared/constants'
 
 type CropperMode = {
   isBox: boolean
@@ -600,7 +601,6 @@ const visibilityState = shallowReactive({
   advanceSettings: false,
   questionDetailsDialog: false,
   generateOutputDialog: false,
-
 })
 
 const pageImgData = reactive<PageImgData>({})
@@ -613,25 +613,28 @@ const currentModeSelectOptions = reactive([
   { name: 'Edit', value: 'edit', disable: computed(() => cropperOverlayDatas.size === 0) },
 ])
 
-const activeCropperOverlay = shallowReactive<ActiveCroppedOverlay>({
-  id: '',
-  imgNum: 0,
-})
+const activeCropperOverlayId = shallowRef('')
 
 const mainOverlayData = reactive<PdfCroppedOverlayData>({
   id: '',
+  queId: '',
+  imgNum: 1,
   subject: '',
   section: '',
   que: 1,
   type: 'mcq',
   options: 4,
-  pdfData: [{ l: 0, r: 0, t: 0, b: 0, page: 1 }],
   marks: {
     cm: 4,
     pm: 1,
     im: -1,
   },
+  pdfData: { l: 0, r: 0, t: 0, b: 0, page: 1 },
 })
+
+const overlaysPerQuestionData = reactive<PdfCropperOverlaysPerQuestion>(new Map())
+
+const ID_SEPARATOR = Constants.separator
 
 const savedMarkingScheme: {
   [questionType in QuestionType]?: {
@@ -665,9 +668,8 @@ watch(
 const zoomScaleDebounced = shallowRef(settings.scale)
 
 const currentQuestionData = computed<PdfCroppedOverlayData>(() => {
-  const id = activeCropperOverlay.id
-  const imgNum = activeCropperOverlay.imgNum
-  if (id && imgNum > 0) {
+  const id = activeCropperOverlayId.value
+  if (id) {
     const overlayData = cropperOverlayDatas.get(id)
     if (overlayData) {
       return overlayData
@@ -676,50 +678,136 @@ const currentQuestionData = computed<PdfCroppedOverlayData>(() => {
   return mainOverlayData
 })
 
-const currentQuestionCoords = computed(() => {
-  const imgNum = activeCropperOverlay.imgNum
-  if (imgNum > 0) {
-    return currentQuestionData.value.pdfData[activeCropperOverlay.imgNum - 1]!
-  }
-  return currentQuestionData.value.pdfData[0]!
-})
+const storeOverlayData = (
+  oldOverlay: PdfCroppedOverlayData,
+  newQueId: string,
+  pdfData: PdfCroppedOverlayData['pdfData'] | null = null,
+) => {
+  const existingFirstOverlay = cropperOverlayDatas.get(newQueId + ID_SEPARATOR + '1')
+  const existingQuestionImgCount = overlaysPerQuestionData.get(newQueId)
 
-watch([currentQuestionData, () => activeCropperOverlay.imgNum],
-  ([newData], [oldData, oldImgNum]) => {
+  let newOverlay: PdfCroppedOverlayData | null = null
+  let newId = ''
+  let newImgNum = 1
+  if (existingFirstOverlay && existingQuestionImgCount) {
+    newImgNum = existingQuestionImgCount + 1
+    const { que, subject, section } = oldOverlay
+
+    newId = newQueId + ID_SEPARATOR + newImgNum
+
+    newOverlay = {
+      id: newId,
+      queId: newQueId,
+      que,
+      subject,
+      section,
+      imgNum: newImgNum,
+      type: existingFirstOverlay.type,
+      options: existingFirstOverlay.options,
+      marks: {
+        ...existingFirstOverlay.marks,
+      },
+      pdfData: oldOverlay.pdfData,
+    }
+  }
+  else {
+    newOverlay = utilCloneJson(oldOverlay)
+    newId = newQueId + ID_SEPARATOR + '1'
+    newOverlay.id = newId
+    newOverlay.queId = newQueId
+    newOverlay.imgNum = 1
+  }
+
+  if (pdfData) newOverlay.pdfData = pdfData
+
+  const { l, r, b, t } = newOverlay.pdfData
+
+  newOverlay.pdfData.l = Math.min(l, r)
+  newOverlay.pdfData.r = Math.max(l, r)
+  newOverlay.pdfData.t = Math.min(t, b)
+  newOverlay.pdfData.b = Math.max(t, b)
+
+  cropperOverlayDatas.set(newId, newOverlay)
+  overlaysPerQuestionData.set(newQueId, newImgNum)
+}
+
+watch(currentQuestionData,
+  (newData, oldData) => {
     if (newData.id === oldData.id) return
 
-    const { id, subject, section, que } = oldData
-    const newID = `${section || subject}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
-    if (newID === id) return
+    const { id, queId: oldQueId, subject, section, que } = oldData
+    if (!id) return
 
     const oldOverlay = cropperOverlayDatas.get(id)
-    if (!oldOverlay) return
+    if (oldOverlay) {
+      const newQueId = `${section || subject}${ID_SEPARATOR}${que}`
+      if (id.includes(newQueId + ID_SEPARATOR)) {
+        const imgNum = oldOverlay.imgNum
+        const oldImgCount = overlaysPerQuestionData.get(oldQueId) || 1
 
-    if (oldOverlay.pdfData.length > 1) {
-      const [oldPdfData] = oldOverlay.pdfData.splice(oldImgNum - 1, 1)
-      if (!oldPdfData) return
+        if (imgNum === 1 && oldImgCount > 1) {
+          const nextOverlayData = cropperOverlayDatas.get(oldQueId + ID_SEPARATOR + 2)
+          if (!nextOverlayData) return
 
-      const existingNewOverlay = cropperOverlayDatas.get(newID)
-      if (existingNewOverlay) {
-        existingNewOverlay.pdfData.push(oldPdfData)
+          let isDataChanged = false
+          for (const keyData of ['type', 'options'] as const) {
+            if (oldOverlay[keyData] !== nextOverlayData[keyData]) {
+              isDataChanged = true
+              break
+            }
+          }
+          if (!isDataChanged) {
+            for (const keyData of ['cm', 'pm', 'im'] as const) {
+              if (oldOverlay.marks[keyData] !== nextOverlayData.marks[keyData]) {
+                isDataChanged = true
+                break
+              }
+            }
+          }
+          if (!isDataChanged) return
+
+          const { type, options, marks } = oldOverlay
+          for (const newImgNum of utilRange(2, oldImgCount + 1)) {
+            const overlay = cropperOverlayDatas.get(oldQueId + ID_SEPARATOR + newImgNum)
+            if (!overlay) return
+
+            overlay.type = type
+            overlay.options = options
+            overlay.marks = { ...marks }
+          }
+        }
+
+        return
       }
-      else {
-        const OldOverlayclone = utilCloneJson(oldOverlay)
-        OldOverlayclone.id = newID
-        OldOverlayclone.pdfData = [oldPdfData]
-        cropperOverlayDatas.set(newID, OldOverlayclone)
-      }
+      storeOverlayData(oldOverlay, newQueId)
     }
-    else {
-      cropperOverlayDatas.delete(id)
-      const existingNewOverlay = cropperOverlayDatas.get(newID)
-      if (existingNewOverlay) {
-        existingNewOverlay.pdfData.push(oldOverlay.pdfData[0]!)
+
+    // Shift overlays to left to fill the one that was deleted/moved
+    // Delete last one since it's now duplicated in the previous one
+    // if there is no next overlay to begin with, then deletes the current one that needs to be deleted
+    let currentImgNum = oldOverlay?.imgNum || oldData.imgNum
+    while (true) {
+      const currentId = oldQueId + ID_SEPARATOR + currentImgNum
+      const nextId = oldQueId + ID_SEPARATOR + (currentImgNum + 1)
+
+      const nextOverlayData = cropperOverlayDatas.get(nextId)
+      if (nextOverlayData) {
+        nextOverlayData.id = currentId
+        nextOverlayData.imgNum = currentImgNum
+        cropperOverlayDatas.set(currentId, nextOverlayData)
       }
       else {
-        oldOverlay.id = newID
-        cropperOverlayDatas.set(newID, oldOverlay)
+        cropperOverlayDatas.delete(currentId)
+        break
       }
+
+      currentImgNum++
+    }
+
+    const oldImgCount = overlaysPerQuestionData.get(oldQueId)
+    if (typeof oldImgCount === 'number') {
+      if (oldImgCount > 1) overlaysPerQuestionData.set(oldQueId, oldImgCount - 1)
+      else overlaysPerQuestionData.delete(oldQueId)
     }
   },
   { deep: false, flush: 'pre' },
@@ -749,12 +837,10 @@ const cropperMode = computed<CropperMode>(() => ({
 }))
 
 // Flag for generate ouput btn
-const hasQuestionsData = computed<boolean>(
-  () => cropperOverlayDatas.size > 0,
-)
+const hasQuestionsData = computed<boolean>(() => cropperOverlayDatas.size > 0)
 
 function storeCurrentQuestionData(
-  pdfData: PdfCroppedOverlayData['pdfData'][number] | null = null,
+  pdfData: PdfCroppedOverlayData['pdfData'] | null = null,
   incrementQuestion: boolean = true,
 ) {
   const { subject, section, que } = mainOverlayData
@@ -763,7 +849,7 @@ function storeCurrentQuestionData(
     return
   }
 
-  if (!pdfData) pdfData = { ...mainOverlayData.pdfData[0]! }
+  if (!pdfData) pdfData = { ...mainOverlayData.pdfData }
 
   const { l, r, b, t } = pdfData
 
@@ -772,23 +858,8 @@ function storeCurrentQuestionData(
     return
   }
 
-  pdfData.l = Math.min(l, r)
-  pdfData.r = Math.max(l, r)
-  pdfData.t = Math.min(t, b)
-  pdfData.b = Math.max(t, b)
-
-  const id = `${section || subject}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
-  const existingOverlayData = cropperOverlayDatas.get(id)
-
-  if (existingOverlayData) {
-    existingOverlayData.pdfData.push(pdfData)
-  }
-  else {
-    const dataToSet = utilCloneJson(mainOverlayData)
-    dataToSet.id = id
-    dataToSet.pdfData[0] = pdfData
-    cropperOverlayDatas.set(id, dataToSet)
-  }
+  const queId = `${section || subject}${ID_SEPARATOR}${que}`
+  storeOverlayData(mainOverlayData, queId, pdfData)
 
   if (incrementQuestion) mainOverlayData.que++
 }
@@ -881,34 +952,60 @@ async function renderPage(pageNum: number) {
 }
 
 function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>) {
+  type StructuredOverlayData = {
+    [subject: string]: {
+      [section: string]: {
+        [question: string | number]: {
+          [imgNum: string | number]: PdfCroppedOverlayData
+        }
+      }
+    }
+  }
+
+  const structuredOverlayData: StructuredOverlayData = {}
+
+  for (const overlayData of data.values()) {
+    const { subject, section: rawSection, que, imgNum } = overlayData
+    const section = rawSection || subject
+
+    structuredOverlayData[subject] ||= {}
+    structuredOverlayData[subject][section] ||= {}
+    structuredOverlayData[subject][section][que] ||= {}
+    structuredOverlayData[subject][section][que][imgNum] = overlayData
+  }
+
   const subjectsData: CropperOutputData = {}
 
-  for (const questionData of data.values()) {
-    const { subject: sub, section, que, type, pdfData, options, marks } = questionData
-    const sec = section || sub
+  for (const [subject, subjectData] of Object.entries(structuredOverlayData)) {
+    subjectsData[subject] = {}
 
-    const formattedPdfData = pdfData.map((data) => {
-      const { l, r, t, b, page } = data
-      return { x1: l, x2: r, y1: t, y2: b, page }
-    })
+    for (const [section, sectionData] of Object.entries(subjectData)) {
+      subjectsData[subject][section] = {}
 
-    const cropperQuesData: CropperQuestionData = {
-      que,
-      type,
-      pdfData: formattedPdfData,
-      options,
-      marks: {
-        ...marks,
-      },
+      for (const [question, overlayDatas] of Object.entries(sectionData)) {
+        const sortedQuestionOverlays = Object.values(overlayDatas).sort((a, b) => a.imgNum - b.imgNum)
+
+        const pdfData: PdfCropperCoords[] = sortedQuestionOverlays.map((data) => {
+          const { l, r, t, b, page } = data.pdfData
+          return { x1: l, x2: r, y1: t, y2: b, page }
+        })
+
+        const { que, type, options, marks } = sortedQuestionOverlays[0]!
+        subjectsData[subject][section][question] = {
+          que,
+          type: type,
+          marks: {
+            ...marks,
+          },
+          pdfData,
+        }
+
+        if (type !== 'msq') delete subjectsData[subject][section][question].marks.pm
+        if (type === 'msq' || type === 'mcq') {
+          subjectsData[subject][section][question].options = options || 4
+        }
+      }
     }
-
-    if (type === 'nat') delete cropperQuesData.options
-    if (type !== 'msq') delete cropperQuesData.marks.pm
-
-    subjectsData[sub] ??= {}
-    subjectsData[sub][sec] ??= {}
-
-    subjectsData[sub][sec][que] = cropperQuesData
   }
 
   const pdfCropperData = subjectsData
@@ -1024,8 +1121,8 @@ async function addImageBlobsToZipAndDownload(testImageBlobs: TestImageBlobs) {
         if (!imageBlob) continue
 
         const imageBuffer = new Uint8Array(await imageBlob.arrayBuffer())
-        const sectionNameWithSeparator = sectionName + IMAGE_FILE_NAME_OF_ZIP_SEPARATOR
-        const questionNameWithSeparator = questionNum + IMAGE_FILE_NAME_OF_ZIP_SEPARATOR
+        const sectionNameWithSeparator = sectionName + ID_SEPARATOR
+        const questionNameWithSeparator = questionNum + ID_SEPARATOR
 
         const filename = `${sectionNameWithSeparator}${questionNameWithSeparator}${i + 1}.png`
         outputFilesToZip.value[filename] = imageBuffer

@@ -1,6 +1,5 @@
 import { unzip, strFromU8, type Unzipped } from 'fflate'
-import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '#shared/constants'
-import { DataFileNames } from '#shared/enums'
+import { DataFileNames, Constants } from '#shared/enums'
 
 type UnzippedData = UploadedTestData & {
   unzippedFiles?: Unzipped
@@ -50,14 +49,14 @@ export default (
                 for (const subjectData of Object.values(pdfCropperData)) {
                   for (const [section, sectionData] of Object.entries(subjectData)) {
                     imageBlobs[section] = {}
-                    const sectionNamwWithSeparator = section + IMAGE_FILE_NAME_OF_ZIP_SEPARATOR
+                    const sectionNamwWithSeparator = section + Constants.separator
 
                     for (const [question, questionData] of Object.entries(sectionData)) {
                       const { pdfData } = questionData
 
                       if (Array.isArray(pdfData) && pdfData.length > 0) {
                         const qImagesCount = pdfData.length
-                        const questionNameWithSeparator = question + IMAGE_FILE_NAME_OF_ZIP_SEPARATOR
+                        const questionNameWithSeparator = question + Constants.separator
 
                         imageBlobs[section][question] = []
                         for (let i = 0; i < qImagesCount; i++) {

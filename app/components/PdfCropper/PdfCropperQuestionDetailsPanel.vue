@@ -3,6 +3,7 @@
     :header="questionDetailsHeader"
     toggleable
     class="w-full"
+    :pt:title:class="['mx-auto', isCurrentQuestionMainOverlay ? '' : 'text-cyan-400']"
     pt:content:class="px-4"
   >
     <div class="flex w-full mt-2 bg-surface-950 border border-surface-700 rounded-md">
@@ -63,7 +64,7 @@
       >
         <Select
           v-model="currentData.type"
-          :disabled="!props.isPdfLoaded"
+          :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
           label-id="question_type"
           :options="optionItems.questionType"
           option-label="name"
@@ -90,7 +91,7 @@
       >
         <InputNumber
           v-model="currentData.options"
-          :disabled="!props.isPdfLoaded"
+          :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
           :min="1"
           :max="9"
           :fluid="true"
@@ -115,7 +116,7 @@
         >
           <BaseInputNumber
             v-model="currentData.marks.cm"
-            :disabled="!props.isPdfLoaded"
+            :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
             :min="1"
             :max="99"
             prefix="+"
@@ -139,7 +140,7 @@
           >
             <BaseInputNumber
               v-model="currentData.marks.pm"
-              :disabled="!props.isPdfLoaded"
+              :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
               :min="0"
               :max="99"
               prefix="+"
@@ -156,7 +157,7 @@
         >
           <BaseInputNumber
             v-model="currentData.marks.im"
-            :disabled="!props.isPdfLoaded"
+            :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
             :min="-99"
             :max="0"
             size="small"
@@ -169,28 +170,50 @@
 </template>
 
 <script setup lang="ts">
-import { IMAGE_FILE_NAME_OF_ZIP_SEPARATOR } from '#shared/constants'
+import { Constants } from '#shared/enums'
 
 const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
 
 const props = defineProps<{
   overlayDatas: Map<string, PdfCroppedOverlayData>
+  overlaysPerQuestionData: PdfCropperOverlaysPerQuestion
+  isCurrentQuestionMainOverlay: boolean
   isPdfLoaded: boolean
 }>()
 
-const questionDetailsHeader = computed(() => {
+const ID_SEPARATOR = Constants.separator
+
+const questionState = computed(() => {
   const id = currentData.value.id
   const subject = currentData.value.subject
   const section = currentData.value.section
   const que = currentData.value.que
+  const imgNum = currentData.value.imgNum
 
-  const newID = `${section || subject}${IMAGE_FILE_NAME_OF_ZIP_SEPARATOR}${que}`
-  const imgLength = props.overlayDatas.get(newID)?.pdfData.length
-  let imgNum = imgLength || 1
+  const newQueId = `${section || subject}${ID_SEPARATOR}${que}`
+  const newId = newQueId + ID_SEPARATOR + imgNum
 
-  if (id !== newID && imgLength !== undefined) {
-    imgNum = imgLength + 1
+  const data = {
+    que,
+    imgNumToShow: 0,
+    disableQueDataInput: false,
   }
+
+  if (newId === id) {
+    data.imgNumToShow = imgNum
+    if (imgNum > 1) data.disableQueDataInput = true
+  }
+  else {
+    const imgCount = props.overlaysPerQuestionData.get(newQueId) ?? 0
+    data.imgNumToShow = imgCount + 1
+  }
+
+  return data
+})
+
+const questionDetailsHeader = computed(() => {
+  const imgNum = questionState.value.imgNumToShow
+  const que = questionState.value.que
 
   const imgNumStr = imgNum > 1
     ? `(${imgNum}) `
@@ -199,7 +222,10 @@ const questionDetailsHeader = computed(() => {
   return `Question Details [ #${que} ${imgNumStr}]`
 })
 
-const subjects = ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English', 'Logical Reasoning', 'English & LR']
+const subjects = [
+  'Physics', 'Chemistry', 'Mathematics',
+  'Biology', 'English', 'Logical Reasoning', 'English & LR',
+]
 
 const sections = computed(() => {
   const subject = currentData.value.subject

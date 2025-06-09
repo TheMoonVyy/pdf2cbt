@@ -7,10 +7,10 @@
       'pointer-events-none': currentMode !== 'crop',
     }"
     :style="{
-      '--l': currentOverlayData.pdfData[0]!.l,
-      '--t': currentOverlayData.pdfData[0]!.t,
-      '--r': currentOverlayData.pdfData[0]!.r,
-      '--b': currentOverlayData.pdfData[0]!.b,
+      '--l': currentOverlayData.pdfData.l,
+      '--t': currentOverlayData.pdfData.t,
+      '--r': currentOverlayData.pdfData.r,
+      '--b': currentOverlayData.pdfData.b,
     }"
     @contextmenu.prevent="(e) => {
       if (cropperMode.isBox) {
@@ -92,7 +92,7 @@ const currentOverlayData = defineModel<PdfCroppedOverlayData>('currentOverlayDat
 const blurCroppedRegion = defineModel<boolean>('blurCroppedRegion', { required: true })
 
 const emit = defineEmits<{
-  setPdfData: [data: PdfCroppedOverlayData['pdfData'][number]]
+  setPdfData: [data: PdfCroppedOverlayData['pdfData']]
 }>()
 
 const overlayContainerElem = useTemplateRef('overlayContainerElem')
@@ -124,7 +124,7 @@ const skipNextLine = computed({
 
 const undoLastCoordLine = () => {
   if (props.currentMode !== 'crop' || !props.cropperMode.isLine) return
-  const pdfData = currentOverlayData.value.pdfData[0]!
+  const pdfData = currentOverlayData.value.pdfData
   switch (lineCropperState.currentCoord) {
     case 'b':
       lineCropperState.currentCoord = 't'
@@ -227,8 +227,7 @@ const onBoxPointerDown = (e: PointerEvent) => {
   if (!props.cropperMode.isBox || props.currentMode !== 'crop') return
   if (!overlayContainerElem.value) return
 
-  const pdfData = currentOverlayData.value.pdfData[0]
-  if (!pdfData) return
+  const pdfData = currentOverlayData.value.pdfData
 
   const rect = overlayContainerElem.value.getBoundingClientRect()
   const xRel = e.clientX - rect.left
@@ -259,8 +258,7 @@ const onPointerMove = (e: PointerEvent) => {
   const yRel = e.clientY - rect.top
 
   if (props.cropperMode.isBox && boxCropperState.isDragging) {
-    const pdfData = currentOverlayData.value.pdfData[0]
-    if (!pdfData) return
+    const pdfData = currentOverlayData.value.pdfData
 
     const x = utilClampNumber(xRel, 0, props.pageWidth, props.pageScale)
     const y = utilClampNumber(yRel, 0, props.pageHeight, props.pageScale)
@@ -272,8 +270,7 @@ const onPointerMove = (e: PointerEvent) => {
   }
   else if (props.cropperMode.isLine) {
     const currentCoord = lineCropperState.currentCoord
-    const pdfData = currentOverlayData.value.pdfData[0]
-    if (!pdfData) return
+    const pdfData = currentOverlayData.value.pdfData
 
     switch (currentCoord) {
       case 'l':
@@ -297,11 +294,9 @@ const onBoxPointerUp = (e: PointerEvent) => {
   onPointerMove(e)
   cleanUpEventListeners(null, ['pointerdown'])
   boxCropperState.isDragging = false
-  const pdfData = utilCloneJson(currentOverlayData.value.pdfData[0])
-  if (pdfData) {
-    pdfData.page = props.currentPageNum
-    emit('setPdfData', pdfData)
-  }
+  const pdfData = utilCloneJson(currentOverlayData.value.pdfData)
+  pdfData.page = props.currentPageNum
+  emit('setPdfData', pdfData)
 }
 
 const throttledOnPointerMove = useThrottleFn(onPointerMove, () => props.selectionThrottleInterval, true)
@@ -319,8 +314,8 @@ const setLineCropperCoord = () => {
       lineCropperState.currentCoord = 'b'
       break
     case 'b': {
-      const pdfData = currentOverlayData.value.pdfData[0]
-      if (!pdfData) return
+      const pdfData = currentOverlayData.value.pdfData
+
       const { t, b } = pdfData
       pdfData.t = Math.min(b, t)
       pdfData.b = Math.max(b, t)
@@ -395,8 +390,7 @@ const onKeyDown = (e: KeyboardEvent) => {
 
   e.preventDefault()
 
-  const pdfData = currentOverlayData.value.pdfData[0]
-  if (!pdfData) return
+  const pdfData = currentOverlayData.value.pdfData
 
   if (currentCoord === 'l' || currentCoord === 'r') {
     const { l, r } = pdfData
@@ -468,8 +462,7 @@ watch(() => props.currentPageNum,
       if (lineCropperState.currentCoord === 'b') {
         skipNextLine.value = false
         lineCropperState.currentCoord = 't'
-        const pdfData = currentOverlayData.value.pdfData[0]
-        if (pdfData) pdfData.b = 0
+        currentOverlayData.value.pdfData.b = 0
       }
     }
   },
