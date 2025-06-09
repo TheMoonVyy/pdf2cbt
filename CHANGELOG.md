@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.13.1...v1.13.2) (2025-06-09)
+
+
+### Bug Fixes
+
+* **pdf-cropper:** refactor data structure and fix issues around merged questions ([5929709](https://github.com/TheMoonVyy/pdf2cbt/commit/59297095b26b772910c75bd5404a5245e4417e7d))
+
 ## [1.13.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.13.0...v1.13.1) (2025-06-06)
 
 
