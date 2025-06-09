@@ -9,65 +9,58 @@
     }"
     @click="setActiveOverlayToNone"
   >
-    <template
+    <div
       v-for="[id, item] in overlays"
+      v-show="currentPageNum === item.pdfData.page"
       :key="id"
+      class="cropped-overlay"
+      :class="{
+        active: activeId === id,
+      }"
+      :style="{
+        '--l': item.pdfData.l,
+        '--r': item.pdfData.r,
+        '--t': item.pdfData.t,
+        '--b': item.pdfData.b,
+      }"
+      @pointerdown="(e) => onPointerDown(e, id)"
+      @click.stop
     >
       <div
-        v-for="(pdfData, imgIndex) in item.pdfData"
-        v-show="currentPageNum === pdfData.page"
-        :key="imgIndex"
-        class="cropped-overlay"
-        :class="{
-          active: active.id === id && (imgIndex + 1) === active.imgNum,
-        }"
-        :style="{
-          '--l': pdfData.l,
-          '--r': pdfData.r,
-          '--t': pdfData.t,
-          '--b': pdfData.b,
-        }"
-        @pointerdown="(e) => onPointerDown(e, id, imgIndex + 1)"
-        @click.stop
+        v-if="showQuestionDetailsOnOverlay"
+        class="overlay-label w-fit flex flex-wrap divide-x divide-current [&>span]:px-1"
       >
-        <div
-          v-if="showQuestionDetailsOnOverlay"
-          class="overlay-label w-fit flex flex-wrap divide-x divide-current"
-        >
-          <span class="px-1">
-            {{ item.section || item.subject }}
-          </span>
-          <span class="px-1">
-            Q: {{ item.que }}
-            <template v-if="item.pdfData.length > 1">
-              ({{ imgIndex + 1 }})
-            </template>
-          </span>
-          <span class="px-1">
-            {{ item.type.toUpperCase() }}
-            <template v-if="item.type !== 'nat' && item.options !== 4">
-              ({{ item.options }})
-            </template>
-          </span>
-          <span class="px-1">
-            M: ({{ utilMarksWithSign(item.marks.cm) }}
-            <template v-if="item.type === 'msq'">
-              {{ utilMarksWithSign(item.marks.pm as number) }}
-            </template>
-            {{ utilMarksWithSign(item.marks.im) }})
-          </span>
-        </div>
-
-        <template v-if="id === active.id && (imgIndex + 1) === active.imgNum">
-          <div
-            v-for="dir in resizeDirections"
-            :key="dir"
-            :class="`resizer ${dir}`"
-            @pointerdown.stop.prevent="startResize($event, id, imgIndex + 1, dir)"
-          />
-        </template>
+        <span>{{ item.section || item.subject }}</span>
+        <span>
+          Q: {{ item.que }}
+          <template v-if="(overlaysPerQuestionData.get(item.queId) || 0) > 1">
+            ({{ item.imgNum }})
+          </template>
+        </span>
+        <span>
+          {{ item.type.toUpperCase() }}
+          <template v-if="item.type !== 'nat' && item.options !== 4">
+            ({{ item.options }})
+          </template>
+        </span>
+        <span>
+          M: ({{ utilMarksWithSign(item.marks.cm) }}
+          <template v-if="item.type === 'msq'">
+            {{ utilMarksWithSign(item.marks.pm as number) }}
+          </template>
+          {{ utilMarksWithSign(item.marks.im) }})
+        </span>
       </div>
-    </template>
+
+      <template v-if="id === activeId">
+        <div
+          v-for="dir in resizeDirections"
+          :key="dir"
+          :class="`resizer ${dir}`"
+          @pointerdown.stop.prevent="startResize($event, id, dir)"
+        />
+      </template>
+    </div>
     <ContextMenu
       ref="contextMenuElem"
       :model="contextMenuItems"
@@ -100,12 +93,17 @@ const props = defineProps<{
 
 const overlays = defineModel<Map<string, PdfCroppedOverlayData>>({ required: true })
 
-const active = defineModel<ActiveCroppedOverlay>('activeOverlay', { required: true })
+const overlaysPerQuestionData = defineModel<PdfCropperOverlaysPerQuestion>(
+  'overlaysPerQuestionData',
+  { required: true },
+)
+
+const activeId = defineModel<string>('activeOverlayId', { required: true })
 
 const blurCroppedRegion = defineModel<boolean>('blurCroppedRegion', { required: true })
 
 const emit = defineEmits<{
-  setPdfData: [data: PdfCroppedOverlayData['pdfData'][number]]
+  setPdfData: [data: PdfCroppedOverlayData['pdfData']]
 }>()
 
 const contextMenuElem = templateRef('contextMenuElem')
@@ -125,7 +123,7 @@ const startPointer = shallowReactive({ x: 0, y: 0 })
 const startBox = shallowReactive({ l: 0, t: 0, r: 0, b: 0 })
 
 const contextMenuState = shallowReactive({
-  copiedCoords: null as PdfCroppedOverlayData['pdfData'][number] | null,
+  copiedCoords: null as PdfCroppedOverlayData['pdfData'] | null,
 })
 
 const eventListenersToCleanup: {
@@ -158,35 +156,21 @@ const cleanUpEventListeners = (
 }
 
 const setActiveOverlayToNone = () => {
-  active.value.id = ''
-  active.value.imgNum = 0
+  activeId.value = ''
   cleanUpEventListeners()
 }
 
 const deleteActiveOverlay = () => {
-  const { id, imgNum } = active.value
-  const pdfDatas = overlays.value.get(id)?.pdfData
-  if (!pdfDatas) return
-
-  if (pdfDatas.length > 1) {
-    pdfDatas.splice(imgNum - 1, 1)
-  }
-  else {
-    overlays.value.delete(id)
-  }
+  overlays.value.delete(activeId.value)
   setActiveOverlayToNone()
 }
 
 const copyRegion = () => {
-  const { id, imgNum } = active.value
-  if (!id || !imgNum) return
-
-  const pdfDataCoords = overlays.value.get(id)?.pdfData[imgNum - 1]
+  const pdfDataCoords = overlays.value.get(activeId.value)?.pdfData
   if (!pdfDataCoords) return
 
   contextMenuState.copiedCoords = { ...pdfDataCoords }
-  active.value.id = ''
-  active.value.imgNum = 0
+  activeId.value = ''
 }
 
 const pasteRegion = () => {
@@ -199,7 +183,7 @@ const contextMenuItems = ref([
   {
     label: 'Delete',
     icon: 'prime:trash',
-    visible: () => Boolean(active.value.id && active.value.imgNum > 0),
+    visible: () => !!activeId.value,
     command: deleteActiveOverlay,
   },
   {
@@ -208,7 +192,7 @@ const contextMenuItems = ref([
   {
     label: 'Copy Region',
     icon: 'mdi:content-copy',
-    visible: () => Boolean(active.value.id && active.value.imgNum),
+    visible: () => !!activeId.value,
     command: copyRegion,
   },
   {
@@ -239,10 +223,9 @@ const contextMenuItems = ref([
 ])
 
 watch(isEscapePressed, (isPressed) => {
-  if (isPressed && props.currentMode === 'edit' && active.value.id && active.value.imgNum) {
+  if (isPressed && props.currentMode === 'edit' && activeId.value) {
     cleanUpEventListeners()
-    active.value.id = ''
-    active.value.imgNum = 0
+    activeId.value = ''
   }
 })
 
@@ -250,17 +233,17 @@ watch(() => props.currentMode, (newMode) => {
   if (newMode !== 'edit') {
     cleanUpEventListeners()
     contextMenuState.copiedCoords = null
-    active.value.id = ''
-    active.value.imgNum = 0
+    activeId.value = ''
   }
 })
 
 const onPointerMove = (e: PointerEvent) => {
-  if (!active.value.id) return
+  const id = activeId.value
+  if (!id) return
   const dw = Math.floor((e.clientX - startPointer.x) / props.pageScale)
   const dh = Math.floor((e.clientY - startPointer.y) / props.pageScale)
-  const pdfDataCoords = overlays.value.get(active.value.id)?.pdfData[active.value.imgNum - 1]
-  if (!pdfDataCoords) return
+  const pdfData = overlays.value.get(id)?.pdfData
+  if (!pdfData) return
 
   if (!resizeDir.value) {
     // Dragging
@@ -268,10 +251,10 @@ const onPointerMove = (e: PointerEvent) => {
     const height = startBox.b - startBox.t
     const newL = utilClampNumber(startBox.l + dw, 0, props.pageWidth - width)
     const newT = utilClampNumber(startBox.t + dh, 0, props.pageHeight - height)
-    pdfDataCoords.l = newL
-    pdfDataCoords.t = newT
-    pdfDataCoords.r = newL + width
-    pdfDataCoords.b = newT + height
+    pdfData.l = newL
+    pdfData.t = newT
+    pdfData.r = newL + width
+    pdfData.b = newT + height
   }
   else {
     // Resizing
@@ -313,10 +296,10 @@ const onPointerMove = (e: PointerEvent) => {
     t = utilClampNumber(t, 0, props.pageHeight)
     b = utilClampNumber(b, 0, props.pageHeight)
 
-    pdfDataCoords.l = Math.min(l, r)
-    pdfDataCoords.t = Math.min(t, b)
-    pdfDataCoords.r = Math.max(l, r)
-    pdfDataCoords.b = Math.max(t, b)
+    pdfData.l = Math.min(l, r)
+    pdfData.t = Math.min(t, b)
+    pdfData.r = Math.max(l, r)
+    pdfData.b = Math.max(t, b)
   }
 }
 
@@ -342,10 +325,10 @@ const onKeyDown = (e: KeyboardEvent) => {
     }
   }
 
-  const { id, imgNum } = active.value
-  if (!id || !imgNum) return
+  const id = activeId.value
+  if (!id) return
 
-  const pdfData = overlays.value.get(id)?.pdfData[imgNum - 1]
+  const pdfData = overlays.value.get(id)?.pdfData
   if (!pdfData) return
   e.preventDefault()
 
@@ -420,13 +403,11 @@ const addEventListeners = (
   }
 }
 
-function onPointerDown(e: PointerEvent, id: string, imgNum: number) {
+function onPointerDown(e: PointerEvent, id: string) {
   if (e.pointerType === 'mouse' && e.buttons !== 1 && e.buttons !== 2) return
-  const { id: activeId, imgNum: activeImgNum } = active.value
 
-  if (activeId !== id || activeImgNum !== imgNum) {
-    active.value.id = id
-    active.value.imgNum = imgNum
+  if (activeId.value !== id) {
+    activeId.value = id
     cleanUpEventListeners()
     addEventListeners(['keydown', 'contextmenu'], e)
     return
@@ -434,10 +415,10 @@ function onPointerDown(e: PointerEvent, id: string, imgNum: number) {
 
   if (e.buttons === 2) return
 
-  const overlay = overlays.value.get(activeId)
+  const overlay = overlays.value.get(id)
   if (!overlay) return
 
-  const { page, ...coords } = overlay.pdfData[activeImgNum - 1] ?? {}
+  const { page, ...coords } = overlay.pdfData
   if (!('l' in coords)) return
 
   resizeDir.value = null
@@ -448,13 +429,13 @@ function onPointerDown(e: PointerEvent, id: string, imgNum: number) {
   addEventListeners(['pointermove', 'pointerup', 'keydown', 'contextmenu'], e)
 }
 
-function startResize(e: PointerEvent, id: string, imgNum: number, dir: typeof resizeDirections[number]) {
+function startResize(e: PointerEvent, id: string, dir: typeof resizeDirections[number]) {
   if (e.pointerType === 'mouse' && e.buttons !== 1) return
 
   const overlay = overlays.value.get(id)
   if (!overlay) return
 
-  const { page, ...coords } = overlay.pdfData[imgNum - 1] ?? {}
+  const { page, ...coords } = overlay.pdfData ?? {}
   if (!('l' in coords)) return
 
   resizeDir.value = dir

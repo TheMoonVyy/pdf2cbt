@@ -44,3 +44,7 @@ export enum CBTInterfaceQueryParams {
   allowPause = 'allowpause',
   imageScale = 'imagescale',
 }
+
+export enum Constants {
+  separator = '__--__',
+}

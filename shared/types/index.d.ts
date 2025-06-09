@@ -115,10 +115,15 @@ export type TestQuestionData = Pick<CropperQuestionData, 'que' | 'type'> & {
   totalOptions?: number
 }
 
-export type PdfCroppedOverlayData = Omit<CropperQuestionData, 'marks' | 'pdfData'> & {
+export type PdfCroppedOverlayData = {
   id: string
+  queId: string
+  que: number
   subject: string
   section: string
+  imgNum: number
+  type: QuestionType
+  options?: number
   marks: Required<QuestionMarks>
   pdfData: {
     l: number // left
@@ -126,8 +131,10 @@ export type PdfCroppedOverlayData = Omit<CropperQuestionData, 'marks' | 'pdfData
     t: number // top
     b: number // bottom
     page: number // page number
-  }[]
+  }
 }
+
+export type PdfCropperOverlaysPerQuestion = Map<string, number>
 
 export type ActiveCroppedOverlay = {
   id: string
