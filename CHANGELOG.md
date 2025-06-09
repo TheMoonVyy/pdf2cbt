@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.13.2...v1.14.0) (2025-06-09)
+
+
+### Features
+
+* **pdf-cropper:** add bulk delete option for overlays on current page in edit mode ([439a146](https://github.com/TheMoonVyy/pdf2cbt/commit/439a14618458b27cc031840c75e54eb51ac5c4b4))
+
 ## [1.13.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.13.1...v1.13.2) (2025-06-09)
 
 
