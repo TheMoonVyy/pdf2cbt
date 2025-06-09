@@ -234,19 +234,18 @@ export default defineNuxtPlugin((nuxtApp) => {
         },
         item: {
           class: [
-            'relative font-normal',
+            'relative font-semibold text-surface-700 dark:text-surface-300',
             'hover:bg-surface-100 hover:text-surface-800',
-            'hover:dark:bg-surface-800 hover:dark:text-surface-0 hover:dark:font-semibold',
+            'hover:dark:bg-surface-800 hover:dark:text-surface-0',
             'focus:bg-surface-100 focus:text-surface-800',
-            'focus:dark:bg-surface-800 focus:dark:text-surface-0 focus:dark:font-semibold',
+            'focus:dark:bg-surface-800 focus:dark:text-surface-0',
             'data-[p-active=true]:bg-surface-100 data-[p-active=true]:text-surface-800',
-            'data-[p-active=true]:dark:bg-surface-800 data-[p-active=true]:dark:text-surface-0 data-[p-active=true]:dark:font-semibold',
+            'data-[p-active=true]:dark:bg-surface-800 data-[p-active=true]:dark:text-surface-0',
           ],
         },
         itemContent: {
           class: [
             'transition-colors duration-200 rounded-sm',
-            'text-surface-700 dark:text-surface-0',
           ],
         },
         itemLink: {

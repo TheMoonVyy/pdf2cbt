@@ -4,9 +4,7 @@
     :class="{
       'pointer-events-none': currentMode !== 'edit',
     }"
-    @contextmenu.prevent="(e) => {
-      if (contextMenuState.copiedCoords) contextMenuElem?.show(e)
-    }"
+    @contextmenu.prevent="(e) => contextMenuElem?.show(e)"
     @click="setActiveOverlayToNone"
   >
     <div
@@ -61,6 +59,26 @@
         />
       </template>
     </div>
+    <Dialog
+      v-model:visible="contextMenuState.showDeleteAllDialog"
+      header="Confirm Bulk Delete"
+      :modal="true"
+    >
+      <p class="text-center text-lg mb-2">
+        Are you sure you want to delete all regions on page #{{ currentPageNum }} ?<br>
+      </p>
+      <div class="flex justify-center gap-10 sm:gap-15 m-3 py-4">
+        <BaseButton
+          label="Yes"
+          severity="warn"
+          @click="deleteAllOverlaysOnCurrentPage"
+        />
+        <BaseButton
+          label="No"
+          @click="contextMenuState.showDeleteAllDialog = false"
+        />
+      </div>
+    </Dialog>
     <ContextMenu
       ref="contextMenuElem"
       :model="contextMenuItems"
@@ -78,6 +96,7 @@
 
 <script lang="ts" setup>
 import ContextMenu from 'primevue/contextmenu'
+import { Constants } from '#shared/enums'
 
 const props = defineProps<{
   mainImgPanelElem: HTMLDivElement | null
@@ -90,6 +109,8 @@ const props = defineProps<{
   moveOnKeyPressDistance: number
   currentMode: 'crop' | 'edit'
 }>()
+
+const ID_SEPARATOR = Constants.separator
 
 const overlays = defineModel<Map<string, PdfCroppedOverlayData>>({ required: true })
 
@@ -124,6 +145,7 @@ const startBox = shallowReactive({ l: 0, t: 0, r: 0, b: 0 })
 
 const contextMenuState = shallowReactive({
   copiedCoords: null as PdfCroppedOverlayData['pdfData'] | null,
+  showDeleteAllDialog: false,
 })
 
 const eventListenersToCleanup: {
@@ -165,6 +187,45 @@ const deleteActiveOverlay = () => {
   setActiveOverlayToNone()
 }
 
+const deleteAllOverlaysOnCurrentPage = async () => {
+  if (contextMenuState.showDeleteAllDialog) {
+    contextMenuState.showDeleteAllDialog = false
+  }
+  else {
+    return
+  }
+
+  const pageNum = props.currentPageNum
+  setActiveOverlayToNone()
+  await nextTick()
+
+  const overlayIdsToDelete: string[] = []
+
+  for (const [id, overlay] of overlays.value) {
+    if (overlay.pdfData.page === pageNum) {
+      overlayIdsToDelete.push(id)
+    }
+  }
+
+  const sortedIds = overlayIdsToDelete.toSorted((a, b) => {
+    const [subA, qA, iA] = a.split(ID_SEPARATOR)
+    const [subB, qB, iB] = b.split(ID_SEPARATOR)
+
+    if (subA !== subB) return String(subA).localeCompare(String(subB))
+    if (qA !== qB) return Number(qA) - Number(qB)
+
+    return Number(iB) - Number(iA) // Descending order of image/overlay number
+  })
+
+  for (const id of sortedIds) {
+    activeId.value = id
+    await nextTick()
+    overlays.value.delete(id)
+  }
+
+  setActiveOverlayToNone()
+}
+
 const copyRegion = () => {
   const pdfDataCoords = overlays.value.get(activeId.value)?.pdfData
   if (!pdfDataCoords) return
@@ -188,6 +249,7 @@ const contextMenuItems = ref([
   },
   {
     separator: true,
+    visible: () => !!activeId.value,
   },
   {
     label: 'Copy Region',
@@ -203,6 +265,7 @@ const contextMenuItems = ref([
   },
   {
     separator: true,
+    visible: () => !!contextMenuState.copiedCoords || !!activeId.value,
   },
   {
     label: 'Blur Cropped Regions',
@@ -219,6 +282,14 @@ const contextMenuItems = ref([
     command: () => {
       blurCroppedRegion.value = false
     },
+  },
+  {
+    separator: true,
+  },
+  {
+    label: 'Delete All On Current Page',
+    icon: 'prime:trash',
+    command: () => contextMenuState.showDeleteAllDialog = true,
   },
 ])
 
