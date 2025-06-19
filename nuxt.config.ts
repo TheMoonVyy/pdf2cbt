@@ -13,12 +13,15 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/fonts',
     'nuxt-echarts',
+    'shadcn-nuxt',
+    'nuxt-color-picker',
   ],
   devtools: { enabled: false },
   app: {
     head: {
       htmlAttrs: {
         class: 'dark',
+        'data-theme-variant': 'blue',
       },
     },
   },
@@ -83,5 +86,8 @@ export default defineNuxtConfig({
     clientBundle: {
       scan: true,
     },
+  },
+  shadcn: {
+    componentDir: './app/components/ui',
   },
 })
