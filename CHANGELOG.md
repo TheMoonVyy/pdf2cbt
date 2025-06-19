@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.15.0...v1.15.1) (2025-06-19)
+
+
+### Bug Fixes
+
+* **pdf-cropper-settings:** bind switch inputs to model for boolean settings ([0c79c09](https://github.com/TheMoonVyy/pdf2cbt/commit/0c79c09bc5085a8166a5455909f85c6e2b8e080d))
+
 ## [1.15.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.14.0...v1.15.0) (2025-06-19)
 
 
