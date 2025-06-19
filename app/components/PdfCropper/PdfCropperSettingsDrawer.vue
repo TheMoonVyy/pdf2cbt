@@ -65,12 +65,13 @@
                 />
               </div>
               <div
-                v-else-if="item.type === 'select'"
+                v-else-if="item.type === 'switch'"
                 class="grid grid-cols-4 gap-5"
               >
                 <div class="flex flex-row-reverse items-center gap-3 col-span-3">
                   <UiSwitch
                     :id="item.labelId"
+                    v-model="settings.general[item.model]"
                     class="cursor-pointer"
                   />
                   <UiLabel
@@ -149,13 +150,12 @@ type ColorPickerTypeSettings = SettingsBase & {
   withAlpha?: boolean
 }
 
-type SelectTypeSettings = SettingsBase & {
-  type: 'select'
-  options: { name: string, value: boolean }[]
+type SwitchTypeSettings = SettingsBase & {
+  type: 'switch'
 }
 
 type SettingsContent = {
-  [panelTitle: string]: (InputNumberTypeSettings | ColorPickerTypeSettings | SelectTypeSettings)[]
+  [panelTitle: string]: (InputNumberTypeSettings | ColorPickerTypeSettings | SwitchTypeSettings)[]
 }
 
 const advanceSettingsVisible = defineModel<boolean>('advanceSettingsVisible', { required: true })
@@ -248,22 +248,14 @@ const settingsContent: SettingsContent = {
       labelId: useId(),
     },
     {
-      type: 'select',
+      type: 'switch',
       model: 'showQuestionDetailsOnOverlay',
-      options: [
-        { name: 'Yes', value: true },
-        { name: 'No', value: false },
-      ],
       label: 'Show Ques. Details',
       labelId: useId(),
     },
     {
-      type: 'select',
+      type: 'switch',
       model: 'blurCroppedRegion',
-      options: [
-        { name: 'Yes', value: true },
-        { name: 'No', value: false },
-      ],
       label: 'Apply Blur',
       labelId: useId(),
     },
