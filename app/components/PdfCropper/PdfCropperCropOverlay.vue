@@ -18,7 +18,7 @@
         cleanUpEventListeners()
         addEventListeners(['pointerdown'])
       }
-      contextMenuElem?.show(e)
+      onOpenContextMenu(e)
     }"
   >
     <template v-if="cropperMode.isLine">
@@ -55,41 +55,68 @@
       v-show="boxCropperState.isDragging"
       class="box-cropper"
     />
-
-    <ContextMenu
-      ref="contextMenuElem"
-      :model="contextMenuItems"
-    >
-      <template #itemicon="{ item }">
-        <Icon
-          v-if="item.icon"
-          :name="item.icon"
-          class="text-lg"
-          :class="item.iconClass"
-        />
-      </template>
-    </ContextMenu>
+    <UiContextMenu>
+      <UiContextMenuTrigger
+        class="hidden"
+        @contextmenu.stop
+      >
+        <div ref="contextMenuElem" />
+      </UiContextMenuTrigger>
+      <UiContextMenuContent class="w-64">
+        <UiContextMenuLabel
+          class="text-center"
+        >
+          Line Cropper
+        </UiContextMenuLabel>
+        <UiContextMenuSeparator />
+        <UiContextMenuItem
+          inset
+          :disabled="!props.cropperMode.isLine || lineCropperState.currentCoord === 'l'"
+          @click="undoLastCoordLine"
+        >
+          Undo Last Line
+          <UiContextMenuShortcut>Ctrl + Z</UiContextMenuShortcut>
+        </UiContextMenuItem>
+        <UiContextMenuCheckboxItem
+          v-model="skipNextLine"
+          inset
+          :disabled="!props.cropperMode.isLine || lineCropperState.currentCoord !== 'b'"
+        >
+          Skip Next Bottom Line
+          <UiContextMenuShortcut>Shift</UiContextMenuShortcut>
+        </UiContextMenuCheckboxItem>
+        <UiContextMenuSeparator />
+        <UiContextMenuLabel
+          class="text-center"
+        >
+          Cropped Regions
+        </UiContextMenuLabel>
+        <UiContextMenuSeparator />
+        <UiContextMenuCheckboxItem
+          v-model="settings.general.blurCroppedRegion"
+          inset
+        >
+          Blur Cropped Region
+        </UiContextMenuCheckboxItem>
+      </UiContextMenuContent>
+    </UiContextMenu>
   </div>
 </template>
 
 <script lang="ts" setup>
-import ContextMenu from 'primevue/contextmenu'
-
 const props = defineProps<{
   mainImgPanelElem: HTMLDivElement | null
   currentPageNum: number
   pageWidth: number
   pageHeight: number
   pageScale: number
-  selectionThrottleInterval: number
-  moveOnKeyPressDistance: number
   currentMode: 'crop' | 'edit'
   cropperMode: { isLine: boolean, isBox: boolean }
 }>()
 
 const currentOverlayData = defineModel<PdfCroppedOverlayData>('currentOverlayData', { required: true })
 
-const blurCroppedRegion = defineModel<boolean>('blurCroppedRegion', { required: true })
+const settings = usePdfCropperLocalStorageSettings()
 
 const emit = defineEmits<{
   setPdfData: [data: PdfCroppedOverlayData['pdfData']]
@@ -144,50 +171,19 @@ const undoLastCoordLine = () => {
   }
 }
 
-const contextMenuItems = ref([
-  {
-    label: 'Undo Line',
-    icon: 'mdi:undo-variant',
-    visible: () => props.cropperMode.isLine && lineCropperState.currentCoord !== 'l',
-    command: undoLastCoordLine,
-  },
-  {
-    label: 'Skip Next Bottom Line',
-    icon: 'mdi:jump',
-    visible: () => props.cropperMode.isLine
-      && lineCropperState.currentCoord === 'b'
-      && !skipNextLine.value,
-    command: () => skipNextLine.value = true,
-  },
-  {
-    label: 'Unskip Next Bottom Line',
-    icon: 'mdi:jump',
-    iconClass: 'scale-x-[-1]',
-    visible: () => props.cropperMode.isLine
-      && lineCropperState.currentCoord === 'b'
-      && skipNextLine.value,
-    command: () => skipNextLine.value = false,
-  },
-  {
-    separator: true,
-  },
-  {
-    label: 'Blur Cropped Regions',
-    icon: 'mdi:eye',
-    visible: () => !blurCroppedRegion.value,
-    command: () => {
-      blurCroppedRegion.value = true
-    },
-  },
-  {
-    label: 'Unblur Cropped Regions',
-    icon: 'mdi:eye-off',
-    visible: () => blurCroppedRegion.value,
-    command: () => {
-      blurCroppedRegion.value = false
-    },
-  },
-])
+const onOpenContextMenu = (e: MouseEvent): void => {
+  if (!contextMenuElem.value) return
+  const event = new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: e.clientX,
+    clientY: e.clientY,
+    button: 2,
+    buttons: 2,
+    view: window,
+  })
+  contextMenuElem.value.dispatchEvent(event)
+}
 
 const eventListenersToCleanup: {
   pointermove: (() => void) | null
@@ -299,7 +295,11 @@ const onBoxPointerUp = (e: PointerEvent) => {
   emit('setPdfData', pdfData)
 }
 
-const throttledOnPointerMove = useThrottleFn(onPointerMove, () => props.selectionThrottleInterval, true)
+const throttledOnPointerMove = useThrottleFn(
+  onPointerMove,
+  () => settings.value.general.selectionThrottleInterval,
+  true,
+)
 
 const setLineCropperCoord = () => {
   const currentCoord = lineCropperState.currentCoord
@@ -366,7 +366,7 @@ const onKeyDown = (e: KeyboardEvent) => {
 
   const currentCoord = lineCropperState.currentCoord
 
-  let moveAmount = props.moveOnKeyPressDistance
+  let moveAmount = settings.value.general.moveOnKeyPressDistance
 
   if (currentCoord === 'l' || currentCoord === 'r') {
     if (key === 'ArrowLeft') {

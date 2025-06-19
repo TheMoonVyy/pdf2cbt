@@ -1,891 +1,779 @@
 <template>
   <div
-    class="flex p-2 h-full overflow-auto bg-surface-0 dark:bg-surface-900 text-surface-700 dark:text-surface-0"
+    class="flex dark overflow-hidden min-h-0 grow bg-background"
   >
-    <div
-      class="flex flex-col w-full"
+    <UiScrollArea
+      type="auto"
+      class="h-full w-full"
     >
-      <div class="flex justify-between mx-4 mb-4">
-        <div class="flex gap-6">
-          <BaseSimpleFileUpload
-            accept="application/json,.json"
-            label="Import Settings"
-            invalid-file-type-message="Invalid file. Please select a valid JSON file"
-            icon-name="prime:download"
-            @upload="(files) => handleImportExportBtn('import', files)"
-          />
-          <BaseButton
-            label="Export Settings"
-            severity="help"
-            @click="handleImportExportBtn('export')"
-          >
-            <template #icon>
-              <Icon
-                name="prime:upload"
-                size="1.4rem"
-              />
-            </template>
-          </BaseButton>
-        </div>
-        <div class="flex gap-6">
-          <BaseButton
-            label="Restore From Saved"
-            severity="warn"
-            @click="handleImportExportBtn('restoreFromSaved')"
-          >
-            <template #icon>
-              <Icon
-                name="mdi:database-refresh"
-                size="1.4rem"
-              />
-            </template>
-          </BaseButton>
-          <BaseButton
-            label="Reset Settings"
-            severity="danger"
-            @click="handleImportExportBtn('reset')"
-          >
-            <template #icon>
-              <Icon
-                name="material-symbols:reset-settings-rounded"
-                size="1.4rem"
-              />
-            </template>
-          </BaseButton>
-        </div>
-      </div>
-      <Panel
-        header="Test Data & Settings"
-        class="w-full"
-        pt:title:class="text-xl"
-        pt:header:class="justify-center p-2"
-        pt:content:class="flex justify-center py-1 px-4"
-      >
-        <div class="flex flex-col w-1/4 items-center mx-auto">
-          <span class="pl-5 pr-3 text-lg font-bold">Test Settings</span>
-          <div class="grow pb-3 pt-1 px-1.5 w-full border border-surface-200 dark:border-surface-700 rounded-md">
-            <div class="grid grid-cols-1 w-full">
-              <div class="grid grid-cols-1 w-full mr-0.5">
-                <label
-                  class="text-center mb-0.5"
-                  for="test_state_test_name"
-                >
-                  Test Name
-                </label>
-                <InputText
-                  v-model="testSettings.testName"
-                  type="text"
-                  label-id="test_state_test_name"
-                  :fluid="true"
-                  :maxlength="60"
-                  size="small"
-                  :disabled="!!testState.continueLastTest"
-                  pt:root:class="text-center"
-                  @blur="() => testSettings.testName ||= defaultTestSettings.testName"
-                />
-              </div>
-              <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
-                <div class="flex gap-2 w-full justify-center mb-0.5">
-                  <label
-                    class="text-center text-base"
-                    for="submit_btn_dropdown"
-                  >
-                    Submit Button
-                  </label>
-                  <IconWithTooltip
-                    :tooltip-content="tooltipContent.submitBtn"
-                    icon-class="text-lg"
-                  />
-                </div>
-                <Select
-                  v-model="testSettings.submitBtn"
-                  label-id="submit_btn_dropdown"
-                  :options="selectOptions.submitBtn"
-                  option-label="name"
-                  option-value="value"
-                  :fluid="true"
-                  size="small"
-                  pt:root:class="col-span-6"
-                  pt:label:class="text-center"
-                />
-              </div>
-              <div class="flex w-full justify-center">
-                <label
-                  class="text-center text-base col-span-5 mt-2 mb-0.5"
-                >
-                  Test Duration
-                </label>
-                <IconWithTooltip
-                  :tooltip-content="tooltipContent.testDuration"
-                  icon-class="text-lg"
-                  root-class="ml-2 mt-2"
-                />
-              </div>
-              <div class="grid grid-cols-6 w-full gap-1">
-                <div class="flex flex-col col-span-6 mt-1">
-                  <label
-                    class="text-center text-sm mb-0.5"
-                    for="time_format"
-                  >
-                    Time Format
-                  </label>
-                  <Select
-                    v-model="testSettings.timeFormat"
-                    label-id="time_format"
-                    :options="selectOptions.timeFormat"
-                    size="small"
-                    pt:label:class="text-center"
-                  />
-                </div>
-                <div
-                  v-if="testSettings.timeFormat === 'hh:mm:ss'"
-                  class="flex flex-col col-span-2 items-center mt-1"
-                >
-                  <label
-                    class="text-sm text-center"
-                    for="duration_hours"
-                  >
-                    Hours
-                  </label>
-                  <InputNumber
-                    v-model="testTimings.h"
-                    :min="0"
-                    :max="23"
-                    :step="1"
-                    label-id="duration_hours"
-                    :fluid="true"
-                    :disabled="!!testState.continueLastTest"
-                    size="small"
-                    pt:root:class="[&>input]:pr-2.5!"
-                  />
-                </div>
-                <div
-                  class="flex flex-col items-center mt-1"
-                  :class="testSettings.timeFormat === 'hh:mm:ss' ? 'col-span-2' : 'col-span-3'"
-                >
-                  <label
-                    class="text-sm text-center"
-                    for="duration_minutes"
-                  >
-                    Mins
-                  </label>
-                  <InputNumber
-                    v-model="testTimings.m"
-                    :min="0"
-                    :max="testSettings.timeFormat === 'mmm:ss' ? (60 * 24) - 1 : 59"
-                    :step="1"
-                    label-id="duration_minutes"
-                    :disabled="!!testState.continueLastTest"
-                    :fluid="true"
-                    size="small"
-                    pt:root:class="[&>input]:pr-2.5!"
-                  />
-                </div>
-                <div
-                  class="flex flex-col items-center mt-1"
-                  :class="testSettings.timeFormat === 'hh:mm:ss' ? 'col-span-2' : 'col-span-3'"
-                >
-                  <label
-                    class="text-sm text-center"
-                    for="duration_seconds"
-                  >
-                    Secs
-                  </label>
-                  <InputNumber
-                    v-model="testTimings.s"
-                    :min="0"
-                    :max="59"
-                    :step="1"
-                    :disabled="!!testState.continueLastTest"
-                    label-id="duration_seconds"
-                    :fluid="true"
-                    size="small"
-                    pt:root:class="[&>input]:pr-2.5!"
-                  />
-                </div>
-              </div>
-              <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
-                <div class="flex gap-2 w-full justify-center mb-0.5">
-                  <label
-                    class="text-center text-base"
-                    for="pause_btn_dropdown"
-                  >
-                    Allow Pausing Test
-                  </label>
-                  <IconWithTooltip
-                    :tooltip-content="tooltipContent.showPauseBtn"
-                    icon-class="text-lg"
-                  />
-                </div>
-                <Select
-                  v-model="testSettings.showPauseBtn"
-                  label-id="pause_btn_dropdown"
-                  :options="selectOptions.showPauseBtn"
-                  option-label="name"
-                  option-value="value"
-                  :fluid="true"
-                  size="small"
-                  pt:root:class="col-span-6"
-                  pt:label:class="text-center"
-                />
-              </div>
-              <template v-if="!testState.testImageBlobs">
-                <div class="flex justify-center gap-3 mt-3 w-full">
-                  <label
-                    class="text-center"
-                    for="test_img_quality"
-                  >
-                    Questions Image Scale
-                  </label>
-                  <IconWithTooltip
-                    :tooltip-content="tooltipContent.questionImgScale"
-                    icon-class="text-lg"
-                  />
-                </div>
-                <div class="flex gap-3 w-full mt-1.5">
-                  <BaseInputNumber
-                    v-model="testSettings.questionImgScale"
-                    :min="1"
-                    :max="10"
-                    :step="0.1"
-                    suffix="x"
-                    size="small"
-                  />
-                </div>
-              </template>
-            </div>
-          </div>
-        </div>
-        <div class="flex flex-col grow">
-          <template v-if="!testState.isSectionsDataLoaded">
-            <div class="flex justify-center">
-              <span class="pl-5 pr-3 text-lg font-bold">Load PDF Questions Data</span>
-              <IconWithTooltip
-                :tooltip-content="tooltipContent.testDataFileUpload"
-                icon-class="text-lg"
-              />
-            </div>
-            <form
-              class="flex grow border border-surface-700 rounded-lg"
-              autocomplete="off"
-            >
-              <CbtInterfaceFileUpload
-                v-if="!hashMismatchDialogState.showDialog"
-                v-model="fileUploaderFileType"
-                :file-options="selectOptions.dataFile"
-                empty-slot-text-class="top-[30%]"
-                :zip-file-to-load="zipFileFromUrlState.zipFile"
-                @update:model-value="(value) => {
-                  if (value === 'zip-url') {
-                    zipFileFromUrlState.isDialogOpen = true
-                  }
-                }"
-                @uploaded="verifyTestData"
-              />
-            </form>
-          </template>
-          <template v-else>
-            <div class="flex grow mx-8">
-              <div
-                v-if="!testState.continueLastTest"
-                class="flex flex-col mx-auto"
-              >
-                <div class="flex justify-center">
-                  <span class="pl-5 pr-3 text-lg font-bold">Sort Sections Order</span>
-                </div>
-                <div class="flex mx-auto mt-2">
-                  <CbtInterfaceSectionsOrderList
-                    v-model="testSectionsList"
-                  />
-                </div>
-              </div>
-              <div class="flex flex-col mx-auto">
-                <div class="flex mb-2 gap-3">
-                  <label
-                    class="font-bold"
-                    for="questions_numbering_type"
-                  >
-                    Questions Numbering Order
-                  </label>
-                  <IconWithTooltip
-                    :tooltip-content="tooltipContent.questionsNumberingOrderType"
-                    icon-class="text-lg"
-                  />
-                </div>
-                <div class="flex flex-col grow items-center">
-                  <Select
-                    v-model="currentTestState.questionsNumberingOrderType"
-                    label-id="questions_numbering_type"
-                    :options="selectOptions.questionsNumberingOrderType"
-                    option-label="name"
-                    option-value="value"
-                    :fluid="true"
-                    :disabled="Boolean(testState.continueLastTest)"
-                    pt:root:class="w-4/5"
-                  />
-                  <BaseButton
-                    label="Prepare Test"
-                    size="large"
-                    class="my-auto"
-                    @click="prepareTestState.dialogVisibility = true"
-                  >
-                    <template #icon>
-                      <Icon
-                        name="mdi:rocket-launch"
-                        size="1.6rem"
-                      />
-                    </template>
-                  </BaseButton>
-                </div>
-              </div>
-            </div>
-          </template>
-        </div>
-      </Panel>
-      <Panel
-        header="UI Settings & Customizations"
-        class="w-full"
-        toggleable
-        :collapsed="true"
-        pt:root:class="pb-2"
-        pt:title:class="text-2xl"
-        pt:header:class="justify-center pt-3 pb-2 gap-5"
-        pt:content:class="p-2"
-      >
-        <Panel
-          header="Main Layout"
-          class="w-full"
-          pt:title:class="text-xl"
-          pt:header:class="justify-center p-5"
-          pt:content:class="grid grid-cols-4 px-2 gap-4"
-        >
-          <div
-            v-for="item in htmlContent.customizeUi.mainLayout"
-            :key="item.key"
-            class="flex flex-col w-full items-center justify-end"
-          >
-            <label
-              class="text-center text-sm"
-              :for="item.id"
-            >
-              {{ item.label }}
-            </label>
-            <BaseInputNumber
-              v-model="(settings.mainLayout[item.key as keyof CbtUiSettings['mainLayout']] as number)"
-              :min="item.min"
-              :max="item.max"
-              :step="item.step || 1"
-              :label-id="item.id"
-              :size="('size' in item ? (item.size as string) : null)"
-            />
-          </div>
-          <div class="flex flex-col w-full items-center justify-end">
-            <label
-              class="text-center text-sm"
-              for="show_question_type"
-            >
-              Question Type Visibility
-            </label>
-            <Select
-              v-model="settings.mainLayout.showQuestionType"
-              label-id="show_question_type"
-              :options="selectOptions.showHide"
-              option-label="name"
-              option-value="value"
-              :fluid="true"
-              pt:root="w-3/4"
-            />
-          </div>
-          <div class="flex flex-col w-full items-center justify-end">
-            <label
-              class="text-center text-sm"
-              for="show_marking_scheme"
-            >
-              Marking Scheme Visibility
-            </label>
-            <Select
-              v-model="settings.mainLayout.showMarkingScheme"
-              label-id="show_marking_scheme"
-              :options="selectOptions.showHide"
-              option-label="name"
-              option-value="value"
-              :fluid="true"
-              pt:root="w-3/4"
-            />
-          </div>
-          <div class="flex flex-col w-full items-center justify-end">
-            <label
-              class="text-center text-sm"
-              for="show_marking_scheme"
-            >
-              Show Question's Time Spent
-            </label>
-            <Select
-              v-model="settings.mainLayout.showQuestionTimeSpent"
-              label-id="show_marking_scheme"
-              :options="selectOptions.showHide"
-              option-label="name"
-              option-value="value"
-              :fluid="true"
-              pt:root="w-3/4"
-            />
-          </div>
-        </Panel>
-        <div class="flex w-full">
-          <Panel
-            header="Themes"
-            class="w-full"
-            pt:title:class="text-xl"
-            pt:header:class="justify-center p-5"
-            pt:content:class="flex flex-col px-0 pb-0 border-y border-gray-500 divide-y divide-gray-500"
-          >
-            <div class="grid grid-cols-8 gap-3 text-center font-semibold divide-x divide-gray-500">
-              <div class="py-4 col-span-2">
-                Theme
-              </div>
-              <div class="py-4 col-span-3">
-                Text Color
-              </div>
-              <div class="py-4 col-span-3">
-                Background Color
-              </div>
-            </div>
-            <div
-              v-for="(theme, name) in settings.themes"
-              :key="name"
-              class="grid grid-cols-8 gap-3 text-center divide-x divide-gray-500"
-            >
-              <!-- Theme Name -->
-              <div class="col-span-2 flex items-center justify-center text-base font-medium py-4">
-                {{ utilKeyToLabel(name) }}
-              </div>
-              <!-- Text Color -->
-              <div class="flex col-span-3 items-center justify-center gap-4 py-4">
-                <InputText
-                  v-model="theme.textColor"
-                  type="text"
-                  size="small"
-                  class="text-center w-24"
-                />
-                <ColorPicker
-                  v-model="theme.textColor"
-                  class="caret-transparent"
-                  format="hex"
-                />
-              </div>
-              <!-- Background Color -->
-              <div class="flex col-span-3 items-center justify-center gap-4 py-4">
-                <InputText
-                  v-model="theme.bgColor"
-                  type="text"
-                  size="small"
-                  class="text-center w-24"
-                />
-                <ColorPicker
-                  v-model="theme.bgColor"
-                  class="caret-transparent"
-                  format="hex"
-                />
-              </div>
-            </div>
-          </Panel>
-          <Panel
-            header="Question Panel"
-            class="w-full"
-            pt:title:class="text-xl"
-            pt:header:class="justify-center p-5"
-            pt:content:class="flex flex-col px-4"
-          >
-            <div class="flex w-full justify-center gap-2 mb-0.5">
-              <label
-                class="text-center text-base text-nowrap font-semibold"
-              >
-                Answer Options Format
-              </label>
-              <div class="flex relative items-center group">
-                <Icon
-                  class="text-base"
-                  name="my-icon:info"
-                  tabindex="-1"
-                />
-                <div
-                  class="hidden group-hover:flex! group-focus:flex! absolute flex-col
-                      z-50 w-max text-black bg-white top-full right-0"
-                >
-                  <h3 class="text-center">
-                    PREVIEW:
-                  </h3>
-                  <div class="py-2 px-4">
-                    <CbtInterfaceAnswerOptionsDiv
-                      v-model="dummyValue"
-                      :total-options="4"
-                      question-type="mcq"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-span-2 grid grid-cols-3 gap-1 mt-2">
-              <div class="flex flex-col w-full">
-                <label
-                  class="text-center text-sm"
-                  for="answer_options_prefix"
-                >
-                  Prefix
-                </label>
-                <InputText
-                  v-model="settings.questionPanel.answerOptionsFormat.prefix"
-                  type="text"
-                  label-id="answer_options_prefix"
-                  :fluid="true"
-                  :maxlength="25"
-                  size="small"
-                />
-              </div>
-              <div class="flex flex-col w-full">
-                <label
-                  class="text-center text-sm"
-                  for="answer_options_counter"
-                >
-                  Counter Type
-                </label>
-                <Select
-                  v-model="settings.questionPanel.answerOptionsFormat.counterType"
-                  label-id="answer_options_counter"
-                  :options="selectOptions.answerOptionsFormat"
-                  option-label="name"
-                  option-value="value"
-                  :fluid="true"
-                  size="small"
-                />
-              </div>
-              <div class="flex flex-col w-full">
-                <label
-                  class="text-center text-sm"
-                  for="answer_options_suffix"
-                >
-                  Suffix
-                </label>
-                <InputText
-                  v-model="settings.questionPanel.answerOptionsFormat.suffix"
-                  type="text"
-                  label-id="answer_options_suffix"
-                  :fluid="true"
-                  :maxlength="25"
-                  size="small"
-                />
-              </div>
-            </div>
-            <div class="col-span-2 grid grid-cols-3 gap-1 mt-2">
-              <div
-                v-for="item in htmlContent.customizeUi.questionPanel.answerOptionsFormat"
-                :key="item.key"
-                class="flex flex-col w-full"
-              >
-                <label
-                  class="text-center text-sm"
-                  :for="item.id"
-                >
-                  {{ item.label }}
-                </label>
-                <BaseInputNumber
-                  v-model="(
-                    settings.questionPanel.answerOptionsFormat[
-                      item.key as keyof CbtUiSettings['questionPanel']['answerOptionsFormat']
-                    ] as number)"
-                  :min="item.min"
-                  :max="item.max"
-                  :step="item.step || 1"
-                  :label-id="item.id"
-                  :size="('size' in item ? (item.size as string) : null)"
-                />
-              </div>
-            </div>
-            <div
-              class="grid grid-cols-2 mt-4 gap-3"
-            >
-              <label
-                class="col-span-2 text-center text-base text-nowrap font-semibold"
-              >
-                Question Img Max Width (%)
-              </label>
-              <div class="flex flex-col">
-                <label
-                  for="ques_img_max_width_qp_opened"
-                  class="text-center"
-                >
-                  When Question Palette Opened
-                </label>
-                <BaseInputNumber
-                  v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteOpened"
-                  :min="10"
-                  :max="100"
-                  :step="5"
-                  label-id="ques_img_max_width_qp_opened"
-                  size="small"
-                />
-              </div>
-              <div class="flex flex-col">
-                <label
-                  for="ques_img_max_width_qp_closed"
-                  class="text-center"
-                >
-                  When Question Palette Closed
-                </label>
-                <BaseInputNumber
-                  v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed"
-                  :min="10"
-                  :max="100"
-                  :step="5"
-                  label-id="ques_img_max_width_qp_closed"
-                  size="small"
-                />
-              </div>
-            </div>
-          </Panel>
-        </div>
-        <Panel
-          header="Section Summary & Question Palette"
-          class="w-full"
-          pt:title:class="text-xl"
-          pt:header:class="justify-center p-5"
-          pt:content:class="flex flex-col w-full p-2 gap-3"
-        >
-          <div class="grid grid-cols-4 gap-4">
-            <div
-              v-for="item in htmlContent.customizeUi.questionPalette"
-              :key="item.key"
-              class="flex flex-col w-full items-center justify-end"
-            >
-              <label
-                class="text-center text-sm"
-                :for="item.id"
-              >
-                {{ item.label }}
-              </label>
-              <BaseInputNumber
-                v-model="(
-                  settings.questionPalette[
-                    item.key as keyof CbtUiSettings['questionPalette']
-                  ] as number)"
-                :min="item.min"
-                :max="item.max"
-                :step="item.step || 1"
-                :label-id="item.id"
-                :size="('size' in item ? (item.size as string) : null)"
-              />
-            </div>
-          </div>
-          <div class="flex justify-center p-5 gap-3">
-            <label class="text-lg font-semibold text-center">
-              Customize Icons & its sizes
-            </label>
-            <IconWithTooltip
-              :tooltip-content="tooltipContent.iconSettings"
-              icon-class="text-xl"
-            />
-          </div>
-          <div class="grid grid-cols-5 border-2 border-gray-500 divide-x-2 divide-gray-500">
-            <template
-              v-for="(label, key) in statusKeyNames"
-              :key="key"
-            >
-              <div class="flex flex-col gap-3 pb-2">
-                <label class="col-span-2 text-center p-2 font-bold py-1 border-b-2 border-gray-500">
-                  {{ label }}:
-                </label>
-                <BaseSimpleFileUpload
-                  accept="image/*"
-                  label="Change Icon"
-                  severity="help"
-                  invalid-file-type-message="Invalid file. Please select a valid Image"
-                  header-class="mx-3"
-                  @upload="(file) => changeIcon(file, key)"
-                />
-                <div class="grid grid-cols-4 gap-1 px-4">
-                  <label
-                    class="col-span-4 text-center"
-                    :for="`icons_${key}_text_color`"
-                  >
-                    Text Color
-                  </label>
-                  <InputText
-                    v-model="settings.questionPalette.quesIcons[key].textColor"
-                    type="text"
-                    :label-id="`icons_${key}_text_color`"
-                    :fluid="true"
-                    size="small"
-                    pt:root:class="col-span-3 text-center"
-                  />
-                  <div class="card col-span-1 flex w-full items-center justify-center">
-                    <ColorPicker
-                      v-model="settings.questionPalette.quesIcons[key].textColor"
-                      class="caret-transparent"
-                      format="hex"
-                    />
-                  </div>
-                </div>
-                <label class="text-center p-2 border-y border-gray-500">Section Summary</label>
-                <div class="flex flex-col gap-1 px-4">
-                  <label
-                    class="text-center"
-                    :for="`${key}_summary_icon_size`"
-                  >
-                    Icon Size
-                  </label>
-                  <BaseInputNumber
-                    v-model="settings.questionPalette.quesIcons[key].summaryIconSize"
-                    :min="0"
-                    :max="10"
-                    :step="0.1"
-                    :label-id="`${key}_summary_icon_size`"
-                    size="small"
-                  />
-                </div>
-                <div class="flex flex-col gap-1 px-4">
-                  <label
-                    class="text-center"
-                    :for="`${key}_summary_number_size`"
-                  >
-                    Icon Number Size
-                  </label>
-                  <BaseInputNumber
-                    v-model="settings.questionPalette.quesIcons[key].summaryNumberTextFontSize"
-                    :min="0"
-                    :max="10"
-                    :step="0.1"
-                    :label-id="`${key}_summary_number_size`"
-                    size="small"
-                  />
-                </div>
-                <div class="flex flex-col gap-1 px-4">
-                  <label
-                    class="text-center"
-                    :for="`${key}_summary_label_size`"
-                  >
-                    Label Font Size
-                  </label>
-                  <BaseInputNumber
-                    v-model="settings.questionPalette.quesIcons[key].summaryLabelFontSize"
-                    :min="0"
-                    :max="10"
-                    :step="0.1"
-                    :label-id="`${key}_summary_label_size`"
-                    size="small"
-                  />
-                </div>
-                <label class="text-center p-2 border-y border-gray-500">Question Palette</label>
-                <div class="flex flex-col gap-1 px-4">
-                  <label
-                    class="text-center"
-                    :for="`${key}_palette_icon_size`"
-                  >
-                    Icon Size
-                  </label>
-                  <BaseInputNumber
-                    v-model="settings.questionPalette.quesIcons[key].iconSize"
-                    :min="0"
-                    :max="10"
-                    :step="0.1"
-                    :label-id="`${key}_palette_icon_size`"
-                    size="small"
-                  />
-                </div>
-                <div class="flex flex-col gap-1 px-4">
-                  <label
-                    class="text-center"
-                    :for="`${key}_palette_number_size`"
-                  >
-                    Icon Number Size
-                  </label>
-                  <BaseInputNumber
-                    v-model="settings.questionPalette.quesIcons[key].numberTextFontSize"
-                    :min="0"
-                    :max="10"
-                    :step="0.1"
-                    :label-id="`${key}_palette_number_size`"
-                    size="small"
-                  />
-                </div>
-              </div>
-            </template>
-          </div>
-        </Panel>
-      </Panel>
-      <Panel
-        header="Miscellaneous Settings"
-        class="w-full"
-        toggleable
-        :collapsed="true"
-        pt:root:class="pb-5"
-        pt:title:class="text-2xl"
-        pt:header:class="justify-center pt-2 pb-1 gap-5"
-        pt:content:class="p-2"
-      >
-        <span class="flex text-center justify-center mb-4">
-          Misc. settings for Profile Details (Top-right corner one)<br>
-          Everthing under this is for visual use only and thus is optional,<br>
-          none of these are saved or exported for privacy reasons
-        </span>
-        <div class="flex w-full">
-          <div class="grid grid-cols-6 gap-4">
-            <div class="grid grid-cols-1 col-span-2 w-full">
-              <label
-                class="text-center mb-0.5"
-                for="misc_user_name"
-              >
-                User Name
-              </label>
-              <InputText
-                v-model="miscSettings.username"
-                type="text"
-                label-id="misc_user_name"
-                :fluid="true"
-                :maxlength="60"
-                pt:root:class="text-center"
-              />
-            </div>
-            <div class="grid grid-cols-1 w-full">
-              <label
-                class="text-center"
-                for="misc_profile_icon"
-              >
-                Profile Img
-              </label>
+      <UiCard class="py-3 rounded-none">
+        <UiCardContent class="flex flex-col w-full px-2 h-full">
+          <div class="flex justify-between mx-6">
+            <div class="flex gap-6">
               <BaseSimpleFileUpload
-                accept="image/*"
-                label="Change"
-                severity="help"
-                button-class="px-2 pt-[.5rem]"
-                :fluid="true"
-                invalid-file-type-message="Invalid file. Please select a valid Image"
-                @upload="(file) => changeProfileIcon(file)"
+                accept="application/json,.json"
+                label="Import Settings"
+                invalid-file-type-message="Invalid file. Please select a valid JSON file"
+                icon-name="prime:download"
+                @upload="(files) => handleImportExportBtn('import', files)"
+              />
+              <BaseButton
+                label="Export Settings"
+                variant="help"
+                icon-name="prime:upload"
+                @click="handleImportExportBtn('export')"
               />
             </div>
-            <div
-              v-for="item in htmlContent.miscSettings"
-              :key="item.key"
-              class="grid grid-cols-1 w-full"
-            >
-              <label
-                class="text-center text-sm"
-                :for="item.id"
-              >
-                {{ item.label }}
-              </label>
-              <BaseInputNumber
-                v-model="(miscSettings[item.key as keyof MiscSettings] as number)"
-                :min="item.min"
-                :max="item.max"
-                :step="item.step || 1"
-                :label-id="item.id"
-                :size="('size' in item ? (item.size as string) : null)"
+            <div class="flex gap-6">
+              <BaseButton
+                label="Restore From Saved"
+                variant="warn"
+                icon-name="mdi:database-refresh"
+                @click="handleImportExportBtn('restoreFromSaved')"
+              />
+              <BaseButton
+                label="Reset Settings"
+                variant="destructive"
+                icon-name="material-symbols:reset-settings-rounded"
+                @click="handleImportExportBtn('reset')"
               />
             </div>
           </div>
-        </div>
-      </Panel>
-    </div>
+          <UiCard class="py-0 mt-4 rounded-none gap-2">
+            <UiCardHeader>
+              <UiCardTitle class="text-xl mx-auto">
+                Test Data & Settings
+              </UiCardTitle>
+            </UiCardHeader>
+            <UiCardContent class="flex flex-row w-full px-0">
+              <div class="flex flex-col w-1/4 items-center mx-auto">
+                <span class="pl-5 pr-3 text-lg font-bold">Test Settings</span>
+                <div
+                  class="grow pb-3 pt-1 px-1.5 w-full
+                    border border-surface-700 rounded-md"
+                >
+                  <div class="grid grid-cols-1 w-full">
+                    <div class="grid grid-cols-1 w-full mr-0.5">
+                      <UiLabel
+                        class="mb-0.5"
+                        for="test_state_test_name"
+                      >
+                        Test Name
+                      </UiLabel>
+                      <UiInput
+                        id="test_state_test_name"
+                        v-model="testSettings.testName"
+                        type="text"
+                        :maxlength="60"
+                        :disabled="!!testState.continueLastTest"
+                        class="text-center"
+                        @blur="() => testSettings.testName ||= defaultTestSettings.testName"
+                      />
+                    </div>
+                    <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
+                      <div class="flex gap-2 w-full justify-center mb-0.5">
+                        <UiLabel
+                          for="submit_btn_dropdown"
+                        >
+                          Submit Button
+                        </UiLabel>
+                        <IconWithTooltip
+                          :tooltip-content="tooltipContent.submitBtn"
+                          icon-class="text-lg"
+                        />
+                      </div>
+                      <BaseSelect
+                        id="submit_btn_dropdown"
+                        v-model="testSettings.submitBtn"
+                        size="sm"
+                        :options="selectOptions.submitBtn"
+                        class="col-span-6"
+                      />
+                    </div>
+                    <div class="flex w-full justify-center">
+                      <UiLabel
+                        class="col-span-5 mt-2 mb-0.5"
+                      >
+                        Test Duration
+                      </UiLabel>
+                      <IconWithTooltip
+                        :tooltip-content="tooltipContent.testDuration"
+                        icon-class="text-lg"
+                        root-class="ml-2 mt-2"
+                      />
+                    </div>
+                    <div class="grid grid-cols-6 w-full gap-1">
+                      <div class="flex flex-col col-span-6 mt-1">
+                        <UiLabel
+                          class="text-sm mb-0.5"
+                          for="time_format"
+                        >
+                          Time Format
+                        </UiLabel>
+                        <BaseSelect
+                          id="time_format"
+                          v-model="testSettings.timeFormat"
+                          :options="selectOptions.timeFormat"
+                          size="sm"
+                        />
+                      </div>
+                      <div
+                        v-if="testSettings.timeFormat === 'hh:mm:ss'"
+                        class="flex flex-col col-span-2 items-center mt-1"
+                      >
+                        <UiLabel
+                          class="text-sm"
+                          for="duration_hours"
+                        >
+                          Hours
+                        </UiLabel>
+                        <BaseInputNumber
+                          id="duration_hours"
+                          v-model="testTimings.h"
+                          :min="0"
+                          :max="23"
+                          :disabled="!!testState.continueLastTest"
+                          input-class="text-sm"
+                          without-buttons
+                        />
+                      </div>
+                      <div
+                        class="flex flex-col items-center mt-1"
+                        :class="testSettings.timeFormat === 'hh:mm:ss' ? 'col-span-2' : 'col-span-3'"
+                      >
+                        <UiLabel
+                          class="text-sm"
+                          for="duration_minutes"
+                        >
+                          Mins
+                        </UiLabel>
+                        <BaseInputNumber
+                          id="duration_minutes"
+                          v-model="testTimings.m"
+                          :min="0"
+                          :max="testSettings.timeFormat === 'mmm:ss' ? (60 * 24) - 1 : 59"
+                          :disabled="!!testState.continueLastTest"
+                          input-class="text-sm"
+                          without-buttons
+                        />
+                      </div>
+                      <div
+                        class="flex flex-col items-center mt-1"
+                        :class="testSettings.timeFormat === 'hh:mm:ss' ? 'col-span-2' : 'col-span-3'"
+                      >
+                        <UiLabel
+                          class="text-sm"
+                          for="duration_seconds"
+                        >
+                          Secs
+                        </UiLabel>
+                        <BaseInputNumber
+                          id="duration_seconds"
+                          v-model="testTimings.s"
+                          :min="0"
+                          :max="59"
+                          :disabled="!!testState.continueLastTest"
+                          input-class="text-sm"
+                          without-buttons
+                        />
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
+                      <div class="flex gap-2 w-full justify-center mb-0.5">
+                        <UiLabel
+                          for="pause_btn_dropdown"
+                        >
+                          Allow Pausing Test
+                        </UiLabel>
+                        <IconWithTooltip
+                          :tooltip-content="tooltipContent.showPauseBtn"
+                          icon-class="text-lg"
+                        />
+                      </div>
+                      <BaseSelect
+                        id="pause_btn_dropdown"
+                        v-model="testSettings.showPauseBtn"
+                        size="sm"
+                        :options="selectOptions.showPauseBtn"
+                        class="col-span-6"
+                      />
+                    </div>
+                    <template v-if="!testState.testImageBlobs">
+                      <div class="flex justify-center gap-3 mt-3 w-full">
+                        <UiLabel
+                          for="test_img_quality"
+                        >
+                          Questions Image Scale
+                        </UiLabel>
+                        <IconWithTooltip
+                          :tooltip-content="tooltipContent.questionImgScale"
+                          icon-class="text-lg"
+                        />
+                      </div>
+                      <div class="flex justify-center gap-3 w-full mt-1.5">
+                        <BaseInputNumber
+                          v-model="testSettings.questionImgScale"
+                          :min="1"
+                          :max="10"
+                          :step="0.1"
+                          input-class="text-sm"
+                        />
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-col grow">
+                <template v-if="!testState.isSectionsDataLoaded">
+                  <div class="flex justify-center">
+                    <span class="pl-5 pr-3 text-lg font-bold">Load PDF Questions Data</span>
+                    <IconWithTooltip
+                      :tooltip-content="tooltipContent.testDataFileUpload"
+                      icon-class="text-lg"
+                    />
+                  </div>
+                  <CbtInterfaceFileUpload
+                    v-if="!hashMismatchDialogState.showDialog"
+                    v-model="fileUploaderFileType"
+                    :file-options="selectOptions.dataFile"
+                    empty-slot-text-class="top-[30%]"
+                    :zip-file-to-load="zipFileFromUrlState.zipFile"
+                    @update:model-value="(value) => {
+                      if (value === 'zip-url') {
+                        zipFileFromUrlState.isDialogOpen = true
+                      }
+                    }"
+                    @uploaded="verifyTestData"
+                  />
+                </template>
+                <template v-else>
+                  <div class="flex grow mx-8">
+                    <div
+                      v-if="!testState.continueLastTest"
+                      class="flex flex-col mx-auto"
+                    >
+                      <div class="flex justify-center">
+                        <span class="pl-5 pr-3 text-lg font-bold">Sort Sections Order</span>
+                      </div>
+                      <div class="flex mx-auto mt-2">
+                        <CbtInterfaceSectionsOrderList
+                          v-model="testSectionsList"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex flex-col mx-auto">
+                      <div class="flex mb-2 gap-3">
+                        <UiLabel
+                          class="font-bold"
+                          for="questions_numbering_type"
+                        >
+                          Questions Numbering Order
+                        </UiLabel>
+                        <IconWithTooltip
+                          :tooltip-content="tooltipContent.questionsNumberingOrderType"
+                          icon-class="text-lg"
+                        />
+                      </div>
+                      <div class="flex flex-col grow items-center">
+                        <BaseSelect
+                          id="questions_numbering_type"
+                          v-model="currentTestState.questionsNumberingOrderType"
+                          :options="selectOptions.questionsNumberingOrderType"
+                          :disabled="Boolean(testState.continueLastTest)"
+                          class="w-4/5"
+                        />
+                        <BaseButton
+                          label="Prepare Test"
+                          size="lg"
+                          class="my-auto"
+                          icon-name="mdi:rocket-launch"
+                          icon-size="1.6rem"
+                          @click="prepareTestState.dialogVisibility = true"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </UiCardContent>
+          </UiCard>
+          <UiAccordion
+            type="multiple"
+            :default-value="[]"
+            :unmount-on-hide="false"
+            class="w-full"
+          >
+            <UiAccordionItem value="1">
+              <UiAccordionTrigger>
+                UI Settings & Customizations
+              </UiAccordionTrigger>
+              <UiAccordionContent>
+                <UiCard class="py-2 mt-4 rounded-none gap-2">
+                  <UiCardHeader>
+                    <UiCardTitle class="text-lg mx-auto">
+                      Main Layout
+                    </UiCardTitle>
+                  </UiCardHeader>
+                  <UiCardContent class="grid grid-cols-4 px-4 gap-4">
+                    <div
+                      v-for="item in htmlContent.customizeUi.mainLayout"
+                      :key="item.key"
+                      class="flex flex-col w-full items-center justify-end"
+                    >
+                      <UiLabel
+                        class="text-sm text-center"
+                        :for="item.id"
+                      >
+                        {{ item.label }}
+                      </UiLabel>
+                      <BaseSelect
+                        v-if="item.type === 'select'"
+                        :id="item.id"
+                        v-model="(settings.mainLayout[item.key as keyof CbtUiSettings['mainLayout']] as boolean)"
+                        :options="selectOptions.showHide"
+                        trigger-class="w-3/4"
+                      />
+                      <BaseInputNumber
+                        v-else
+                        :id="item.id"
+                        v-model="(settings.mainLayout[item.key as keyof CbtUiSettings['mainLayout']] as number)"
+                        :min="item.min"
+                        :max="item.max"
+                        :step="item.step || 1"
+                        :size="('size' in item ? (item.size as string) : null)"
+                      />
+                    </div>
+                  </UiCardContent>
+                </UiCard>
+                <div class="flex w-full">
+                  <UiCard class="pt-2 pb-0 mt-4 rounded-none gap-2 w-1/2 shrink-0">
+                    <UiCardHeader>
+                      <UiCardTitle class="text-lg mx-auto">
+                        Themes
+                      </UiCardTitle>
+                    </UiCardHeader>
+                    <UiCardContent class="flex flex-col px-0 divide-y divide-border border-t border-border">
+                      <div class="grid grid-cols-8 gap-3 text-center font-semibold divide-x divide-border">
+                        <div class="py-4 col-span-2">
+                          Theme
+                        </div>
+                        <div class="py-4 col-span-3">
+                          Text Color
+                        </div>
+                        <div class="py-4 col-span-3">
+                          Background Color
+                        </div>
+                      </div>
+                      <div
+                        v-for="(theme, name) in settings.themes"
+                        :key="name"
+                        class="grid grid-cols-8 gap-3 text-center divide-x divide-border"
+                      >
+                        <!-- Theme Name -->
+                        <div class="col-span-2 flex items-center justify-center text-base font-medium py-4">
+                          {{ utilKeyToLabel(name) }}
+                        </div>
+                        <!-- Text Color -->
+                        <div class="flex col-span-3 items-center justify-center gap-4 py-4 px-2">
+                          <UiInput
+                            v-model="theme.textColor"
+                            type="text"
+                            class="text-center"
+                          />
+                          <BaseColorPicker v-model="theme.textColor" />
+                        </div>
+                        <!-- Background Color -->
+                        <div class="flex col-span-3 items-center justify-center gap-4 py-4 px-2">
+                          <UiInput
+                            v-model="theme.bgColor"
+                            type="text"
+                            class="text-center"
+                          />
+                          <BaseColorPicker v-model="theme.bgColor" />
+                        </div>
+                      </div>
+                    </UiCardContent>
+                  </UiCard>
+                  <UiCard class="py-2 mt-4 rounded-none gap-2">
+                    <UiCardHeader>
+                      <UiCardTitle class="text-lg mx-auto">
+                        Question Panel
+                      </UiCardTitle>
+                    </UiCardHeader>
+                    <UiCardContent class="flex flex-col px-4">
+                      <div class="flex w-full justify-center gap-2 mb-0.5">
+                        <UiLabel
+                          class="text-nowrap font-semibold"
+                        >
+                          Answer Options Format
+                        </UiLabel>
+                        <div class="flex relative items-center group">
+                          <Icon
+                            class="text-base"
+                            name="my-icon:info"
+                            tabindex="-1"
+                          />
+                          <div
+                            class="hidden group-hover:flex! group-focus:flex! absolute flex-col
+                              z-50 w-max text-black bg-white top-full right-0"
+                          >
+                            <h3 class="text-center">
+                              PREVIEW:
+                            </h3>
+                            <div class="py-2 px-4">
+                              <CbtInterfaceAnswerOptionsDiv
+                                v-model="dummyValue"
+                                :total-options="4"
+                                question-type="mcq"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-span-2 grid grid-cols-3 gap-1 mt-2">
+                        <div class="flex flex-col w-full">
+                          <UiLabel
+                            class="text-sm"
+                            for="answer_options_prefix"
+                          >
+                            Prefix
+                          </UiLabel>
+                          <UiInput
+                            id="answer_options_prefix"
+                            v-model="settings.questionPanel.answerOptionsFormat.prefix"
+                            type="text"
+                            :maxlength="25"
+                            class="md:text-base h-8"
+                          />
+                        </div>
+                        <div class="flex flex-col w-full">
+                          <UiLabel
+                            class="text-sm"
+                            for="answer_options_counter"
+                          >
+                            Counter Type
+                          </UiLabel>
+                          <BaseSelect
+                            id="answer_options_counter"
+                            v-model="settings.questionPanel.answerOptionsFormat.counterType"
+                            :options="selectOptions.answerOptionsFormat"
+                            size="sm"
+                          />
+                        </div>
+                        <div class="flex flex-col w-full">
+                          <UiLabel
+                            class="text-sm"
+                            for="answer_options_suffix"
+                          >
+                            Suffix
+                          </UiLabel>
+                          <UiInput
+                            id="answer_options_suffix"
+                            v-model="settings.questionPanel.answerOptionsFormat.suffix"
+                            type="text"
+                            :maxlength="25"
+                            class="md:text-base h-8"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-span-2 grid grid-cols-3 gap-1 mt-2">
+                        <div
+                          v-for="item in htmlContent.customizeUi.questionPanel.answerOptionsFormat"
+                          :key="item.key"
+                          class="flex flex-col w-full"
+                        >
+                          <UiLabel
+                            class="text-sm"
+                            :for="item.id"
+                          >
+                            {{ item.label }}
+                          </UiLabel>
+                          <BaseInputNumber
+                            :id="item.id"
+                            v-model="(
+                              settings.questionPanel.answerOptionsFormat[
+                                item.key as keyof CbtUiSettings['questionPanel']['answerOptionsFormat']
+                              ] as number)"
+                            :min="item.min"
+                            :max="item.max"
+                            :step="item.step || 1"
+                          />
+                        </div>
+                      </div>
+                      <div
+                        class="grid grid-cols-2 mt-4 gap-3"
+                      >
+                        <UiLabel
+                          class="col-span-2 text-base text-nowrap font-semibold"
+                        >
+                          Question Img Max Width (%)
+                        </UiLabel>
+                        <div class="flex flex-col items-center">
+                          <UiLabel
+                            class="text-sm"
+                            for="ques_img_max_width_qp_opened"
+                          >
+                            When Question Palette Opened
+                          </UiLabel>
+                          <BaseInputNumber
+                            v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteOpened"
+                            :min="10"
+                            :max="100"
+                            :step="5"
+                            label-id="ques_img_max_width_qp_opened"
+                            class="w-3/5"
+                          />
+                        </div>
+                        <div class="flex flex-col items-center">
+                          <UiLabel
+                            for="ques_img_max_width_qp_closed"
+                            class="text-sm"
+                          >
+                            When Question Palette Closed
+                          </UiLabel>
+                          <BaseInputNumber
+                            v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed"
+                            :min="10"
+                            :max="100"
+                            :step="5"
+                            label-id="ques_img_max_width_qp_closed"
+                            class="w-3/5"
+                          />
+                        </div>
+                      </div>
+                    </UiCardContent>
+                  </UiCard>
+                </div>
+                <UiCard class="py-2 mt-4 rounded-none gap-2">
+                  <UiCardHeader>
+                    <UiCardTitle class="text-lg mx-auto">
+                      Section Summary &amp; Question Palette
+                    </UiCardTitle>
+                  </UiCardHeader>
+                  <UiCardContent class="flex flex-col w-full p-2 gap-3">
+                    <div class="grid grid-cols-4 gap-4">
+                      <div
+                        v-for="item in htmlContent.customizeUi.questionPalette"
+                        :key="item.key"
+                        class="flex flex-col w-full items-center justify-end"
+                      >
+                        <UiLabel
+                          class="text-sm"
+                          :for="item.id"
+                        >
+                          {{ item.label }}
+                        </UiLabel>
+                        <BaseInputNumber
+                          :id="item.id"
+                          v-model="(
+                            settings.questionPalette[
+                              item.key as keyof CbtUiSettings['questionPalette']
+                            ] as number)"
+                          :min="item.min"
+                          :max="item.max"
+                          :step="item.step || 1"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex justify-center p-5 gap-3">
+                      <UiLabel class="text-lg font-semibold text-center">
+                        Customize Icons & its sizes
+                      </UiLabel>
+                      <IconWithTooltip
+                        :tooltip-content="tooltipContent.iconSettings"
+                        icon-class="text-xl"
+                      />
+                    </div>
+                    <div class="grid grid-cols-5 border-2 border-gray-500 divide-x-2 divide-gray-500">
+                      <template
+                        v-for="(label, key) in statusKeyNames"
+                        :key="key"
+                      >
+                        <div class="flex flex-col gap-3 pb-2">
+                          <UiLabel class="col-span-2 p-2 font-bold py-1 border-b-2 border-gray-500">
+                            {{ label }}:
+                          </UiLabel>
+                          <BaseSimpleFileUpload
+                            accept="image/*"
+                            label="Change Icon"
+                            variant="help"
+                            invalid-file-type-message="Invalid file. Please select a valid Image"
+                            class="mx-auto"
+                            @upload="(file) => changeIcon(file, key)"
+                          />
+                          <div class="grid grid-cols-4 gap-2 px-4">
+                            <UiLabel
+                              class="col-span-4"
+                              :for="`icons_${key}_text_color`"
+                            >
+                              Text Color
+                            </UiLabel>
+                            <UiInput
+                              :id="`icons_${key}_text_color`"
+                              v-model="settings.questionPalette.quesIcons[key].textColor"
+                              type="text"
+                              class="col-span-3 text-center"
+                            />
+                            <BaseColorPicker v-model="settings.questionPalette.quesIcons[key].textColor" />
+                          </div>
+                          <UiLabel class="p-2 border-y border-gray-500">
+                            Section Summary
+                          </UiLabel>
+                          <div class="flex flex-col gap-1 px-4">
+                            <UiLabel
+                              :for="`${key}_summary_icon_size`"
+                            >
+                              Icon Size
+                            </UiLabel>
+                            <BaseInputNumber
+                              v-model="settings.questionPalette.quesIcons[key].summaryIconSize"
+                              :min="0"
+                              :max="10"
+                              :step="0.1"
+                              :label-id="`${key}_summary_icon_size`"
+                              size="small"
+                            />
+                          </div>
+                          <div class="flex flex-col gap-1 px-4">
+                            <UiLabel
+                              :for="`${key}_summary_number_size`"
+                            >
+                              Icon Number Size
+                            </UiLabel>
+                            <BaseInputNumber
+                              v-model="settings.questionPalette.quesIcons[key].summaryNumberTextFontSize"
+                              :min="0"
+                              :max="10"
+                              :step="0.1"
+                              :label-id="`${key}_summary_number_size`"
+                              size="small"
+                            />
+                          </div>
+                          <div class="flex flex-col gap-1 px-4">
+                            <UiLabel
+                              :for="`${key}_summary_label_size`"
+                            >
+                              Label Font Size
+                            </UiLabel>
+                            <BaseInputNumber
+                              v-model="settings.questionPalette.quesIcons[key].summaryLabelFontSize"
+                              :min="0"
+                              :max="10"
+                              :step="0.1"
+                              :label-id="`${key}_summary_label_size`"
+                              size="small"
+                            />
+                          </div>
+                          <UiLabel class="p-2 border-y border-gray-500">
+                            Question Palette
+                          </UiLabel>
+                          <div class="flex flex-col gap-1 px-4">
+                            <UiLabel
+                              :for="`${key}_palette_icon_size`"
+                            >
+                              Icon Size
+                            </UiLabel>
+                            <BaseInputNumber
+                              v-model="settings.questionPalette.quesIcons[key].iconSize"
+                              :min="0"
+                              :max="10"
+                              :step="0.1"
+                              :label-id="`${key}_palette_icon_size`"
+                              size="small"
+                            />
+                          </div>
+                          <div class="flex flex-col gap-1 px-4">
+                            <UiLabel
+                              :for="`${key}_palette_number_size`"
+                            >
+                              Icon Number Size
+                            </UiLabel>
+                            <BaseInputNumber
+                              v-model="settings.questionPalette.quesIcons[key].numberTextFontSize"
+                              :min="0"
+                              :max="10"
+                              :step="0.1"
+                              :label-id="`${key}_palette_number_size`"
+                              size="small"
+                            />
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </UiCardContent>
+                </UiCard>
+              </UiAccordionContent>
+            </UiAccordionItem>
+            <UiAccordionItem value="2">
+              <UiAccordionTrigger>
+                Miscellaneous Settings
+              </UiAccordionTrigger>
+              <UiAccordionContent>
+                <span class="flex text-center justify-center mb-4">
+                  Misc. settings for Profile Details (Top-right corner one)<br>
+                  Everthing under this is for visual use only and thus is optional,<br>
+                  none of these are saved or exported for privacy reasons
+                </span>
+                <div class="flex w-full">
+                  <div class="grid grid-cols-6 gap-4">
+                    <div class="grid grid-cols-1 col-span-2 w-full">
+                      <UiLabel
+                        class="mb-0.5"
+                        for="misc_user_name"
+                      >
+                        User Name
+                      </UiLabel>
+                      <UiInput
+                        id="misc_user_name"
+                        v-model="miscSettings.username"
+                        type="text"
+                        class="text-center"
+                        :maxlength="60"
+                      />
+                    </div>
+                    <div class="grid grid-cols-1 w-full">
+                      <UiLabel
+                        for="misc_profile_icon"
+                      >
+                        Profile Img
+                      </UiLabel>
+                      <BaseSimpleFileUpload
+                        accept="image/*"
+                        label="Change"
+                        variant="help"
+                        button-class="px-2 pt-[.5rem]"
+                        class="mx-auto"
+                        invalid-file-type-message="Invalid file. Please select a valid Image"
+                        @upload="(file) => changeProfileIcon(file)"
+                      />
+                    </div>
+                    <div
+                      v-for="item in htmlContent.miscSettings"
+                      :key="item.key"
+                      class="grid grid-cols-1 w-full"
+                    >
+                      <UiLabel
+                        class="text-sm"
+                        :for="item.id"
+                      >
+                        {{ item.label }}
+                      </UiLabel>
+                      <BaseInputNumber
+                        :id="item.id"
+                        v-model="(miscSettings[item.key as keyof MiscSettings] as number)"
+                        :min="item.min"
+                        :max="item.max"
+                        :step="item.step || 1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </UiAccordionContent>
+            </UiAccordionItem>
+          </UiAccordion>
+        </UiCardContent>
+      </UiCard>
+    </UiScrollArea>
     <LazyImportExportDialog
       v-if="importExportDialogState.isDialogOpen"
       v-model:visibility="importExportDialogState.isDialogOpen"
@@ -893,273 +781,232 @@
       :type="importExportDialogState.type"
       @processed="processImportExport"
     />
-    <Dialog
-      v-model:visible="prepareTestState.dialogVisibility"
-      header="Confirm Preparing Test"
-      :modal="true"
-      :closable="true"
-      pt:content:class="flex flex-col p-4 pt-0"
+    <UiDialog
+      v-model:open="prepareTestState.dialogVisibility"
     >
-      <div class="flex mb-10">
-        <h3 class="text-base">
+      <UiDialogContent class="sm:w-fit">
+        <UiDialogHeader>
+          <UiDialogTitle>Confirm Preparing Test</UiDialogTitle>
+        </UiDialogHeader>
+        <h3 class="text-base text-center pt-2 pb-4">
           Are you sure you want to start preparing the test?
         </h3>
-      </div>
-      <div class="flex px-4 justify-between">
-        <BaseButton
-          label="Prepare Test"
-          @click="prepareTest()"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:rocket-launch"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-        <BaseButton
-          label="Go Back"
-          severity="danger"
-          @click="prepareTestState.dialogVisibility = false"
-        >
-          <template #icon>
-            <Icon
-              name="material-symbols:undo"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-      </div>
-    </Dialog>
-    <Dialog
-      v-model:visible="prepareTestState.isOngoingTestFoundInDB"
-      header="Unfinished Test is Found!"
-      :modal="true"
-      :closable="false"
-      :close-on-escape="false"
-      :block-scroll="true"
-      :draggable="false"
-      pt:content:class="flex flex-col p-4 pt-0"
+        <UiDialogFooter>
+          <BaseButton
+            label="Prepare Test"
+            icon-name="mdi:rocket-launch"
+            @click="prepareTest()"
+          />
+          <BaseButton
+            label="Go Back"
+            variant="destructive"
+            icon-name="material-symbols:undo"
+            @click="prepareTestState.dialogVisibility = false"
+          />
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
+    <UiDialog
+      v-model:open="prepareTestState.isOngoingTestFoundInDB"
     >
-      <div class="flex mb-10">
-        <h3 class="text-lg text-center">
-          An unfinished test was found!<br>
-          You can continue the test or discard it.<br><br>
-          The steps to continue remain the same as for a fresh test<br>
-          (upload the .zip file or .pdf &amp; .json files).<br><br>
-          Some settings from this test will be locked, while others can be modified as needed.
-        </h3>
-      </div>
-      <div class="flex px-4 justify-between">
-        <BaseButton
-          label="Continue Unfinished Test"
-          @click="() => {
-            testState.continueLastTest = true
-            prepareTestState.isOngoingTestFoundInDB = false
-          }"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:rocket"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-        <BaseButton
-          label="Discard Test"
-          severity="danger"
-          @click="prepareTestState.isOngoingTestFoundInDB = false"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:clear-circle"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-      </div>
-    </Dialog>
-    <Dialog
+      <UiDialogContent
+        class="sm:w-fit"
+        non-closable
+      >
+        <UiDialogHeader>
+          <UiDialogTitle>Unfinished Test is Found!</UiDialogTitle>
+        </UiDialogHeader>
+        <div class="flex">
+          <h3 class="text-lg text-center">
+            An unfinished test was found!<br>
+            You can continue the test or discard it.<br><br>
+            The steps to continue remain the same as for a fresh test<br>
+            (upload the .zip file or .pdf &amp; .json files).<br><br>
+            Some settings from this test will be locked, while others can be modified as needed.
+          </h3>
+        </div>
+        <UiDialogFooter>
+          <BaseButton
+            label="Continue Unfinished Test"
+            icon-name="mdi:rocket"
+            @click="() => {
+              testState.continueLastTest = true
+              prepareTestState.isOngoingTestFoundInDB = false
+            }"
+          />
+          <BaseButton
+            label="Discard Test"
+            variant="destructive"
+            icon-name="mdi:clear-circle"
+            @click="prepareTestState.isOngoingTestFoundInDB = false"
+          />
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
+    <UiDialog
       v-if="testState.continueLastTest === null"
-      :visible="true"
-      header="Oops Test Data is not Found!"
-      :modal="true"
-      :closable="false"
-      :close-on-escape="false"
-      :block-scroll="true"
-      :draggable="false"
-      pt:content:class="flex flex-col p-4 pt-0"
+      default-open
     >
-      <div class="flex mb-10">
-        <h3 class="text-lg text-center">
-          Test Data was not found in storage.<br>
-          Either the data is corrupted, deleted, or the browser is blocking access to it.<br>
-          You can try refreshing the page or discard this test.<br>
-        </h3>
-      </div>
-      <div class="flex px-4 justify-between">
-        <BaseButton
-          label="Refresh Page"
-          @click="reloadPage()"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:rocket"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-        <BaseButton
-          label="Discard Test"
-          severity="danger"
-          @click="prepareTestState.isOngoingTestFoundInDB = false"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:clear-circle"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-      </div>
-    </Dialog>
-    <Dialog
-      v-model:visible="hashMismatchDialogState.showDialog"
-      header="PDF hash is not matching with the one in cropper data!"
-      :modal="true"
-      :closable="false"
-      :close-on-escape="false"
-      :block-scroll="true"
-      :draggable="false"
-      pt:content:class="flex flex-col px-0 py-4 max-w-xl"
+      <UiDialogContent
+        class="sm:w-fit"
+        non-closable
+      >
+        <UiDialogHeader>
+          <UiDialogTitle>Oops Test Data is not Found!</UiDialogTitle>
+        </UiDialogHeader>
+        <div class="flex mt-3">
+          <h3 class="text-lg text-center">
+            Test Data was not found in storage.<br>
+            Either the data is corrupted, deleted, or the browser is blocking access to it.<br>
+            You can try refreshing the page or discard this test.<br>
+          </h3>
+        </div>
+        <UiDialogFooter>
+          <BaseButton
+            label="Refresh Page"
+            icon-name="mdi:rocket"
+            @click="reloadPage()"
+          />
+          <BaseButton
+            label="Discard Test"
+            variant="destructive"
+            icon-name="mdi:clear-circle"
+            @click="testState.continueLastTest = false"
+          />
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
+    <UiDialog
+      v-model:open="hashMismatchDialogState.showDialog"
     >
-      <div class="flex mb-6 items-center">
-        <h3
-          v-if="fileUploaderFileType === 'zip'"
-          class="text-lg text-center"
-        >
-          PDF file's hash is different to the one that was used in PDF Cropper.<br><br>
-          Hash can differ if even slight modification was done to pdf's contents.<br><br>
-          If you sure that both questions.pdf and data.json in zip file are correct, then you can continue.<br>
-          OR<br>
-          You can re-upload the correct one.<br><br>
-        </h3>
-        <h3
-          v-else
-          class="text-lg text-center"
-        >
-          PDF file's hash and hash of PDF in JSON file is different.<br><br>
-          Hash can differ if even slight modification was done to pdf's contents.<br><br>
-          If you sure that both pdf and json files are correct, then you can continue.<br>
-          OR<br>
-          You can re-upload the correct ones.<br><br>
-        </h3>
-      </div>
-      <div class="flex px-2 sm:px-8 gap-2 justify-between">
-        <BaseButton
-          label="Continue anyway"
-          severity="warn"
-          @click="() => {
-            hashMismatchDialogState.showDialog = false
+      <UiDialogContent
+        class="sm:w-xl"
+        non-closable
+      >
+        <UiDialogHeader>
+          <UiDialogTitle>PDF hash is not matching with the one in cropper data!</UiDialogTitle>
+        </UiDialogHeader>
+        <div class="flex items-center">
+          <h3
+            v-if="fileUploaderFileType === 'zip'"
+            class="text-lg text-center"
+          >
+            PDF file's hash is different to the one that was used in PDF Cropper.<br><br>
+            Hash can differ if even slight modification was done to pdf's contents.<br><br>
+            If you sure that both questions.pdf and data.json in zip file are correct, then you can continue.<br>
+            OR<br>
+            You can re-upload the correct one.<br><br>
+          </h3>
+          <h3
+            v-else
+            class="text-lg text-center"
+          >
+            PDF file's hash and hash of PDF in JSON file is different.<br><br>
+            Hash can differ if even slight modification was done to pdf's contents.<br><br>
+            If you sure that both pdf and json files are correct, then you can continue.<br>
+            OR<br>
+            You can re-upload the correct ones.<br><br>
+          </h3>
+        </div>
+        <UiDialogFooter>
+          <BaseButton
+            label="Continue anyway"
+            variant="warn"
+            icon-name="mdi:rocket"
+            @click="() => {
+              hashMismatchDialogState.showDialog = false
 
-            const { pdfBuffer, jsonData, pdfFileHash } = hashMismatchDialogState
-            if (pdfBuffer && jsonData) {
-              testState.pdfFileHash = pdfFileHash || ''
-              loadTestData({ pdfBuffer, jsonData, testImageBlobs: null })
-            }
-          }"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:rocket"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-        <BaseButton
-          label="Re-upload"
-          @click="hashMismatchDialogState.showDialog = false"
-        >
-          <template #icon>
-            <Icon
-              name="prime:upload"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-      </div>
-    </Dialog>
-    <Dialog
-      v-if="zipFileFromUrlState.isDialogOpen"
-      v-model:visible="zipFileFromUrlState.isDialogOpen"
+              const { pdfBuffer, jsonData, pdfFileHash } = hashMismatchDialogState
+              if (pdfBuffer && jsonData) {
+                testState.pdfFileHash = pdfFileHash || ''
+                loadTestData({ pdfBuffer, jsonData, testImageBlobs: null })
+              }
+            }"
+          />
+          <BaseButton
+            label="Re-upload"
+            icon-name="prime:upload"
+            @click="hashMismatchDialogState.showDialog = false"
+          />
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
+    <UiDialog
+      v-model:open="zipFileFromUrlState.isDialogOpen"
       header="Load Test Data from URL"
       :modal="true"
       :block-scroll="true"
       :draggable="false"
-      pt:content:class="flex flex-col px-4 pt-2 pb-6 gap-4 items-center text-center md:min-w-lg sm:max-w-xl"
+      pt:content:class="flex flex-col px-4 pt-2 pb-6 "
     >
-      <p
-        v-if="zipFileFromUrlState.isLoading"
-        class="text-cyan-400 py-5"
+      <UiDialogContent
+        class="sm:w-xl items-center text-center md:min-w-lg sm:max-w-xl"
+        non-closable
       >
-        Please wait, loading the test data zip file from the URL...
-      </p>
-      <div
-        v-else-if="zipFileFromUrlState.errorMsg"
-        class="flex flex-col items-center gap-4 mb-4 text-center"
-      >
-        <p class="text-red-400 text-lg font-semibold">
-          Error: {{ zipFileFromUrlState.errorMsg }}
+        <UiDialogHeader>
+          <UiDialogTitle>Load Test Data ZIP file from URL</UiDialogTitle>
+        </UiDialogHeader>
+        <p
+          v-if="zipFileFromUrlState.isLoading"
+          class="text-cyan-400 py-5"
+        >
+          Please wait, loading the test data zip file from the URL...
         </p>
-        <p>
-          Check the URL or retry.<br>
-          Make sure your network connection is working
-        </p>
-        <p>
-          Retried {{ zipFileFromUrlState.retryCount }} times.
-        </p>
-      </div>
-      <div v-else>
-        <p class="text-sm text-gray-200 text-wrap mt-2 mb-7">
-          <strong>Note:</strong> The URL must be a direct link to the file and should have CORS setup to allow loading the file.<br>
-          URLs that work include links to file on public GitHub repositories.<br>
-          For example, here is the URL of demo test data on this project's GitHub repo which will work:<br>
-          <a
-            href="https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data_pre_generated.zip"
-            target="_blank"
-            class="text-blue-400 underline"
-          >
-            https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data_pre_generated.zip
-          </a>
-        </p>
-        <p>
-          Enter the URL (link) of the test data zip file:
-        </p>
-      </div>
-      <InputText
-        v-show="!zipFileFromUrlState.isLoading"
-        v-model.trim="zipFileFromUrlState.url"
-        type="text"
-        :fluid="true"
-        pt:root:class="w-4/5"
-      />
-      <div
-        v-if="!zipFileFromUrlState.isLoading"
-        class="flex gap-15 mx-auto mt-4"
-      >
-        <BaseButton
-          :label="zipFileFromUrlState.errorMsg ? 'Retry' : 'Load File'"
-          :disabled="zipFileFromUrlState.isLoading || !zipFileFromUrlState.url.trim()"
-          @click="fetchZipFile(Boolean(zipFileFromUrlState.errorMsg))"
+        <div
+          v-else-if="zipFileFromUrlState.errorMsg"
+          class="flex flex-col items-center gap-4 mb-4 text-center"
+        >
+          <p class="text-red-400 text-lg font-semibold">
+            Error: {{ zipFileFromUrlState.errorMsg }}
+          </p>
+          <p>
+            Check the URL or retry.<br>
+            Make sure your network connection is working
+          </p>
+          <p>
+            Retried {{ zipFileFromUrlState.retryCount }} times.
+          </p>
+        </div>
+        <div v-else>
+          <p class="text-sm text-gray-200 text-wrap mt-2 mb-7">
+            <strong>Note:</strong> The URL must be a direct link to the file and should have CORS setup to allow loading the file.<br>
+            URLs that work include links to file on public GitHub repositories.<br>
+            For example, here is the URL of demo test data on this project's GitHub repo which will work:<br>
+            <a
+              href="https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data_pre_generated.zip"
+              target="_blank"
+              class="text-blue-400 underline"
+            >
+              https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data_pre_generated.zip
+            </a>
+          </p>
+          <p>
+            Enter the URL (link) of the test data zip file:
+          </p>
+        </div>
+        <UiInput
+          v-show="!zipFileFromUrlState.isLoading"
+          v-model.trim="zipFileFromUrlState.url"
+          type="text"
+          class="w-4/5 mx-auto"
         />
-        <BaseButton
-          label="Cancel"
-          severity="danger"
-          :disabled="zipFileFromUrlState.isLoading"
-          @click="zipFileFromUrlState.isDialogOpen = false"
-        />
-      </div>
-    </Dialog>
+        <UiDialogFooter
+          v-if="!zipFileFromUrlState.isLoading"
+        >
+          <BaseButton
+            :label="zipFileFromUrlState.errorMsg ? 'Retry' : 'Load File'"
+            :disabled="zipFileFromUrlState.isLoading || !zipFileFromUrlState.url.trim()"
+            @click="fetchZipFile(Boolean(zipFileFromUrlState.errorMsg))"
+          />
+          <BaseButton
+            label="Cancel"
+            variant="destructive"
+            :disabled="zipFileFromUrlState.isLoading"
+            @click="zipFileFromUrlState.isDialogOpen = false"
+          />
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
   </div>
 </template>
 
@@ -1189,7 +1036,6 @@ const htmlContent = {
       { key: 'size', label: 'Main Layout Size (px)', min: 5, max: 25 },
       { key: 'testTotalHeaderHeight', label: '"Test Total" Header Height', min: 0, max: 30, step: 0.1 },
       { key: 'sectionHeaderHeight', label: 'Sections Height', min: 1, max: 20, step: 0.1 },
-      { key: 'sectionHeaderScrollPadding', label: 'Sections Scroll Padding', min: 0, max: 20, step: 0.1 },
       { key: 'questionTypeFontSize', label: 'Ques. Type Font Size', min: 0.25, max: 5, step: 0.1 },
       { key: 'markingSchemeFontSize', label: 'Marking Scheme Font Size', min: 0.25, max: 5, step: 0.1 },
       { key: 'questionTimeSpentFontSize', label: 'Ques. Time Spent Font Size', min: 0.25, max: 5, step: 0.1 },
@@ -1197,12 +1043,15 @@ const htmlContent = {
       { key: 'sectionHeaderAndQuesPanelDividerHeight',
         label: 'Sections & Question-panel Divider Height', min: 0, max: 30, step: 0.1,
       },
+      { type: 'select', key: 'showQuestionType', label: 'Question Type' },
+      { type: 'select', key: 'showMarkingScheme', label: 'Marking Scheme' },
+      { type: 'select', key: 'showQuestionTimeSpent', label: 'Time Spent Per Ques.' },
     ]),
     questionPanel: {
       answerOptionsFormat: addIds([
-        { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1, size: 'small' },
-        { key: 'zoomSize', label: 'Checkbox Size', min: 0.5, max: 5, step: 0.1, size: 'small' },
-        { key: 'rowGap', label: 'Row Gap', min: 0, max: 10, step: 0.1, size: 'small' },
+        { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
+        { key: 'zoomSize', label: 'Checkbox Size', min: 0.5, max: 5, step: 0.1 },
+        { key: 'rowGap', label: 'Row Gap', min: 0, max: 10, step: 0.1 },
       ]),
     },
     questionPalette: addIds([
@@ -1249,7 +1098,7 @@ const tooltipContent = {
 
   questionImgScale:
     '(This is ignored for Zip file containing Pre Generated Images)\n'
-    + 'The scale of question image dimensions (resolution) to be generated relative to original dimensions (x).\n'
+    + 'The scale of question image dimensions (resolution) to be generated relative to original dimensions.\n'
     + 'device pixel ratio (DPR) is also multipled separately.\n\n'
     + 'Higher values increases resolution and improve image clarity but increase file size, '
     + 'requiring more RAM and processing time\n\n'
@@ -1887,13 +1736,13 @@ onMounted(() => {
         return Array.isArray(param) ? param[0] : param
       }
 
-      const nameValue = getFirstQuery(route.query[CBTInterfaceQueryParams.testName])
-      const durationValue = getFirstQuery(route.query[CBTInterfaceQueryParams.testDuration])
-      const timeFormatValue = getFirstQuery(route.query[CBTInterfaceQueryParams.timeFormat])
-      const zipurlValue = getFirstQuery(route.query[CBTInterfaceQueryParams.zipUrl])
-      const submitmodeValue = getFirstQuery(route.query[CBTInterfaceQueryParams.submitMode])
-      const allowpauseValue = getFirstQuery(route.query[CBTInterfaceQueryParams.allowPause])
-      const imgScaleValue = getFirstQuery(route.query[CBTInterfaceQueryParams.imageScale])
+      const nameValue = getFirstQuery(route.query[CBTInterfaceQueryParams.TestName])
+      const durationValue = getFirstQuery(route.query[CBTInterfaceQueryParams.TestDuration])
+      const timeFormatValue = getFirstQuery(route.query[CBTInterfaceQueryParams.TimeFormat])
+      const zipurlValue = getFirstQuery(route.query[CBTInterfaceQueryParams.ZipUrl])
+      const submitmodeValue = getFirstQuery(route.query[CBTInterfaceQueryParams.SubmitMode])
+      const allowpauseValue = getFirstQuery(route.query[CBTInterfaceQueryParams.AllowPause])
+      const imgScaleValue = getFirstQuery(route.query[CBTInterfaceQueryParams.ImageScale])
 
       if (nameValue && typeof nameValue === 'string') {
         testSettings.value.testName = nameValue

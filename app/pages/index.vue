@@ -1,7 +1,6 @@
 <template>
   <div
-    class="flex flex-col grow min-h-0 py-8 overflow-auto
-      dark:bg-surface-900 dark:text-surface-0 border-t-2 border-surface-700"
+    class="flex flex-col grow min-h-0 py-8 overflow-auto border-t-2"
   >
     <h1 class="text-2xl font-bold text-center text-green-500">
       Turn PDF of Questions into interactive CBT (Computer Based Test)

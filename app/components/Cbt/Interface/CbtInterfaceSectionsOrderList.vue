@@ -18,6 +18,8 @@
 </template>
 
 <script lang="ts" setup>
+import OrderList from 'primevue/orderlist'
+
 const value = defineModel<TestSectionListItem[]>({
   type: Array,
   required: true,

@@ -1,75 +1,76 @@
 <template>
-  <div class="card flex justify-center">
-    <Drawer
-      v-model:visible="hiddenSettingsVisibility"
-      header="Settings"
-      position="right"
-      pt:header:class="p-3"
-      pt:content:class="px-0 flex flex-col"
+  <UiSheet v-model:open="hiddenSettingsVisibility">
+    <UiSheetContent
+      side="right"
     >
-      <Panel
-        header="Question Img Max Width (%)"
-        toggleable
-        class="w-full"
-        pt:content:class="px-4"
+      <UiSheetHeader class="p-3 pb-1">
+        <UiSheetTitle class="mx-auto text-2xl">
+          Settings
+        </UiSheetTitle>
+      </UiSheetHeader>
+      <UiScrollArea
+        class="h-full w-full min-h-0"
       >
-        <div
-          class="grid grid-cols-1 mt-4 gap-3"
+        <UiCard
+          class="w-full py-2"
         >
-          <label
-            for="ques_img_max_width_qp_opened"
-            class="text-center"
-          >
-            When Question Palette Opened
-          </label>
-          <BaseInputNumber
-            v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteOpened"
-            :min="10"
-            :max="100"
-            :step="5"
-            label-id="ques_img_max_width_qp_opened"
+          <UiCardHeader>
+            <UiCardTitle class="text-base mx-auto">
+              Question Img Max Width (%)
+            </UiCardTitle>
+          </UiCardHeader>
+          <UiCardContent>
+            <div
+              class="flex flex-col items-center gap-3"
+            >
+              <UiLabel
+                for="ques_img_max_width_qp_opened"
+                class="text-center"
+              >
+                When Question Palette Opened
+              </UiLabel>
+              <BaseInputNumber
+                id="ques_img_max_width_qp_opened"
+                v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteOpened"
+                :min="10"
+                :max="100"
+                :step="5"
+              />
+            </div>
+            <div
+              class="flex flex-col items-center mt-5 gap-3"
+            >
+              <UiLabel
+                for="ques_img_max_width_qp_closed"
+                class="text-center"
+              >
+                When Question Palette Closed
+              </UiLabel>
+              <BaseInputNumber
+                id="ques_img_max_width_qp_closed"
+                v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed"
+                :min="10"
+                :max="100"
+                :step="5"
+              />
+            </div>
+          </UiCardContent>
+        </UiCard>
+        <div
+          v-if="testSettings.showPauseBtn"
+          class="flex mt-6 justify-center w-full"
+        >
+          <BaseButton
+            label="Pause Test"
+            :disabled="testStatus !== 'ongoing'"
+            variant="help"
+            icon-name="mdi:stopwatch-pause-outline"
+            @click="emitPauseCountdown"
           />
         </div>
-        <div
-          class="grid grid-cols-1 mt-4 gap-3"
-        >
-          <label
-            for="ques_img_max_width_qp_closed"
-            class="text-center"
-          >
-            When Question Palette Closed
-          </label>
-          <BaseInputNumber
-            v-model="uiSettings.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed"
-            :min="10"
-            :max="100"
-            :step="5"
-            label-id="ques_img_max_width_qp_closed"
-          />
-        </div>
-      </Panel>
-      <div
-        v-if="testSettings.showPauseBtn"
-        class="flex mx-auto mt-6"
-      >
-        <BaseButton
-          class="col-span-2 sm:col-span-1"
-          label="Pause Test"
-          :fluid="false"
-          :disabled="testStatus !== 'ongoing'"
-          severity="help"
-          @click="emitPauseCountdown"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:stopwatch-pause-outline"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-      </div>
-    </Drawer>
-  </div>
+      </UiScrollArea>
+    </UiSheetContent>
+  </UiSheet>
 </template>
 
 <script setup lang="ts">

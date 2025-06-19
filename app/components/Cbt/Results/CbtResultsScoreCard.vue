@@ -1,13 +1,13 @@
 <template>
-  <Card
-    pt:root:class="dark:bg-surface-700/40 max-w-2xs"
-    pt:title:class="font-semibold text-xl text-center truncate"
-    pt:body:class="px-3 py-2"
+  <UiCard
+    class="px-3 py-2 max-w-2xs bg-secondary/60 text-secondary-foreground gap-2"
   >
-    <template #title>
-      {{ scoreCardData.title }}
-    </template>
-    <template #content>
+    <UiCardHeader class="px-0 py-1">
+      <UiCardTitle class="mx-auto">
+        {{ scoreCardData.title }}
+      </UiCardTitle>
+    </UiCardHeader>
+    <UiCardContent class="p-0">
       <div class="space-y-2">
         <div>
           <div class="flex items-center justify-center gap-1">
@@ -105,13 +105,11 @@
           </div>
         </div>
       </div>
-    </template>
-  </Card>
+    </UiCardContent>
+  </UiCard>
 </template>
 
 <script lang="ts" setup>
-import Card from '@/src/volt/Card.vue'
-
 defineProps<{
   scoreCardData: ScoreCardData
 }>()

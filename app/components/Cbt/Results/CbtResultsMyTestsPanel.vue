@@ -37,85 +37,112 @@
         :is-current-results-id="testResultOverview.id === currentResultsID"
         :test-result-overview="testResultOverview"
         class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-60"
-        @menu-btn-click="(e: Event) => cardMenuToggleHandler(testResultOverview.id, e)"
+        @menu-btn-click="(e: MouseEvent) => cardMenuBarClickHandler(testResultOverview, e)"
         @view-results-btn-click="(bool) => viewResultsBtnHandler(bool, testResultOverview.id)"
       />
     </div>
-    <Popover
-      ref="menuPopOverElem"
-      pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]"
-      @show="cardMenuState.isPopOverShown = true"
-      @hide="cardMenuState.isPopOverShown = false"
-    >
-      <div class="flex flex-col gap-3 text-nowrap">
-        <BaseButton
-          label="Rename"
-          size="small"
+    <UiContextMenu>
+      <UiContextMenuTrigger
+        class="hidden"
+        @contextmenu.stop
+        @click.stop
+      >
+        <div ref="contextMenuElem" />
+      </UiContextMenuTrigger>
+      <UiContextMenuContent>
+        <UiContextMenuLabel
+          class="text-center"
+        >
+          Test Actions
+        </UiContextMenuLabel>
+        <UiContextMenuSeparator />
+        <UiContextMenuItem
           @click="renameTestDialogHandler('show')"
         >
-          <template #icon>
-            <Icon
-              name="mdi:rename-outline"
-              size="1.5rem"
-            />
-          </template>
-        </BaseButton>
-        <BaseButton
-          label="Delete"
-          severity="danger"
-          size="small"
-          @click="deleteTestResultsDataFromDB()"
+          <Icon
+            name="mdi:rename-outline"
+            size="1.4rem"
+            class="text-green-400"
+          />
+          Rename test
+        </UiContextMenuItem>
+        <UiContextMenuSeparator />
+        <UiContextMenuItem
+          @click="showDeleteTestDialog = true"
         >
-          <template #icon>
-            <Icon
-              name="material-symbols:delete"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-      </div>
-    </Popover>
-    <Dialog
-      v-model:visible="showRenameTestDialogState.visibility"
-      modal
-      header="Rename Test"
+          <Icon
+            name="material-symbols:delete"
+            size="1.3rem"
+            class="text-red-400"
+          />
+          Delete Test
+        </UiContextMenuItem>
+      </UiContextMenuContent>
+    </UiContextMenu>
+    <UiDialog
+      v-model:open="showRenameTestDialogState.visibility"
     >
-      <InputText
-        v-model="showRenameTestDialogState.newName"
-        autocomplete="off"
-      />
-      <div class="flex gap-5 mt-5">
-        <BaseButton
-          label="Rename"
-          @click="renameTestDialogHandler('rename')"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:rename-outline"
-              size="1.5rem"
-            />
-          </template>
-        </BaseButton>
-        <BaseButton
-          label="Cancel"
-          severity="danger"
-          @click="showRenameTestDialogState.visibility = false"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:clear-circle"
-              size="1.5rem"
-            />
-          </template>
-        </BaseButton>
-      </div>
-    </Dialog>
+      <UiDialogContent class="w-fit">
+        <UiDialogHeader>
+          <UiDialogTitle>Rename Test</UiDialogTitle>
+        </UiDialogHeader>
+        <UiInput
+          v-model="showRenameTestDialogState.newName"
+          type="text"
+          class="mx-auto text-base md:text-lg h-10 my-4"
+          autocomplete="off"
+        />
+        <UiDialogFooter>
+          <BaseButton
+            label="Rename"
+            icon-name="mdi:rename-outline"
+            icon-size="1.5rem"
+            @click="renameTestDialogHandler('rename')"
+          />
+          <BaseButton
+            label="Cancel"
+            variant="destructive"
+            icon-name="mdi:clear-circle"
+            icon-size="1.5rem"
+            @click="showRenameTestDialogState.visibility = false"
+          />
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
+    <UiDialog
+      v-model:open="showDeleteTestDialog"
+    >
+      <UiDialogContent class="w-fit">
+        <UiDialogHeader>
+          <UiDialogTitle>Confirm Deleting Test</UiDialogTitle>
+        </UiDialogHeader>
+        <span class="text-lg text-center pt-2 pb-4">
+          Are you sure you want to delete this test:<br>
+          {{ cardMenuState.testName }}
+        </span>
+        <UiDialogFooter>
+          <BaseButton
+            label="Delete Test"
+            variant="destructive"
+            icon-name="material-symbols:delete"
+            icon-size="1.5rem"
+            @click="deleteTestResultsDataFromDB"
+          />
+          <BaseButton
+            label="Cancel"
+            variant="warn"
+            icon-name="mdi:clear-circle"
+            icon-size="1.5rem"
+            @click="showDeleteTestDialog = false"
+          />
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { liveQuery } from 'dexie'
-import Popover from '@/src/volt/Popover.vue'
 import { db } from '@/src/db/cbt-db'
 
 const props = defineProps<{
@@ -129,7 +156,7 @@ const emit = defineEmits<{
 
 const currentResultsID = useCbtResultsCurrentID()
 
-const menuPopOverElem = ref()
+const contextMenuElem = useTemplateRef('contextMenuElem')
 
 const sortBy = shallowRef<TestResultOverviewsDBSortByOption>('addedDescending')
 
@@ -141,6 +168,8 @@ const showRenameTestDialogState = shallowReactive({
   visibility: false,
   newName: '',
 })
+
+const showDeleteTestDialog = shallowRef(false)
 
 // reactively update testResultOverviews from db if either of these changes:
 // testResultOverviews store in db (when something is added/removed/updated etc)
@@ -164,31 +193,32 @@ watchEffect((onCleanup) => {
 
 const cardMenuState = shallowReactive({
   currentID: 0,
-  isPopOverShown: false,
+  testName: '',
 })
 
-const cardMenuToggleHandler = async (id: number, e: Event) => {
-  if (cardMenuState.isPopOverShown) {
-    if (cardMenuState.currentID !== id) { // when popover is shown, but user clicks on other overview's menu
-      menuPopOverElem.value.hide()
-      await nextTick()
-      menuPopOverElem.value.show(e)
-      cardMenuState.currentID = id
-    }
-    else {
-      menuPopOverElem.value.hide()
-    }
-  }
-  else {
-    menuPopOverElem.value.show(e)
-    cardMenuState.currentID = id
-  }
+const cardMenuBarClickHandler = (testResultOverview: TestResultOverviewDB, e: MouseEvent) => {
+  if (!contextMenuElem.value) return
+  cardMenuState.currentID = testResultOverview.id
+  cardMenuState.testName = testResultOverview.testName
+
+  const event = new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: e.clientX,
+    clientY: e.clientY,
+    button: 2,
+    buttons: 2,
+    view: window,
+  })
+  contextMenuElem.value.dispatchEvent(event)
 }
 
 const deleteTestResultsDataFromDB = async () => {
+  if (!showDeleteTestDialog.value) return
+
+  showDeleteTestDialog.value = false
   const id = cardMenuState.currentID
   if (id) {
-    menuPopOverElem.value.hide()
     await db.removeTestOutputDataAndResultOverview(id)
     cardMenuState.currentID = 0
   }

@@ -13,11 +13,12 @@ export enum CbtUseState {
   CurrentResultsID = 'CBT-CurrentResultsID',
   ResultsTestQuestionsImgUrls = 'CBT-ResultsTestQuestionsImgUrls',
   ResultsCurrentTestNotes = 'CBT-ResultsCurrentTestNotes',
+  ResultsQuestionPanelSettings = 'CBT-ResultsQuestionPanelSettings',
 }
 
 export enum DataFileNames {
-  questionsPdf = 'questions.pdf',
-  dataJson = 'data.json',
+  QuestionsPdf = 'questions.pdf',
+  DataJson = 'data.json',
 }
 
 export enum MiscConsts {
@@ -31,20 +32,23 @@ export enum ResultsPagePanels {
 }
 
 export enum LocalStorageKeys {
+  AppThemeVariant = 'pdf2cbt-theme-variant',
+  ResultsPageSettings = 'CBT-ResultsPageSettings',
+  PdfCropperPageSettings = 'PDFCropperSettings',
+}
+
+export enum DeprecatedLocalStorageKeys {
   ResultsQuestionPanelWidth = 'CBT-ResultsQuestionPanelWidth',
   ResultsQuestionPanelImgBgColor = 'CBT-ResultsQuestionPanelImgBgColor',
+  PDfCropperOldSettings = 'pdf-cropper-settings',
 }
 
 export enum CBTInterfaceQueryParams {
-  testName = 'name',
-  testDuration = 'duration',
-  submitMode = 'submit',
-  timeFormat = 'timeformat',
-  zipUrl = 'zipurl',
-  allowPause = 'allowpause',
-  imageScale = 'imagescale',
-}
-
-export enum Constants {
-  separator = '__--__',
+  TestName = 'name',
+  TestDuration = 'duration',
+  SubmitMode = 'submit',
+  TimeFormat = 'timeformat',
+  ZipUrl = 'zipurl',
+  AllowPause = 'allowpause',
+  ImageScale = 'imagescale',
 }

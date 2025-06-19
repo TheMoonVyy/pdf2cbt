@@ -1,7 +1,6 @@
 <template>
   <div
-    class="flex flex-col grow min-h-0 overflow-auto
-      dark:bg-surface-900 dark:text-surface-0 border-t-2 border-surface-700"
+    class="flex flex-col grow min-h-0 overflow-auto"
   >
     <div
       v-if="dbTestOutputDataState.isDataFound"
@@ -34,35 +33,25 @@
         <BaseButton
           label="Load Selected Test"
           :disabled="dbTestOutputDataState.selectedTestResultOverviewIndex === null"
+          icon-name="mdi:rocket-launch"
+          icon-size="1.5rem"
           @click="loadDataFromDB()"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:rocket-launch"
-              size="1.5rem"
-            />
-          </template>
-        </BaseButton>
+        />
         <BaseButton
           label="Upload file instead"
-          severity="warn"
+          variant="warn"
+          icon-name="prime:upload"
+          icon-size="1.5rem"
           @click="() => {
             dbTestOutputDataState.testResultOverviews = []
             dbTestOutputDataState.isDataFound = false
           }"
-        >
-          <template #icon>
-            <Icon
-              name="prime:upload"
-              size="1.5rem"
-            />
-          </template>
-        </BaseButton>
+        />
       </div>
     </div>
     <div
       v-else-if="!fileUploaderState.isFileLoaded"
-      class="flex flex-col gap-5 py-15"
+      class="flex flex-col gap-5 py-15 items-center"
     >
       <h3 class="text-xl text-center">
         You can load either zip/json file of PDF Cropper or json file of CBT Interface/Results
@@ -71,7 +60,7 @@
         accept="application/json,application/zip,.json,.zip"
         :label="'Select ZIP/JSON File'"
         invalid-file-type-message="Invalid file. Please select a valid ZIP or JSON file from PDF Cropper Page"
-        icon-name="prime:plus"
+        icon-name="line-md:plus"
         @upload="handleFileUpload"
       />
     </div>
@@ -109,28 +98,22 @@
             />
           </div>
           <div class="flex flex-col grow items-center gap-5">
-            <Select
+            <BaseSelect
+              id="questions_numbering_type"
               v-model="settingsState.questionsOrder"
-              label-id="questions_numbering_type"
+              size="lg"
               :options="selectOptions.questionsNumberingOrder"
-              option-label="name"
-              option-value="value"
-              :fluid="true"
-              pt:root:class="w-4/5"
+              class="w-4/5"
             />
             <BaseButton
               label="Start"
-              size="large"
+              label-class="text-lg"
               class="my-auto"
+              size="lg"
+              icon-name="mdi:script-text-key-outline"
+              icon-size="1.6rem"
               @click="showAnswerKeyMainBlock()"
-            >
-              <template #icon>
-                <Icon
-                  name="mdi:script-text-key-outline"
-                  size="1.6rem"
-                />
-              </template>
-            </BaseButton>
+            />
           </div>
         </div>
       </div>
@@ -145,7 +128,7 @@
           {{ currentPageData?.section }}
         </h3>
         <table class="mt-4 border border-gray-300 divide-y divide-gray-300">
-          <thead class="bg-gray-800">
+          <thead class="bg-gray-900">
             <tr class="divide-x divide-gray-300 font-semibold sm:text-lg md:text-xl">
               <th class="p-2 sm:p-3 md:p-4">
                 Q. Num
@@ -178,14 +161,14 @@
                 {{ formatQuestionTypeText(questionData) }}
               </td>
               <td class="p-2 sm:p-3 md:px-4 text-base">
-                <InputText
+                <UiInput
                   :id="INPUT_ID_PREFIX + index"
                   v-model.trim="subjectsAnswerKeysData![currentPageData.subject]![currentPageData.section]![quesNum]!.inputAnswer"
                   type="text"
                   size="large"
-                  :trim="true"
                   :max-length="100"
-                  pt:root:class="text-center p-2! outline-1 focus:outline-solid! outline-green-500!"
+                  class="text-center sm:text-base md:text-lg h-10
+                    focus-visible:ring-1 focus-visible:border-green-500! focus-visible:ring-green-500!"
                   @update:model-value="parseInputAnswer(
                     subjectsAnswerKeysData![currentPageData.subject]![currentPageData.section]![quesNum]!,
                     questionData.type,
@@ -219,31 +202,28 @@
             :class="prevAndNextSectionsName.prevSection === null ? 'hidden' : ''"
           >
             <BaseButton
-              severity="help"
+              variant="help"
+              label-class="text-lg"
+              size="lg"
               :label="prevAndNextSectionsName.prevSection ?? ''"
+              icon-name="material-symbols:arrow-back-ios-new-rounded"
               @click="changeCurrentPage('prev')"
-            >
-              <template #icon>
-                <Icon name="material-symbols:arrow-back-ios-new-rounded" />
-              </template>
-            </BaseButton>
+            />
           </div>
           <div
             class="col-span-2 sm:row-start-1 sm:col-span-1 flex flex-col items-center"
             :class="prevAndNextSectionsName.nextSection === null ? 'hidden' : ''"
           >
             <BaseButton
-              class="flex flex-row-reverse"
-              icon-pos="right"
-              severity="help"
               :label="prevAndNextSectionsName.nextSection ?? ''"
+              class="flex flex-row-reverse"
+              label-class="text-lg"
+              variant="help"
+              size="lg"
               :disabled="!isAllAnswersInCurrentPageValid"
+              icon-name="material-symbols:arrow-forward-ios-rounded"
               @click="changeCurrentPage('next')"
-            >
-              <template #icon>
-                <Icon name="material-symbols:arrow-forward-ios-rounded" />
-              </template>
-            </BaseButton>
+            />
           </div>
           <div
             class="col-span-2 sm:row-start-1 sm:col-span-1 flex flex-col items-center"
@@ -253,76 +233,78 @@
           >
             <BaseButton
               label="Generate Answer Key"
+              label-class="text-lg"
+              size="lg"
               :disabled="!isAllAnswersInCurrentPageValid"
+              icon-name="mdi:rocket-launch"
               @click="generateOutputState.showDialog = true"
-            >
-              <template #icon>
-                <Icon name="material-symbols:arrow-forward-ios-rounded" />
-              </template>
-            </BaseButton>
+            />
           </div>
         </div>
       </div>
     </div>
-    <Dialog
-      v-model:visible="generateOutputState.showDialog"
-      header="Download Output"
-      :modal="true"
-      pt:headerActions:class="ml-5"
-      pt:content:class="p-0 px-3"
+    <UiDialog
+      v-model:open="generateOutputState.showDialog"
     >
-      <div class="grid grid-cols-5 w-full gap-2">
-        <div class="flex flex-col col-span-3">
-          <label
-            class="text-center mb-1"
-            for="generate_output_filename"
-          >
-            File Name
-          </label>
-          <InputText
-            v-model.trim="generateOutputState.filename"
-            type="text"
-            label-id="generate_output_filename"
-            :maxlength="50"
-          />
-        </div>
-        <div class="flex flex-col col-span-2">
-          <div class="flex gap-2 justify-center">
-            <label
-              class="text-center mb-1"
-              for="generate_output_file_type"
-            >
-              File Type
-            </label>
-            <IconWithTooltip
-              :tooltip-content="tooltipContent.outputFileType"
-              icon-class="text-xl"
+      <UiDialogContent class="max-w-full sm:max-w-md px-0">
+        <UiDialogHeader class="mb-4">
+          <UiDialogTitle class="text-xl font-bold text-center">
+            Generate Test (Cropper) Data
+          </UiDialogTitle>
+        </UiDialogHeader>
+        <UiScrollArea class="max-h-128 w-full px-6">
+          <div class="grid grid-cols-7 w-full gap-2">
+            <div class="flex flex-col col-span-4 gap-1">
+              <UiLabel
+                for="generate_output_filename"
+              >
+                File Name
+              </UiLabel>
+              <UiInput
+                id="generate_output_filename"
+                v-model.trim="generateOutputState.filename"
+                class="md:text-base h-10"
+                type="text"
+                :maxlength="50"
+              />
+            </div>
+            <div class="flex flex-col gap-1 col-span-3">
+              <div class="flex gap-2 justify-center">
+                <UiLabel
+                  for="generate_output_file_type"
+                >
+                  File Type
+                </UiLabel>
+                <IconWithTooltip
+                  :tooltip-content="tooltipContent.outputFileType"
+                  icon-class="text-xl"
+                />
+              </div>
+              <BaseSelect
+                id="generate_output_file_type"
+                v-model="generateOutputState.selectedFileType"
+                size="base"
+                :options="outputFileTypeOptions"
+              />
+            </div>
+          </div>
+          <div class="flex justify-center py-5">
+            <BaseButton
+              label="Download"
+              @click="downloadOutput()"
             />
           </div>
-          <Select
-            v-model="generateOutputState.selectedFileType"
-            label-id="generate_output_file_type"
-            :options="outputFileTypeOptions"
-            option-label="name"
-            option-value="value"
-          />
-        </div>
-      </div>
-      <div class="flex justify-center py-3">
-        <BaseButton
-          label="Download"
-          @click="downloadOutput()"
-        />
-      </div>
-      <div class="flex justify-center pb-3">
-        <h3 v-show="generateOutputState.preparingDownload">
-          Please wait, preparing download...
-        </h3>
-        <h3 v-show="generateOutputState.downloaded">
-          Downloaded!
-        </h3>
-      </div>
-    </Dialog>
+          <div class="flex justify-center pb-3">
+            <h3 v-show="generateOutputState.preparingDownload">
+              Please wait, preparing download...
+            </h3>
+            <h3 v-show="generateOutputState.downloaded">
+              Downloaded!
+            </h3>
+          </div>
+        </UiScrollArea>
+      </UiDialogContent>
+    </UiDialog>
   </div>
 </template>
 
@@ -798,7 +780,7 @@ async function downloadOutput() {
     if (!fileUploaderState.unzippedFiles) return
 
     const jsonU8Array = strToU8(outputJsonString)
-    fileUploaderState.unzippedFiles[DataFileNames.dataJson] = [jsonU8Array, { level: 6 }]
+    fileUploaderState.unzippedFiles[DataFileNames.DataJson] = [jsonU8Array, { level: 6 }]
 
     zip(fileUploaderState.unzippedFiles, { level: 0 }, (err, compressedZip) => {
       if (err) {

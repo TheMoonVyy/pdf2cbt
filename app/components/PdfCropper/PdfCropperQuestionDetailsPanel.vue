@@ -1,176 +1,238 @@
 <template>
-  <Panel
-    :header="questionDetailsHeader"
-    toggleable
-    class="w-full"
-    :pt:title:class="['mx-auto', isCurrentQuestionMainOverlay ? '' : 'text-cyan-400']"
-    pt:content:class="px-4"
+  <UiAccordion
+    :default-value="['1']"
+    type="multiple"
+    :unmount-on-hide="false"
+    class="w-full border rounded-md mt-1"
   >
-    <div class="flex w-full mt-2 bg-surface-950 border border-surface-700 rounded-md">
-      <BaseFloatLabel
-        label="Subject Name"
-        label-id="subject_name"
-        class="grow"
+    <UiAccordionItem value="1">
+      <UiAccordionTrigger
+        :title-class="[
+          'text-lg',
+          {
+            'dark:text-yellow-400 text-yellow-500': !isCurrentQuestionMainOverlay,
+          },
+        ]"
       >
-        <Select
-          v-model="currentData.subject"
-          editable
-          fluid
-          :disabled="!isPdfLoaded"
-          :options="subjects"
-          placeholder="Enter/Select subject name"
-          @blur="() => currentData.subject = currentData.subject.trim()"
-        />
-      </BaseFloatLabel>
-    </div>
-    <div class="flex w-full mt-4 bg-surface-950 border border-surface-700 rounded-md">
-      <BaseFloatLabel
-        label="Section Name (Optional)"
-        label-id="section_name"
-        class="grow"
-      >
-        <Select
-          v-model="currentData.section"
-          editable
-          fluid
-          :disabled="!isPdfLoaded"
-          :options="sections"
-          placeholder="Enter/Select section name or leave it blank"
-          @blur="() => currentData.section = currentData.section.trim()"
-        />
-      </BaseFloatLabel>
-    </div>
-    <BaseFloatLabel
-      class="w-full mt-4"
-      label="Question Number"
-      label-id="question_num"
-      label-class="start-1/2! -translate-x-1/2"
-    >
-      <BaseInputNumber
-        v-model="currentData.que"
-        :disabled="!props.isPdfLoaded"
-        :min="1"
-        :max="9999"
-        label-id="question_num"
-        :step="1"
-      />
-    </BaseFloatLabel>
-    <div class="flex flex-wrap gap-2 mt-4">
-      <BaseFloatLabel
-        class="min-w-24 flex-1"
-        label="Question Type"
-        label-id="question_type"
-        label-class="text-xs"
-      >
-        <Select
-          v-model="currentData.type"
-          :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
-          label-id="question_type"
-          :options="optionItems.questionType"
-          option-label="name"
-          option-value="value"
-          :fluid="true"
-          size="small"
-        >
-          <template #option="slotProps">
-            <div
-              v-tooltip="{ value: slotProps.option.tooltip, showDelay: 400, hideDelay: 200 }"
-              class="flex items-center select-none"
-            >
-              <div>{{ slotProps.option.name }}</div>
-            </div>
-          </template>
-        </Select>
-      </BaseFloatLabel>
-      <BaseFloatLabel
-        v-show="currentData.type !== 'nat'"
-        class="min-w-24 flex-1"
-        label="Answer Options"
-        label-id="answer_options"
-        label-class="text-xs"
-      >
-        <InputNumber
-          v-model="currentData.options"
-          :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
-          :min="1"
-          :max="9"
-          :fluid="true"
-          label-id="answer_options"
-          size="small"
-          show-buttons
-          :step="1"
-        />
-      </BaseFloatLabel>
-    </div>
-    <Panel
-      header="Marking Scheme"
-      toggleable
-      pt:root:class="w-full mt-3"
-    >
-      <div class="flex flex-col gap-4 mt-2">
-        <BaseFloatLabel
-          class="w-full"
-          label="Correct"
-          label-id="marks_correct"
-          label-class="start-1/2! -translate-x-1/2 text-xs"
-        >
-          <BaseInputNumber
-            v-model="currentData.marks.cm"
-            :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
-            :min="1"
-            :max="99"
-            prefix="+"
-            size="small"
-            label-id="marks_correct"
+        {{ questionDetailsHeader }}
+      </UiAccordionTrigger>
+      <UiAccordionContent class="mx-4">
+        <div class="flex flex-col gap-4 w-full mt-2">
+          <BaseInputTextWithSelect
+            v-model="currentData.subject"
+            :select-options="subjects"
+            label="Subject Name"
+            :disabled="!isPdfLoaded"
+            label-root-class="grow"
+            input-class="h-10 text-[0.95rem]!"
+            select-class="h-10!"
+            label-class="start-1/2! -translate-x-1/2 text-[0.85rem]"
+            placeholder="Type/Select subject name"
           />
-        </BaseFloatLabel>
-        <div
-          v-if="currentData.type === 'msq'"
-          class="flex gap-3"
-        >
-          <IconWithTooltip
-            :tooltip-content="tooltipContent.partialMarking"
-            icon-class="text-2xl"
+          <BaseInputTextWithSelect
+            v-model="currentData.section"
+            :select-options="sections"
+            label="Section Name (Optional)"
+            :disabled="!isPdfLoaded"
+            label-root-class="grow"
+            input-class="h-10 text-[0.95rem]!"
+            select-class="h-10!"
+            label-class="start-1/2! -translate-x-1/2 text-[0.85rem]"
+            placeholder="Type/Select section name"
           />
           <BaseFloatLabel
             class="w-full"
-            label="Partial"
-            label-id="marks_partial"
-            label-class="start-1/2! -translate-x-1/2 text-xs"
+            label="Question Number"
+            label-id="question_num"
+            label-class="start-1/2! -translate-x-1/2 text-[0.85rem]"
           >
             <BaseInputNumber
-              v-model="currentData.marks.pm"
-              :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
-              :min="0"
-              :max="99"
-              prefix="+"
-              size="small"
-              label-id="marks_partial"
+              id="question_num"
+              v-model="currentData.que"
+              :disabled="!props.isPdfLoaded"
+              input-class="h-10! text-[0.95rem]!"
+              :min="1"
+              :max="9999"
+              :step="1"
             />
           </BaseFloatLabel>
         </div>
-        <BaseFloatLabel
+        <div class="flex flex-wrap gap-2 mt-4">
+          <BaseFloatLabel
+            class="min-w-24 flex-1"
+            label="Question Type"
+            label-id="question_type"
+            label-class="text-xs start-1/2! -translate-x-1/2"
+          >
+            <BaseSelect
+              id="question_type"
+              v-model="currentData.type"
+              :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
+              :options="optionItems.questionType"
+            />
+          </BaseFloatLabel>
+          <BaseFloatLabel
+            v-show="currentData.type !== 'nat'"
+            class="min-w-24 flex-1"
+            label="Answer Options"
+            label-id="answer_options"
+            label-class="text-xs start-1/2! -translate-x-1/2"
+          >
+            <BaseInputNumber
+              id="marks_correct"
+              v-model="currentData.options"
+              :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
+              :min="1"
+              :max="26"
+            />
+          </BaseFloatLabel>
+        </div>
+        <UiAccordion
+          default-value="1"
+          :unmount-on-hide="false"
           class="w-full"
-          label="Incorrect"
-          label-id="marks_incorrect"
-          label-class="start-1/2! -translate-x-1/2 text-xs"
+          collapsible
         >
-          <BaseInputNumber
-            v-model="currentData.marks.im"
-            :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
-            :min="-99"
-            :max="0"
-            size="small"
-            label-id="marks_incorrect"
-          />
-        </BaseFloatLabel>
-      </div>
-    </Panel>
-  </Panel>
+          <UiAccordionItem value="1">
+            <UiAccordionTrigger title-class="text-lg">
+              Marking Scheme
+            </UiAccordionTrigger>
+            <UiAccordionContent>
+              <div class="flex flex-col gap-4 mt-2">
+                <div class="flex gap-3">
+                  <BaseFloatLabel
+                    class="w-full"
+                    label="Correct"
+                    label-id="marks_correct"
+                    label-class="start-1/2! -translate-x-1/2 text-xs"
+                  >
+                    <BaseInputNumber
+                      id="marks_correct"
+                      v-model="currentData.marks.cm"
+                      :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
+                      :min="1"
+                      :max="99"
+                      :format-options="{ signDisplay: 'exceptZero' }"
+                      size="small"
+                    />
+                  </BaseFloatLabel>
+                  <BaseFloatLabel
+                    class="w-full"
+                    label="Incorrect"
+                    label-id="marks_incorrect"
+                    label-class="start-1/2! -translate-x-1/2 text-xs"
+                  >
+                    <BaseInputNumber
+                      id="marks_incorrect"
+                      v-model="currentData.marks.im"
+                      :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
+                      :min="-99"
+                      :max="0"
+                      size="small"
+                    />
+                  </BaseFloatLabel>
+                </div>
+                <div
+                  v-if="currentData.type === 'msq'"
+                  class="flex gap-5 px-4"
+                >
+                  <BaseFloatLabel
+                    class="w-full"
+                    label="Partial"
+                    label-id="marks_partial"
+                    label-class="start-1/2! -translate-x-1/2 text-xs"
+                  >
+                    <BaseInputNumber
+                      id="marks_partial"
+                      v-model="currentData.marks.pm"
+                      :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
+                      :min="0"
+                      :max="99"
+                      :format-options="{ signDisplay: 'exceptZero' }"
+                      size="small"
+                    />
+                  </BaseFloatLabel>
+                  <IconWithTooltip
+                    :tooltip-content="tooltipContent.partialMarking"
+                    icon-class="text-2xl"
+                  />
+                </div>
+              </div>
+            </UiAccordionContent>
+          </UiAccordionItem>
+        </UiAccordion>
+      </UiAccordionContent>
+    </UiAccordionItem>
+    <UiAccordionItem value="2">
+      <UiAccordionTrigger title-class="text-lg">
+        Crop Coordinates
+      </UiAccordionTrigger>
+      <UiAccordionContent>
+        <div class="grid grid-cols-2 col-span-3 gap-5 mt-2 pb-8 mx:2 sm:mx-6">
+          <BaseFloatLabel
+            class="w-full"
+            label="Left"
+            label-id="coords_left"
+            label-class="start-1/2! -translate-x-1/2 text-xs"
+          >
+            <BaseInputNumber
+              v-model="currentData.pdfData.l"
+              :min="0"
+              :max="currentData.pdfData.r"
+              :disabled="!isPdfLoaded"
+              input-class="w-full"
+            />
+          </BaseFloatLabel>
+          <BaseFloatLabel
+            class="w-full"
+            label="Right"
+            label-id="coords_right"
+            label-class="start-1/2! -translate-x-1/2 text-xs"
+          >
+            <BaseInputNumber
+              v-model="currentData.pdfData.r"
+              :min="currentData.pdfData.l"
+              :max="pageWidth"
+              :disabled="!isPdfLoaded"
+              input-class="w-full"
+            />
+          </BaseFloatLabel>
+          <BaseFloatLabel
+            class="w-full"
+            label="Top"
+            label-id="coords_top"
+            label-class="start-1/2! -translate-x-1/2 text-xs"
+          >
+            <BaseInputNumber
+              v-model="currentData.pdfData.t"
+              :min="0"
+              :max="currentData.pdfData.b"
+              :disabled="!isPdfLoaded"
+              input-class="w-full"
+            />
+          </BaseFloatLabel>
+          <BaseFloatLabel
+            class="w-full"
+            label="Bottom"
+            label-id="coords_bottom"
+            label-class="start-1/2! -translate-x-1/2 text-xs"
+          >
+            <BaseInputNumber
+              v-model="currentData.pdfData.b"
+              :min="currentData.pdfData.t"
+              :max="pageHeight"
+              :disabled="!isPdfLoaded"
+              input-class="w-full"
+            />
+          </BaseFloatLabel>
+        </div>
+      </UiAccordionContent>
+    </UiAccordionItem>
+  </UiAccordion>
 </template>
 
 <script setup lang="ts">
-import { Constants } from '#shared/enums'
+import { SEPARATOR } from '#shared/constants'
 
 const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
 
@@ -179,9 +241,9 @@ const props = defineProps<{
   overlaysPerQuestionData: PdfCropperOverlaysPerQuestion
   isCurrentQuestionMainOverlay: boolean
   isPdfLoaded: boolean
+  pageHeight: number
+  pageWidth: number
 }>()
-
-const ID_SEPARATOR = Constants.separator
 
 const questionState = computed(() => {
   const id = currentData.value.id
@@ -190,32 +252,35 @@ const questionState = computed(() => {
   const que = currentData.value.que
   const imgNum = currentData.value.imgNum
 
-  const newQueId = `${section || subject}${ID_SEPARATOR}${que}`
-  const newId = newQueId + ID_SEPARATOR + imgNum
+  const newQueId = `${section || subject}${SEPARATOR}${que}`
+  const newId = newQueId + SEPARATOR + imgNum
 
   const data = {
     que,
     imgNumToShow: 0,
+    imgCount: 0,
     disableQueDataInput: false,
   }
 
+  const imgCount = props.overlaysPerQuestionData.get(newQueId) ?? 0
   if (newId === id) {
     data.imgNumToShow = imgNum
     if (imgNum > 1) data.disableQueDataInput = true
   }
   else {
-    const imgCount = props.overlaysPerQuestionData.get(newQueId) ?? 0
     data.imgNumToShow = imgCount + 1
   }
+  data.imgCount = imgCount
 
   return data
 })
 
 const questionDetailsHeader = computed(() => {
   const imgNum = questionState.value.imgNumToShow
+  const imgCount = questionState.value.imgCount
   const que = questionState.value.que
 
-  const imgNumStr = imgNum > 1
+  const imgNumStr = (imgNum > 1 || imgCount > 1)
     ? `(${imgNum}) `
     : ''
 

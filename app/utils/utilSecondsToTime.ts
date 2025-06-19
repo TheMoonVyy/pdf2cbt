@@ -6,7 +6,7 @@ export default (
   if (round) totalSeconds = Math.round(totalSeconds)
 
   if (format === 'mmm:ss') {
-    if (totalSeconds <= 0) return '00:00'
+    if (totalSeconds <= 0) return '0:00'
 
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60

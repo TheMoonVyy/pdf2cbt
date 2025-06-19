@@ -15,7 +15,7 @@
       <BaseButton
         :label="dialogLabel"
         class="ml-5"
-        severity="warn"
+        variant="warn"
         :disabled="!Object.keys(selectionKeys).length"
         @click="processData()"
       />
@@ -31,6 +31,9 @@
 </template>
 
 <script lang="ts" setup>
+import Dialog from '@/src/volt/Dialog.vue'
+import Tree from '@/src/volt/Tree.vue'
+
 type TreeNode = {
   key: string
   label: string

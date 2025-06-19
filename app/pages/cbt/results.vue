@@ -1,112 +1,105 @@
 <template>
   <div
-    class="max-h-dvh min-h-dvh w-full border-t-2 border-surface-700 dark:bg-surface-900 dark:text-surface-0"
+    class="max-h-dvh min-h-dvh w-full text-foreground bg-background"
   >
-    <div class="relative flex flex-row w-full">
-      <CbtResultsSideBar
-        v-model="currentPanelName"
-        :is-sm-or-above="screenWidth.isSmOrAbove"
-        :scroll-on-top="scrollOnTop"
-        :scroll-on-bottom="scrollOnBottom"
-      />
-      <div
-        ref="mainContainerElem"
-        class="flex flex-col w-full grow overflow-auto h-screen"
-      >
+    <UiSidebarProvider>
+      <CbtResultsSideBar v-model="currentPanelName" />
+      <main>
+        <UiSidebarTrigger />
+        <slot />
+      </main>
+      <div class="relative min-w-0 flex flex-row w-full">
         <div
-          class="py-4 px-2"
+          class="flex flex-col w-full grow overflow-auto h-screen"
         >
-          <!-- Title for Test Results PagePanel -->
-          <h4
-            v-show="currentPanelName !== ResultsPagePanels.MyTests"
-            class="text-xl text-center flex flex-col sm:flex-row justify-center items-center"
-          >
-            <span>Showing Results for&nbsp;</span>
-            <ClientOnly>
-              <span class="font-bold">
-                {{
-                  testResultsOutputData?.testConfig.testName
-                    ?? (currentResultsID
-                      ? ''
-                      : 'Demo Mock Test')
-                }}
-              </span>
-            </ClientOnly>
-          </h4>
-          <!-- Title for My Tests PagePanel -->
           <div
-            v-show="currentPanelName === ResultsPagePanels.MyTests"
-            class="grid grid-cols-2 gap-4"
+            class="py-4 px-2"
           >
-            <h4 class="text-2xl w-full font-bold text-center mx-auto col-span-2 sm:col-span-1 sm:text-end">
-              My Tests
+            <!-- Title for Test Results PagePanel -->
+            <h4
+              v-show="currentPanelName !== ResultsPagePanels.MyTests"
+              class="text-xl text-center flex flex-col sm:flex-row justify-center items-center"
+            >
+              <span>Showing Results for&nbsp;</span>
+              <ClientOnly>
+                <span class="font-bold">
+                  {{
+                    testResultsOutputData?.testConfig.testName
+                      ?? (currentResultsID
+                        ? ''
+                        : 'Demo Mock Test')
+                  }}
+                </span>
+              </ClientOnly>
             </h4>
-            <div class="flex flex-row gap-5 sm:gap-8 text-nowrap mx-auto sm:ml-auto sm:mr-8 col-span-2 sm:col-span-1">
-              <!-- Import Button -->
-              <BaseSimpleFileUpload
-                pt:root:class="col-span-2 sm:col-span-1 flex flex-col [&>input[type=file]]:hidden"
-                accept="application/json,.json"
-                :label="screenWidth.isSmOrAbove ? 'Import Test Data' : 'Import Data'"
-                invalid-file-type-message="Invalid file. Please select a valid JSON file"
-                :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:download'"
-                @upload="(file) => showImportExportDialog('Import', file)"
-              />
-              <!-- Export Button -->
-              <BaseButton
-                class="col-span-2 sm:col-span-1"
-                :label="screenWidth.isSmOrAbove ? 'Export Test Data' : 'Export Data'"
-                :fluid="false"
-                severity="help"
-                :disabled="disableExportDataBtn"
-                @click="() => showImportExportDialog('Export')"
-              >
-                <template #icon>
-                  <Icon
-                    name="prime:upload"
-                    size="1.4rem"
-                  />
-                </template>
-              </BaseButton>
+            <!-- Title for My Tests PagePanel -->
+            <div
+              v-show="currentPanelName === ResultsPagePanels.MyTests"
+              class="grid grid-cols-2 gap-4"
+            >
+              <h4 class="text-2xl w-full font-bold text-center mx-auto col-span-2 sm:col-span-1 sm:text-end">
+                My Tests
+              </h4>
+              <div class="flex flex-row gap-5 sm:gap-8 text-nowrap mx-auto sm:ml-auto sm:mr-8 col-span-2 sm:col-span-1">
+                <!-- Import Button -->
+                <BaseSimpleFileUpload
+                  class="col-span-2 sm:col-span-1 flex flex-col"
+                  accept="application/json,.json"
+                  :label="screenWidth.isSmOrAbove ? 'Import Test Data' : 'Import Data'"
+                  invalid-file-type-message="Invalid file. Please select a valid JSON file"
+                  :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:download'"
+                  @upload="(file) => showImportExportDialog('Import', file)"
+                />
+                <!-- Export Button -->
+                <BaseButton
+                  class="col-span-2 sm:col-span-1"
+                  :label="screenWidth.isSmOrAbove ? 'Export Test Data' : 'Export Data'"
+                  variant="help"
+                  icon-name="prime:upload"
+                  :disabled="disableExportDataBtn"
+                  @click="() => showImportExportDialog('Export')"
+                />
+              </div>
             </div>
           </div>
-        </div>
-        <ClientOnly>
-          <div
+          <ClientOnly>
+            <div
+              v-show="currentPanelName === ResultsPagePanels.Summary"
+              class="flex flex-row justify-center flex-wrap gap-5 py-2 sm:py-5 px-4"
+            >
+              <CbtResultsScoreCard
+                v-for="(scoreCardData, idx) in scoreCardsData"
+                :key="idx"
+                :score-card-data="scoreCardData"
+              />
+            </div>
+          </ClientOnly>
+          <CbtResultsChartsPanel
+            v-if="showChart"
             v-show="currentPanelName === ResultsPagePanels.Summary"
-            class="flex flex-row justify-center flex-wrap gap-5 py-2 sm:py-5 px-4"
-          >
-            <CbtResultsScoreCard
-              v-for="(scoreCardData, idx) in scoreCardsData"
-              :key="idx"
-              :score-card-data="scoreCardData"
-            />
-          </div>
-        </ClientOnly>
-        <CbtResultsChartsPanel
-          v-if="showChart"
-          v-show="currentPanelName === ResultsPagePanels.Summary"
-          class="mt-4"
-          :chart-data-state="chartDataState"
-          :test-result-questions-data="testResultQuestionsData"
-          :chart-colors="chartColors"
-        />
-        <CbtResultsDetailedPanel
-          v-if="testResultsOutputData?.testResultData"
-          v-show="currentPanelName === ResultsPagePanels.Detailed"
-          :wait-until="currentPanelName === ResultsPagePanels.Detailed"
-          :test-result-data="testResultsOutputData.testResultData"
-          :test-result-questions-data="testResultQuestionsData"
-          :test-config="testResultsOutputData.testConfig"
-        />
-        <CbtResultsMyTestsPanel
-          v-show="currentPanelName === ResultsPagePanels.MyTests"
-          v-model:disable-export-data-btn="disableExportDataBtn"
-          :load-or-refresh-data-when="currentPanelName === ResultsPagePanels.MyTests"
-          @view-or-generate-results-clicked="myTestsPanelViewOrGenerateHandler"
-          @current-test-renamed="renameCurrentTest"
-        />
+            class="mt-4"
+            :chart-data-state="chartDataState"
+            :test-result-questions-data="testResultQuestionsData"
+            :chart-colors="chartColors"
+          />
+          <CbtResultsDetailedPanel
+            v-if="testResultsOutputData?.testResultData"
+            v-show="currentPanelName === ResultsPagePanels.Detailed"
+            :wait-until="currentPanelName === ResultsPagePanels.Detailed"
+            :test-result-data="testResultsOutputData.testResultData"
+            :test-questions="Object.values(testResultQuestionsData)"
+            :test-config="testResultsOutputData.testConfig"
+          />
+          <CbtResultsMyTestsPanel
+            v-show="currentPanelName === ResultsPagePanels.MyTests"
+            v-model:disable-export-data-btn="disableExportDataBtn"
+            :load-or-refresh-data-when="currentPanelName === ResultsPagePanels.MyTests"
+            @view-or-generate-results-clicked="myTestsPanelViewOrGenerateHandler"
+            @current-test-renamed="renameCurrentTest"
+          />
+        </div>
       </div>
-    </div>
+    </UiSidebarProvider>
     <CbtResultsImportExportDialog
       v-if="importExportDialogState.isVisible && importExportDialogState.data"
       v-model:visibility="importExportDialogState.isVisible"
@@ -186,12 +179,6 @@ const screenBreakpoints = useBreakpoints(
 )
 
 const currentResultsID = useCbtResultsCurrentID()
-
-// for sidebar
-const mainContainerElem = templateRef('mainContainerElem')
-
-const { arrivedState } = useScroll(mainContainerElem, { throttle: 250 })
-const { top: scrollOnTop, bottom: scrollOnBottom } = toRefs(arrivedState)
 
 const currentPanelName = shallowRef<ResultsPagePanels>(ResultsPagePanels.Summary)
 

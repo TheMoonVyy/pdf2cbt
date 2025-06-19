@@ -1,47 +1,45 @@
 <script setup lang="ts">
-import PrimeButton from 'primevue/button'
-import DefaultButton from '@/src/volt/Button.vue'
-import DangerButton from '@/src/volt/DangerButton.vue'
-import WarnButton from '@/src/custom-volt/WarnButton.vue'
-import HelpButton from '@/src/custom-volt/HelpButton.vue'
+import type { ButtonVariants } from '../ui/button'
 
-type SeverityType = 'warn' | 'danger' | 'help'
-
-const props = defineProps<{
-  severity?: SeverityType
-  unstyled?: boolean
+const {
+  variant = 'success',
+  size,
+  label,
+  labelClass = 'text-base',
+  iconName,
+  iconSize = '1.4rem',
+  iconClass,
+  iconStyle,
+} = defineProps<{
+  variant?: ButtonVariants['variant']
+  label?: string
+  labelClass?: string | string[]
+  iconName?: string
+  iconSize?: string
+  iconClass?: string | string[] | Record<string, boolean>
+  iconStyle?: unknown
+  size?: ButtonVariants['size']
 }>()
-
-const slots = useSlots()
-
-const severityMap: Record<SeverityType, unknown> = {
-  warn: WarnButton,
-  danger: DangerButton,
-  help: HelpButton,
-}
-
-const buttonComponent = computed(() => {
-  if (props.unstyled) return PrimeButton
-  if (props.severity && severityMap[props.severity]) {
-    return severityMap[props.severity]
-  }
-  return DefaultButton
-})
 </script>
 
 <template>
-  <component
-    :is="buttonComponent"
-    v-bind="$attrs"
+  <UiButton
+    class="flex items-center"
+    :size
+    :variant
   >
-    <template
-      v-for="(_, name) in slots"
-      #[name]="slotProps"
-    >
-      <slot
-        :name="name"
-        v-bind="slotProps"
+    <slot name="icon">
+      <Icon
+        v-if="iconName"
+        :name="iconName"
+        :size="iconSize"
+        :class="iconClass"
+        :style="iconStyle"
       />
-    </template>
-  </component>
+    </slot>
+    <span
+      v-if="label"
+      :class="labelClass"
+    >{{ label }}</span>
+  </UiButton>
 </template>

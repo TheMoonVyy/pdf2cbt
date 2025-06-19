@@ -5,31 +5,31 @@
         <!-- Here goes the pie chart for the test result summary -->
         <v-chart
           :option="testResultSummaryChartOption"
-          autoresize
+          :autoresize="{ throttle: 250 }"
         />
       </div>
       <div class="flex-1 mx-4 sm:mx-0 col-span-6 sm:col-span-3 md:col-span-2 h-112">
         <!-- Here goes the pie chart for the time spent on each section -->
         <v-chart
           :option="testQuestionsSummaryChartOption"
-          autoresize
+          :autoresize="{ throttle: 250 }"
         />
       </div>
       <div class="flex-1 mx-4 sm:mx-0 col-span-6 sm:col-span-4 md:col-span-2 h-112">
         <!-- Here goes the pie chart for the time spent on each section -->
         <v-chart
           :option="timeSpentPerSectionChartOption"
-          autoresize
+          :autoresize="{ throttle: 250 }"
         />
       </div>
     </div>
     <div
-      class="px-2 md:px-5 h-[90dvh] col-span-6 mb-20"
+      class="px-2 sm:pr-5 h-[90dvh] col-span-6 mb-20"
     >
       <!-- Here goes the line chart for the test journey -->
       <v-chart
         :option="testJourneyChartOption"
-        autoresize
+        :autoresize="{ throttle: 250 }"
       />
     </div>
   </div>

@@ -40,6 +40,8 @@
 </template>
 
 <script lang="ts" setup>
+import Dialog from '@/src/volt/Dialog.vue'
+
 const selectedKeys = ref(new Set<number>())
 
 const visibility = defineModel<boolean>('visibility', {
