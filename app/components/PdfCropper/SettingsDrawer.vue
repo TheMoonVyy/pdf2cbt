@@ -71,7 +71,7 @@
                 <div class="flex flex-row-reverse items-center gap-3 col-span-3">
                   <UiSwitch
                     :id="item.labelId"
-                    v-model="settings.general[item.model]"
+                    v-model="(settings.general[item.model] as boolean)"
                     class="cursor-pointer"
                   />
                   <UiLabel
