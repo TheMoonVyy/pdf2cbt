@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.14.0...v1.15.0) (2025-06-19)
+
+
+### Features
+
+* **ui:** migrate ui to use shadcn-vue, nuxt color picker and tanstack table ([2fa7db1](https://github.com/TheMoonVyy/pdf2cbt/commit/2fa7db18ba56bd7e6587bba16610c4840f798932))
+
 ## [1.14.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.13.2...v1.14.0) (2025-06-09)
 
 
