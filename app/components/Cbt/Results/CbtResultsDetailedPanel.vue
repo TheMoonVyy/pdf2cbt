@@ -1,1026 +1,45 @@
-<template>
-  <div class="flex flex-col w-full grow">
-    <div
-      v-if="loadDataNow"
-      class="flex flex-col w-full grow pb-50"
-    >
-      <Tabs
-        :value="currentSelectedState.subject"
-        scrollable
-        @update:value="subjectChangeHandler"
-      >
-        <TabList
-          pt:nextButton:class="shadow-[0px_0px_5px_8px]!"
-          pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
-        >
-          <Tab
-            v-if="Object.keys(testOverallStats ?? {}).length > 1"
-            :value="TEST_OVERALL"
-          >
-            Test Overall
-          </Tab>
-          <Tab
-            v-for="(subject, idx) in Object.keys(testResultData)"
-            :key="idx"
-            :value="subject"
-          >
-            {{ subject }}
-          </Tab>
-        </TabList>
-      </Tabs>
-      <Tabs
-        :value="selectedTabs[currentSelectedState.subject]!"
-        :class="{
-          'sticky top-0 z-20': settings.freezeMode === 'sectionHeader',
-        }"
-        scrollable
-        @update:value="sectionChangeHandler"
-      >
-        <TabList
-          pt:nextButton:class="shadow-[0px_0px_5px_8px]!"
-          pt:prevButton:class="shadow-[0px_0px_5px_8px]!"
-        >
-          <Tab
-            v-if="
-              (currentSelectedState.subject !== TEST_OVERALL)
-                && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1"
-            :value="currentSelectedState.subject + OVERALL"
-          >
-            {{ currentSelectedState.subject + ' Overall' }}
-          </Tab>
-          <Tab
-            v-for="(section, index) in currentSectionTabs"
-            :key="index"
-            :value="section"
-          >
-            {{ section }}
-          </Tab>
-        </TabList>
-      </Tabs>
-      <div
-        class="px-4 pt-3 pb-15 flex flex-col gap-5 text-nowrap max-w-full overflow-auto"
-      >
-        <div
-          v-show="currentSelectedState.subject === TEST_OVERALL || currentSelectedState.section.endsWith(OVERALL)"
-          class="flex flex-row gap-3 justify-center mt-3 items-center"
-        >
-          <h3 class="text-lg font-semibold text-center">
-            {{ showOverallQuestions ? 'Hide' : 'Show' }}&nbsp;
-            {{
-              currentSelectedState.subject === TEST_OVERALL
-                ? 'Test Questions'
-                : currentSelectedState.subject + ' Questions'
-            }}
-          </h3>
-          <BaseButton
-            class="w-7! h-7! p-0!"
-            rounded
-            raised
-            @click="showOverallQuestions = !showOverallQuestions"
-          >
-            <template #icon>
-              <Icon
-                :name="showOverallQuestions ? 'mdi:expand-less' : 'mdi:expand-more'"
-                class="text-2xl"
-              />
-            </template>
-          </BaseButton>
-        </div>
-        <table
-          v-show="showOverallQuestions || (currentSelectedState.subject !== TEST_OVERALL && !currentSelectedState.section.endsWith(OVERALL))"
-          class="table-auto border w-full border-collapse text-lg pb-5"
-          :class="highlightModeClasses + questionStatusFilterClasses + questionResultFilterClasses"
-        >
-          <thead class="bg-gray-300 dark:bg-gray-800">
-            <tr class="border-b divide-x text-center">
-              <th
-                v-show="currentSelectedState.subject === TEST_OVERALL"
-                class="px-2 py-1.5"
-              >
-                Subject
-              </th>
-              <th
-                v-show="currentSelectedState.subject === TEST_OVERALL || currentSelectedState.section.endsWith(OVERALL)"
-                class="px-2 py-1.5"
-              >
-                Section
-              </th>
-              <th class="px-2 py-1.5">
-                <div class="flex items-center gap-1 justify-center">
-                  Q. No.
-                  <BaseButton
-                    variant="text"
-                    rounded
-                    raised
-                    @click="(e) => popOverQNumOrderElem.show(e)"
-                  >
-                    <template #icon>
-                      <Icon
-                        name="mdi:format-list-numbers"
-                        class="text-2xl"
-                      />
-                    </template>
-                  </BaseButton>
-                </div>
-              </th>
-              <th class="px-2 py-1.5">
-                Marks
-              </th>
-              <th class="px-2 py-1.5">
-                <div class="flex items-center gap-1 justify-center">
-                  <BaseButton
-                    variant="text"
-                    rounded
-                    raised
-                    @click="() => {
-                      if (settings.highlightMode === 'result') settings.highlightMode = null
-                      else settings.highlightMode = 'result'
-                    }"
-                  >
-                    <template #icon>
-                      <Icon
-                        name="mdi:color"
-                        class="text-2xl"
-                        :class="settings.highlightMode === 'result' ? 'text-green-400' : 'text-gray-300'"
-                      />
-                    </template>
-                  </BaseButton>
-                  Result
-                  <BaseButton
-                    variant="text"
-                    severity="warn"
-                    rounded
-                    raised
-                    @click="(e) => showFilterPopOverMenu('result', e)"
-                  >
-                    <template #icon>
-                      <Icon
-                        name="mdi:filter-menu-outline"
-                        class="text-2xl"
-                      />
-                    </template>
-                  </BaseButton>
-                </div>
-              </th>
-              <th class="px-2 py-1.5">
-                Type
-              </th>
-              <th class="px-2 py-1.5">
-                Your Answer
-              </th>
-              <th class="px-2 py-1.5">
-                Correct Answer
-              </th>
-              <th class="px-2 py-1.5">
-                <div class="flex items-center gap-1 justify-center">
-                  <BaseButton
-                    variant="text"
-                    :title="settings.sortByTimeSpent === null
-                      ? 'sort by descending order'
-                      : (
-                        settings.sortByTimeSpent === 'descending'
-                          ? 'sort by ascending order'
-                          : 'remove sort'
-                      )"
-                    rounded
-                    raised
-                    @click="() => {
-                      const sortByTimeSpent = settings.sortByTimeSpent
-                      switch (sortByTimeSpent) {
-                      case null:
-                        settings.sortByTimeSpent = 'descending'
-                        break;
-                      case 'descending':
-                        settings.sortByTimeSpent = 'ascending'
-                        break;
-                      default:
-                        settings.sortByTimeSpent = null
-                        break;
-                      }
-                    }"
-                  >
-                    <template #icon>
-                      <Icon
-                        :name="settings.sortByTimeSpent === 'ascending'
-                          ? 'mdi:sort-clock-ascending-outline'
-                          : 'mdi:sort-clock-descending-outline'"
-                        class="text-2xl"
-                        :class="settings.sortByTimeSpent === null
-                          ? 'text-gray-300'
-                          : 'text-green-400'"
-                      />
-                    </template>
-                  </BaseButton>
-                  Time Spent
-                  <BaseButton
-                    variant="text"
-                    severity="warn"
-                    rounded
-                    raised
-                    @click="(e) => showFilterPopOverMenu('timeSpent', e)"
-                  >
-                    <template #icon>
-                      <Icon
-                        name="mdi:filter-menu-outline"
-                        class="text-2xl"
-                      />
-                    </template>
-                  </BaseButton>
-                </div>
-              </th>
-              <th class="px-2 py-1.5">
-                <div class="flex items-center gap-1 justify-center">
-                  <BaseButton
-                    variant="text"
-                    rounded
-                    raised
-                    @click="() => {
-                      if (settings.highlightMode === 'status') settings.highlightMode = null
-                      else settings.highlightMode = 'status'
-                    }"
-                  >
-                    <template #icon>
-                      <Icon
-                        name="mdi:color"
-                        class="text-2xl"
-                        :class="settings.highlightMode === 'status' ? 'text-green-400' : 'text-gray-300'"
-                      />
-                    </template>
-                  </BaseButton>
-                  Status
-                  <BaseButton
-                    variant="text"
-                    severity="warn"
-                    rounded
-                    raised
-                    @click="(e) => showFilterPopOverMenu('status', e)"
-                  >
-                    <template #icon>
-                      <Icon
-                        name="mdi:filter-menu-outline"
-                        class="text-2xl"
-                      />
-                    </template>
-                  </BaseButton>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            class="dark:divide-gray-500"
-          >
-            <tr
-              v-for="question in testQuestions"
-              v-show="
-                (
-                  question.timeSpent >= timeSpentFilterMinRange
-                  && question.timeSpent <= timeSpentFilterMaxRange
-                ) && (
-                  question.section === currentSelectedState.section
-                  || (
-                    showOverallQuestions
-                    && (
-                      currentSelectedState.subject === TEST_OVERALL
-                      || (currentSelectedState.section.endsWith(OVERALL) && question.subject === currentSelectedState.subject)
-                    )
-                  )
-                )"
-              :key="question.queId"
-              class="divide-x border-t dark:border-gray-500 dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-              :data-status="question.status"
-              :data-result="question.result.status"
-            >
-              <td v-show="currentSelectedState.subject === TEST_OVERALL">
-                {{ question.subject }}
-              </td>
-              <td
-                v-show="currentSelectedState.subject === TEST_OVERALL
-                  || (
-                    currentSelectedState.subject === question.subject && currentSelectedState.section.endsWith(OVERALL)
-                  )"
-              >
-                {{ question.section }}
-              </td>
-              <td>
-                <div class="flex items-center justify-items gap-2.5">
-                  <BaseButton
-                    variant="text"
-                    rounded
-                    raised
-                    title="Show Question Preview"
-                    @click="showQuestionPreview(question.queId)"
-                  >
-                    <template #icon>
-                      <Icon
-                        name="mdi:pageview"
-                        class="text-2xl"
-                      />
-                    </template>
-                  </BaseButton>
-                  <span>
-                    {{ questionsNumberingOrder === 'oriQueId'
-                      ? question.oriQueId
-                      : (
-                        questionsNumberingOrder === 'secQueId'
-                          ? question.secQueId
-                          : question.queId
-                      )
-                    }}
-                  </span>
-                  <Icon
-                    v-show="testNotes[question.queId]"
-                    title="Has Notes"
-                    name="mdi:text-box-edit-outline"
-                    class="text-green-300 text-xl"
-                  />
-                </div>
-              </td>
-              <td>{{ utilMarksWithSign(question.result.marks) }}</td>
-              <td>{{ formattedResultStatus[question.result.status] }}</td>
-              <td>{{ question.type.toUpperCase() }}</td>
-              <td>{{ utilStringifyAnswer(question.answer, question.type, true) }}</td>
-              <td>{{ utilStringifyAnswer(question.result.correctAnswer, question.type, true) }}</td>
-              <td>{{ utilSecondsToTime(question.timeSpent, 'mmm:ss') }}</td>
-              <td>{{ formattedQuestionStatus[question.status] }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <h3 class="text-lg font-semibold text-center mt-5">
-        Questions Status Summary
-      </h3>
-      <div
-        class="px-4 pt-3 pb-15 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
-      >
-        <table class="table-auto border w-full border-collapse text-lg text-center">
-          <thead class="bg-gray-300 dark:bg-gray-800">
-            <tr
-              class="border-b divide-x"
-            >
-              <th
-                v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
-                rowspan="2"
-                class="px-2 py-1.5"
-              >
-                {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
-              </th>
-              <th
-                v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
-                :key="status"
-                colspan="3"
-                class="px-2 py-1.5"
-              >
-                {{ formattedQuestionStatus[status as QuestionStatus] ?? 'Total' }}
-              </th>
-            </tr>
-            <tr class="border-b divide-x text-base">
-              <template
-                v-for="status in statusListWithTotal"
-                :key="status"
-              >
-                <th
-                  v-for="subHeader in ['Count', 'Time Spent', 'Avg. Time']"
-                  :key="subHeader"
-                  class="px-2 py-1.5"
-                >
-                  {{ subHeader }}
-                </th>
-              </template>
-            </tr>
-          </thead>
-          <tbody
-            v-for="(subjectData, subject) in testStats"
-            v-show="currentSelectedState.subject === subject"
-            :key="subject"
-            class="dark:divide-gray-500 border"
-            :class="{
-              'divide-y': currentSelectedState.section.endsWith(OVERALL),
-            }"
-          >
-            <tr
-              v-for="(stats, section) in subjectData"
-              v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
-              :key="section"
-              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td v-show="currentSelectedState.section === subject + OVERALL">
-                {{ section }}
-              </td>
-              <template
-                v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
-                :key="status"
-              >
-                <td>{{ stats.status[status].count }}</td>
-                <td>{{ utilSecondsToTime(stats.status[status].totalTime, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(stats.status[status].avgTime, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-          </tbody>
-          <tfoot
-            class="dark:divide-gray-500"
-            :class="{
-              'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
-            }"
-          >
-            <tr
-              v-for="(stats, subject) in subjectsOverallStats"
-              v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
-              :key="subject"
-              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td>
-                {{
-                  currentSelectedState.subject === TEST_OVERALL
-                    ? subject
-                    : subject + OVERALL
-                }}
-              </td>
-              <template
-                v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
-                :key="status"
-              >
-                <td>{{ stats.status[status].count }}</td>
-                <td>{{ utilSecondsToTime(stats.status[status].totalTime, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(stats.status[status].avgTime, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-            <tr
-              v-show="currentSelectedState.subject === TEST_OVERALL"
-              class="border divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td>
-                {{ TEST_OVERALL }}
-              </td>
-              <template
-                v-for="status in (statusListWithTotal as (keyof Stats['status'])[])"
-                :key="status"
-              >
-                <td>{{ testOverallStats?.status[status].count }}</td>
-                <td>{{ utilSecondsToTime(testOverallStats?.status[status].totalTime || 0, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(testOverallStats?.status[status].avgTime || 0, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      <h3 class="text-lg font-semibold text-center mt-5">
-        Results Summary
-      </h3>
-      <div
-        class="px-4 pt-3 pb-15 flex flex-col gap-10 text-nowrap max-w-full overflow-auto"
-      >
-        <table class="table-auto border w-full border-collapse text-lg text-center">
-          <thead class="bg-gray-300 dark:bg-gray-800">
-            <tr
-              class="border-b divide-x"
-            >
-              <th
-                v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
-                rowspan="2"
-                class="px-2 py-1.5"
-              >
-                {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
-              </th>
-              <th
-                v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
-                :key="status"
-                :colspan="status === 'total' ? 4 : 3"
-                class="px-2 py-1.5"
-              >
-                {{ formattedResultStatus[status as QuestionResult['status']]?? 'Total' }}
-              </th>
-            </tr>
-            <tr class="border-b divide-x text-base">
-              <template
-                v-for="status in resultStatusListWithTotal"
-                :key="status"
-              >
-                <th
-                  v-for="subHeader in (status === 'total' ? ['Count', 'Accuracy', 'Time Spent', 'Avg. Time'] : ['Count', 'Time Spent', 'Avg. Time'])"
-                  :key="subHeader"
-                  class="px-2 py-1.5"
-                >
-                  {{ subHeader }}
-                </th>
-              </template>
-            </tr>
-          </thead>
-          <tbody
-            v-for="(subjectData, subject) in testStats"
-            v-show="currentSelectedState.subject === subject"
-            :key="subject"
-            class="dark:divide-gray-500 border"
-            :class="{
-              'divide-y': currentSelectedState.section.endsWith(OVERALL),
-            }"
-          >
-            <tr
-              v-for="(stats, section) in subjectData"
-              v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
-              :key="section"
-              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td v-show="currentSelectedState.section === subject + OVERALL">
-                {{ section }}
-              </td>
-              <template
-                v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
-                :key="status"
-              >
-                <td>{{ stats.result[status].count }}</td>
-                <td v-if="status === 'total'">
-                  {{ stats.accuracy.percent }}%
-                </td>
-                <td>{{ utilSecondsToTime(stats.result[status].totalTime, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(stats.result[status].avgTime, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-          </tbody>
-          <tfoot
-            class="dark:divide-gray-500"
-            :class="{
-              'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
-            }"
-          >
-            <tr
-              v-for="(stats, subject) in subjectsOverallStats"
-              v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
-              :key="subject"
-              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td>
-                {{
-                  currentSelectedState.subject === TEST_OVERALL
-                    ? subject
-                    : subject + OVERALL
-                }}
-              </td>
-              <template
-                v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
-                :key="status"
-              >
-                <td>{{ stats.result[status].count }}</td>
-                <td v-if="status === 'total'">
-                  {{ stats.accuracy.percent }}%
-                </td>
-                <td>{{ utilSecondsToTime(stats.result[status].totalTime, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(stats.result[status].avgTime, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-            <tr
-              v-show="currentSelectedState.subject === TEST_OVERALL"
-              class="divide-x border dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td>
-                {{ TEST_OVERALL }}
-              </td>
-              <template
-                v-for="status in (resultStatusListWithTotal as (keyof Stats['result'])[])"
-                :key="status"
-              >
-                <td>{{ testOverallStats?.result[status].count }}</td>
-                <td v-if="status === 'total'">
-                  {{ testOverallStats?.accuracy.percent }}%
-                </td>
-                <td>{{ utilSecondsToTime(testOverallStats?.result[status].totalTime || 0, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(testOverallStats?.result[status].avgTime || 0, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      <div class="flex flex-row gap-3 justify-center mt-5 items-center">
-        <h3 class="text-lg font-semibold text-center">
-          Marks Summary
-        </h3>
-        <IconWithTooltip :tooltip-content="tooltipContent.marksSummary" />
-      </div>
-      <div
-        class="px-4 pt-3 flex pb-20 flex-col gap-10 text-nowrap max-w-full overflow-auto"
-      >
-        <table class="table-auto border w-full border-collapse text-lg text-center">
-          <thead class="bg-gray-300 dark:bg-gray-800">
-            <tr
-              class="border-b divide-x"
-            >
-              <th
-                v-show="currentSelectedState.subject === TEST_OVERALL || (currentSelectedState.section.endsWith(OVERALL))"
-                rowspan="2"
-                class="px-2 py-1.5"
-              >
-                {{ currentSelectedState.subject === TEST_OVERALL ? 'Subject Name' : 'Section Name' }}
-              </th>
-              <th
-                v-for="status in (marksStatusListWithTotal as (keyof Stats['status'])[])"
-                :key="status"
-                :colspan="status === 'total' ? 4 : 3"
-                class="px-2 py-1.5"
-              >
-                {{ utilKeyToLabel(status) }}
-              </th>
-            </tr>
-            <tr class="border-b divide-x text-base">
-              <template
-                v-for="status in marksStatusListWithTotal"
-                :key="status"
-              >
-                <th
-                  v-for="subHeader in (status === 'total' ? ['Marks', 'Max Marks', 'Time Spent', 'Avg. Time'] : ['Marks', 'Time Spent', 'Avg. Time'])"
-                  :key="subHeader"
-                  class="px-2 py-1.5"
-                >
-                  {{ subHeader }}
-                </th>
-              </template>
-            </tr>
-          </thead>
-          <tbody
-            v-for="(subjectData, subject) in testStats"
-            v-show="currentSelectedState.subject === subject"
-            :key="subject"
-            class="dark:divide-gray-500 border"
-            :class="{
-              'divide-y': currentSelectedState.section.endsWith(OVERALL),
-            }"
-          >
-            <tr
-              v-for="(stats, section) in subjectData"
-              v-show="currentSelectedState.section === section || currentSelectedState.section === subject + OVERALL"
-              :key="section"
-              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td v-show="currentSelectedState.section === subject + OVERALL">
-                {{ section }}
-              </td>
-              <template
-                v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
-                :key="status"
-              >
-                <td>{{ status === 'total' ? stats.marks[status].marks : utilMarksWithSign(stats.marks[status].marks) }}</td>
-                <td v-if="status === 'total'">
-                  {{ stats.marks[status].maxMarks }}
-                </td>
-                <td>{{ utilSecondsToTime(stats.marks[status].totalTime, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(stats.marks[status].avgTime, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-          </tbody>
-          <tfoot
-            class="dark:divide-gray-500"
-            :class="{
-              'divide-y-excluding-last-two': currentSelectedState.subject === TEST_OVERALL,
-            }"
-          >
-            <tr
-              v-for="(stats, subject) in subjectsOverallStats"
-              v-show="(currentSelectedState.section === subject + OVERALL) || currentSelectedState.subject === TEST_OVERALL"
-              :key="subject"
-              class="divide-x dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td>
-                {{
-                  currentSelectedState.subject === TEST_OVERALL
-                    ? subject
-                    : subject + OVERALL
-                }}
-              </td>
-              <template
-                v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
-                :key="status"
-              >
-                <td>{{ status === 'total' ? stats.marks[status].marks : utilMarksWithSign(stats.marks[status].marks) }}</td>
-                <td v-if="status === 'total'">
-                  {{ stats.marks[status].maxMarks }}
-                </td>
-                <td>{{ utilSecondsToTime(stats.marks[status].totalTime, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(stats.marks[status].avgTime, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-            <tr
-              v-show="currentSelectedState.subject === TEST_OVERALL"
-              class="divide-x border dark:divide-gray-500 text-center [&>td]:px-2 [&>td]:py-1.5"
-            >
-              <td>
-                {{ TEST_OVERALL }}
-              </td>
-              <template
-                v-for="status in (marksStatusListWithTotal as (keyof Stats['marks'])[])"
-                :key="status"
-              >
-                <td>{{ testOverallStats?.marks[status].marks }}</td>
-                <td v-if="status === 'total'">
-                  {{ testOverallStats?.marks[status].maxMarks }}
-                </td>
-                <td>{{ utilSecondsToTime(testOverallStats?.marks[status].totalTime || 0, 'mmm:ss', true) }}</td>
-                <td>{{ utilSecondsToTime(testOverallStats?.marks[status].avgTime || 0, 'mmm:ss', true) }}</td>
-              </template>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      <Popover
-        ref="popOverStatusFilterElem"
-        pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]"
-      >
-        <div
-          v-for="(label, key) in formattedQuestionStatus"
-          :key="key"
-          class="mb-2 flex items-center"
-        >
-          <input
-            :id="'status-' + key + 'filter-label'"
-            v-model="questionFiltersState.status"
-            type="checkbox"
-            name="question-status-filter"
-            :value="key"
-            class="accent-green-400 w-4 h-4 mr-2"
-          >
-          <label
-            :for="'status-' + key + 'filter-label'"
-            class="cursor-pointer"
-          >
-            {{ label }}
-          </label>
-        </div>
-      </Popover>
-      <Popover
-        ref="popOverResultFilterElem"
-        pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]"
-      >
-        <div
-          v-for="(label, key) in formattedResultStatus"
-          :key="key"
-          class="mb-2 flex items-center"
-        >
-          <input
-            :id="'result-' + key + 'filter-label'"
-            v-model="questionFiltersState.result"
-            type="checkbox"
-            name="question-result-filter"
-            :value="key"
-            class="accent-green-400 w-4 h-4 mr-2 cursor-pointer"
-          >
-          <label
-            :for="'result-' + key + 'filter-label'"
-            class="cursor-pointer"
-          >
-            {{ label }}
-          </label>
-        </div>
-      </Popover>
-      <Popover
-        ref="popOverQNumOrderElem"
-        pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]"
-      >
-        <div class="flex flex-col gap-2">
-          <div
-            v-for="(order, index) in questionsNumberingOrderList"
-            :key="index"
-            class="flex items-center gap-2"
-          >
-            <input
-              :id="'que-order-' + order.value"
-              v-model="questionsNumberingOrder"
-              type="radio"
-              name="que-num-order"
-              :value="order.value"
-              class="accent-green-400 w-4 h-4 cursor-pointer"
-            >
-            <label
-              :for="'que-order-' + order.value"
-              class="cursor-pointer"
-            >
-              {{ order.label }}
-            </label>
-          </div>
-        </div>
-      </Popover>
-      <Popover
-        ref="popOverTimeSpentFilterElem"
-        pt:root:class="dark:[background:color-mix(in_srgb,var(--color-neutral-900),white_2%)]
-          max-w-3xs"
-      >
-        <div class="flex flex-col">
-          <h4 class="text-base text-center">
-            Filter by Time Spent Range<br>
-            (values are in seconds)
-          </h4>
-          <BaseFloatLabel
-            class="w-full mt-6"
-            label="Minimum"
-            label-id="time_spent_filter_min"
-            label-class="start-1/2! -translate-x-1/2"
-          >
-            <BaseInputNumber
-              v-model="timeSpentFilterMinRange"
-              :min="0"
-              :max="testConfig.testDurationInSeconds"
-              label-id="time_spent_filter_min"
-              :step="10"
-            />
-          </BaseFloatLabel>
-          <BaseFloatLabel
-            class="w-full mt-6"
-            label="Maximum"
-            label-id="time_spent_filter_max"
-            label-class="start-1/2! -translate-x-1/2"
-          >
-            <BaseInputNumber
-              v-model="timeSpentFilterMaxRange"
-              :min="0"
-              :max="testConfig.testDurationInSeconds"
-              label-id="time_spent_filter_max"
-              :step="10"
-            />
-          </BaseFloatLabel>
-          <BaseButton
-            class="mt-5 max-w-42 mx-auto"
-            label="Clear Filter"
-            severity="danger"
-            size="small"
-            @click="resetTimeSpentFilter"
-          >
-            <template #icon>
-              <Icon
-                name="material-symbols:delete"
-                size="1.4rem"
-              />
-            </template>
-          </BaseButton>
-        </div>
-      </Popover>
-    </div>
-    <LazyCbtResultsQuestionPanel
-      v-if="questionPreviewState.hydrate"
-      v-model:show-panel="questionPreviewState.show"
-      :preview-question-id="questionPreviewQueId"
-      :formatted-question-status="formattedQuestionStatus"
-      :formatted-result-status="formattedResultStatus"
-      :question-filters-state="questionFiltersState"
-      :time-spent-filter-min-range="timeSpentFilterMinRange"
-      :time-spent-filter-max-range="timeSpentFilterMaxRange"
-      :questions-numbering-order="questionsNumberingOrder"
-      :selected-sub-and-sec="currentSelectedState"
-      :all-questions="testQuestions"
-      :test-config="testConfig"
-    />
-  </div>
-</template>
-
 <script lang="ts" setup>
-import Tabs from '@/src/volt/Tabs.vue'
-import TabList from '@/src/volt/TabList.vue'
-import Tab from '@/src/volt/Tab.vue'
-import Popover from '@/src/volt/Popover.vue'
-import { TEST_OVERALL, OVERALL } from '#shared/constants'
+import {
+  useVueTable,
+  createColumnHelper,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  type CellContext,
+  type ColumnHelper,
+  type Table,
+  type Column,
+} from '@tanstack/vue-table'
+import {
+  QUESTION_STATUS_LIST,
+  QUESTION_TYPES_LIST,
+  RESULT_STATUS_LIST,
+  MARKS_STATUS_LIST,
+  QUESTION_STATUS_LABELS,
+  RESULT_STATUS_LABELS,
+  QUESTION_TYPES_LABELS,
+  TEST_OVERALL,
+  OVERALL,
+  FONT_SIZES,
+} from '#shared/constants'
+import { UiDropdownMenu, UiDropdownMenuTrigger, UiPopover, UiPopoverTrigger } from '#components'
+import { db } from '@/src/db/cbt-db'
 
-interface SelectedSectionKeys {
+type FilterState = Record<string, Set<string>>
+
+type StatsCellContext = CellContext<StatusStatsWithName, unknown>
+  & CellContext<ResultStatsWithName, unknown>
+  & CellContext<MarksStatsWithName, unknown>
+
+type SelectedSectionKeys = {
   [subject: string]: string
 }
 
-interface StatsItem {
-  count: number
-  avgTime: number
-  totalTime: number
-}
-
-interface StatusStats {
-  answered: StatsItem
-  notAnswered: StatsItem
-  marked: StatsItem
-  markedAnswered: StatsItem
-  notVisited: StatsItem
-  total: StatsItem
-}
-
-interface ResultStats {
-  correct: StatsItem
-  incorrect: StatsItem
-  partial: StatsItem
-  notAnswered: StatsItem
-  bonus: StatsItem
-  dropped: StatsItem
-  total: StatsItem
-}
-
-interface MarksStatsItem {
-  marks: number
-  avgTime: number
-  totalTime: number
-}
-
-interface MarksStats {
-  positive: MarksStatsItem
-  negative: MarksStatsItem
-  bonus: MarksStatsItem
-  dropped: MarksStatsItem
-  total: MarksStatsItem & { maxMarks: number }
-}
-
-interface AccuracyStats {
-  count: number
-  total: number
-  percent: number
-}
-
-interface Stats {
-  status: StatusStats
-  result: ResultStats
-  marks: MarksStats
-  accuracy: AccuracyStats
-}
-
-interface TestStats {
-  [subject: string]: {
-    [section: string]: Stats
-  }
-}
-
-interface SubjectsOverallStats {
-  [subject: string]: Stats
-}
-
-interface StyleClasses {
-  highlight: {
-    status: string
-    result: string
-  }
-  filters: {
-    status: {
-      answered: string
-      markedAnswered: string
-      notAnswered: string
-      marked: string
-      notVisited: string
-    }
-    result: {
-      correct: string
-      partial: string
-      incorrect: string
-      notAnswered: string
-      bonus: string
-      dropped: string
-    }
-  }
-}
-
-interface Settings {
-  freezeMode: null
-    | 'sectionHeader'
-  highlightMode: 'status' | 'result' | null
-  sortByTimeSpent: 'ascending' | 'descending' | null
-}
-
-const questionPreviewState = shallowReactive({
-  show: false,
-  hydrate: false,
-})
-
-const questionPreviewQueId = shallowRef(1)
-
-const formattedQuestionStatus = {
-  answered: 'Answered',
-  markedAnswered: 'MFR & Answered',
-  notAnswered: 'Not Answered',
-  marked: 'Marked for Review',
-  notVisited: 'Not Visited',
-}
-
-const formattedResultStatus = {
-  correct: 'Correct',
-  incorrect: 'Incorrect',
-  partial: 'Partially Correct',
-  notAnswered: 'Not Answered',
-  bonus: 'Bonus',
-  dropped: 'Dropped',
-}
-
-const styleClasses: StyleClasses = {
-  highlight: {
-    status: `status-answered:bg-green-400/20 status-not-answered:bg-red-500/20
-      status-marked:bg-purple-500/20 status-marked-answered:bg-sky-500/20
-      status-not-visited:bg-gray-500/20`,
-    result: `result-correct:bg-green-400/20 result-incorrect:bg-red-500/20
-      result-partial:bg-yellow-600/30 result-dropped:bg-purple-500/20
-      result-bonus:bg-sky-500/20 result-not-answered:bg-gray-500/20`,
-  },
-  filters: {
-    status: {
-      answered: 'status-answered:hidden',
-      markedAnswered: 'status-marked-answered:hidden',
-      notAnswered: 'status-not-answered:hidden',
-      marked: 'status-marked:hidden',
-      notVisited: 'status-not-visited:hidden',
-    },
-    result: {
-      correct: 'result-correct:hidden',
-      partial: 'result-partial:hidden',
-      incorrect: 'result-incorrect:hidden',
-      notAnswered: 'result-not-answered:hidden',
-      bonus: 'result-bonus:hidden',
-      dropped: 'result-dropped:hidden',
-    },
-  },
+type Props = {
+  testResultData: TestResultData
+  testQuestions: TestResultDataQuestion[]
+  testConfig: TestOutputData['testConfig']
+  waitUntil: boolean
 }
 
 const tooltipContent = {
@@ -1028,61 +47,7 @@ const tooltipContent = {
     + 'if marks is zero then avg time spent will be equal to "Time Spent".',
 }
 
-const questionsNumberingOrderList: {
-  label: string
-  value: keyof TestResultDataQuestion
-}[] = [
-  { label: 'Original order', value: 'oriQueId' },
-  { label: 'Section-wise order', value: 'secQueId' },
-  { label: 'Cumulative order', value: 'queId' },
-]
-
-const statusList = ['answered', 'markedAnswered', 'notAnswered', 'marked', 'notVisited']
-const statusListWithTotal = statusList.concat('total')
-
-const resultStatusList = ['correct', 'partial', 'incorrect', 'notAnswered', 'bonus', 'dropped']
-const resultStatusListWithTotal = resultStatusList.concat('total')
-
-const marksStatusList = ['positive', 'negative', 'bonus', 'dropped']
-const marksStatusListWithTotal = marksStatusList.concat('total')
-
-const settings = shallowReactive<Settings>({
-  freezeMode: 'sectionHeader',
-  highlightMode: 'result',
-  sortByTimeSpent: null,
-})
-
-const { testResultData, waitUntil, testConfig, testResultQuestionsData } = defineProps<{
-  testResultData: TestResultData
-  testResultQuestionsData: Record<string | number, TestResultDataQuestion>
-  testConfig: TestOutputData['testConfig']
-  waitUntil: boolean
-}>()
-
-const showOverallQuestions = shallowRef(false)
-
-const popOverStatusFilterElem = ref()
-const popOverResultFilterElem = ref()
-const popOverQNumOrderElem = ref()
-const popOverTimeSpentFilterElem = ref()
-
-const questionFiltersState = reactive({
-  status: [...statusList],
-  result: [...resultStatusList],
-})
-
-const questionsNumberingOrder = shallowRef<keyof Pick<
-  TestResultDataQuestion, 'oriQueId' | 'queId' | 'secQueId'
->>('oriQueId')
-
-// to store raw min and max range of time spent filter
-// for min, this will be used directly but for max,
-// timeSpentFilterMinRange and timeSpentFilterMaxRange (writeable computed vars) will be the actual ones
-// that will be used, due to requiring reactive testDuration for max limit for both
-const timeSpentFilterState = shallowReactive({
-  min: 0,
-  max: Infinity,
-})
+const { testResultData, waitUntil, testConfig, testQuestions } = defineProps<Props>()
 
 const currentSelectedState = shallowReactive({
   subject: TEST_OVERALL,
@@ -1095,8 +60,6 @@ const currentLoadState = shallowReactive<{
   loadedResultsID: null,
 })
 
-const testNotes = useCurrentTestNotes()
-
 // to store subject -> section -> section stats
 const testStats = shallowRef<TestStats>({})
 // to store overall stats of each subject
@@ -1104,7 +67,13 @@ const subjectsOverallStats = shallowRef<SubjectsOverallStats>({})
 // to store only the test overall stats
 const testOverallStats = ref<Stats>()
 
+const questionStatusStats = shallowRef<StatusStatsWithName[]>([])
+const questionResultStats = shallowRef<ResultStatsWithName[]>([])
+const questionMarksStats = shallowRef<MarksStatsWithName[]>([])
+
 const currentResultsID = useCbtResultsCurrentID()
+
+const questionsData = shallowRef<TestResultDataQuestion[]>([])
 
 // to store previously selected sections,
 // so that this can be used to get user back to the section they left for that particular subject
@@ -1113,87 +82,75 @@ const selectedTabs = ref<SelectedSectionKeys>({})
 // flag being used to indicate whether to load/reload for v-if of this component root
 const loadDataNow = shallowRef(false)
 
-// wait until user clicks this "Detailed" page layout/component to render this component.
-// Basically to load on-demand
-watch(
-  () => waitUntil,
-  () => {
-    reloadTestData()
+const subjectSectionNames = shallowRef<Record<string, string[]>>({})
+
+const storageSettings = useCbtResultsLocalStorageSettings()
+
+const questionPreviewState = shallowReactive({
+  show: false,
+  currentQueIndex: 0,
+  optionsStyle: {
+    '--counter-type': 'upper-latin',
+    '--options-prefix': `"Option "`,
+    '--options-suffix': `""`,
+    'counter-reset': 'answer-options',
   },
-  { once: true },
-)
-
-// watch for any changes to input data
-// so that tables can be recalculated and rendered
-watch(
-  [currentResultsID, testResultData],
-  ([newID, _]) => {
-    if ((newID !== currentLoadState.loadedResultsID) && loadDataNow.value) {
-      reloadTestData()
-      resetTimeSpentFilter()
-    }
-  },
-  { deep: false },
-)
-
-const testQuestions = computed(() => {
-  const questions = Object.values(testResultQuestionsData)
-
-  if (settings.sortByTimeSpent === 'ascending') {
-    return questions.toSorted((a, b) => a.timeSpent - b.timeSpent)
-  }
-  else if (settings.sortByTimeSpent === 'descending') {
-    return questions.toSorted((a, b) => b.timeSpent - a.timeSpent)
-  }
-  else {
-    return questions
-  }
+  isSettingsLoaded: false,
 })
 
-// computed "sections" tablist for current subject
-const currentSectionTabs = computed(() => {
-  const subject = currentSelectedState.subject
-  if (subject && !subject.endsWith(OVERALL)) {
-    return Object.keys(testResultData[subject] ?? {})
-  }
-  return []
+const highlightStyleClasses: Record<string, string> = {
+  'status': `status-answered:bg-green-400/20 status-not-answered:bg-red-500/20
+      status-marked:bg-purple-500/20 status-marked-answered:bg-sky-500/20
+      status-not-visited:bg-gray-500/20`,
+  'result.status': `result-correct:bg-green-400/20 result-incorrect:bg-red-500/20
+      result-partial:bg-yellow-600/30 result-dropped:bg-purple-500/20
+      result-bonus:bg-sky-500/20 result-not-answered:bg-gray-500/20`,
+}
+
+const settings = shallowReactive({
+  highlightMode: 'result.status' as 'result.status' | 'status' | null,
+  queNumOrder: 'oriQueId' as keyof Pick<TestResultDataQuestion, 'oriQueId' | 'queId' | 'secQueId'>,
 })
 
-const highlightModeClasses = computed(() => {
-  if (settings.highlightMode === 'status') {
-    return ' ' + styleClasses.highlight.status + ' '
-  }
-  else if (settings.highlightMode === 'result') {
-    return ' ' + styleClasses.highlight.result + ' '
-  }
-  else {
-    return ' '
-  }
+const questionsTableFilterKeyValues = {
+  'status': QUESTION_STATUS_LIST,
+  'result.status': RESULT_STATUS_LIST,
+  'type': QUESTION_TYPES_LIST,
+  'queId': ['oriQueId', 'secQueId', 'queId'] as const,
+}
+
+const formattedLabels = {
+  ...QUESTION_STATUS_LABELS,
+  ...RESULT_STATUS_LABELS,
+  ...QUESTION_TYPES_LABELS,
+  oriQueId: 'Original',
+  secQueId: 'Section-wise',
+  queId: 'Cumulative',
+}
+
+const defaultQuestionsTableFilterState: FilterState = {
+  'subject': new Set(),
+  'section': new Set(),
+  'status': new Set([...QUESTION_STATUS_LIST] as string[]),
+  'result.status': new Set([...RESULT_STATUS_LIST] as string[]),
+  'type': new Set([...QUESTION_TYPES_LIST] as string[]),
+}
+
+const timeSpentFilterState = shallowReactive({
+  min: 0,
+  max: Infinity,
+  openPopOver: false,
 })
 
-const questionStatusFilterClasses = computed(() => {
-  const itemsToHide = statusList.filter(
-    s => !questionFiltersState.status.includes(s),
-  )
+const showFiltersOnTheseColumnIds = new Set([
+  'status',
+  'result.status',
+  'type',
+  'timeSpent',
+])
 
-  let classString = ' '
-  for (const item of itemsToHide as (keyof StyleClasses['filters']['status'])[]) {
-    classString += styleClasses.filters.status[item] + ' '
-  }
-  return classString
-})
-
-const questionResultFilterClasses = computed(() => {
-  const itemsToHide = resultStatusList.filter(
-    s => !questionFiltersState.result.includes(s),
-  )
-
-  let classString = ' '
-  for (const item of itemsToHide as (keyof StyleClasses['filters']['result'])[]) {
-    classString += styleClasses.filters.result[item] + ' '
-  }
-
-  return classString
+const questionsTableFilters = reactive({
+  ...structuredClone(defaultQuestionsTableFilterState),
 })
 
 const timeSpentFilterMinRange = computed({
@@ -1210,10 +167,538 @@ const timeSpentFilterMaxRange = computed({
   },
 })
 
-const resetTimeSpentFilter = () => {
-  timeSpentFilterState.min = 0
-  timeSpentFilterState.max = Infinity
+const questionsTable = useVueTable({
+  data: questionsData,
+  columns: getQuestionsTableColumnsData(),
+  initialState: {
+    columnFilters: Object.entries(questionsTableFilters).map(([id, value]) => ({ id, value: [...value] })),
+  },
+  getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
+  getSortedRowModel: getSortedRowModel(),
+  enableSortingRemoval: true,
+})
+
+const questionsStatusStatsTable = useVueTable({
+  data: questionStatusStats,
+  columns: getQuestionStatusStatsColumnData(),
+  getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
+})
+
+const questionsResultStatsTable = useVueTable({
+  data: questionResultStats,
+  columns: getResultStatsColumnData(),
+  getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
+})
+
+const questionsMarksStatsTable = useVueTable({
+  data: questionMarksStats,
+  columns: getMarksStatsColumnData(),
+  getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
+})
+
+const tables = computed(() => {
+  const questions = storageSettings.value.tableFontSizes.questions
+  const statusStats = storageSettings.value.tableFontSizes.statusStats
+  const resultStats = storageSettings.value.tableFontSizes.resultStats
+  const marksStats = storageSettings.value.tableFontSizes.marksStats
+
+  return [
+    {
+      id: 'questions',
+      heading: '',
+      table: questionsTable,
+      class: highlightModeClasses.value,
+      style: {
+        '--table-header-font-size': FONT_SIZES[questions.header],
+        '--table-body-font-size': FONT_SIZES[questions.body],
+      },
+    },
+    {
+      id: 'statusStats',
+      heading: 'Questions Status Summary',
+      table: questionsStatusStatsTable,
+      class: '',
+      style: {
+        '--table-header-font-size': FONT_SIZES[statusStats.header],
+        '--table-body-font-size': FONT_SIZES[statusStats.body],
+      },
+    },
+    {
+      id: 'resultStats',
+      heading: 'Results Summary',
+      table: questionsResultStatsTable,
+      class: '',
+      style: {
+        '--table-header-font-size': FONT_SIZES[resultStats.header],
+        '--table-body-font-size': FONT_SIZES[resultStats.body],
+      },
+    },
+    {
+      id: 'marksStats',
+      heading: 'Marks Summary',
+      table: questionsMarksStatsTable,
+      class: '',
+      style: {
+        '--table-header-font-size': FONT_SIZES[marksStats.header],
+        '--table-body-font-size': FONT_SIZES[marksStats.body],
+      },
+    },
+  ] as const
+})
+
+const questionsToPreview = computed(() =>
+  questionsTable.getRowModel().rows.map(row => row.original),
+)
+
+const testNotes = useCurrentTestNotes()
+
+const highlightModeClasses = computed(() => {
+  if (settings.highlightMode === 'status') {
+    return highlightStyleClasses.status
+  }
+  else if (settings.highlightMode === 'result.status') {
+    return highlightStyleClasses['result.status']
+  }
+  else {
+    return ''
+  }
+})
+
+function changeTablesFilters(changeLevel: 'test' | 'showTestOverall' | 'section') {
+  if (changeLevel === 'test' || changeLevel === 'showTestOverall') {
+    const newSubSecNames = subjectSectionNames.value
+    questionsTableFilters['subject'] = new Set(Object.keys(newSubSecNames))
+    questionsTableFilters['section'] = new Set(Object.values(newSubSecNames).flat())
+
+    toggleQuestionsTableColumnVisibility([
+      { id: 'subject', isVisible: true },
+      { id: 'section', isVisible: true },
+    ])
+
+    if (changeLevel === 'test') setTimeSpentFilterRange(true)
+  }
+  else if (changeLevel === 'section') {
+    const { subject, section } = currentSelectedState
+    questionsTableFilters['subject'] = new Set([subject])
+
+    if (section.endsWith(OVERALL)) {
+      questionsTableFilters['section'] = new Set(subjectSectionNames.value[subject])
+      toggleQuestionsTableColumnVisibility([
+        { id: 'subject', isVisible: false },
+        { id: 'section', isVisible: true },
+      ])
+    }
+    else {
+      questionsTableFilters['section'] = new Set([section])
+      toggleQuestionsTableColumnVisibility([
+        { id: 'subject', isVisible: false },
+        { id: 'section', isVisible: false },
+      ])
+    }
+  }
+  else {
+    return
+  }
+
+  for (const { table, id } of tables.value) {
+    if (id === 'questions') continue
+
+    const nameColumn = table.getColumn('name')
+    if (nameColumn) {
+      nameColumn.setFilterValue({ ...currentSelectedState })
+      if (changeLevel === 'section' && !currentSelectedState.section.endsWith(OVERALL)) {
+        nameColumn.toggleVisibility(false)
+      }
+      else {
+        nameColumn.toggleVisibility(true)
+      }
+    }
+  }
+  updateQuestionsTableColumnFilters()
 }
+
+function getQuestionsTableColumnsData() {
+  const columnHelper = createColumnHelper<TestResultDataQuestion>()
+
+  const columns = [
+    columnHelper.accessor('subject', {
+      id: 'subject',
+      header: 'Subject',
+      filterFn: (row, columnId, value) => value.includes(row.getValue(columnId)),
+      enableSorting: false,
+    }),
+    columnHelper.accessor('section', {
+      id: 'section',
+      header: 'Section',
+      filterFn: (row, columnId, value) => value.includes(row.getValue(columnId)),
+      enableSorting: false,
+    }),
+    columnHelper.accessor('queId', {
+      id: 'queId',
+      header: 'Q. No.',
+      cell: (info) => {
+        const data = info.row.original
+        if (settings.queNumOrder === 'oriQueId') {
+          return data.oriQueId
+        }
+        else if (settings.queNumOrder === 'secQueId') {
+          return data.secQueId
+        }
+        return data.queId
+      },
+      enableSorting: false,
+    }),
+    columnHelper.accessor(row => row.result.marks, {
+      id: 'result.marks',
+      header: 'Marks',
+      enableSorting: false,
+    }),
+    columnHelper.accessor(row => row.result.status, {
+      id: 'result.status',
+      header: 'Result',
+      cell: info => RESULT_STATUS_LABELS[info.getValue()],
+      filterFn: (row, columnId, value) => value.includes(row.getValue(columnId)),
+      enableSorting: false,
+    }),
+    columnHelper.accessor('type', {
+      id: 'type',
+      header: 'Type',
+      cell: info => QUESTION_TYPES_LABELS[info.getValue()],
+      filterFn: (row, columnId, value) => value.includes(row.getValue(columnId)),
+      enableSorting: false,
+    }),
+    columnHelper.accessor('answer', {
+      id: 'answer',
+      header: 'Your Answer',
+      cell: info => utilStringifyAnswer(info.getValue(), info.row.original.type, true),
+      enableSorting: false,
+    }),
+    columnHelper.accessor(row => row.result.correctAnswer, {
+      id: 'result.correctAnswer',
+      header: 'Correct Answer',
+      cell: info => utilStringifyAnswer(info.getValue(), info.row.original.type, true),
+      enableSorting: false,
+    }),
+    columnHelper.accessor('timeSpent', {
+      id: 'timeSpent',
+      header: 'Time Spent',
+      cell: info => utilSecondsToTime(info.getValue(), 'mmm:ss'),
+      filterFn: (row, columnId, range) => {
+        if (!range) return true
+
+        const t = row.getValue(columnId) as number
+        return (t >= range.min && t <= range.max)
+      },
+      enableSorting: true,
+      sortingFn: 'basic',
+    }),
+    columnHelper.accessor('status', {
+      id: 'status',
+      header: 'Status',
+      cell: info => QUESTION_STATUS_LABELS[info.getValue()],
+      filterFn: (row, columnId, value) => value.includes(row.getValue(columnId)),
+      enableSorting: false,
+    }),
+  ]
+
+  return columns
+}
+
+function getStatsTablesFirstColumnDef<T extends StatsMetaData>(
+  columnHelper: ColumnHelper<T>,
+) {
+  return {
+    id: 'name',
+    header: () => currentSelectedState.section.endsWith(OVERALL) ? 'Sections' : 'Subjects',
+    enableSorting: false,
+    columns: [
+      columnHelper.accessor(row => row.name, {
+        id: 'name',
+        header: '',
+        cell: (info) => {
+          const original = info.row.original
+          const { subject, section } = currentSelectedState
+          if (subject !== TEST_OVERALL) {
+            if (section.endsWith(OVERALL) && original.type === 'subject') {
+              return `${original.name} ${OVERALL}`
+            }
+          }
+          return original.name
+        },
+        filterFn: (row, _, filterState) => {
+          const original = row.original
+          const { subject, section } = filterState
+          if (subject === TEST_OVERALL) {
+            return (original.type === 'test' || original.type === 'subject')
+          }
+          else if (section.endsWith(OVERALL)) {
+            if (original.type === 'section') {
+              return original.subject === subject
+            }
+            return (original.type === 'subject' && original.name === subject)
+          }
+
+          return original.type === 'section' && original.subject === subject
+        },
+      }),
+    ],
+  }
+}
+
+function getQuestionStatusStatsColumnData() {
+  const columnHelper = createColumnHelper<StatusStatsWithName>()
+
+  const labels: Record<keyof StatusStats, string> = {
+    ...QUESTION_STATUS_LABELS,
+    total: 'Total',
+  }
+
+  const statusKeys = Object.keys(labels) as (keyof StatusStats)[]
+  const remainingColumns = statusKeys.map(key => ({
+    header: labels[key],
+    columns: [
+      columnHelper.accessor(row => row[key].count, {
+        id: `${key}.count`,
+        header: 'Count',
+      }),
+      columnHelper.accessor(row => row[key].totalTime, {
+        id: `${key}.totalTime`,
+        header: 'Time Spent',
+        cell: info => utilSecondsToTime(info.getValue(), 'mmm:ss', true),
+      }),
+      columnHelper.accessor(row => row[key].avgTime, {
+        id: `${key}.avgTime`,
+        header: 'Avg Time',
+        cell: info => utilSecondsToTime(info.getValue(), 'mmm:ss', true),
+      }),
+    ],
+  }))
+
+  const firstColumn = getStatsTablesFirstColumnDef(columnHelper)
+  const columns = [firstColumn, ...remainingColumns]
+
+  return columns
+}
+
+function getResultStatsColumnData() {
+  const columnHelper = createColumnHelper<ResultStatsWithName>()
+
+  const labels: Record<keyof ResultStats, string> = {
+    ...RESULT_STATUS_LABELS,
+    total: 'Total',
+  }
+
+  const statusKeys = Object.keys(labels) as (keyof ResultStats)[]
+  const remainingColumns = statusKeys.map((key, index) => {
+    const isLast = index === (statusKeys.length - 1)
+
+    const baseColumns = [
+      columnHelper.accessor(row => row[key].count, {
+        id: `${key}.count`,
+        header: 'Count',
+      }),
+      columnHelper.accessor(row => row[key].totalTime, {
+        id: `${key}.totalTime`,
+        header: 'Time Spent',
+        cell: info => utilSecondsToTime(info.getValue(), 'mmm:ss', true),
+      }),
+      columnHelper.accessor(row => row[key].avgTime, {
+        id: `${key}.avgTime`,
+        header: 'Avg Time',
+        cell: info => utilSecondsToTime(info.getValue(), 'mmm:ss', true),
+      }),
+    ]
+
+    if (isLast) {
+      const accuracyColumn = columnHelper.accessor(row => row[key as 'total'].accuracy as unknown as number, {
+        id: `${key}.accuracy`,
+        header: 'Accuracy',
+      })
+
+      baseColumns.splice(1, 0, accuracyColumn) // insert at 2nd position
+    }
+
+    return {
+      header: labels[key],
+      columns: baseColumns,
+    }
+  })
+
+  const firstColumn = getStatsTablesFirstColumnDef(columnHelper)
+  const columns = [firstColumn, ...remainingColumns]
+
+  return columns
+}
+
+function getMarksStatsColumnData() {
+  const columnHelper = createColumnHelper<MarksStatsWithName>()
+
+  const statusKeys = [...MARKS_STATUS_LIST, 'total'] as (keyof MarksStats)[]
+  const remainingColumns = statusKeys.map((key, index) => {
+    const isLast = index === statusKeys.length - 1
+
+    const baseColumns = [
+      columnHelper.accessor(row => row[key].marks, {
+        id: `${key}.marks`,
+        header: 'Marks',
+      }),
+      columnHelper.accessor(row => row[key].totalTime, {
+        id: `${key}.totalTime`,
+        header: 'Time Spent',
+        cell: info => utilSecondsToTime(info.getValue(), 'mmm:ss', true),
+      }),
+      columnHelper.accessor(row => row[key].avgTime, {
+        id: `${key}.avgTime`,
+        header: 'Avg Time',
+        cell: info => utilSecondsToTime(info.getValue(), 'mmm:ss', true),
+      }),
+    ]
+
+    if (isLast) {
+      const marksColumn = columnHelper.accessor(row => row[key as 'total'].maxMarks, {
+        id: `${key}.maxMarks`,
+        header: 'Max Marks',
+      })
+
+      baseColumns.splice(1, 0, marksColumn) // insert at 2nd position
+    }
+
+    return {
+      header: utilKeyToLabel(key),
+      columns: baseColumns,
+    }
+  })
+
+  const firstColumn = getStatsTablesFirstColumnDef(columnHelper)
+  const columns = [firstColumn, ...remainingColumns]
+
+  return columns
+}
+
+function toggleQuestionsTableColumnVisibility(
+  columnIdsWithVisiblity: { id: string, isVisible: boolean }[],
+) {
+  for (const colData of columnIdsWithVisiblity) {
+    const { id, isVisible } = colData
+    const col = questionsTable.getColumn(id)
+    if (col) {
+      col.toggleVisibility(isVisible)
+    }
+  }
+}
+
+function toggleQuestionsTableFilter(
+  key: keyof typeof questionsTableFilters,
+  val: string,
+  enabled: boolean,
+) {
+  const filter = questionsTableFilters[key]
+  if (!filter) return
+
+  if (enabled) filter.add(val)
+  else filter.delete(val)
+
+  updateQuestionsTableColumnFilters()
+}
+
+function updateQuestionsTableColumnFilters() {
+  questionsTable.setColumnFilters(
+    Object.entries(questionsTableFilters)
+      .filter(([, v]) => v.size)
+      .map(([id, value]) => ({ id, value: [...value] })),
+  )
+}
+
+function resetTableColumnsVisibility<T>(table: Table<T>) {
+  table.getAllColumns().forEach((c) => {
+    c.toggleVisibility(true)
+    c.columns?.forEach(childCol => childCol.toggleVisibility(true))
+  })
+}
+
+function setTimeSpentFilterRange(reset: boolean = false) {
+  const column = questionsTable.getColumn('timeSpent')
+  if (!column) return
+  timeSpentFilterState.openPopOver = false
+
+  const { min, max } = timeSpentFilterState
+  if (min <= 0 && max >= testConfig.testDurationInSeconds) reset = true
+
+  if (reset) {
+    timeSpentFilterState.max = testConfig.testDurationInSeconds
+    timeSpentFilterState.min = 0
+  }
+
+  column.setFilterValue(reset ? null : { min, max })
+}
+
+function showQuestionPreview(queId: number | null = null) {
+  if (typeof queId !== 'number') {
+    const firstRow = questionsTable.getRowModel().rows[0]
+    if (firstRow) {
+      queId = firstRow.original.queId
+    }
+  }
+
+  if (typeof queId !== 'number') return
+
+  const index = questionsToPreview.value.findIndex(que => queId === que.queId)
+  const maxIndex = Math.max(0, questionsToPreview.value.length - 1)
+  questionPreviewState.currentQueIndex = utilClampNumber(index, 0, maxIndex)
+
+  if (!questionPreviewState.isSettingsLoaded) {
+    db.getSettings()
+      .then((data) => {
+        if (data) {
+          const { prefix, suffix, counterType } = data.uiSettings.questionPanel.answerOptionsFormat
+          questionPreviewState.optionsStyle = {
+            '--counter-type': counterType,
+            '--options-prefix': `"${prefix}"`,
+            '--options-suffix': `"${suffix}"`,
+            'counter-reset': 'answer-options',
+          }
+        }
+      })
+  }
+
+  questionPreviewState.isSettingsLoaded = true
+  questionPreviewState.show = true
+}
+
+// wait until user clicks this "Detailed" page layout/component to render this component.
+// Basically to load on-demand
+watch(
+  () => waitUntil,
+  () => {
+    reloadTestData()
+  },
+  { once: true },
+)
+
+// watch for any changes to input data
+// so that tables data can be recalculated and rendered
+watch(
+  [currentResultsID, () => testResultData],
+  ([newID, _]) => {
+    if ((newID !== currentLoadState.loadedResultsID) && loadDataNow.value) {
+      reloadTestData()
+    }
+  },
+  { deep: false },
+)
+
+// computed "sections" tablist for current subject
+const currentSectionTabs = computed(() => {
+  const subject = currentSelectedState.subject
+  if (subject && !subject.endsWith(OVERALL)) {
+    return Object.keys(testResultData[subject] ?? {})
+  }
+  return []
+})
 
 async function reloadTestData(isFirst: boolean = false) {
   loadDataNow.value = false
@@ -1221,12 +706,16 @@ async function reloadTestData(isFirst: boolean = false) {
     await nextTick()
   }
 
+  questionsData.value = testQuestions
   currentSelectedState.subject = TEST_OVERALL
   currentSelectedState.section = ''
+  const newSubjectSectionNames: Record<string, string[]> = {}
 
   const newSelectedKeys: SelectedSectionKeys = {}
   for (const [subject, subjectData] of Object.entries(testResultData)) {
     const sectionNames = Object.keys(subjectData)
+    newSubjectSectionNames[subject] = [...sectionNames]
+
     if (sectionNames.length > 1) {
       newSelectedKeys[subject] = subject + OVERALL
     }
@@ -1235,22 +724,36 @@ async function reloadTestData(isFirst: boolean = false) {
     }
   }
 
+  subjectSectionNames.value = newSubjectSectionNames
   selectedTabs.value = newSelectedKeys
 
   const newTestStats: TestStats = {}
   const newSubjectsOverallStats: SubjectsOverallStats = {}
+  const newStatusStats: StatusStatsWithName[] = []
+  const newResultStats: ResultStatsWithName[] = []
+  const newMarksStats: MarksStatsWithName[] = []
 
   for (const [subject, subjectData] of Object.entries(testResultData)) {
     newTestStats[subject] ??= {}
 
     for (const [section, sectionData] of Object.entries(subjectData)) {
       const sectionStats = getSectionStats(sectionData)
-
       newTestStats[subject][section] = sectionStats
+
+      const { status, result, marks } = sectionStats
+      newStatusStats.push({ name: section, subject, type: 'section', ...status })
+      newResultStats.push({ name: section, subject, type: 'section', ...result })
+      newMarksStats.push({ name: section, subject, type: 'section', ...marks })
     }
 
     if (Object.keys(newTestStats[subject]).length > 1) {
-      newSubjectsOverallStats[subject] = getStatsTotal(Object.values(newTestStats[subject]))
+      const subjectStats = getStatsTotal(Object.values(newTestStats[subject]))
+      newSubjectsOverallStats[subject] = subjectStats
+
+      const { status, result, marks } = subjectStats
+      newStatusStats.push({ name: subject, type: 'subject', ...status })
+      newResultStats.push({ name: subject, type: 'subject', ...result })
+      newMarksStats.push({ name: subject, type: 'subject', ...marks })
     }
     else {
       const firstSection = Object.keys(newTestStats[subject])[0]
@@ -1288,8 +791,20 @@ async function reloadTestData(isFirst: boolean = false) {
     currentSelectedState.subject = firstSubject
     currentSelectedState.section = selectedTabs.value[firstSubject]!
   }
+  else if (testOverallStats.value) {
+    const overallStatus = testOverallStats.value
+    const { status, result, marks } = overallStatus
+    newStatusStats.push({ name: TEST_OVERALL, type: 'test', ...status })
+    newResultStats.push({ name: TEST_OVERALL, type: 'test', ...result })
+    newMarksStats.push({ name: TEST_OVERALL, type: 'test', ...marks })
+  }
+
+  questionStatusStats.value = newStatusStats
+  questionResultStats.value = newResultStats
+  questionMarksStats.value = newMarksStats
 
   currentLoadState.loadedResultsID = currentResultsID.value
+  changeTablesFilters('test')
   loadDataNow.value = true
 }
 
@@ -1306,36 +821,42 @@ function createEmptyBaseForStats() {
     avgTime: 0,
   })
 
-  const emptyMarksStatsItemWithMax = (): MarksStatsItem & { maxMarks: number } => ({
+  const emptyResultStatsItemWithAccuracy = (): ResultStats['total'] => ({
+    ...emptyStatsItem(),
+    accuracy: '',
+  })
+
+  const emptyMarksStatsItemWithMax = (): MarksStats['total'] => ({
     ...emptyMarksStatsItem(),
     maxMarks: 0,
   })
 
   const status = {} as StatusStats
-  for (const key of statusListWithTotal) {
+  for (const key of [...QUESTION_STATUS_LIST, 'total']) {
     status[key as keyof StatusStats] = emptyStatsItem()
   }
 
   const result = {} as ResultStats
-  for (const key of resultStatusListWithTotal) {
-    result[key as keyof ResultStats] = emptyStatsItem()
+  for (const key of RESULT_STATUS_LIST) {
+    result[key as Exclude<keyof ResultStats, 'total'>] = emptyStatsItem()
   }
+  result.total = emptyResultStatsItemWithAccuracy()
 
   const marks = {} as MarksStats
-  for (const key of marksStatusListWithTotal) {
-    if (key === 'total') {
-      marks.total = emptyMarksStatsItemWithMax()
-      continue
-    }
-
+  for (const key of MARKS_STATUS_LIST) {
     marks[key as Exclude<keyof MarksStats, 'total'>] = emptyMarksStatsItem()
   }
+  marks.total = emptyMarksStatsItemWithMax()
 
   return { status, result, marks }
 }
 
 function getSectionStats(sectionData: TestResultDataSection): Stats {
-  const { marks: questionMarks, status: questionStatus, result: questionResult } = createEmptyBaseForStats()
+  const {
+    marks: questionMarks,
+    status: questionStatus,
+    result: questionResult,
+  } = createEmptyBaseForStats()
 
   let maxMarks = 0
   let accuracyCount = 0
@@ -1415,6 +936,8 @@ function getSectionStats(sectionData: TestResultDataSection): Stats {
     questionMarks.total.totalTime += totalTime
   }
 
+  questionResult.total.accuracy = accuracy + '%'
+
   questionStatus.total.avgTime = questionStatus.total.totalTime / (questionStatus.total.count || 1)
   questionResult.total.avgTime = questionResult.total.totalTime / (questionResult.total.count || 1)
   questionMarks.total.avgTime = questionMarks.total.totalTime / (questionMarks.total.marks || 1)
@@ -1489,10 +1012,11 @@ function getStatsTotal(statsArray: Stats[]): Stats {
     const k = key as keyof MarksStats
     const { marks, totalTime } = marksSum[k]
     marksSum[k].avgTime = Math.abs(totalTime / (marks || 1))
-    if (k === 'total') marksSum[k].maxMarks = totalMaxMarks
   }
+  marksSum.total.maxMarks = totalMaxMarks
 
-  const percent = Math.round((totalAccuracyCount / (totalAccuracyDenominator || 1)) * 10000) / 100
+  const accuracy = Math.round((totalAccuracyCount / (totalAccuracyDenominator || 1)) * 10000) / 100
+  resultSum.total.accuracy = accuracy + '%'
 
   return {
     status: statusSum,
@@ -1501,54 +1025,543 @@ function getStatsTotal(statsArray: Stats[]): Stats {
     accuracy: {
       count: totalAccuracyCount,
       total: totalAccuracyDenominator,
-      percent,
+      percent: accuracy,
     },
   }
 }
 
+function toggleColumnVisibility<T>(
+  column: Column<T, unknown>,
+  visible: boolean,
+) {
+  column.toggleVisibility(visible)
+
+  if (column.columns?.length) {
+    for (const child of column.columns) {
+      child.toggleVisibility(visible)
+    }
+  }
+}
+
 const sectionChangeHandler = (section: string) => {
-  selectedTabs.value[currentSelectedState.subject] = section
   currentSelectedState.section = section
+  changeTablesFilters('section')
 }
 
 const subjectChangeHandler = (subject: string) => {
-  currentSelectedState.subject = subject
   if (subject === TEST_OVERALL) {
     currentSelectedState.section = ''
+    changeTablesFilters('showTestOverall')
   }
   else {
     currentSelectedState.section = selectedTabs.value[subject] ?? subject + OVERALL
+    changeTablesFilters('section')
   }
-}
-
-const showFilterPopOverMenu = (type: 'status' | 'result' | 'timeSpent', e: Event) => {
-  if (type === 'result') {
-    popOverResultFilterElem.value?.show(e)
-  }
-  else if (type === 'status') {
-    popOverStatusFilterElem.value?.show(e)
-  }
-  else {
-    popOverTimeSpentFilterElem.value?.show(e)
-  }
-}
-
-const showQuestionPreview = (queId: number) => {
-  questionPreviewQueId.value = queId
-  questionPreviewState.show = true
-
-  questionPreviewState.hydrate ||= true
 }
 </script>
 
+<template>
+  <div class="flex flex-col w-full grow">
+    <div
+      v-if="loadDataNow"
+      class="flex flex-col w-full grow pb-50"
+    >
+      <UiTabs
+        v-model="currentSelectedState.subject"
+        class="border-b border-border"
+        @update:model-value="(val) => subjectChangeHandler(val as string)"
+      >
+        <UiScrollArea class="w-full">
+          <BaseTabsListWithIndicator class="flex flex-nowrap gap-x-1 px-3 max-w-max">
+            <BaseTabsTriggerWithIndicator
+              v-if="Object.keys(testOverallStats ?? {}).length > 1"
+              :value="TEST_OVERALL"
+              class="cursor-pointer p-2.5 text-base"
+            >
+              Test Overall
+            </BaseTabsTriggerWithIndicator>
+            <BaseTabsTriggerWithIndicator
+              v-for="(subject, idx) in Object.keys(testResultData)"
+              :key="idx"
+              :value="subject"
+              class="cursor-pointer p-2.5 text-base"
+            >
+              {{ subject }}
+            </BaseTabsTriggerWithIndicator>
+          </BaseTabsListWithIndicator>
+          <UiScrollBar orientation="horizontal" />
+        </UiScrollArea>
+      </UiTabs>
+      <UiTabs
+        v-model="selectedTabs[currentSelectedState.subject]"
+        class="border-b border-border sticky top-0 z-20 bg-background"
+        @update:model-value="(val) => sectionChangeHandler(val as string)"
+      >
+        <UiScrollArea class="w-full">
+          <BaseTabsListWithIndicator class="flex flex-nowrap px-3 gap-x-1 max-w-max">
+            <BaseTabsTriggerWithIndicator
+              v-if="
+                (currentSelectedState.subject !== TEST_OVERALL)
+                  && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1"
+              :value="currentSelectedState.subject + OVERALL"
+              class="cursor-pointer p-2.5 text-base"
+            >
+              {{ currentSelectedState.subject + ' Overall' }}
+            </BaseTabsTriggerWithIndicator>
+            <BaseTabsTriggerWithIndicator
+              v-for="(section, index) in currentSectionTabs"
+              :key="index"
+              :value="section"
+              class="cursor-pointer p-2.5 text-base"
+            >
+              {{ section }}
+            </BaseTabsTriggerWithIndicator>
+          </BaseTabsListWithIndicator>
+          <UiScrollBar orientation="horizontal" />
+        </UiScrollArea>
+      </UiTabs>
+      <div>
+        <template
+          v-for="tableItem in tables"
+          :key="tableItem.heading"
+        >
+          <div class="flex flex-row gap-3 justify-center my-4 items-center">
+            <UiDropdownMenu>
+              <UiDropdownMenuTrigger as-child>
+                <BaseButton
+                  label-class="text-sm font-semibold"
+                  variant="outline"
+                  title="Settings"
+                  class="size-7"
+                  size="icon"
+                  icon-name="mdi:settings"
+                  icon-class="text-orange-500"
+                />
+              </UiDropdownMenuTrigger>
+              <UiDropdownMenuContent class="w-48">
+                <UiDropdownMenuLabel class="text-center">
+                  Table Settings
+                </UiDropdownMenuLabel>
+                <UiDropdownMenuSeparator />
+                <UiDropdownMenuGroup>
+                  <UiDropdownMenuSub>
+                    <UiDropdownMenuSubTrigger class="cursor-pointer">
+                      <span>Columns to show</span>
+                    </UiDropdownMenuSubTrigger>
+                    <UiDropdownMenuPortal>
+                      <UiDropdownMenuSubContent>
+                        <template
+                          v-for="column in tableItem.table.getAllColumns()"
+                          :key="column.id"
+                        >
+                          <UiDropdownMenuCheckboxItem
+                            :model-value="column.getIsVisible()"
+                            @update:model-value="(v) => {
+                              toggleColumnVisibility(column as Column<unknown, unknown>, v)
+                            }"
+                            @select.prevent
+                          >
+                            {{
+                              typeof column.columnDef.header === 'function'
+                                ? column.columnDef.header(1 as any)
+                                : column.columnDef.header
+                            }}
+                          </UiDropdownMenuCheckboxItem>
+                        </template>
+                        <UiDropdownMenuSeparator />
+
+                        <UiDropdownMenuItem
+                          @click="resetTableColumnsVisibility(tableItem.table as Table<unknown>)"
+                          @select.prevent
+                        >
+                          Show All Columns
+                        </UiDropdownMenuItem>
+                      </UiDropdownMenuSubContent>
+                    </UiDropdownMenuPortal>
+                  </UiDropdownMenuSub>
+                </UiDropdownMenuGroup>
+                <UiDropdownMenuSeparator />
+                <UiDropdownMenuGroup>
+                  <UiDropdownMenuSub>
+                    <UiDropdownMenuSubTrigger class="cursor-pointer">
+                      <span>Header Font Size</span>
+                    </UiDropdownMenuSubTrigger>
+                    <UiDropdownMenuPortal>
+                      <UiDropdownMenuSubContent>
+                        <UiDropdownMenuItem
+                          v-for="(_, size) in FONT_SIZES"
+                          :key="size"
+                          :disabled="storageSettings.tableFontSizes[tableItem.id].header === size"
+                          :class="{
+                            'text-green-500 data-[disabled]:opacity-100':
+                              storageSettings.tableFontSizes[tableItem.id].header === size,
+                          }"
+                          @click="storageSettings.tableFontSizes[tableItem.id].header = size"
+                        >
+                          {{ utilKeyToLabel(size) }}
+                        </UiDropdownMenuItem>
+                      </UiDropdownMenuSubContent>
+                    </UiDropdownMenuPortal>
+                  </UiDropdownMenuSub>
+                  <UiDropdownMenuSeparator />
+                  <UiDropdownMenuSub>
+                    <UiDropdownMenuSubTrigger class="cursor-pointer">
+                      <span>Body Font Size</span>
+                    </UiDropdownMenuSubTrigger>
+                    <UiDropdownMenuPortal>
+                      <UiDropdownMenuSubContent>
+                        <UiDropdownMenuItem
+                          v-for="(_, size) in FONT_SIZES"
+                          :key="size"
+                          :disabled="storageSettings.tableFontSizes[tableItem.id].body === size"
+                          :class="{
+                            'text-green-500 data-[disabled]:opacity-100':
+                              storageSettings.tableFontSizes[tableItem.id].body === size,
+                          }"
+                          @click="storageSettings.tableFontSizes[tableItem.id].body = size"
+                        >
+                          {{ utilKeyToLabel(size) }}
+                        </UiDropdownMenuItem>
+                      </UiDropdownMenuSubContent>
+                    </UiDropdownMenuPortal>
+                  </UiDropdownMenuSub>
+                </UiDropdownMenuGroup>
+              </UiDropdownMenuContent>
+            </UiDropdownMenu>
+            <h3
+              v-if="tableItem.heading"
+              class="text-lg font-semibold text-center"
+            >
+              {{ tableItem.heading }}
+            </h3>
+            <BaseButton
+              v-if="tableItem.id === 'questions'"
+              class="ml-4"
+              label="View Question Preview"
+              variant="help"
+              icon-name="material-symbols:table-view-outline-rounded"
+              @click="showQuestionPreview()"
+            />
+            <IconWithTooltip
+              v-else-if="tableItem.id === 'marksStats'"
+              :tooltip-content="tooltipContent.marksSummary"
+            />
+          </div>
+          <UiScrollArea
+            class="w-full"
+            viewport-class="[&>div]:pb-6 [&>div]:px-8"
+          >
+            <UiTable
+              class="mx-auto"
+              :class="tableItem.class"
+              :style="tableItem.style"
+            >
+              <UiTableHeader>
+                <UiTableRow
+                  v-if="tableItem.id === 'questions'"
+                  class="bg-accent/60 border border-input divide-x divide-input hover:bg-accent/60"
+                >
+                  <UiTableHead
+                    v-for="header in tableItem.table.getHeaderGroups()?.[0]?.headers"
+                    v-show="header.column.getIsVisible()"
+                    :key="header.id"
+                    class="h-11 py-0.5"
+                  >
+                    <div class="flex items-center gap-1 justify-center">
+                      <BaseButton
+                        v-if="header.column.getCanSort()"
+                        label-class="text-sm font-semibold"
+                        class="size-7"
+                        variant="ghost"
+                        size="icon"
+                        :icon-name="header.column.getIsSorted() === 'asc'
+                          ? 'mdi:sort-clock-ascending-outline'
+                          : 'mdi:sort-clock-descending-outline'"
+                        :icon-class="header.column.getIsSorted() ? 'text-green-400' : 'text-orange-400'"
+                        @click="header.column.toggleSorting()"
+                      />
+                      <BaseButton
+                        v-else-if="highlightStyleClasses[header.column.id]"
+                        label-class="text-sm font-semibold"
+                        class="size-7"
+                        variant="ghost"
+                        size="icon"
+                        icon-name="mdi:color"
+                        icon-size="1.3rem"
+                        :icon-class="settings.highlightMode === header.column.id
+                          ? 'text-green-400'
+                          : 'text-orange-400'"
+                        @click="() => {
+                          if (settings.highlightMode === header.column.id) settings.highlightMode = null
+                          else settings.highlightMode = header.column.id as 'status' | 'result.status'
+                        }"
+                      />
+                      <span
+                        class="table-header-size font-semibold text-foreground text-wrap text-center"
+                      >
+                        {{ header.column.columnDef.header }}
+                      </span>
+                      <component
+                        :is="header.column.id === 'timeSpent' ? UiPopover : UiDropdownMenu"
+                        v-if="showFiltersOnTheseColumnIds.has(header.column.id) || header.column.id === 'queId'"
+                        v-bind="header.column.id === 'timeSpent'
+                          ? {
+                            'open': timeSpentFilterState.openPopOver,
+                            'onUpdate:open': (val: boolean) => timeSpentFilterState.openPopOver = val,
+                          }
+                          : {}
+                        "
+                      >
+                        <component
+                          :is="header.column.id === 'timeSpent' ? UiPopoverTrigger : UiDropdownMenuTrigger"
+                          as-child
+                        >
+                          <BaseButton
+                            v-if="header.column.id === 'queId'"
+                            label-class="text-sm font-semibold"
+                            class="size-7"
+                            variant="ghost"
+                            size="icon"
+                            icon-name="mdi:format-list-numbers"
+                            icon-class="text-green-400"
+                          />
+                          <BaseButton
+                            v-else
+                            label-class="text-sm font-semibold"
+                            class="size-7"
+                            variant="ghost"
+                            size="icon"
+                            icon-name="mdi:filter-menu-outline"
+                            icon-size="1.2rem"
+                            :icon-class="{
+                              'text-orange-400': true,
+                              'text-green-400': header.column.id === 'timeSpent'
+                                ? (timeSpentFilterMaxRange < testConfig.testDurationInSeconds || timeSpentFilterMinRange > 0)
+                                : (questionsTableFilters[header.column.id]?.size || 0) !== (defaultQuestionsTableFilterState[header.column.id]?.size || 0),
+                            }"
+                          />
+                        </component>
+                        <UiPopoverContent
+                          v-if="header.column.id === 'timeSpent'"
+                          class="w-fit"
+                        >
+                          <div class="flex flex-col">
+                            <h4 class="text-base text-center">
+                              Filter by Time Spent Range<br>
+                              (values are in seconds)
+                            </h4>
+                            <BaseFloatLabel
+                              class="w-full mt-6"
+                              label="Minimum"
+                              label-id="time_spent_filter_min"
+                              label-class="start-1/2! -translate-x-1/2"
+                            >
+                              <BaseInputNumber
+                                id="time_spent_filter_min"
+                                v-model="timeSpentFilterMinRange"
+                                :min="0"
+                                :max="testConfig.testDurationInSeconds"
+                                :step="10"
+                              />
+                            </BaseFloatLabel>
+                            <BaseFloatLabel
+                              class="w-full mt-6"
+                              label="Maximum"
+                              label-id="time_spent_filter_max"
+                              label-class="start-1/2! -translate-x-1/2"
+                            >
+                              <BaseInputNumber
+                                id="time_spent_filter_max"
+                                v-model="timeSpentFilterMaxRange"
+                                :min="0"
+                                :max="testConfig.testDurationInSeconds"
+                                :step="10"
+                              />
+                            </BaseFloatLabel>
+                            <BaseButton
+                              class="mt-5 max-w-42 mx-auto"
+                              label="Apply Filter"
+                              icon-name="mdi:filter-menu-outline"
+                              @click="setTimeSpentFilterRange()"
+                            />
+                            <BaseButton
+                              class="mt-5 max-w-42 mx-auto"
+                              label="Clear Filter"
+                              variant="destructive"
+                              icon-name="material-symbols:delete"
+                              @click="setTimeSpentFilterRange(true)"
+                            />
+                          </div>
+                        </UiPopoverContent>
+                        <UiDropdownMenuContent
+                          v-else-if="header.column.id === 'queId'"
+                          class="w-fit"
+                        >
+                          <UiDropdownMenuItem
+                            v-for="t in questionsTableFilterKeyValues[header.column.id as 'queId']"
+                            :key="t"
+                            :disabled="settings.queNumOrder === t"
+                            class="data-[disabled]:text-green-500 data-[disabled]:opacity-100"
+                            @click="settings.queNumOrder = t"
+                          >
+                            {{ formattedLabels[t] }}
+                          </UiDropdownMenuItem>
+                        </UiDropdownMenuContent>
+                        <UiDropdownMenuContent
+                          v-else
+                          class="w-fit"
+                        >
+                          <UiDropdownMenuCheckboxItem
+                            v-for="t in questionsTableFilterKeyValues[header.column.id as keyof typeof questionsTableFilterKeyValues]"
+                            :key="t"
+                            :model-value="questionsTableFilters[header.column.id]?.has(t)"
+                            :disabled="
+                              questionsTableFilters[header.column.id]?.has(t)
+                                && (questionsTableFilters[header.column.id]?.size || 0) <= 1
+                            "
+                            @update:model-value="v => toggleQuestionsTableFilter(header.column.id as keyof typeof questionsTableFilterKeyValues, t, v)"
+                            @select.prevent
+                          >
+                            {{ formattedLabels[t] }}
+                          </UiDropdownMenuCheckboxItem>
+                          <UiDropdownMenuSeparator />
+
+                          <UiDropdownMenuItem
+                            class="justify-center"
+                            @click="() => {
+                              const id = header.column.id as keyof typeof questionsTableFilterKeyValues
+                              questionsTableFilters[id] = new Set([...questionsTableFilterKeyValues[id]])
+                              updateQuestionsTableColumnFilters()
+                            }"
+                            @select.prevent
+                          >
+                            Select All
+                          </UiDropdownMenuItem>
+                        </UiDropdownMenuContent>
+                      </component>
+                    </div>
+                  </UiTableHead>
+                </UiTableRow>
+
+                <template v-else>
+                  <UiTableRow
+                    v-for="(headerGroup, groupIndex) in tableItem.table.getHeaderGroups()"
+                    :key="headerGroup.id"
+                    class="bg-accent/60 border border-input divide-x divide-input hover:bg-accent/60"
+                  >
+                    <template
+                      v-for="header in headerGroup.headers"
+                      :key="header.id"
+                    >
+                      <UiTableHead
+                        v-if="!header.isPlaceholder && !(groupIndex === 1 && header.column.id === 'name')"
+                        v-show="header.column.getIsVisible()"
+                        :colspan="header.colSpan"
+                        :rowspan="groupIndex === 0 && header.column.id === 'name' ? 2 : undefined"
+                        class="h-8 text-foregound font-semibold py-0.5 text-center table-header-size align-middle"
+                      >
+                        {{
+                          typeof header.column.columnDef.header === 'function'
+                            ? header.column.columnDef.header(header.getContext())
+                            : header.column.columnDef.header
+                        }}
+                      </UiTableHead>
+                    </template>
+                  </UiTableRow>
+                </template>
+              </UiTableHeader>
+
+              <UiTableBody>
+                <template v-if="tableItem.id === 'questions'">
+                  <UiTableRow
+                    v-for="row in tableItem.table.getRowModel().rows"
+                    :key="row.original.queId"
+                    class="divide-x border-x border-input divide-input"
+                    :data-result="row.original.result.status"
+                    :data-status="row.original.status"
+                  >
+                    <UiTableCell
+                      v-for="cell in row.getVisibleCells()"
+                      :key="cell.id"
+                      class="text-center table-body-size"
+                    >
+                      <div
+                        v-if="cell.column.id === 'queId'"
+                        class="flex items-center justify-center gap-1"
+                      >
+                        <BaseButton
+                          :label="`${typeof cell.column.columnDef.cell === 'function'
+                            ? cell.column.columnDef.cell(cell.getContext())
+                            : cell.getValue()}`"
+                          label-class="table-body-size"
+                          title="Show Question Preview"
+                          class="size-7"
+                          variant="ghost"
+                          @click="showQuestionPreview(row.original.queId)"
+                        />
+                        <Icon
+                          v-show="testNotes[row.original.queId]"
+                          title="Has Notes"
+                          name="mdi:text-box-edit-outline"
+                          class="text-green-500 text-sm"
+                        />
+                      </div>
+                      <template v-else>
+                        {{
+                          typeof cell.column.columnDef.cell === 'function'
+                            ? cell.column.columnDef.cell(cell.getContext())
+                            : cell.getValue()
+                        }}
+                      </template>
+                    </UiTableCell>
+                  </UiTableRow>
+                </template>
+
+                <template v-else>
+                  <UiTableRow
+                    v-for="row in tableItem.table.getRowModel().rows"
+                    :key="row.id"
+                    class="border border-input divide-x divide-input"
+                  >
+                    <UiTableCell
+                      v-for="cell in row.getVisibleCells()"
+                      :key="cell.id"
+                      class="text-center py-2 table-body-size"
+                    >
+                      {{
+                        typeof cell.column.columnDef.cell === 'function'
+                          ? cell.column.columnDef.cell(cell.getContext() as StatsCellContext)
+                          : cell.getValue()
+                      }}
+                    </UiTableCell>
+                  </UiTableRow>
+                </template>
+              </UiTableBody>
+            </UiTable>
+            <UiScrollBar orientation="horizontal" />
+          </UiScrollArea>
+        </template>
+
+        <LazyCbtResultsQuestionPanel
+          v-if="questionPreviewState.show"
+          v-model="questionPreviewState.currentQueIndex"
+          v-model:show-panel="questionPreviewState.show"
+          :questions-to-preview="questionsToPreview"
+          :all-questions="questionsData"
+          :test-config="testConfig"
+          :questions-numbering-order="settings.queNumOrder"
+          :options-style="questionPreviewState.optionsStyle"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
 <style>
-.divide-y-excluding-last-two {
-  :where(& > :nth-last-child(n+3)) {
-    --tw-divide-y-reverse: 0;
-    border-bottom-style: var(--tw-border-style);
-    border-top-style: var(--tw-border-style);
-    border-top-width: calc(1px * var(--tw-divide-y-reverse));
-    border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
-  }
+.table-header-size {
+  font-size: calc(var(--table-header-font-size) * 1rem)
+}
+.table-body-size {
+  font-size: calc(var(--table-body-font-size) * 1rem)
 }
 </style>

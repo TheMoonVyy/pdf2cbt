@@ -5,7 +5,6 @@ const defaultUiSettings: CbtUiSettings = {
     size: 16,
     testTotalHeaderHeight: 2.2,
     sectionHeaderHeight: 2.7,
-    sectionHeaderScrollPadding: 0.8,
     sectionHeaderAndQuesPanelDividerHeight: 1.7,
     showQuestionType: true,
     questionTypeFontSize: 1,
@@ -18,16 +17,16 @@ const defaultUiSettings: CbtUiSettings = {
 
   themes: {
     base: {
-      bgColor: 'ffffff',
-      textColor: '000000',
+      bgColor: '#ffffff',
+      textColor: '#000000',
     },
     primary: {
-      bgColor: '7d00b3',
-      textColor: 'ffffff',
+      bgColor: '#7d00b3',
+      textColor: '#ffffff',
     },
     secondary: {
-      bgColor: 'daeff8',
-      textColor: '000000',
+      bgColor: '#daeff8',
+      textColor: '#000000',
     },
   },
 
@@ -54,7 +53,7 @@ const defaultUiSettings: CbtUiSettings = {
     quesIcons: {
       answered: {
         image: '',
-        textColor: '000000',
+        textColor: '#000000',
         iconSize: 3.2,
         numberTextFontSize: 1.1,
         summaryIconSize: 2.5,
@@ -63,7 +62,7 @@ const defaultUiSettings: CbtUiSettings = {
       },
       notAnswered: {
         image: '',
-        textColor: '000000',
+        textColor: '#000000',
         iconSize: 3.2,
         numberTextFontSize: 1.1,
         summaryIconSize: 2.5,
@@ -72,7 +71,7 @@ const defaultUiSettings: CbtUiSettings = {
       },
       notVisited: {
         image: '',
-        textColor: '000000',
+        textColor: '#000000',
         iconSize: 3.2,
         numberTextFontSize: 1.1,
         summaryIconSize: 2.5,
@@ -81,7 +80,7 @@ const defaultUiSettings: CbtUiSettings = {
       },
       marked: {
         image: '',
-        textColor: 'ffffff',
+        textColor: '#ffffff',
         iconSize: 3.2,
         numberTextFontSize: 1.1,
         summaryIconSize: 2.5,
@@ -90,7 +89,7 @@ const defaultUiSettings: CbtUiSettings = {
       },
       markedAnswered: {
         image: '',
-        textColor: 'ffffff',
+        textColor: '#ffffff',
         iconSize: 3.2,
         numberTextFontSize: 1.1,
         summaryIconSize: 2.5,

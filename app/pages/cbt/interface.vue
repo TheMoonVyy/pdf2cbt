@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col box-border"
+    class="flex flex-col box-border light"
     style="padding-top: env(safe-area-inset-top);
       padding-right: env(safe-area-inset-right);
       padding-bottom: env(safe-area-inset-bottom);
@@ -46,12 +46,13 @@
           <div class="flex justify-between px-3 py-0.5 shrink-0">
             <span class="flex ml-auto items-center">Time Left:&nbsp;&nbsp;{{ testTimeLeftString }}</span>
           </div>
-          <div
-            class="flex flex-col overflow-x-scroll grow w-full border-t-2 border-slate-400 divide-y-2 divide-slate-400"
-            :style="{ paddingBottom: `${uiSettings.mainLayout.sectionHeaderScrollPadding}rem` }"
+          <UiScrollArea
+            class="w-full border-slate-400"
+            viewport-class="[&>div]:mb-3"
+            type="auto"
           >
             <div
-              class="flex last:border-r-2 border-slate-400 w-full whitespace-nowrap px-2 divide-x-2 divide-slate-400"
+              class="flex last:border-r-2 border-y-2 border-slate-400 w-full whitespace-nowrap px-2 divide-x-2 divide-slate-400"
               :style="{ height: `${uiSettings.mainLayout.sectionHeaderHeight}rem` }"
             >
               <template
@@ -59,7 +60,7 @@
                 :key="sectionItem.name"
               >
                 <div
-                  class="flex items-center gap-2 border-y-2 border-slate-400 my-[-2px] cursor-pointer"
+                  class="flex items-center gap-2 my-[-2px] cursor-pointer"
                   :class="{
                     'primary-theme': sectionItem.name === currentTestState.section,
                     'border-r-2!': index === (testSectionsList.length - 1),
@@ -80,8 +81,12 @@
                 </div>
               </template>
             </div>
-            <div />
-          </div>
+            <UiScrollBar
+              orientation="horizontal"
+              class="bg-neutral-800/60"
+              thumb-area-class="bg-(--bg-primary-theme-color)"
+            />
+          </UiScrollArea>
         </div>
         <div
           ref="profileDetailsContainerElem"
@@ -282,40 +287,33 @@
         <div class="flex pb-4 pt-3 grow justify-between px-3">
           <div class="flex gap-2">
             <BaseButton
-              class="mx-auto"
               label="Mark for Review & Next"
-              unstyled
-              pt:root="px-5 py-2 primary-theme-btn-hover cursor-pointer border border-slate-400
-              transition delay-30 duration-100 ease-in-out"
+              class="mx-auto h-10.5 px-5 rounded-none primary-theme-btn-hover bg-white
+                border border-slate-400 transition delay-30 duration-100 ease-in-out"
               @click="changeCurrentQuestion('mfr')"
             />
             <BaseButton
-              class="mx-auto"
               label="Clear Response"
-              unstyled
-              pt:root="px-5 py-2 primary-theme-btn-hover cursor-pointer border border-slate-400
-              transition delay-30 duration-100 ease-in-out"
+              class="mx-auto h-10.5 px-5 rounded-none primary-theme-btn-hover bg-white
+                border border-slate-400 transition delay-30 duration-100 ease-in-out"
               @click="saveCurrentAnswer('clear')"
             />
           </div>
           <div class="flex gap-2">
             <BaseButton
-              class="mx-auto"
+              class="mx-auto h-10.5 px-5 rounded-none primary-theme-btn-hover bg-white
+                border border-slate-400 transition delay-30 duration-100 ease-in-out"
               :class="{
                 hidden: currentTestState.queId === 1,
               }"
               label="Previous"
-              unstyled
-              pt:root="px-5 py-2 primary-theme-btn-hover cursor-pointer border border-slate-400
-              transition delay-30 duration-100 ease-in-out"
               @click="changeCurrentQuestion('previous')"
             />
             <BaseButton
-              class="mx-auto"
+              class="mx-auto h-10.5 px-5 rounded-none primary-theme-btn border border-slate-400
+                transition delay-30 duration-100 ease-in-out"
               label="Save & Next"
               unstyled
-              pt:root="px-5 py-2 primary-theme-btn cursor-pointer border border-slate-400
-              transition delay-30 duration-100 ease-in-out"
               @click="changeCurrentQuestion('save&next')"
             />
           </div>
@@ -326,13 +324,11 @@
           :style="{ width: `${uiSettings.questionPalette.width}%` }"
         >
           <BaseButton
-            class="mx-auto"
+            class="mx-auto h-10.5 px-5 rounded-none primary-theme-btn border border-slate-400
+              transition delay-30 duration-100 ease-in-out disabled:cursor-not-allowed disabled:pointer-events-all"
             :class="{ hidden: testSettings.submitBtn === 'hidden' }"
             label="Submit"
-            unstyled
             :disabled="testSettings.submitBtn === 'disabled'"
-            pt:root="px-5 py-2 primary-theme-btn cursor-pointer border border-slate-400
-            transition delay-30 duration-100 ease-in-out disabled:cursor-not-allowed"
             @click="submitState.isSubmitBtnClicked = true"
           />
         </div>
@@ -407,17 +403,15 @@
           <div class="flex gap-10">
             <BaseButton
               label="Yes"
+              class="h-10 rounded-none primary-theme-btn border border-slate-400
+                transition delay-30 duration-100 ease-in-out"
               :disabled="testState.currentProcess !== 'test-started'"
-              unstyled
-              pt:root="px-4 py-1.5 primary-theme-btn cursor-pointer border border-slate-400
-              transition delay-30 duration-100 ease-in-out"
               @click="submitTest(false)"
             />
             <BaseButton
               label="No"
-              unstyled
-              pt:root="px-4 py-1.5 primary-theme-btn cursor-pointer border border-slate-400
-              transition delay-30 duration-100 ease-in-out"
+              class="h-10 rounded-none primary-theme-btn border border-slate-400
+                transition delay-30 duration-100 ease-in-out"
               @click="submitState.isSubmitBtnClicked = false"
             />
           </div>
@@ -456,112 +450,105 @@
         />
       </div>
     </div>
-    <Dialog
-      :visible="testState.currentProcess === 'preparing-data'
+    <UiDialog
+      :open="testState.currentProcess === 'preparing-data'
         || testState.currentProcess === 'preparing-imgs'
         || testState.currentProcess === 'test-is-ready'"
-      :header="testState.currentProcess === 'test-is-ready'
-        ? 'Mock test is now ready!'
-        : 'Preparing mock test...'"
-      :modal="true"
-      :closable="false"
-      :close-on-escape="false"
-      :block-scroll="true"
-      :draggable="false"
-      pt:content:class="flex flex-col p-4 pt-0"
     >
-      <div
-        v-if="testState.currentProcess !== 'test-is-ready'"
-        class="flex flex-col gap-3"
+      <UiDialogContent
+        non-closable
+        :class="testState.currentProcess === 'test-is-ready'
+          ? 'sm:w-fit'
+          : 'sm:w-lg'
+        "
       >
-        <h3 class="text-center text-lg font-semibold">
-          <template v-if="testState.currentProcess === 'preparing-data'">
-            processing {{ testSettings.saveTestData ? 'and storing' : '' }} data
-          </template>
-          <template v-else-if="testState.preparingTestCurrentQuestion === 0">
-            loading pdf...
-          </template>
-          <template v-else>
-            processing question&nbsp;
-            {{ testState.preparingTestCurrentQuestion }}/{{ testState.totalQuestions }}
-          </template>
-        </h3>
-        <span
-          v-if="currentTestState.saveTestData === null"
-          class="flex flex-col text-amber-300 text-center"
+        <UiDialogHeader>
+          <UiDialogTitle>
+            {{
+              testState.currentProcess === 'test-is-ready'
+                ? 'Mock test is now ready!'
+                : 'Preparing mock test...'
+            }}
+          </UiDialogTitle>
+        </UiDialogHeader>
+        <div
+          v-if="testState.currentProcess !== 'test-is-ready'"
+          class="flex flex-col gap-3"
         >
-          <span class="text-lg">Warning!</span>
-          Failed to save the test in local storage (IndexedDB).<br>
-          The save feature is now disabled.<br>
-        </span>
-        <ProgressBar
-          :value="preparingTestProgressBar"
-          pt:root:class="h-7"
-          pt:label:class="text-xl dark:text-surface-900"
-        />
-        <h3 class="text-sm">
-          This may take some time, depending on the number of questions and your device's capacity.<br>
-          In the meantime, buckle up for the test!
-        </h3>
-      </div>
-      <div
-        v-else-if="testState.currentProcess === 'test-is-ready'"
-        class="flex flex-col gap-8"
-      >
-        <h3 class="text-center">
-          You can now start your mock test
-        </h3>
-        <span
-          v-if="currentTestState.saveTestData === null"
-          class="flex flex-col text-amber-300 text-center"
-        >
-          <span class="text-lg">Warning!</span>
-          Failed to save the test in local storage (IndexedDB).<br>
-          The save feature is now disabled.<br>
-          You can continue the test, but progress will be lost if the test,<br>
-          browser, or device closes unexpectedly.
-        </span>
-        <BaseButton
-          class="mx-auto"
-          label="Start Mock Test"
-          severity="help"
-          @click="startTest()"
-        >
-          <template #icon>
-            <Icon
-              name="mdi:stopwatch-play-outline"
-              size="1.4rem"
-            />
-          </template>
-        </BaseButton>
-      </div>
-    </Dialog>
-    <Dialog
-      :visible="isTestPaused"
-      header="Test is Paused"
-      :modal="true"
-      :closable="false"
-      :close-on-escape="false"
-      :block-scroll="true"
-      :draggable="false"
-      pt:content:class="flex flex-col p-6 pt-0 gap-8"
-    >
-      <h4 class="font-semibold">
-        You have paused the test.
-      </h4>
-      <BaseButton
-        class="mx-auto"
-        label="Resume Test"
-        @click="resumePausedTestHandler"
-      >
-        <template #icon>
-          <Icon
-            name="mdi:stopwatch-play-outline"
-            size="1.4rem"
+          <h3 class="text-center text-lg font-semibold">
+            <template v-if="testState.currentProcess === 'preparing-data'">
+              processing {{ testSettings.saveTestData ? 'and storing' : '' }} data
+            </template>
+            <template v-else-if="testState.preparingTestCurrentQuestion === 0">
+              loading pdf...
+            </template>
+            <template v-else>
+              processing question&nbsp;
+              {{ testState.preparingTestCurrentQuestion }}/{{ testState.totalQuestions }}
+            </template>
+          </h3>
+          <span
+            v-if="currentTestState.saveTestData === null"
+            class="flex flex-col text-amber-300 text-center"
+          >
+            <span class="text-lg">Warning!</span>
+            Failed to save the test in local storage (IndexedDB).<br>
+            The save feature is now disabled.<br>
+          </span>
+          <UiProgress
+            :model-value="preparingTestProgressBar"
+            class="h-7"
           />
-        </template>
-      </BaseButton>
-    </Dialog>
+          <h3 class="text-sm">
+            This may take some time, depending on the number of questions and your device's capacity.<br>
+            In the meantime, buckle up for the test!
+          </h3>
+        </div>
+        <div
+          v-else-if="testState.currentProcess === 'test-is-ready'"
+          class="flex flex-col gap-8"
+        >
+          <h3 class="text-center">
+            You can now start your mock test
+          </h3>
+          <span
+            v-if="currentTestState.saveTestData === null"
+            class="flex flex-col text-amber-300 text-center"
+          >
+            <span class="text-lg">Warning!</span>
+            Failed to save the test in local storage (IndexedDB).<br>
+            The save feature is now disabled.<br>
+            You can continue the test, but progress will be lost if the test,<br>
+            browser, or device closes unexpectedly.
+          </span>
+          <BaseButton
+            class="mx-auto"
+            label="Start Mock Test"
+            variant="help"
+            icon-name="mdi:stopwatch-play-outline"
+            @click="startTest()"
+          />
+        </div>
+      </UiDialogContent>
+    </UiDialog>
+    <UiDialog :open="isTestPaused">
+      <UiDialogContent>
+        <UiDialogHeader>
+          <UiDialogTitle>Test is Paused</UiDialogTitle>
+        </UiDialogHeader>
+        <h4 class="font-semibold">
+          You have paused the test.
+        </h4>
+        <UiDialogFooter>
+          <BaseButton
+            class="mx-auto"
+            label="Resume Test"
+            icon-name="mdi:stopwatch-play-outline"
+            @click="resumePausedTestHandler"
+          />
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
   </div>
 </template>
 
@@ -573,7 +560,6 @@ import notVisitedIcon from 'assets/icons/ques-notVisited.svg?no-inline'
 import markedIcon from 'assets/icons/ques-marked.svg?no-inline'
 import markedAnsweredIcon from 'assets/icons/ques-markedAnswered.svg?no-inline'
 import profileIcon from 'assets/icons/profile.svg?no-inline'
-import ProgressBar from '@/src/volt/ProgressBar.vue'
 
 import { db } from '@/src/db/cbt-db'
 import { CbtUseState } from '#shared/enums'
@@ -606,12 +592,12 @@ const pageCssVars = computed(() => {
 
   return {
     // Theme colors
-    'color': `#${themes.base.textColor}`,
-    'background-color': `#${themes.base.bgColor}`,
-    '--bg-primary-theme-color': `#${themes.primary.bgColor}`,
-    '--text-primary-theme-color': `#${themes.primary.textColor}`,
-    '--bg-secondary-theme-color': `#${themes.secondary.bgColor}`,
-    '--text-secondary-theme-color': `#${themes.secondary.textColor}`,
+    'color': themes.base.textColor,
+    'background-color': themes.base.bgColor,
+    '--bg-primary-theme-color': themes.primary.bgColor,
+    '--text-primary-theme-color': themes.primary.textColor,
+    '--bg-secondary-theme-color': themes.secondary.bgColor,
+    '--text-secondary-theme-color': themes.secondary.textColor,
 
     // Question Palette
     // icons
@@ -622,11 +608,11 @@ const pageCssVars = computed(() => {
     '--bg-markedAnswered-image-url': `url("${icons.markedAnswered.image || markedAnsweredIcon}")`,
 
     // icons text colors
-    '--text-answered-image-color': `#${icons.answered.textColor}`,
-    '--text-notAnswered-image-color': `#${icons.notAnswered.textColor}`,
-    '--text-notVisited-image-color': `#${icons.notVisited.textColor}`,
-    '--text-marked-image-color': `#${icons.marked.textColor}`,
-    '--text-markedAnswered-image-color': `#${icons.markedAnswered.textColor}`,
+    '--text-answered-image-color': icons.answered.textColor,
+    '--text-notAnswered-image-color': icons.notAnswered.textColor,
+    '--text-notVisited-image-color': icons.notVisited.textColor,
+    '--text-marked-image-color': icons.marked.textColor,
+    '--text-markedAnswered-image-color': icons.markedAnswered.textColor,
 
     // icons sizes
     '--bg-answered-image-size': `${icons.answered.iconSize}rem`,

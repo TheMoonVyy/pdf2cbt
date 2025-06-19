@@ -12,12 +12,11 @@ export type QuesIcons = {
   }
 }
 
-export interface CbtUiSettings {
+export type CbtUiSettings = {
   mainLayout: {
     size: number
     testTotalHeaderHeight: number
     sectionHeaderHeight: number
-    sectionHeaderScrollPadding: number
     sectionHeaderAndQuesPanelDividerHeight: number
     showQuestionType: boolean
     questionTypeFontSize: number
@@ -123,7 +122,7 @@ export type PdfCroppedOverlayData = {
   section: string
   imgNum: number
   type: QuestionType
-  options?: number
+  options: number
   marks: Required<QuestionMarks>
   pdfData: {
     l: number // left
@@ -387,20 +386,22 @@ export type QuestionsImageUrls = {
 }
 
 export type PdfCropperSettings = {
-  cropperMode: 'line' | 'box'
-  scale: number
-  splitterPanelSize: number
-  pageBGColor: string
-  cropSelectionGuideColor: string
-  cropSelectionBgOpacity: number
-  cropSelectedRegionColor: string
-  cropSelectedRegionBgOpacity: number
-  cropSelectionSkipColor: string
-  qualityFactor: number
-  selectionThrottleInterval: number
-  minCropDimension: number
-  moveOnKeyPressDistance: number
-  blurCroppedRegion: boolean
-  blurIntensity: number
-  showQuestionDetailsOnOverlay: boolean
+  general: {
+    cropperMode: 'line' | 'box'
+    scale: number
+    splitterPanelSize: number
+    pageBGColor: string
+    cropSelectionGuideColor: string
+    cropSelectionBgOpacity: number
+    cropSelectedRegionColor: string
+    cropSelectedRegionBgOpacity: number
+    cropSelectionSkipColor: string
+    qualityFactor: number
+    selectionThrottleInterval: number
+    minCropDimension: number
+    moveOnKeyPressDistance: number
+    blurCroppedRegion: boolean
+    blurIntensity: number
+    showQuestionDetailsOnOverlay: boolean
+  }
 }

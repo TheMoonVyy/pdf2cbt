@@ -1,41 +1,46 @@
 <template>
-  <Dialog
-    v-model:visible="visibility"
+  <UiDialog
+    v-model:open="visibility"
     header="Test Answer Key Data is Not Found!"
-    :draggable="false"
-    pt:root:class="mx-auto max-w-md"
-    pt:title:class="p-0 mx-auto"
-    pt:content:class="px-4"
-    pt:header:class="gap-4"
   >
-    <h4>Test Answer Key Data was not found for this test:</h4>
-    <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
-      <CbtResultsOverviewCard
-        :test-result-overview="testResultOverview!"
-        read-only
-      />
-    </div>
-    <h4 class="m-2">
-      You can load it now or if you don't have it then go to
-      <span class="text-green-500 font-bold underline">
-        <NuxtLink to="/cbt/generate-answer-key">Generate Answer Key</NuxtLink>
-      </span>
-      page to generate one.
-    </h4>
-    <h4 class="m-2">
-      After that you can come back here just to be greeted by this same message again and
-      then load the file to check results for your test!
-    </h4>
-    <div class="flex my-5 mx-auto justify-center">
-      <BaseSimpleFileUpload
-        accept="application/json,application/zip,.json,.zip"
-        :label="'Select Answer Key Data'"
-        invalid-file-type-message="Invalid file. Please select a valid JSON or ZIP file from Generate Answer Key Page"
-        icon-name="prime:plus"
-        @upload="handleFileUpload"
-      />
-    </div>
-  </Dialog>
+    <UiDialogContent class="max-w-md">
+      <UiDialogHeader>
+        <UiDialogTitle class="mx-auto">
+          Test Answer Key Data is Not Found!
+        </UiDialogTitle>
+      </UiDialogHeader>
+
+      <h4 class="text-center">
+        Test Answer Key Data was not found for this test:
+      </h4>
+      <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
+        <CbtResultsOverviewCard
+          :test-result-overview="testResultOverview!"
+          read-only
+        />
+      </div>
+      <h4 class="m-2">
+        You can load it now or if you don't have it then go to
+        <span class="text-green-500 font-bold underline">
+          <NuxtLink to="/cbt/generate-answer-key">Generate Answer Key</NuxtLink>
+        </span>
+        page to generate one.
+      </h4>
+      <h4 class="m-2">
+        After that you can come back here just to be greeted by this same message again and
+        then load the file to check results for your test!
+      </h4>
+      <div class="flex my-5 mx-auto justify-center">
+        <BaseSimpleFileUpload
+          accept="application/json,application/zip,.json,.zip"
+          :label="'Select Answer Key Data'"
+          invalid-file-type-message="Invalid file. Please select a valid JSON or ZIP file from Generate Answer Key Page"
+          icon-name="line-md:plus"
+          @upload="handleFileUpload"
+        />
+      </div>
+    </UiDialogContent>
+  </UiDialog>
 </template>
 
 <script lang="ts" setup>
@@ -73,7 +78,7 @@ async function unzipFile(zipFile: File | Blob) {
         return
       }
 
-      const jsonFile = files[DataFileNames.dataJson]
+      const jsonFile = files[DataFileNames.DataJson]
       if (jsonFile) {
         const jsonData = JSON.parse(strFromU8(jsonFile))
         resolve(jsonData)

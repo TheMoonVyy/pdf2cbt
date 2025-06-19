@@ -1,98 +1,76 @@
 <template>
-  <Dialog
-    v-model:visible="showNotesDialog"
-    modal
-    maximizable
+  <UiDialog
+    v-model:open="showNotesDialog"
     class="min-w-64 sm:min-w-lg lg:min-w-xl"
-    header="Notes"
-    pt:header:class="py-2"
   >
-    <template #header>
-      <div class="grow flex justify-between items-center mr-3 sm:mr-5">
-        <h3 class="text-xl mx-auto select-none">
-          Question {{ displayQuestionNumber }} Notes
-        </h3>
-        <div class="flex gap-2 sm:gap-4">
-          <BaseButton
-            variant="text"
-            severity="danger"
-            rounded
-            raised
-            title="Delete Note"
-            :disabled="!currentNotes"
-            @click="deleteCurrentNote"
+    <UiDialogContent class="pt-2 gap-2">
+      <UiDialogHeader>
+        <UiDialogTitle class="flex ml-0 mr-5">
+          <span class="text-xl mx-auto flex items-center">
+            Question {{ displayQuestionNumber }} Notes
+          </span>
+          <div class="flex gap-4 mr-12 sm:gap-6">
+            <BaseButton
+              class="disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant="outline"
+              size="icon"
+              title="Delete Note"
+              icon-name="material-symbols:delete"
+              icon-class="text-red-400"
+              icon-size="1.5rem"
+              :disabled="!currentNotes"
+              @click="deleteCurrentNote"
+            />
+            <BaseButton
+              class="disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant="outline"
+              size="icon"
+              title="Discard Changes"
+              icon-name="material-symbols:device-reset"
+              icon-class="text-orange-400"
+              icon-size="1.5rem"
+              :disabled="disableDiscardButton"
+              @click="currentNotes = testNotes[currentQuestionId] || ''"
+            />
+          </div>
+        </UiDialogTitle>
+      </UiDialogHeader>
+      <UiTabs
+        v-model="activeTab"
+        class="border-b border-border mt-5"
+      >
+        <UiTabsList class="grid w-full grid-cols-2 h-11">
+          <UiTabsTrigger
+            v-for="key in (['view', 'edit'] as const)"
+            :key="key"
+            :value="key"
+            class="cursor-pointer text-lg"
           >
-            <template #icon>
-              <Icon
-                name="material-symbols:delete"
-                class="text-2xl"
-              />
-            </template>
-          </BaseButton>
-          <BaseButton
-            variant="text"
-            severity="warn"
-            rounded
-            raised
-            title="Discard Changes"
-            :disabled="disableDiscardButton"
-            @click="currentNotes = testNotes[currentQuestionId] || ''"
-          >
-            <template #icon>
-              <Icon
-                name="material-symbols:device-reset"
-                class="text-2xl"
-              />
-            </template>
-          </BaseButton>
-        </div>
-      </div>
-    </template>
-    <Tabs v-model:value="activeTab">
-      <TabList>
-        <Tab
-          value="view"
-          class="py-3!"
-        >
-          View
-        </Tab>
-        <Tab
-          value="edit"
-          class="py-3!"
-        >
-          Edit
-        </Tab>
-      </TabList>
-      <TabPanels class="px-0!">
-        <TabPanel value="view">
+            {{ utilKeyToLabel(key) }}
+          </UiTabsTrigger>
+        </UiTabsList>
+
+        <UiTabsContent value="view">
           <!-- eslint-disable vue/no-v-html -->
           <div
             class="prose prose-neutral dark:prose-invert dark:text-white prose-a:text-sky-400 max-w-none"
             v-html="compiledNotesHtml"
           />
-        </TabPanel>
-        <TabPanel value="edit">
-          <Textarea
+        </UiTabsContent>
+        <UiTabsContent value="edit">
+          <UiTextarea
             v-model.trim="currentNotes"
-            rows="10"
-            auto-resize
-            class="w-full dark:bg-neutral-800 dark:text-white"
+            rows="18"
             :placeholder="placeholderText"
           />
-        </TabPanel>
-      </TabPanels>
-    </Tabs>
-  </Dialog>
+        </UiTabsContent>
+      </UiTabs>
+    </UiDialogContent>
+  </UiDialog>
 </template>
 
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
-import Textarea from '@/src/volt/Textarea.vue'
-import Tabs from '@/src/volt/Tabs.vue'
-import TabList from '@/src/volt/TabList.vue'
-import Tab from '@/src/volt/Tab.vue'
-import TabPanels from '@/src/volt/TabPanels.vue'
-import TabPanel from '@/src/volt/TabPanel.vue'
 import { db } from '@/src/db/cbt-db'
 
 const homePageLink = useRequestURL().origin

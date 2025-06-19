@@ -4,7 +4,7 @@
     :class="{
       'pointer-events-none': currentMode !== 'edit',
     }"
-    @contextmenu.prevent="(e) => contextMenuElem?.show(e)"
+    @contextmenu.prevent="onOpenContextMenu"
     @click="setActiveOverlayToNone"
   >
     <div
@@ -25,7 +25,7 @@
       @click.stop
     >
       <div
-        v-if="showQuestionDetailsOnOverlay"
+        v-if="settings.general.showQuestionDetailsOnOverlay"
         class="overlay-label w-fit flex flex-wrap divide-x divide-current [&>span]:px-1"
       >
         <span>{{ item.section || item.subject }}</span>
@@ -59,58 +59,130 @@
         />
       </template>
     </div>
-    <Dialog
-      v-model:visible="contextMenuState.showDeleteAllDialog"
-      header="Confirm Bulk Delete"
-      :modal="true"
+    <UiDialog
+      v-model:open="contextMenuState.showDeleteAllCurrentPageDialog"
     >
-      <p class="text-center text-lg mb-2">
-        Are you sure you want to delete all regions on page #{{ currentPageNum }} ?<br>
-      </p>
-      <div class="flex justify-center gap-10 sm:gap-15 m-3 py-4">
-        <BaseButton
-          label="Yes"
-          severity="warn"
-          @click="deleteAllOverlaysOnCurrentPage"
-        />
-        <BaseButton
-          label="No"
-          @click="contextMenuState.showDeleteAllDialog = false"
-        />
-      </div>
-    </Dialog>
-    <ContextMenu
-      ref="contextMenuElem"
-      :model="contextMenuItems"
+      <UiDialogContent>
+        <UiDialogHeader>
+          <UiDialogTitle class="mx-auto">
+            Delete all on current page
+          </UiDialogTitle>
+        </UiDialogHeader>
+        <p class="text-center text-lg mb-2">
+          Are you sure you want to delete all regions on page #{{ currentPageNum }} ?<br>
+        </p>
+        <div class="flex justify-center gap-10 sm:gap-15 m-3 py-4">
+          <BaseButton
+            label="Yes"
+            variant="warn"
+            @click="deleteAllOverlaysOnCurrentPage"
+          />
+          <BaseButton
+            label="No"
+            @click="contextMenuState.showDeleteAllCurrentPageDialog = false"
+          />
+        </div>
+      </UiDialogContent>
+    </UiDialog>
+    <UiDialog
+      v-model:open="contextMenuState.showDeleteAllDialog"
     >
-      <template #itemicon="{ item }">
-        <Icon
-          v-if="item.icon"
-          :name="item.icon"
-          class="text-lg"
-        />
-      </template>
-    </ContextMenu>
+      <UiDialogContent>
+        <UiDialogHeader>
+          <UiDialogTitle class="mx-auto">
+            Confirm Deleting All
+          </UiDialogTitle>
+        </UiDialogHeader>
+        <p class="text-center text-lg mb-2">
+          Are you sure you want to delete regions on all pages?<br>
+        </p>
+        <div class="flex justify-center gap-10 sm:gap-15 m-3 py-4">
+          <BaseButton
+            label="Yes"
+            variant="warn"
+            @click="clearAllOverlaysData"
+          />
+          <BaseButton
+            label="No"
+            @click="contextMenuState.showDeleteAllDialog = false"
+          />
+        </div>
+      </UiDialogContent>
+    </UiDialog>
+    <UiContextMenu>
+      <UiContextMenuTrigger
+        class="hidden"
+        @contextmenu.stop
+        @click.stop
+      >
+        <div ref="contextMenuElem" />
+      </UiContextMenuTrigger>
+      <UiContextMenuContent class="w-64">
+        <UiContextMenuLabel
+          class="text-center"
+        >
+          Cropped Regions
+        </UiContextMenuLabel>
+        <UiContextMenuSeparator />
+        <UiContextMenuItem
+          inset
+          :disabled="!activeId"
+          @click="copyRegion"
+        >
+          Copy Region
+          <UiContextMenuShortcut>Ctrl + C</UiContextMenuShortcut>
+        </UiContextMenuItem>
+        <UiContextMenuItem
+          inset
+          :disabled="!contextMenuState.copiedCoords"
+          @click="pasteRegion"
+        >
+          Paste Region
+          <UiContextMenuShortcut>Ctrl + V</UiContextMenuShortcut>
+        </UiContextMenuItem>
+        <UiContextMenuCheckboxItem
+          v-model="settings.general.blurCroppedRegion"
+          inset
+        >
+          Blur Cropped Region
+        </UiContextMenuCheckboxItem>
+        <UiContextMenuItem
+          inset
+          :disabled="!activeId"
+          @click="deleteActiveOverlay"
+        >
+          Delete Region
+          <UiContextMenuShortcut>Delete</UiContextMenuShortcut>
+        </UiContextMenuItem>
+        <UiContextMenuSub>
+          <UiContextMenuSubTrigger inset>
+            Delete all on...
+          </UiContextMenuSubTrigger>
+          <UiContextMenuSubContent class="w-48">
+            <UiContextMenuItem @click="contextMenuState.showDeleteAllCurrentPageDialog = true">
+              Current Page
+            </UiContextMenuItem>
+            <UiContextMenuItem @click="contextMenuState.showDeleteAllDialog = true">
+              All Pages
+            </UiContextMenuItem>
+          </UiContextMenuSubContent>
+        </UiContextMenuSub>
+      </UiContextMenuContent>
+    </UiContextMenu>
   </div>
 </template>
 
 <script lang="ts" setup>
-import ContextMenu from 'primevue/contextmenu'
-import { Constants } from '#shared/enums'
+import { SEPARATOR } from '#shared/constants'
 
 const props = defineProps<{
   mainImgPanelElem: HTMLDivElement | null
-  showQuestionDetailsOnOverlay: boolean
   currentPageNum: number
   pageWidth: number
   pageHeight: number
   pageScale: number
-  selectionThrottleInterval: number
-  moveOnKeyPressDistance: number
   currentMode: 'crop' | 'edit'
 }>()
-
-const ID_SEPARATOR = Constants.separator
 
 const overlays = defineModel<Map<string, PdfCroppedOverlayData>>({ required: true })
 
@@ -121,13 +193,13 @@ const overlaysPerQuestionData = defineModel<PdfCropperOverlaysPerQuestion>(
 
 const activeId = defineModel<string>('activeOverlayId', { required: true })
 
-const blurCroppedRegion = defineModel<boolean>('blurCroppedRegion', { required: true })
-
 const emit = defineEmits<{
   setPdfData: [data: PdfCroppedOverlayData['pdfData']]
 }>()
 
-const contextMenuElem = templateRef('contextMenuElem')
+const settings = usePdfCropperLocalStorageSettings()
+
+const contextMenuElem = useTemplateRef('contextMenuElem')
 
 const resizeDirections = [
   'top-left', 'top', 'top-right',
@@ -145,6 +217,7 @@ const startBox = shallowReactive({ l: 0, t: 0, r: 0, b: 0 })
 
 const contextMenuState = shallowReactive({
   copiedCoords: null as PdfCroppedOverlayData['pdfData'] | null,
+  showDeleteAllCurrentPageDialog: false,
   showDeleteAllDialog: false,
 })
 
@@ -177,6 +250,20 @@ const cleanUpEventListeners = (
   }
 }
 
+const onOpenContextMenu = (e: MouseEvent): void => {
+  if (!contextMenuElem.value) return
+  const event = new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: e.clientX,
+    clientY: e.clientY,
+    button: 2,
+    buttons: 2,
+    view: window,
+  })
+  contextMenuElem.value.dispatchEvent(event)
+}
+
 const setActiveOverlayToNone = () => {
   activeId.value = ''
   cleanUpEventListeners()
@@ -187,9 +274,22 @@ const deleteActiveOverlay = () => {
   setActiveOverlayToNone()
 }
 
-const deleteAllOverlaysOnCurrentPage = async () => {
+const clearAllOverlaysData = () => {
   if (contextMenuState.showDeleteAllDialog) {
     contextMenuState.showDeleteAllDialog = false
+  }
+  else {
+    return
+  }
+
+  overlays.value.clear()
+  overlaysPerQuestionData.value.clear()
+  setActiveOverlayToNone()
+}
+
+const deleteAllOverlaysOnCurrentPage = async () => {
+  if (contextMenuState.showDeleteAllCurrentPageDialog) {
+    contextMenuState.showDeleteAllCurrentPageDialog = false
   }
   else {
     return
@@ -208,8 +308,8 @@ const deleteAllOverlaysOnCurrentPage = async () => {
   }
 
   const sortedIds = overlayIdsToDelete.toSorted((a, b) => {
-    const [subA, qA, iA] = a.split(ID_SEPARATOR)
-    const [subB, qB, iB] = b.split(ID_SEPARATOR)
+    const [subA, qA, iA] = a.split(SEPARATOR)
+    const [subB, qB, iB] = b.split(SEPARATOR)
 
     if (subA !== subB) return String(subA).localeCompare(String(subB))
     if (qA !== qB) return Number(qA) - Number(qB)
@@ -239,59 +339,6 @@ const pasteRegion = () => {
   emit('setPdfData', { ...contextMenuState.copiedCoords })
   contextMenuState.copiedCoords = null
 }
-
-const contextMenuItems = ref([
-  {
-    label: 'Delete',
-    icon: 'prime:trash',
-    visible: () => !!activeId.value,
-    command: deleteActiveOverlay,
-  },
-  {
-    separator: true,
-    visible: () => !!activeId.value,
-  },
-  {
-    label: 'Copy Region',
-    icon: 'mdi:content-copy',
-    visible: () => !!activeId.value,
-    command: copyRegion,
-  },
-  {
-    label: 'Paste Region',
-    icon: 'mdi:content-paste',
-    visible: () => !!contextMenuState.copiedCoords,
-    command: pasteRegion,
-  },
-  {
-    separator: true,
-    visible: () => !!contextMenuState.copiedCoords || !!activeId.value,
-  },
-  {
-    label: 'Blur Cropped Regions',
-    icon: 'mdi:eye',
-    visible: () => !blurCroppedRegion.value,
-    command: () => {
-      blurCroppedRegion.value = true
-    },
-  },
-  {
-    label: 'Unblur Cropped Regions',
-    icon: 'mdi:eye-off',
-    visible: () => blurCroppedRegion.value,
-    command: () => {
-      blurCroppedRegion.value = false
-    },
-  },
-  {
-    separator: true,
-  },
-  {
-    label: 'Delete All On Current Page',
-    icon: 'prime:trash',
-    command: () => contextMenuState.showDeleteAllDialog = true,
-  },
-])
 
 watch(isEscapePressed, (isPressed) => {
   if (isPressed && props.currentMode === 'edit' && activeId.value) {
@@ -374,7 +421,11 @@ const onPointerMove = (e: PointerEvent) => {
   }
 }
 
-const throttledOnPointerMove = useThrottleFn(onPointerMove, () => props.selectionThrottleInterval, true)
+const throttledOnPointerMove = useThrottleFn(
+  onPointerMove,
+  () => settings.value.general.selectionThrottleInterval,
+  true,
+)
 
 const onPointerUp = () => {
   resizeDir.value = null
@@ -403,7 +454,7 @@ const onKeyDown = (e: KeyboardEvent) => {
   if (!pdfData) return
   e.preventDefault()
 
-  const moveAmount = props.moveOnKeyPressDistance
+  const moveAmount = settings.value.general.moveOnKeyPressDistance
 
   switch (e.key) {
     case 'Delete': {
@@ -467,7 +518,7 @@ const addEventListeners = (
         eventListenersToCleanup.contextmenu = useEventListener(target, 'contextmenu', (e: PointerEvent) => {
           e.preventDefault()
           e.stopPropagation()
-          contextMenuElem.value?.show(e)
+          onOpenContextMenu(e)
         })
         break
     }

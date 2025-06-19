@@ -51,7 +51,7 @@ class CBTDatabase extends Dexie {
   constructor() {
     super('CBT-Interface')
 
-    this.version(3).stores({
+    this.version(4).stores({
       settingsData: 'id',
       testSectionsList: 'id++',
       currentTestState: 'id',
@@ -60,6 +60,30 @@ class CBTDatabase extends Dexie {
       testResultOverviews: 'id,testName,testStartTime,testEndTime,[testName+testStartTime+testEndTime]',
       testOutputDatas: 'id++',
       testNotes: 'id',
+    }).upgrade(async (tx) => {
+      const table = tx.table('settingsData')
+
+      await table.toCollection().modify((record) => {
+        const ui = record.uiSettings as CbtUiSettings
+        if (!ui) return
+
+        ui.themes.base.bgColor = utilEnsureHashInHexColor(ui.themes.base.bgColor)
+        ui.themes.base.textColor = utilEnsureHashInHexColor(ui.themes.base.textColor)
+
+        ui.themes.primary.bgColor = utilEnsureHashInHexColor(ui.themes.primary.bgColor)
+        ui.themes.primary.textColor = utilEnsureHashInHexColor(ui.themes.primary.textColor)
+
+        ui.themes.secondary.bgColor = utilEnsureHashInHexColor(ui.themes.secondary.bgColor)
+        ui.themes.secondary.textColor = utilEnsureHashInHexColor(ui.themes.secondary.textColor)
+
+        const icons = ui.questionPalette?.quesIcons
+        if (icons) {
+          const keys = ['answered', 'notAnswered', 'notVisited', 'marked', 'markedAnswered'] as const
+          for (const key of keys) {
+            icons[key].textColor = utilEnsureHashInHexColor(icons[key].textColor)
+          }
+        }
+      })
     })
   }
 

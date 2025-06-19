@@ -1,130 +1,138 @@
 <template>
-  <div class="card flex justify-center">
-    <Drawer
-      v-model:visible="advanceSettingsVisible"
-      header="Settings"
-      pt:header:class="p-3"
-      pt:content:class="px-0"
+  <UiSheet v-model:open="advanceSettingsVisible">
+    <UiSheetContent
+      side="left"
+      class="w-full sm:w-96"
+      disable-outside-pointer-events
+      @pointer-down-outside="sheetPreventCloseOnOutsideClick"
     >
-      <Panel
-        v-for="(settingsItems, panelName) in settingsContent"
-        :key="panelName"
-        toggleable
-        class="w-full"
-        pt:content:class="px-2"
+      <UiSheetHeader class="p-3 pb-1">
+        <UiSheetTitle class="mx-auto text-2xl">
+          Settings
+        </UiSheetTitle>
+      </UiSheetHeader>
+      <UiScrollArea
+        class="h-full w-full min-h-0"
       >
-        <template #header>
-          <div class="grow flex justify-between items-center mr-3 sm:mr-5">
-            <h3 class="text-xl font-bold mx-auto">
-              {{ panelName }}
-            </h3>
-            <IconWithTooltip
-              v-if="panelHeaderTooltipContent[panelName]"
-              :tooltip-content="panelHeaderTooltipContent[panelName]"
-            />
-          </div>
-        </template>
-        <template
-          v-for="item in settingsItems"
-          :key="item.model"
+        <UiCard
+          v-for="(settingsItems, panelName, index) in settingsContent"
+          :key="panelName"
+          class="w-full py-2"
         >
-          <div
-            v-if="item.type === 'inputNumber'"
-            class="grid grid-cols-4 mt-4 gap-5"
+          <UiCardHeader>
+            <UiCardTitle class="flex items-center mx-auto gap-5">
+              <h3 class="text-lg font-bold mx-auto">
+                {{ panelName }}
+              </h3>
+              <IconWithTooltip
+                v-if="panelHeaderTooltipContent[panelName]"
+                :tooltip-content="panelHeaderTooltipContent[panelName]"
+              />
+            </UiCardTitle>
+          </UiCardHeader>
+          <UiCardContent
+            class="flex flex-col gap-5 px-8"
+            :class="{
+              'pb-10': index + 1 === Object.keys(settingsContent).length,
+            }"
           >
-            <BaseFloatLabel
-              class="w-full col-start-1 col-span-3"
-              :label="item.label"
-              :label-id="item.labelId"
-              label-class="text-xs"
+            <template
+              v-for="item in settingsItems"
+              :key="item.model"
             >
-              <InputNumber
-                v-model="(settings[item.model] as number)"
-                :min="item.min"
-                :max="item.max"
-                :step="item.step"
-                :fluid="true"
-                :label-id="item.labelId"
-                show-buttons
-              />
-            </BaseFloatLabel>
-            <IconWithTooltip
-              v-if="tooltipContent[item.model]"
-              :tooltip-content="tooltipContent[item.model]"
-            />
-          </div>
-          <div
-            v-else-if="item.type === 'select'"
-            class="grid grid-cols-4 mt-4 gap-5"
-          >
-            <BaseFloatLabel
-              class="w-full col-start-1 col-span-3"
-              :label="item.label"
-              :label-id="item.labelId"
-              label-class="text-xs"
-            >
-              <Select
-                v-model="settings[item.model]"
-                :label-id="item.labelId"
-                :options="item.options"
-                option-label="name"
-                option-value="value"
-                :fluid="true"
-              />
-            </BaseFloatLabel>
-            <IconWithTooltip
-              v-if="tooltipContent[item.model]"
-              :tooltip-content="tooltipContent[item.model]"
-            />
-          </div>
-          <div
-            v-else-if="item.type === 'colorPicker'"
-            class="grid grid-cols-5 mt-4"
-          >
-            <BaseFloatLabel
-              class="w-full"
-              :label="item.label"
-              :label-id="item.labelId"
-              label-class="text-xs text-nowrap"
-            >
-              <InputText
-                v-model="(settings[item.model] as string)"
-                :label-id="item.labelId"
-                class="text-center"
-                size="small"
-                readonly
-                pt:root:class="pr-0!"
-              />
-            </BaseFloatLabel>
-            <div class="card flex w-full col-start-4 col-span-1 items-center justify-center">
-              <ColorPicker
-                v-model="(settings[item.model] as string)"
-                class="caret-transparent"
-                format="hex"
-              />
-            </div>
-            <IconWithTooltip
-              v-if="tooltipContent[item.model]"
-              :tooltip-content="tooltipContent[item.model]"
-            />
-            <div v-else />
-          </div>
-        </template>
-      </Panel>
-    </Drawer>
-  </div>
+              <div
+                v-if="item.type === 'inputNumber'"
+                class="grid grid-cols-5 gap-5"
+              >
+                <BaseFloatLabel
+                  class="w-full col-span-4"
+                  :label="item.label"
+                  :label-id="item.labelId"
+                  label-class="text-xs start-1/2! -translate-x-1/2"
+                >
+                  <BaseInputNumber
+                    v-model="(settings.general[item.model] as number)"
+                    :min="item.min"
+                    :max="item.max"
+                    :step="item.step"
+                    :label-id="item.labelId"
+                  />
+                </BaseFloatLabel>
+                <IconWithTooltip
+                  v-if="tooltipContent[item.model]"
+                  class="justify-center w-fit"
+                  :tooltip-content="tooltipContent[item.model]"
+                />
+              </div>
+              <div
+                v-else-if="item.type === 'select'"
+                class="grid grid-cols-4 gap-5"
+              >
+                <div class="flex flex-row-reverse items-center gap-3 col-span-3">
+                  <UiSwitch
+                    :id="item.labelId"
+                    class="cursor-pointer"
+                  />
+                  <UiLabel
+                    :for="item.labelId"
+                    class="text-[1.05rem] font-semibold cursor-pointer"
+                  >
+                    {{ item.label }}
+                  </UiLabel>
+                </div>
+                <IconWithTooltip
+                  v-if="tooltipContent[item.model]"
+                  class="justify-center w-fit"
+                  :tooltip-content="tooltipContent[item.model]"
+                />
+              </div>
+              <div
+                v-else-if="item.type === 'colorPicker'"
+                class="grid grid-cols-5 gap-3"
+              >
+                <BaseFloatLabel
+                  class="w-full col-span-3"
+                  :label="item.label"
+                  :label-id="item.labelId"
+                  label-class="text-xs start-1/2! -translate-x-1/2"
+                >
+                  <UiInput
+                    :id="item.labelId"
+                    v-model="(settings.general[item.model] as string)"
+                    class="text-center"
+                    readonly
+                  />
+                </BaseFloatLabel>
+                <div class="flex items-center justify-center">
+                  <BaseColorPicker
+                    v-model="(settings.general[item.model] as string)"
+                    :with-alpha="!!item.withAlpha"
+                    @show="showColorPicker"
+                    @close="ColorPickerClosedHandler"
+                  />
+                </div>
+                <IconWithTooltip
+                  v-if="tooltipContent[item.model]"
+                  class="justify-center w-fit  ml-1"
+                  :tooltip-content="tooltipContent[item.model]"
+                />
+                <div v-else />
+              </div>
+            </template>
+          </UiCardContent>
+        </UiCard>
+      </UiScrollArea>
+    </UiSheetContent>
+  </UiSheet>
 </template>
 
 <script setup lang="ts">
-const settings = defineModel<PdfCropperSettings>('settings', { required: true })
-const advanceSettingsVisible = defineModel<boolean>('advanceSettingsVisible', { required: true })
-
 type ToolTipContent = {
-  [key in keyof Partial<PdfCropperSettings>]: string
+  [key in keyof Partial<PdfCropperSettings['general']>]: string
 }
 
 type SettingsBase = {
-  model: keyof PdfCropperSettings
+  model: keyof PdfCropperSettings['general']
   labelId: string
   label: string
 }
@@ -138,16 +146,21 @@ type InputNumberTypeSettings = SettingsBase & {
 
 type ColorPickerTypeSettings = SettingsBase & {
   type: 'colorPicker'
+  withAlpha?: boolean
 }
 
 type SelectTypeSettings = SettingsBase & {
   type: 'select'
-  options: { name: string, value: unknown }[]
+  options: { name: string, value: boolean }[]
 }
 
 type SettingsContent = {
   [panelTitle: string]: (InputNumberTypeSettings | ColorPickerTypeSettings | SelectTypeSettings)[]
 }
+
+const advanceSettingsVisible = defineModel<boolean>('advanceSettingsVisible', { required: true })
+
+const settings = usePdfCropperLocalStorageSettings()
 
 const settingsContent: SettingsContent = {
   'General Settings': [
@@ -165,6 +178,7 @@ const settingsContent: SettingsContent = {
       model: 'pageBGColor',
       label: 'PDF Background Color',
       labelId: useId(),
+      withAlpha: true,
     },
     {
       type: 'inputNumber',
@@ -283,5 +297,21 @@ const tooltipContent: ToolTipContent = {
     'Time interval (in milliseconds) for updating (redrawing) the Selection Guide. Lower values make the Selection Guide smoother and more responsive but may increase processing load. Higher values reduce update frequency, improving performance but making the Selection Guide feel less responsive.',
   minCropDimension:
     'Minimum allowed width and height (in same units as coordinates section) for a valid crop selection. Ensures that the selected crop area is not too small, preventing accidental or invalid selections.',
+}
+
+const isColorPickerOpen = shallowRef(false)
+
+const showColorPicker = () => {
+  isColorPickerOpen.value = true
+}
+
+const ColorPickerClosedHandler = () => {
+  isColorPickerOpen.value = false
+}
+
+const sheetPreventCloseOnOutsideClick = (e: CustomEvent) => {
+  if (isColorPickerOpen.value) {
+    e.preventDefault()
+  }
 }
 </script>

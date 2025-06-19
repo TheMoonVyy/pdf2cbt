@@ -109,11 +109,11 @@ export class MuPdfProcessor {
     for (const pageKey of Object.keys(processedCropperData)) {
       const pageNum = parseInt(pageKey)
       const pagePixmap = await this.getPagePixmap(pageNum, scale, transparent)
-      
+
       const pageProcessedData = processedCropperData[pageKey]
 
       if (!pageProcessedData) continue
-      
+
       for (const questionData of pageProcessedData) {
         const { pdfData, section, question } = questionData
 
@@ -135,16 +135,16 @@ export class MuPdfProcessor {
   }
 
   async generateAndPostQuestionImagesIndividually(
-    indexes: number[],
-    questionsPdfData: [string, PdfData[]][],
+    queIds: Map<number, number>,
+    questionsPdfData: { [queId: string | number]: PdfData[] },
     scale: number = 2,
     transparent: boolean = false,
   ) {
     const pagePixmaps: Record<number | string, Pixmap> = {}
 
-    for (const i of indexes) {
-      const [queId, pdfData] = questionsPdfData[i] ?? []
-      if ((typeof queId !== 'number' && typeof queId !== 'string') || !pdfData) continue
+    for (const queId of queIds.keys()) {
+      const pdfData = questionsPdfData[queId]
+      if (!pdfData) continue
 
       for (const pdfDataItem of pdfData) {
         const pageNum = pdfDataItem.page

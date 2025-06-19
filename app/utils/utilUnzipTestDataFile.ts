@@ -1,5 +1,6 @@
 import { unzip, strFromU8, type Unzipped } from 'fflate'
-import { DataFileNames, Constants } from '#shared/enums'
+import { DataFileNames } from '#shared/enums'
+import { SEPARATOR } from '#shared/constants'
 
 type UnzippedData = UploadedTestData & {
   unzippedFiles?: Unzipped
@@ -25,9 +26,9 @@ export default (
             jsonData: null,
           }
 
-          const jsonFile = files[DataFileNames.dataJson]
+          const jsonFile = files[DataFileNames.DataJson]
           const jsonData = jsonFile ? JSON.parse(strFromU8(jsonFile)) : null
-          const pdfFile = files[DataFileNames.questionsPdf]
+          const pdfFile = files[DataFileNames.QuestionsPdf]
 
           if (
             requiredData === 'pdf-or-images-only'
@@ -49,14 +50,14 @@ export default (
                 for (const subjectData of Object.values(pdfCropperData)) {
                   for (const [section, sectionData] of Object.entries(subjectData)) {
                     imageBlobs[section] = {}
-                    const sectionNamwWithSeparator = section + Constants.separator
+                    const sectionNamwWithSeparator = section + SEPARATOR
 
                     for (const [question, questionData] of Object.entries(sectionData)) {
                       const { pdfData } = questionData
 
                       if (Array.isArray(pdfData) && pdfData.length > 0) {
                         const qImagesCount = pdfData.length
-                        const questionNameWithSeparator = question + Constants.separator
+                        const questionNameWithSeparator = question + SEPARATOR
 
                         imageBlobs[section][question] = []
                         for (let i = 0; i < qImagesCount; i++) {
@@ -89,11 +90,11 @@ export default (
             else {
               if (requiredData === 'pdf-and-json') {
                 if (jsonData) {
-                  reject(`Error: ${DataFileNames.questionsPdf} file is not found in Zip file!`)
+                  reject(`Error: ${DataFileNames.QuestionsPdf} file is not found in Zip file!`)
                   return
                 }
                 else {
-                  reject(`Error: ${DataFileNames.questionsPdf} and ${DataFileNames.dataJson} files are not found in Zip file!`)
+                  reject(`Error: ${DataFileNames.QuestionsPdf} and ${DataFileNames.DataJson} files are not found in Zip file!`)
                   return
                 }
               }

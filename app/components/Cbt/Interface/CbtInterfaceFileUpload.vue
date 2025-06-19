@@ -1,115 +1,100 @@
 <template>
-  <FileUpload
-    :accept="computedValue.accept"
-    :custom-upload="true"
-    :multiple="computedValue.maxFilesSelect > 1"
-    :invalid-file-type-message="computedValue.errorMsg"
-    :pt:root:class="'flex flex-col [&>input[type=file]]:hidden w-full ' + (rootClass ?? '')"
-    pt:header:class="p-4"
-    :pt:content:class="`flex flex-col grow m-2 px-4 py-2 gap-3
-      border border-dashed rounded-lg transition-colors border-gray-300
-      data-[p-highlight=true]:border-2 data-[p-highlight=true]:border-green-500 `
-      + (contentClass ?? '')"
-    @uploader="(e) => handleUpload(e.files)"
-  >
-    <template #header="scope">
-      <div class="grid grid-cols-4 gap-5 w-full">
+  <UiCard class="mx-4 py-3 grow">
+    <UiCardContent class="flex flex-col gap-1 grow">
+      <div class="grid grid-cols-4 gap-4 w-full shrink-0">
         <div class="flex flex-col items-center w-full">
-          <label
+          <UiLabel
             class="text-center text-base"
             for="show_test_data_file_type"
           >
             Data File Type
-          </label>
-          <Select
+          </UiLabel>
+          <BaseSelect
+            id="show_test_data_file_type"
             v-model="selectedFileType"
-            label-id="show_test_data_file_type"
-            :options="props.fileOptions"
             :disabled="loadingAndErrorState.isLoading"
-            option-label="name"
-            option-value="value"
-            :fluid="true"
-            pt:root:class="w-full"
-            pt:label:class="text-center"
+            :options="props.fileOptions"
+            class="text-center w-fit"
+          />
+        </div>
+        <div class="flex pt-6 justify-center">
+          <input
+            ref="inputElem"
+            class="hidden"
+            type="file"
+            :accept="computedValue.accept"
+            @change="fileUploaderState.loadFiles()"
+          >
+          <BaseButton
+            :label="computedValue.maxFilesSelect === 1 ? 'Select File' : 'Select Files'"
+            :disabled="(fileUploaderState.files.size >= computedValue.maxFilesSelect) || loadingAndErrorState.isLoading"
+            icon-name="line-md:plus"
+            @click="fileUploaderState.choose()"
           />
         </div>
         <div class="flex pt-6 justify-center">
           <BaseButton
-            :label="computedValue.maxFilesSelect === 1 ? 'Select File' : 'Select Files'"
-            :disabled="(scope.files.length >= computedValue.maxFilesSelect) || loadingAndErrorState.isLoading"
-            class="dark:text-surface-900"
-            :fluid="true"
-            @click="() => {
-              loadingAndErrorState.isUploadError = false
-              scope.chooseCallback()
-            }"
-          >
-            <template #icon>
-              <Icon
-                name="prime:plus"
-                size="1.4rem"
-              />
-            </template>
-          </BaseButton>
-        </div>
-        <div class="flex pt-6 justify-center">
-          <BaseButton
             :label="computedValue.maxFilesSelect === 1 ? 'Load File' : 'Load Files'"
-            :disabled="(scope.files.length !== computedValue.maxFilesSelect) || loadingAndErrorState.isLoading"
-            :fluid="true"
-            severity="warn"
-            @click="scope.uploadCallback()"
-          >
-            <template #icon>
-              <Icon
-                name="prime:upload"
-                size="1.4rem"
-              />
-            </template>
-          </BaseButton>
+            :disabled="(fileUploaderState.files.size !== computedValue.maxFilesSelect) || loadingAndErrorState.isLoading"
+            variant="warn"
+            icon-name="prime:upload"
+            @click="handleUpload([...fileUploaderState.files.values()])"
+          />
         </div>
         <div class="flex pt-6 justify-center">
           <BaseButton
             label="Clear Files"
-            :disabled="scope.files.length === 0"
-            severity="danger"
-            :fluid="true"
-            @click="scope.clearCallback()"
-          >
-            <template #icon>
-              <Icon
-                name="material-symbols:cancel-outline-rounded"
-                size="1.4rem"
-              />
-            </template>
-          </BaseButton>
+            :disabled="fileUploaderState.files.size === 0"
+            variant="destructive"
+            icon-name="material-symbols:cancel-outline-rounded"
+            @click="fileUploaderState.removeFile()"
+          />
         </div>
       </div>
-    </template>
-    <template #fileremoveicon>
-      <Icon
-        name="mdi:close-circle"
-        size="1.8rem"
-        class="text-red-400 cursor-pointer hover:text-red-300"
-      />
-    </template>
-    <template #empty>
       <div
-        class="flex grow relative"
-        :class="props.emptySlotContainerClass"
+        v-if="fileUploaderState.files.size === 0"
+        class="mt-4 flex flex-col font-semibold justify-center grow items-center rounded-xl px-4 py-8
+          border-2 border-dashed border-gray-500 dark:border-gray-400 transition-colors"
+        :class="fileUploaderState.isDraggingFiles ? 'border-green-500 dark:border-green-500' : ''"
+        @dragenter.prevent="fileUploaderState.isDraggingFiles = true"
+        @dragover.prevent
+        @dragleave.prevent="fileUploaderState.isDraggingFiles = false"
+        @drop.prevent="fileUploaderState.handleFilesDroppedFromDrag($event)"
       >
         <span
-          class="absolute left-1/2 -translate-x-1/2 text-lg text-nowrap"
-          :class="props.emptySlotTextClass"
+          v-for="(msgItem, index) in msgList"
+          :key="index"
+          class="text-wrap"
+          :class="msgItem.class"
         >
-          <template v-if="loadingAndErrorState.isLoading || loadingAndErrorState.isUploadError">
-            {{ loadingAndErrorState.msg }}
-          </template>
-          <template v-else>You can also drag and drop file(s) here.</template>
+          {{ msgItem.msg }}
         </span>
       </div>
-    </template>
-  </FileUpload>
+      <div
+        v-else
+        class="flex flex-col grow border rounded-xl border-border pt-2"
+      >
+        <div
+          v-for="[fileType, file] in fileUploaderState.files"
+          :key="fileType"
+          class="flex gap-3 w-full px-8 py-2 text-base border-b border-input"
+        >
+          <span class="text-center shrink-0">{{ fileType.toUpperCase() }}</span>
+          <span class="shrink-0">{{ formatFileSize(file.size) }}</span>
+          <span class="text-wrap grow">{{ file.name }}</span>
+          <BaseButton
+            class="shrink-0"
+            variant="ghost"
+            size="icon"
+            icon-name="material-symbols:cancel-outline-rounded"
+            icon-class="text-red-500"
+            icon-size="1.6rem"
+            @click="fileUploaderState.removeFile(fileType)"
+          />
+        </div>
+      </div>
+    </UiCardContent>
+  </UiCard>
 </template>
 
 <script lang="ts" setup>
@@ -142,10 +127,17 @@ const errorMsgs = {
   pdfJson: 'Please select valid .pdf and .json files.',
 }
 
+const inputElem = useTemplateRef('inputElem')
+
 const loadingAndErrorState = shallowReactive({
   isLoading: false,
   isUploadError: false,
   msg: '',
+  resetState: function () {
+    this.isLoading = false
+    this.isUploadError = false
+    this.msg = ''
+  },
 })
 
 const computedValue = computed(() => {
@@ -165,6 +157,90 @@ const computedValue = computed(() => {
   }
 })
 
+const fileUploaderState = reactive({
+  files: new Map<string, File>(),
+  isDraggingFiles: false,
+  choose: function () {
+    this.isDraggingFiles = false
+    loadingAndErrorState.resetState()
+    inputElem.value?.click()
+  },
+  removeFile: function (key: string | null = null) {
+    this.isDraggingFiles = false
+    if (typeof key === 'string') {
+      this.files.delete(key)
+    }
+    else {
+      this.files.clear()
+    }
+  },
+  loadFiles: async function (files: FileList | null = null) {
+    this.isDraggingFiles = false
+    loadingAndErrorState.resetState()
+    if (!inputElem.value) return
+
+    if (!files) files = inputElem.value.files
+    if (!files) return
+
+    const maxFilesAllowed = computedValue.value.maxFilesSelect
+    for (const file of files) {
+      if (this.files.size >= maxFilesAllowed) {
+        break
+      }
+      if (maxFilesAllowed === 1) {
+        const checkIsZipFile = await utilIsZipFile(file)
+        if (checkIsZipFile > 0) {
+          this.files.set('zip', file)
+        }
+        else {
+          invalidFilesErrorHandler(
+            `Error: Invalid ZIP file\n"${file.name}" is not a valid zip file.\nUpload a valid one.`,
+          )
+        }
+      }
+      else {
+        const checkIsPdfFile = await utilIsPdfFile(file)
+        if (checkIsPdfFile > 0) {
+          this.files.set('pdf', file)
+        }
+        else if (file.type === 'application/json' || file.name.toLowerCase().endsWith('json')) {
+          this.files.set('json', file)
+        }
+      }
+    }
+
+    inputElem.value.value = ''
+  },
+  handleFilesDroppedFromDrag: function (e: DragEvent) {
+    this.isDraggingFiles = false
+    loadingAndErrorState.resetState()
+    const files = e.dataTransfer?.files
+    if (!files || files.length === 0) return
+
+    this.loadFiles(files)
+  },
+})
+
+const msgList = computed(() => {
+  const msgs = loadingAndErrorState.msg
+    .split('\n')
+    .map(m => m.trim())
+    .filter(m => !!m)
+    .map((m) => {
+      let classString = ''
+      if (loadingAndErrorState.isUploadError) classString = 'text-red-400'
+      else if (loadingAndErrorState.isLoading) classString = 'text-green-500'
+
+      return { msg: m, class: classString }
+    })
+
+  if (msgs.length > 0) {
+    return msgs
+  }
+
+  return [{ msg: 'You can also Drag and Drop File(s) here', class: '' }]
+})
+
 const checkForMissingFiles = (pdfFile: unknown, jsonFile: unknown) => {
   const returnObj = {
     isErr: false,
@@ -173,33 +249,29 @@ const checkForMissingFiles = (pdfFile: unknown, jsonFile: unknown) => {
 
   if (!pdfFile && !jsonFile) {
     returnObj.isErr = true
-    returnObj.errMsg = `Missing ${DataFileNames.questionsPdf} and ${DataFileNames.dataJson} files in zip`
+    returnObj.errMsg = `Missing ${DataFileNames.QuestionsPdf} and ${DataFileNames.DataJson} files in zip`
   }
   else if (!pdfFile) {
     returnObj.isErr = true
-    returnObj.errMsg = `Missing ${DataFileNames.questionsPdf} file in zip`
+    returnObj.errMsg = `Missing ${DataFileNames.QuestionsPdf} file in zip`
   }
   else if (!jsonFile) {
     returnObj.isErr = true
-    returnObj.errMsg = `Missing ${DataFileNames.dataJson} file in zip`
+    returnObj.errMsg = `Missing ${DataFileNames.DataJson} file in zip`
   }
 
   return returnObj
 }
 
-const invalidFilesErrorHandler = (msg: string) => {
+function invalidFilesErrorHandler(msg: string) {
   loadingAndErrorState.isLoading = false
   loadingAndErrorState.isUploadError = true
   loadingAndErrorState.msg = msg
 }
 
-const emitData = async (
-  data: UploadedTestData,
-) => {
-  emit('uploaded', data)
-}
+const emitData = async (data: UploadedTestData) => emit('uploaded', data)
 
-const handleUpload = async (uploadedFiles: File[] | File) => {
+async function handleUpload(uploadedFiles: File[] | File) {
   loadingAndErrorState.isLoading = true
   loadingAndErrorState.msg = 'Please wait, loading file(s)...'
 
@@ -256,4 +328,16 @@ watch(
     }
   },
 )
+
+function formatFileSize(size: number): string {
+  if (size < 1024) {
+    return `${size} B`
+  }
+  else if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(2)} KB`
+  }
+  else {
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`
+  }
+}
 </script>
