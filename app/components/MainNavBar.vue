@@ -258,7 +258,6 @@ const projectVersion = useRuntimeConfig().public.projectVersion
 
 const themeVariants = {
   blue: 'hsl(217.2 91.2% 59.8%)',
-  yellow: 'hsl(47.9 95.8% 53.1%)',
   slate: 'hsl(215.3 19.3% 34.5%)',
   neutral: 'hsl(0 0% 32.2%)',
 }

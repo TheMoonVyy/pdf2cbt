@@ -103,33 +103,6 @@
     --sidebar-ring: oklch(0.446 0.043 257.281);
   }
 
-  :root.dark[data-theme-variant="yellow"] {
-    --background: hsl(20 14.3% 4.1%);
-
-    --card: hsl(20 14.3% 4.1%);
-    --card-foreground: hsl(60 9.1% 97.8%);
-
-    --popover: hsl(20 14.3% 4.1%);
-    --popover-foreground: hsl(60 9.1% 97.8%);
-
-    --primary: hsl(47.9 95.8% 53.1%);
-    --primary-foreground: hsl(26 83.3% 14.1%);
-
-    --secondary: hsl(12 6.5% 15.1%);
-    --secondary-foreground: hsl(60 9.1% 97.8%);
-
-    --muted: hsl(12 6.5% 15.1%);
-    --muted-foreground: hsl(24 5.4% 63.9%);
-
-    --accent: hsl(12 6.5% 15.1%);
-    --accent-foreground: hsl(60 9.1% 97.8%);
-
-    --border: hsl(12 6.5% 15.1%);
-    --input: hsl(12 6.5% 15.1%);
-    --ring: hsl(35.5 91.7% 32.9%);
-  }
-
-
   :root.dark[data-theme-variant="slate"] {
     --background: hsl(222.2 84% 4.9%);
 
