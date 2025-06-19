@@ -50,7 +50,7 @@ const props = defineProps<{
   isQuestionPalleteCollapsed: boolean
 }>()
 
-const imageContainerElem = templateRef('imageContainerElem')
+const imageContainerElem = useTemplateRef('imageContainerElem')
 const { width: containerWidth } = useElementSize(imageContainerElem)
 
 const { testQuestionsData, currentTestState, testQuestionsUrls, lastLoggedAnswer } = useCbtTestData()

@@ -630,7 +630,7 @@ const pageCssVars = computed(() => {
   }
 })
 
-const profileDetailsContainerElem = templateRef('profileDetailsContainerElem')
+const profileDetailsContainerElem = useTemplateRef('profileDetailsContainerElem')
 
 const hiddenSettingsVisibility = shallowRef(false)
 
