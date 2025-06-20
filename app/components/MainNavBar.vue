@@ -279,7 +279,7 @@ const cbtItems = [
   {
     title: 'Test Interface',
     href: '/cbt/interface',
-    icon: 'material-symbols:computer-outline-rounded',
+    icon: 'line-md:computer',
   },
   {
     title: 'Test Results',
@@ -297,7 +297,7 @@ const menuItems = [
   pdfCropperItem,
   {
     title: 'CBT',
-    icon: 'material-symbols:computer-outline-rounded',
+    icon: 'line-md:computer',
     content: cbtItems,
   },
 ]

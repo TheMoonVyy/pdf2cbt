@@ -23,7 +23,7 @@
                   <BaseButton
                     variant="help"
                     label="Settings"
-                    icon-name="material-symbols:settings"
+                    icon-name="line-md:cog-filled"
                     icon-size="1.2rem"
                     @click="visibilityState.advanceSettings = true"
                   />

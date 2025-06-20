@@ -1134,7 +1134,7 @@ const subjectChangeHandler = (subject: string) => {
                   title="Settings"
                   class="size-7"
                   size="icon"
-                  icon-name="mdi:settings"
+                  icon-name="line-md:cog-filled"
                   icon-class="text-orange-500"
                 />
               </UiDropdownMenuTrigger>
