@@ -235,14 +235,8 @@
                   <CbtInterfaceFileUpload
                     v-if="!hashMismatchDialogState.showDialog"
                     v-model="fileUploaderFileType"
-                    :file-options="selectOptions.dataFile"
-                    empty-slot-text-class="top-[30%]"
+                    v-model:show-zip-from-url-dialog="zipFileFromUrlState.isDialogOpen"
                     :zip-file-to-load="zipFileFromUrlState.zipFile"
-                    @update:model-value="(value) => {
-                      if (value === 'zip-url') {
-                        zipFileFromUrlState.isDialogOpen = true
-                      }
-                    }"
                     @uploaded="verifyTestData"
                   />
                 </template>
@@ -1146,12 +1140,6 @@ const selectOptions = {
     { name: 'i, ii, iii, iv...', value: 'lower-roman' },
   ],
 
-  dataFile: [
-    { name: 'Zip', value: 'zip' },
-    { name: 'PDF + Json', value: 'json' },
-    { name: 'Zip from URL', value: 'zip-url' },
-  ],
-
   showHide: [
     { name: 'Show', value: true },
     { name: 'Hide', value: false },
@@ -1181,7 +1169,7 @@ const testState = defineModel<TestState>('testState', { required: true })
 
 const emit = defineEmits(['prepareTest'])
 
-const fileUploaderFileType = shallowRef('zip')
+const fileUploaderFileType = shallowRef<'zip' | 'json'>('zip')
 
 const zipFileFromUrlState = shallowReactive<{
   url: string
@@ -1303,11 +1291,6 @@ watch(
     if (newValue) {
       zipFileFromUrlState.errorMsg = ''
       zipFileFromUrlState.retryCount = 0
-    }
-    else {
-      if (fileUploaderFileType.value === 'zip-url') {
-        fileUploaderFileType.value = 'zip'
-      }
     }
   },
 )

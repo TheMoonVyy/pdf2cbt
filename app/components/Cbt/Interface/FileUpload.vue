@@ -1,23 +1,33 @@
 <template>
   <UiCard class="mx-4 py-3 grow">
     <UiCardContent class="flex flex-col gap-1 grow">
-      <div class="grid grid-cols-4 gap-4 w-full shrink-0">
-        <div class="flex flex-col items-center w-full">
-          <UiLabel
-            class="text-center text-base"
-            for="show_test_data_file_type"
-          >
-            Data File Type
-          </UiLabel>
-          <BaseSelect
-            id="show_test_data_file_type"
-            v-model="selectedFileType"
-            :disabled="loadingAndErrorState.isLoading"
-            :options="props.fileOptions"
-            class="text-center w-fit"
+      <div class="grid grid-cols-9 gap-3 w-full shrink-0">
+        <div class="flex gap-4 col-span-3">
+          <div class="flex flex-col items-center">
+            <UiLabel
+              class="text-center text-base"
+              for="show_test_data_file_type"
+            >
+              Data File Type
+            </UiLabel>
+            <BaseSelect
+              id="show_test_data_file_type"
+              v-model="selectedFileType"
+              :disabled="loadingAndErrorState.isLoading"
+              :options="selectOptions"
+              trigger-class="text-center w-34"
+            />
+          </div>
+          <BaseButton
+            variant="outline"
+            size="icon"
+            title="Load ZIP from URL"
+            icon-name="line-md:link"
+            class="mt-6"
+            @click="showZipFromUrlDialog = true"
           />
         </div>
-        <div class="flex pt-6 justify-center">
+        <div class="flex pt-6 justify-center col-span-2">
           <input
             ref="inputElem"
             class="hidden"
@@ -32,7 +42,7 @@
             @click="fileUploaderState.choose()"
           />
         </div>
-        <div class="flex pt-6 justify-center">
+        <div class="flex pt-6 justify-center col-span-2">
           <BaseButton
             :label="computedValue.maxFilesSelect === 1 ? 'Load File' : 'Load Files'"
             :disabled="(fileUploaderState.files.size !== computedValue.maxFilesSelect) || loadingAndErrorState.isLoading"
@@ -41,7 +51,7 @@
             @click="handleUpload([...fileUploaderState.files.values()])"
           />
         </div>
-        <div class="flex pt-6 justify-center">
+        <div class="flex pt-6 justify-center col-span-2">
           <BaseButton
             label="Clear Files"
             :disabled="fileUploaderState.files.size === 0"
@@ -100,8 +110,9 @@
 <script lang="ts" setup>
 import { DataFileNames } from '#shared/enums'
 
+type FileTypes = 'zip' | 'json'
+
 const props = defineProps<{
-  fileOptions: { name: string, value: string }[]
   emptySlotContainerClass?: string
   emptySlotTextClass?: string
   rootClass?: string
@@ -109,11 +120,17 @@ const props = defineProps<{
   zipFileToLoad?: File | null
 }>()
 
-const selectedFileType = defineModel<string>({ required: true })
+const selectedFileType = defineModel<FileTypes>({ required: true })
+const showZipFromUrlDialog = defineModel<boolean>('showZipFromUrlDialog', { required: true })
 
 const emit = defineEmits<{
   uploaded: [data: UploadedTestData]
 }>()
+
+const selectOptions = [
+  { name: 'Zip', value: 'zip' as FileTypes },
+  { name: 'PDF + Json', value: 'json' as FileTypes },
+]
 
 const acceptStrings = {
   zip: '.zip,application/zip',
@@ -141,7 +158,7 @@ const loadingAndErrorState = shallowReactive({
 })
 
 const computedValue = computed(() => {
-  if (selectedFileType.value.startsWith('zip')) {
+  if (selectedFileType.value === 'zip') {
     return {
       accept: acceptStrings.zip,
       maxFilesSelect: 1,
@@ -275,11 +292,9 @@ async function handleUpload(uploadedFiles: File[] | File) {
   loadingAndErrorState.isLoading = true
   loadingAndErrorState.msg = 'Please wait, loading file(s)...'
 
-  const isFileTypeZip = selectedFileType.value.startsWith('zip')
-
   const files = Array.isArray(uploadedFiles) ? uploadedFiles : [uploadedFiles]
 
-  if (isFileTypeZip) {
+  if (selectedFileType.value === 'zip') {
     const zipFile = files[0]
     if (zipFile) {
       utilUnzipTestDataFile(zipFile, 'all')
@@ -324,6 +339,7 @@ watch(
   () => props.zipFileToLoad,
   (newVal) => {
     if (newVal) {
+      selectedFileType.value = 'zip'
       handleUpload(newVal)
     }
   },
