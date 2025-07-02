@@ -20,7 +20,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: {
-        class: 'dark',
+        'class': 'dark',
         'data-theme-variant': 'blue',
       },
     },

@@ -44,26 +44,6 @@ export function utilCloneJson<T>(data: T, returnString: boolean = false): T | st
   return returnString ? dataString : JSON.parse(dataString)
 }
 
-/**
- * Generates TestResultOverview from the provided testOutputData.
- *
- * It performs the following steps:
- *
- * 1. If `testResultOverview` is already present in the `testOutputData` and is valid
- * it returns that directly (unless `fresh` is true).
- * 2. If `fresh` is true or existing testResultOverview is invalid/incomplete:
- *    - Extracts the `testName` from `testConfig`.
- *    - Extracts the `testStartTime` from the first `"testStarted"` log.
- *    - Extracts the `testEndTime` from the last `"testFinished"` log.
- * 3. Returns a `TestResultOverview` with an empty overview obj if not present in testOutputData
- *
- * @param testOutputData - The TestOutputData
- * @param fresh - Whether to ignore any pre-existing overview data and regenerate it from logs. Defaults to false.
- * @returns `TestResultOverview` object.
- * @throws MissingTestNameError - If `testName` is missing in `testConfig`.
- * @throws MissingTestLogError - If timestamp of either `testStarted` or `testFinished` logs are missing.
- */
-
 export const utilGetTestResultOverview = (
   testOutputData: Omit<TestResultCommonOutput, 'testResultOverview'>
     & Partial<Pick<TestResultCommonOutput, 'testResultOverview'>>,

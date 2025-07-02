@@ -23,7 +23,6 @@ import {
   FONT_SIZES,
 } from '#shared/constants'
 import { UiDropdownMenu, UiDropdownMenuTrigger, UiPopover, UiPopoverTrigger } from '#components'
-import { db } from '@/src/db/cbt-db'
 
 type FilterState = Record<string, Set<string>>
 
@@ -48,6 +47,8 @@ const tooltipContent = {
 }
 
 const { testResultData, waitUntil, testConfig, testQuestions } = defineProps<Props>()
+
+const db = useDB()
 
 const currentSelectedState = shallowReactive({
   subject: TEST_OVERALL,

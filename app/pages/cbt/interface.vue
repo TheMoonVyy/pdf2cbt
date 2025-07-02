@@ -560,8 +560,6 @@ import notVisitedIcon from 'assets/icons/ques-notVisited.svg?no-inline'
 import markedIcon from 'assets/icons/ques-marked.svg?no-inline'
 import markedAnsweredIcon from 'assets/icons/ques-markedAnswered.svg?no-inline'
 import profileIcon from 'assets/icons/profile.svg?no-inline'
-
-import { db } from '@/src/db/cbt-db'
 import { CbtUseState } from '#shared/enums'
 
 definePageMeta({
@@ -584,6 +582,8 @@ const questionStatusList: {
   { key: 'marked', label: 'Marked for Review' },
   { key: 'markedAnswered', label: 'Answered & Marked for Review', colSpan2: true },
 ]
+
+const db = useDB()
 
 // styles and css variables being used on page
 const pageCssVars = computed(() => {
@@ -940,16 +940,12 @@ async function prepareTest() {
   const continueFromBackup = testState.continueLastTest
 
   const settingsData = {
-    /* using toRaw because while both are ref from useState,
-      .value of them is reactive object
-    */
-    testSettings: toRaw(testSettings.value),
-    uiSettings: toRaw(uiSettings.value),
+    testSettings: utilCloneJson(testSettings.value),
+    uiSettings: utilCloneJson(uiSettings.value),
   }
 
-  db.replaceSettings(settingsData).catch(
-    (e: unknown) => console.error('Error saving settings in db: ', e),
-  )
+  db.replaceSettings(settingsData)
+    .catch((e: unknown) => console.error('Error saving settings in db: ', e))
 
   if (!continueFromBackup) {
     const testDuration = testSettings.value.durationInSeconds
@@ -978,28 +974,16 @@ async function prepareTest() {
     }
 
     if (saveTestData) {
-      const ogTestSectionsList = testSectionsList.value
-      const ogTestSectionsData = testSectionsData.value
-      const ogCurrentTestState = currentTestState.value
       try {
-        const sectionsList = toRaw(ogTestSectionsList)
-        const sectionsData = toRaw(ogTestSectionsData)
-        const currentState = toRaw(ogCurrentTestState)
+        const sectionsList = utilCloneJson(testSectionsList.value)
+        const sectionsData = utilCloneJson(testSectionsData.value)
+        const currentState = utilCloneJson(currentTestState.value)
 
         await db.putTestData(sectionsList, currentState, sectionsData)
       }
-      catch {
-        try {
-          const sectionsList = JSON.parse(JSON.stringify(ogTestSectionsList))
-          const sectionsData = JSON.parse(JSON.stringify(ogTestSectionsData))
-          const currentState = JSON.parse(JSON.stringify(ogCurrentTestState))
-
-          await db.putTestData(sectionsList, currentState, sectionsData)
-        }
-        catch (e: unknown) {
-          console.error('Error saving test data in db', e)
-          currentTestState.value.saveTestData = null
-        }
+      catch (e: unknown) {
+        console.error('Error saving test data in db', e)
+        currentTestState.value.saveTestData = null
       }
     }
   }
@@ -1107,7 +1091,7 @@ async function submitTest(isAuto: boolean) {
 
   generateTestOutputData()
   try {
-    const id = await db.addTestOutputData(testOutputData!)
+    const id = await db.addTestOutputData(utilCloneJson(testOutputData!))
     if (id) {
       const currentResultsID = useCbtResultsCurrentID()
       currentResultsID.value = id

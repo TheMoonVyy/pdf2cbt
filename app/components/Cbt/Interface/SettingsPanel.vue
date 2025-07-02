@@ -1006,7 +1006,6 @@
 
 <script lang="ts" setup>
 import type { LocationQueryValue } from 'vue-router'
-import { db } from '@/src/db/cbt-db'
 import { CBTInterfaceQueryParams } from '#shared/enums'
 
 type ImportExportTypeKey = 'import' | 'export' | 'restoreFromSaved' | 'reset'
@@ -1168,6 +1167,8 @@ const prepareTestState = shallowReactive({
 const testState = defineModel<TestState>('testState', { required: true })
 
 const emit = defineEmits(['prepareTest'])
+
+const db = useDB()
 
 const fileUploaderFileType = shallowRef<'zip' | 'json'>('zip')
 
@@ -1403,11 +1404,8 @@ const processImportExport = (name: ImportExportTypeKey | string, data: Record<st
   }
 
   const getPlainData = () => ({
-    /* using toRaw because while both are ref from useState,
-      .value of them is reactive object
-    */
-    testSettings: toRaw(testSettings.value),
-    uiSettings: toRaw(uiSettings.value),
+    testSettings: utilCloneJson(testSettings.value),
+    uiSettings: utilCloneJson(uiSettings.value),
   })
 
   switch (keyName) {
@@ -1542,16 +1540,16 @@ async function loadTestData(
 
     if (isContinueLastTest) {
       try {
-        const [sectionsList, testState, sectionsData, testLogs] = await db.getTestData()
+        const testData = await db.getTestData()
 
-        totalQuestions = sectionsData.totalQuestions
-        totalSections = sectionsList.length
-        sectionsArray = sectionsList
-        newTestSectionsData = sectionsData.testSectionsData
-        currentTestState.value = testState
+        totalQuestions = testData.totalQuestions
+        totalSections = testData.testSectionsList.length
+        sectionsArray = testData.testSectionsList
+        newTestSectionsData = testData.testSectionsData
+        currentTestState.value = testData.currentTestState
 
         const testLogger = useCbtLogger()
-        testLogger.replaceLogsArray(testLogs)
+        testLogger.replaceLogsArray(testData.testLogs)
       }
       catch (e: unknown) {
         console.error('Error getting Test Data in db', e)

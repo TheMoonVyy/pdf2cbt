@@ -143,7 +143,6 @@
 
 <script lang="ts" setup>
 import { liveQuery } from 'dexie'
-import { db } from '@/src/db/cbt-db'
 
 const props = defineProps<{
   loadOrRefreshDataWhen: boolean
@@ -170,6 +169,8 @@ const showRenameTestDialogState = shallowReactive({
 })
 
 const showDeleteTestDialog = shallowRef(false)
+
+const db = useDB()
 
 // reactively update testResultOverviews from db if either of these changes:
 // testResultOverviews store in db (when something is added/removed/updated etc)
@@ -255,7 +256,3 @@ const viewResultsBtnHandler = (isResultsGenerated: boolean, id: number) => {
   emit('viewOrGenerateResultsClicked', id, btnType)
 }
 </script>
-
-<style>
-
-</style>

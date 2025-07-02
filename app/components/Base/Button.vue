@@ -24,7 +24,7 @@ const {
 
 <template>
   <UiButton
-    class="flex items-center"
+    class="flex items-center disabled:cursor-not-allowed disabled:pointer-events-auto"
     :size
     :variant
   >

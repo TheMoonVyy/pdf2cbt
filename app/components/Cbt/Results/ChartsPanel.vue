@@ -544,7 +544,3 @@ const detectTouchDevice = () => {
 
 onMounted(() => detectTouchDevice())
 </script>
-
-<style>
-
-</style>

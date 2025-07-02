@@ -46,7 +46,7 @@ const getTestDummyData = () => {
 
   for (const status of dummyStatusArray) {
     const randomQuestion = 1 + Math.max(1, Math.floor(Math.random() * 20)) // random from 2 to 20
-    
+
     if (testSectionsdummyData['Subject1 Section 1']) {
       testSectionsdummyData['Subject1 Section 1'][randomQuestion]!.status = status
     }

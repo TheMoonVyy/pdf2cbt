@@ -1,6 +1,6 @@
-import Dexie, { type EntityTable } from 'dexie'
+import Dexie from 'dexie'
+import type { Collection, EntityTable, InsertType } from 'dexie'
 import type {
-  CbtTestSettings,
   CbtUiSettings,
   TestSectionListItem,
   CurrentTestState,
@@ -12,12 +12,16 @@ import type {
   TestResultCommonOutput,
   TestNotes,
 } from '#shared/types'
-import { utilGetTestResultOverview, utilCloneJson } from '@/utils/utils'
+import { utilGetTestResultOverview } from '@/utils/utils'
+import type {
+  SettingsData,
+  TestOutputDataDB,
+  TestNotesDB,
+  IPdf2CbtDB,
+} from '#shared/types/db'
 
-interface SettingsData {
+type SettingsDataWithID = SettingsData & {
   id: number
-  testSettings: CbtTestSettings
-  uiSettings: CbtUiSettings
 }
 
 interface CurrentTestStateDB extends CurrentTestState {
@@ -28,18 +32,8 @@ type TestSectionListItemDB = TestSectionListItem & {
   id: number
 }
 
-type TestOutputDataDB = {
-  id?: number
-  testOutputData: TestResultCommonOutput
-}
-
-type TestNotesDB = {
-  id: number
-  notes: TestNotes
-}
-
-class CBTDatabase extends Dexie {
-  settingsData!: EntityTable<SettingsData, 'id'>
+class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
+  settingsData!: EntityTable<SettingsDataWithID, 'id'>
   testSectionsList!: EntityTable<TestSectionListItemDB, 'id'>
   currentTestState!: EntityTable<CurrentTestStateDB, 'id'>
   testQuestionsData!: EntityTable<TestQuestionData, 'queId'>
@@ -93,24 +87,19 @@ class CBTDatabase extends Dexie {
 
       const { id, ...rest } = data
       return rest
-    }).catch(_ => null)
-  }
-
-  async replaceSettings(data: Omit<SettingsData, 'id'>, viaJson: boolean = false) {
-    let finalData = { id: 1, ...data }
-    if (viaJson) finalData = JSON.parse(JSON.stringify(finalData))
-
-    return this.settingsData.put(finalData).catch(() => {
-      const fallbackData = JSON.parse(JSON.stringify(finalData))
-      return this.settingsData.put(fallbackData)
     })
+      .catch(_ => null)
   }
 
-  addLog(testLog: TestLog) {
+  async replaceSettings(data: SettingsData) {
+    return this.settingsData.put({ id: 1, ...data })
+  }
+
+  async addLog(testLog: TestLog) {
     return this.testLog.add(testLog)
   }
 
-  putTestData(
+  async putTestData(
     testSectionsList: TestSectionListItem[],
     currentTestState: CurrentTestState,
     testSectionsData: TestSectionsData,
@@ -118,83 +107,101 @@ class CBTDatabase extends Dexie {
     const testQuestionsData: TestQuestionData[] = testSectionsList
       .flatMap(({ name: sectionName }) => Object.values(testSectionsData[sectionName] ?? {}))
 
-    return Promise.all([
-      this.testSectionsList.bulkPut(testSectionsList),
-      this.currentTestState.put({ id: 1, ...currentTestState }),
-      this.testQuestionsData.bulkPut(testQuestionsData),
-    ])
+    return this.transaction(
+      'rw',
+      this.testSectionsList,
+      this.currentTestState,
+      this.testQuestionsData,
+      async () => {
+        await this.testSectionsList.bulkPut(testSectionsList)
+        await this.currentTestState.put({ id: 1, ...currentTestState })
+        await this.testQuestionsData.bulkPut(testQuestionsData)
+      },
+    )
   }
 
-  getTestData() {
-    return Promise.all([
-      this.testSectionsList.toArray().then(
-        (testSectionsList) => {
-          if (testSectionsList.length > 0) {
-            return testSectionsList.map(({ id, ...rest }) => rest as TestSectionListItem)
-          }
-          return Promise.reject(new Error('testSectionsList is empty in db'))
-        },
-      ),
-      this.currentTestState.get(1).then(
-        (currentTestState) => {
-          if (currentTestState) {
-            const { id, ...rest } = currentTestState
-            return rest as CurrentTestState
-          }
-          return Promise.reject(new Error('currentTestState is empty in db'))
-        },
-      ),
-      this.testQuestionsData.toArray().then((testQuestionsData) => {
-        if (testQuestionsData.length > 0) {
-          const testSectionsData: TestSectionsData = {}
+  async getTestData() {
+    return this.transaction(
+      'r',
+      this.testSectionsList,
+      this.currentTestState,
+      this.testQuestionsData,
+      this.testLog,
+      async () => {
+        const testSectionsListRaw = await this.testSectionsList.toArray()
+        if (testSectionsListRaw.length === 0)
+          throw new Error('testSectionsList is empty in db')
 
-          for (const questionData of testQuestionsData) {
-            const section = questionData.section
+        const testSectionsList = testSectionsListRaw.map(({ id, ...rest }) => rest as TestSectionListItem)
 
-            testSectionsData[section] ??= {}
+        const currentTestStateRaw = await this.currentTestState.get(1)
+        if (!currentTestStateRaw)
+          throw new Error('currentTestState is empty in db')
 
-            const questionKey = questionData.que
-            testSectionsData[section][questionKey] = questionData
-          }
+        const { id, ...currentTestState } = currentTestStateRaw
 
-          return { testSectionsData, totalQuestions: testQuestionsData.length }
+        const testQuestionsData = await this.testQuestionsData.toArray()
+        if (testQuestionsData.length === 0)
+          throw new Error('testQuestionsData is empty in db')
+
+        const testSectionsData: TestSectionsData = {}
+        for (const questionData of testQuestionsData) {
+          const section = questionData.section
+          const questionKey = questionData.que
+          testSectionsData[section] ??= {}
+          testSectionsData[section][questionKey] = questionData
         }
-        return Promise.reject(new Error('testQuestionsData is empty in db'))
-      }),
-      this.testLog.toArray(),
-    ])
+
+        const testLogs = await this.testLog.toArray()
+
+        return {
+          testSectionsList,
+          currentTestState,
+          testSectionsData,
+          totalQuestions: testQuestionsData.length,
+          testLogs,
+        }
+      },
+    )
   }
 
-  getTestStatus() {
+  async getTestStatus() {
     return this.currentTestState.get(1).then(testState => testState?.testStatus)
   }
 
-  clearTestSectionsList() {
+  async clearTestSectionsList() {
     return this.testSectionsList.clear()
   }
 
-  clearTestQuestionsData() {
+  async clearTestQuestionsData() {
     return this.testQuestionsData.clear()
   }
 
-  clearCurrentTestState() {
+  async clearCurrentTestState() {
     return this.currentTestState.clear()
   }
 
-  clearTestLogs() {
+  async clearTestLogs() {
     return this.testLog.clear()
   }
 
-  clearTestDataInDB() {
-    return Promise.all([
-      db.clearCurrentTestState(),
-      db.clearTestSectionsList(),
-      db.clearTestQuestionsData(),
-      db.clearTestLogs(),
-    ])
+  async clearTestDataInDB() {
+    return this.transaction(
+      'rw',
+      this.currentTestState,
+      this.testSectionsList,
+      this.testQuestionsData,
+      this.testLog,
+      async () => {
+        await this.currentTestState.clear()
+        await this.testSectionsList.clear()
+        await this.testQuestionsData.clear()
+        await this.testLog.clear()
+      },
+    )
   }
 
-  updateQuestionData(questionData: TestQuestionData) {
+  async updateQuestionData(questionData: TestQuestionData) {
     const { status, answer, timeSpent, queId } = questionData
     const updatedData = {
       status,
@@ -202,10 +209,10 @@ class CBTDatabase extends Dexie {
       timeSpent,
     }
 
-    return this.testQuestionsData.update(queId, updatedData)
+    this.testQuestionsData.update(queId, updatedData)
   }
 
-  updateCurrentTestState(
+  async updateCurrentTestState(
     currentTestState: CurrentTestState,
     updateAll: boolean = false,
     updateSectionsPrevQuestion: boolean = false,
@@ -235,19 +242,14 @@ class CBTDatabase extends Dexie {
       }
 
       if (updateSectionsPrevQuestion) data.sectionsPrevQuestion = sectionsPrevQuestion
-
       return this.currentTestState.update(1, data)
     }
   }
 
-  // return a test output data by id
   async getTestOutputData(id: number) {
     return this.testOutputDatas.get(id)
   }
 
-  // return a test result overview by id if provided,
-  // if id is not provided then get last test result overview
-  // if getAll is true, will return all test result overview
   async getTestResultOverview(id: number | null, getAll: true): Promise<TestResultOverviewDB[]>
   async getTestResultOverview(id?: number | null, getAll?: false): Promise<TestResultOverviewDB | undefined>
   async getTestResultOverview(
@@ -263,8 +265,8 @@ class CBTDatabase extends Dexie {
     return this.testResultOverviews.orderBy('id').last()
   }
 
-  async getTestResultOverviewByCompoundIndex(data: TestResultCommonOutput) {
-    const { testName, testStartTime, testEndTime } = data.testResultOverview
+  async getTestResultOverviewByCompoundIndex(data: TestResultOverview) {
+    const { testName, testStartTime, testEndTime } = data
 
     return this.testResultOverviews
       .where('[testName+testStartTime+testEndTime]')
@@ -272,84 +274,76 @@ class CBTDatabase extends Dexie {
       .first()
   }
 
-  async getTestResultOverviews(sortBy: TestResultOverviewsDBSortByOption): Promise<TestResultOverviewDB[]> {
-    switch (sortBy) {
-      case 'addedAscending':
-        return this.testResultOverviews
-          .orderBy('id')
-          .toArray()
-      case 'addedDescending':
-        return this.testResultOverviews
-          .orderBy('id')
-          .reverse()
-          .toArray()
-      case 'startTimeAscending':
-        return this.testResultOverviews
-          .orderBy('testStartTime')
-          .toArray()
-      case 'startTimeDescending':
-        return this.testResultOverviews
-          .orderBy('testStartTime')
-          .reverse()
-          .toArray()
-      case 'endTimeAscending':
-        return this.testResultOverviews
-          .orderBy('testEndTime')
-          .toArray()
-      case 'endTimeDescending':
-        return this.testResultOverviews
-          .orderBy('testEndTime')
-          .reverse()
-          .toArray()
-      default:
-        return []
-    }
+  async getTestResultOverviewsByCompoundIndexes(
+    compoundIndexes: Array<[
+      TestResultOverview['testName'],
+      TestResultOverview['testStartTime'],
+      TestResultOverview['testEndTime'],
+    ]>,
+  ): Promise<TestResultOverviewDB[]> {
+    return this.testResultOverviews
+      .where('[testName+testStartTime+testEndTime]')
+      .anyOf(compoundIndexes)
+      .toArray()
   }
 
-  /**
-   * Adds test output data and its overview to the database.
-   *
-   * This function does the following:
-   * 1. gets testOverview from utilGetTestResultOverview(testOutputData).
-   * 2. Validates that a test result with the same name and timestamps doesn't already exist.
-   * 3. Adds the test output data to the testOutputDatas store.
-   * 4. Adds the testResultOverview to testResultOverviews store with id of testOutputDatas
-   *
-   * @param testOutputData - The testOutputData.
-   * @param overviewData - Optional additional test overview data.
-   * @returns Promise of Dexie saving testOverview.
-   * @throws DuplicateTestResultError if a test with the same name and timestamps already exists.
-   */
-
-  async addTestOutputData(
-    testOutputData: TestResultCommonOutput,
-    viaJson: boolean = true,
+  async getTestResultOverviews(
+    sortBy: TestResultOverviewsDBSortByOption,
+    limit: number | null = null,
   ) {
-    testOutputData.testResultOverview = utilGetTestResultOverview(testOutputData)
+    let collection: Collection<TestResultOverviewDB, number, InsertType<TestResultOverviewDB, 'id'>>
+      | null = null
 
-    const existing = await this.getTestResultOverviewByCompoundIndex(testOutputData)
+    switch (sortBy) {
+      case 'addedAscending':
+        collection = this.testResultOverviews.orderBy('id')
+        break
+      case 'addedDescending':
+        collection = this.testResultOverviews.orderBy('id').reverse()
+        break
+      case 'startTimeAscending':
+        collection = this.testResultOverviews.orderBy('testStartTime')
+        break
+      case 'startTimeDescending':
+        collection = this.testResultOverviews.orderBy('testStartTime').reverse()
+        break
+      case 'endTimeAscending':
+        collection = this.testResultOverviews.orderBy('testEndTime')
+        break
+      case 'endTimeDescending':
+        collection = this.testResultOverviews.orderBy('testEndTime').reverse()
+        break
+    }
+
+    if (!collection) return []
+
+    if (limit && limit > 0)
+      collection = collection.limit(limit)
+
+    return collection.toArray()
+  }
+
+  async addTestOutputData(testOutputData: TestResultCommonOutput) {
+    const testResultOverview = utilGetTestResultOverview(testOutputData)
+    testOutputData.testResultOverview = testResultOverview
+
+    const existing = await this.getTestResultOverviewByCompoundIndex(testResultOverview)
 
     if (existing) {
       return existing.id
     }
+    const id = await this.testOutputDatas.add({ testOutputData })
 
-    const dataToSave = viaJson ? utilCloneJson(testOutputData) : testOutputData
-    const id = await this.testOutputDatas.add({ testOutputData: dataToSave })
-
-    return this.testResultOverviews.put({
+    return this.replaceTestResultOverview({
       id: id!,
-      ...dataToSave.testResultOverview,
+      ...testResultOverview,
     })
   }
 
-  async bulkAddTestOutputData(
-    testOutputDatas: TestResultCommonOutput[],
-    viaJson: boolean = true,
-  ) {
+  async bulkAddTestOutputData(testOutputDatas: TestResultCommonOutput[]) {
     const newTestOutputDatas: { testOutputData: TestResultCommonOutput }[] = []
     const newTestResultOverviews: TestResultOverviewDB[] = []
 
-    testOutputDatas = viaJson ? utilCloneJson(testOutputDatas) : testOutputDatas
     const testNotes: (TestNotes | null)[] = []
 
     for (const testOutputData of testOutputDatas) {
@@ -398,17 +392,12 @@ class CBTDatabase extends Dexie {
     )
   }
 
-  async replaceTestResultOverview(data: TestResultOverviewDB, viaJson: boolean = true) {
-    const dataToSave = viaJson ? utilCloneJson(data) : data
-    return this.testResultOverviews.put(dataToSave)
+  async replaceTestResultOverview(data: TestResultOverviewDB) {
+    return this.testResultOverviews.put(data)
   }
 
-  async replaceTestOutputData(
-    data: TestOutputDataDB,
-    viaJson: boolean = true,
-  ) {
-    const dataToSave = viaJson ? utilCloneJson(data) : data
-    return this.testOutputDatas.put(dataToSave)
+  async replaceTestOutputData(data: TestOutputDataDB) {
+    return this.testOutputDatas.put(data)
   }
 
   async getTestOutputDatas(ids: number[]) {
@@ -416,37 +405,47 @@ class CBTDatabase extends Dexie {
   }
 
   async removeTestOutputDataAndResultOverview(id: number) {
-    // Attempt to delete the test result overview
-    await this.testResultOverviews.delete(id)
-
-    // Attempt to delete the test output data
-    await this.testOutputDatas.delete(id)
-
-    return true
+    return this.transaction('rw', [this.testResultOverviews, this.testOutputDatas], async () => {
+      await this.testResultOverviews.delete(id)
+      await this.testOutputDatas.delete(id)
+      return true
+    })
   }
 
   async replaceTestOutputDataAndResultOverview(id: number, data: TestResultCommonOutput) {
-    const dataToReplace = { id, testOutputData: data }
-    const status = await this.replaceTestOutputData(dataToReplace)
-    if (status) return this.replaceTestResultOverview({
-      id: dataToReplace.id,
-      ...data.testResultOverview,
-    })
+    return this.transaction(
+      'rw',
+      [this.testOutputDatas, this.testResultOverviews],
+      async () => {
+        const dataToReplace = { id, testOutputData: data }
+        const status = await this.replaceTestOutputData(dataToReplace)
+
+        if (!status) return false
+
+        return !!this.replaceTestResultOverview({
+          id,
+          ...data.testResultOverview,
+        })
+      },
+    )
   }
 
   async renameTestNameOfTestOutputData(id: number, newName: string) {
-    const updateStatus = await this.testOutputDatas.update(id, {
-      'testOutputData.testConfig.testName': newName,
-      'testOutputData.testResultOverview.testName': newName,
-    })
-    if (updateStatus) {
-      return this.testResultOverviews.update(id, {
-        testName: newName,
+    return this.transaction(
+      'rw',
+      [this.testOutputDatas, this.testResultOverviews],
+      async () => {
+        const updateStatus = await this.testOutputDatas.update(id, {
+          'testOutputData.testConfig.testName': newName,
+          'testOutputData.testResultOverview.testName': newName,
+        })
+
+        if (!updateStatus) return false
+
+        return !!this.testResultOverviews.update(id, {
+          testName: newName,
+        })
       })
-    }
-    else {
-      return updateStatus
-    }
   }
 
   async getTestNotes(testId: number) {
@@ -466,15 +465,19 @@ class CBTDatabase extends Dexie {
     }
   }
 
+  async putTestNotes(testId: number, testNotes: TestNotes) {
+    return this.testNotes.put({ id: testId, notes: testNotes })
+  }
+
   async bulkGetTestNotes(ids: number[]) {
     return this.testNotes.bulkGet(ids)
   }
 
   async replaceTestQuestionNotes(testId: number, queId: number | string, notesText: string = '') {
-    return db.testNotes.update(testId, {
+    return this.testNotes.update(testId, {
       [`notes.${queId}`]: notesText,
     })
   }
 }
 
-export const db = new CBTDatabase()
+export const db = new Pdf2CbtDB()

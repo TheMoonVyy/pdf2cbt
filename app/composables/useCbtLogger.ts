@@ -1,8 +1,6 @@
-import { db } from '@/src/db/cbt-db'
-
 type UnknownRecord = Record<string, unknown>
 
-let testLoggerInstance: TestLogger | null = null
+const db = useDB()
 
 class TestLogger {
   logs: TestLog[] = []
@@ -57,9 +55,7 @@ class TestLogger {
 
     if (details !== null) log.actionDetails = details
 
-    this.lastLoggedAnswer.value = lastLoggedAnswerValue !== undefined
-      ? lastLoggedAnswerValue
-      : answer
+    this.lastLoggedAnswer.value = lastLoggedAnswerValue ?? answer
 
     this.logs.push(log)
     db.addLog(log)
@@ -89,12 +85,8 @@ class TestLogger {
       this.#createLog(logType)
       this.currentQuestion(logType, 0)
 
-      const ogCurrentTestState = this.currentTestState.value
-      const currentTestState = toRaw(ogCurrentTestState)
+      const currentTestState = utilCloneJson(this.currentTestState.value)
       return db.updateCurrentTestState(currentTestState, true)
-        .catch('DataCloneError',
-          () => db.updateCurrentTestState(JSON.parse(JSON.stringify(currentTestState)), true),
-        )
     }
   }
 
@@ -105,31 +97,28 @@ class TestLogger {
   ) {
     const details: UnknownRecord = { via }
 
-    if (prevSection) details.prevSection = prevSection
+    if (prevSection)
+      details.prevSection = prevSection
+
     if (via !== 'testStarted' && via !== 'testResumed') {
       details.prevQueId = prevQueId
     }
 
-    if (via !== 'testFinished') this.#createLog('currentQuestion', details)
+    if (via !== 'testFinished')
+      this.#createLog('currentQuestion', details)
 
     if (typeof details.prevQueId === 'number') {
       const prevQueId = details.prevQueId
       const prevQuestionData = this.testQuestionsData.value.get(prevQueId)
-      if (prevQuestionData) db.updateQuestionData(prevQuestionData)
+      if (prevQuestionData)
+        db.updateQuestionData(utilCloneJson(prevQuestionData))
 
-      const ogCurrentTestState = this.currentTestState.value
-      const currentTestState = toRaw(ogCurrentTestState)
+      const currentTestState = utilCloneJson(this.currentTestState.value)
 
       return db.updateCurrentTestState(
         currentTestState,
         via === 'testFinished',
         Boolean(details.prevSection),
-      ).catch('DataCloneError',
-        () => db.updateCurrentTestState(
-          JSON.parse(JSON.stringify(currentTestState)),
-          via === 'testFinished',
-          Boolean(details.prevSection),
-        ),
       )
     }
   }
@@ -157,6 +146,8 @@ class TestLogger {
     return this.logs
   }
 }
+
+let testLoggerInstance: TestLogger | null = null
 
 export default (freshInit: boolean = false): TestLogger => {
   if (!testLoggerInstance || freshInit) {

@@ -13,7 +13,7 @@
       :icon-size="iconSize"
       icon-class="border border-input"
       :icon-style="{ color: value }"
-      @click="(e) => { show(e); emit('show') }"
+      @click="(e: MouseEvent) => { show(e); emit('show') }"
     />
   </ColorPicker>
 </template>

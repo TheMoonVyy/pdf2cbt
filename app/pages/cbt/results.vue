@@ -122,7 +122,6 @@ import type {
   PieSeriesOption,
 } from 'echarts/types/dist/shared'
 
-import { db } from '@/src/db/cbt-db'
 import { ResultsPagePanels } from '#shared/enums'
 
 interface ChartDataState {
@@ -177,6 +176,8 @@ const screenBreakpoints = useBreakpoints(
   { sm: 640 },
   { ssrWidth: 1024 },
 )
+
+const db = useDB()
 
 const currentResultsID = useCbtResultsCurrentID()
 
@@ -998,7 +999,7 @@ async function myTestsPanelViewOrGenerateHandler(id: number, btnType: 'generate'
 
     const data = generateTestResults(false)
     if (data) {
-      await db.replaceTestOutputDataAndResultOverview(id, data)
+      await db.replaceTestOutputDataAndResultOverview(id, utilCloneJson(data))
     }
   }
 }
@@ -1006,8 +1007,9 @@ async function myTestsPanelViewOrGenerateHandler(id: number, btnType: 'generate'
 async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
   if (answerKeyData && testOutputData.value) {
     testOutputData.value.testAnswerKey = answerKeyData
-    testOutputData.value.testResultOverview = utilGetTestResultOverview(testOutputData.value)
-    const testResultOverviewDB = await db.getTestResultOverviewByCompoundIndex(testOutputData.value)
+    const testResultOverview = utilCloneJson(utilGetTestResultOverview(testOutputData.value))
+    testOutputData.value.testResultOverview = testResultOverview
+    const testResultOverviewDB = await db.getTestResultOverviewByCompoundIndex(testResultOverview)
 
     if (testResultOverviewDB && testResultOverviewDB.id) {
       const status = generateTestResults()
@@ -1016,7 +1018,7 @@ async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
         try {
           await db.replaceTestOutputDataAndResultOverview(
             testResultOverviewDB.id,
-            testResultsOutputData.value as TestOutputData,
+            utilCloneJson(testResultsOutputData.value as TestOutputData),
           )
           id = testResultOverviewDB.id
         }
@@ -1086,20 +1088,17 @@ async function processImportExport(
             testName,
             testStartTime,
             testEndTime,
-          } = dataItem.testResultOverview ?? utilGetTestResultOverview(dataItem)
+          } = utilGetTestResultOverview(dataItem)
 
           queryList.push([testName, testStartTime, testEndTime])
         }
-        const duplicateDatas = await db.testResultOverviews
-          .where('[testName+testStartTime+testEndTime]')
-          .anyOf(queryList)
-          .toArray()
+        const duplicateDatas = await db.getTestResultOverviewsByCompoundIndexes(queryList)
 
         if (duplicateDatas.length > 0) {
           console.error('Error: Importing duplicate test data is disallowed, a better way to handle this will be available soon')
         }
         else if (queryList.length > 0) {
-          await db.bulkAddTestOutputData(data)
+          await db.bulkAddTestOutputData(utilCloneJson(data))
         }
       }
     }
@@ -1170,7 +1169,10 @@ function onMountedCallback(id: number | null = null) {
       if (!testOutputData.value?.testResultData) {
         isReadyToLoad = generateTestResults() || false
         if (isReadyToLoad && id && testResultsOutputData.value) {
-          db.replaceTestOutputDataAndResultOverview(id, testResultsOutputData.value as TestOutputData)
+          db.replaceTestOutputDataAndResultOverview(
+            id,
+            utilCloneJson(testResultsOutputData.value as TestOutputData),
+          )
         }
       }
       else {

@@ -71,7 +71,6 @@
 
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
-import { db } from '@/src/db/cbt-db'
 
 const homePageLink = useRequestURL().origin
 
@@ -98,6 +97,8 @@ const { currentQuestionId, displayQuestionNumber } = defineProps<{
   currentQuestionId: number | string
   displayQuestionNumber: number | string
 }>()
+
+const db = useDB()
 
 const currentTestId = useCbtResultsCurrentID()
 

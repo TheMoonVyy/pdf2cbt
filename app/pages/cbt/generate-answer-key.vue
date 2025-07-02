@@ -310,7 +310,6 @@
 
 <script lang="ts" setup>
 import { zip, strToU8, type AsyncZippable } from 'fflate'
-import { db } from '@/src/db/cbt-db'
 import { DataFileNames } from '#shared/enums'
 
 type UnknownRecord = Record<string, unknown>
@@ -372,6 +371,8 @@ const fileUploaderState = shallowReactive<{
   unzippedFiles: null,
   jsonData: null,
 })
+
+const db = useDB()
 
 const selectOptions = {
   questionsNumberingOrder: [
@@ -826,7 +827,7 @@ async function loadDataFromDB() {
 
 async function checkForTestOutputDataInDB() {
   try {
-    const testResultOverviews = await db.testResultOverviews.orderBy('id').reverse().limit(10).toArray()
+    const testResultOverviews = await db.getTestResultOverviews('addedDescending', 10)
     const overviewsList: TestResultOverviewDB[] = []
     for (const data of testResultOverviews) {
       if (!data?.overview?.marksObtained) {
