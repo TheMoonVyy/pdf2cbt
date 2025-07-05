@@ -516,6 +516,8 @@ const visibilityState = shallowReactive({
   generateOutputDialog: false,
 })
 
+const mupdfScripturls = useGetMupdfScriptUrls()
+
 const pageImgData = reactive<PageImgData>({})
 
 // reactive Map of overlay datas keyed by id
@@ -815,7 +817,7 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
     closeMupdfWorker()
     mupdfWorker = Comlink.wrap<MuPdfProcessor>(new mupdfWorkerFile())
 
-    const pagesCount = await mupdfWorker.loadPdf(pdfState.fileUint8Array, true)
+    const pagesCount = await mupdfWorker.loadPdf(pdfState.fileUint8Array, mupdfScripturls, true)
     if (pagesCount && isFirstLoad) {
       pdfState.totalPages = pagesCount
       pdfState.currentPageNum = 1

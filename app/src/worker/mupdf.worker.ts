@@ -22,40 +22,30 @@ type ProcessedCropperData = {
   }[]
 }
 
-const IS_ONLINE_BUILD = Boolean(import.meta.env.VITE_IS_ONLINE)
-const MUPDF_VERSION = import.meta.env.MUPDF_PACKAGE_VERSION as string
-
-const mupdfLocalUrl = '/assets/_mupdf/mupdf.js'
-const mupdfJsDelivrUrl = `https://cdn.jsdelivr.net/npm/mupdf@${MUPDF_VERSION}/dist/mupdf.js`
-
-const mupdfScriptUrl = {
-  firstUrl: IS_ONLINE_BUILD ? mupdfJsDelivrUrl : mupdfLocalUrl,
-  secondUrl: IS_ONLINE_BUILD ? mupdfLocalUrl : mupdfJsDelivrUrl,
-}
-
 export class MuPdfProcessor {
   private mupdf: any = null
   private doc: Document | null = null
 
-  async loadMuPdf() {
+  async loadMuPdf(scriptUrls: string[]) {
     if (!this.mupdf) {
-      try {
-        this.mupdf = await import(/* @vite-ignore */ mupdfScriptUrl.firstUrl)
-      }
-      catch (err) {
-        console.error('Error importing mupdf from first url', err)
+      for (let i = 0; i < scriptUrls.length; i++) {
         try {
-          this.mupdf = await import(/* @vite-ignore */ mupdfScriptUrl.secondUrl)
+          this.mupdf = await import(/* @vite-ignore */ scriptUrls[i]!)
+          break
         }
         catch (err) {
-          console.error('Error importing mupdf from second url', err)
+          console.error(`Error importing mupdf from url No. ${i + 1}:`, err)
         }
       }
     }
   }
 
-  async loadPdf(pdfFile: Uint8Array | ArrayBuffer, getPageCount: boolean = false) {
-    await this.loadMuPdf()
+  async loadPdf(
+    pdfFile: Uint8Array | ArrayBuffer,
+    scriptUrls: string[],
+    getPageCount: boolean = false,
+  ) {
+    await this.loadMuPdf(scriptUrls)
     this.doc = this.mupdf.Document.openDocument(pdfFile, 'application/pdf')
 
     if (getPageCount) return this.doc?.countPages()

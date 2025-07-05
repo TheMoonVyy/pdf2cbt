@@ -85,7 +85,7 @@ async function loadPdfFile() {
   try {
     if (!props.pdfUint8Array) return
 
-    await mupdfWorker.loadPdf(props.pdfUint8Array)
+    await mupdfWorker.loadPdf(props.pdfUint8Array, useGetMupdfScriptUrls())
 
     generateQuestionImages()
   }

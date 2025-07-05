@@ -1,11 +1,6 @@
 import tailwindVitePlugin from '@tailwindcss/vite'
 import packageJson from './package.json'
 
-const filterVersion = (version: string) => {
-  const match = version.match(/\d+(\.\d+){0,2}/)
-  return match ? match[0] : 'latest'
-}
-
 export default defineNuxtConfig({
   modules: [
     '@vueuse/nuxt',
@@ -28,8 +23,10 @@ export default defineNuxtConfig({
   css: ['./app/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      isBackupWebsite: import.meta.env.IS_NETLIFY_BUILD === 'true',
+      isBackupWebsite: '',
+      isBuildForWebsite: '',
       projectVersion: packageJson.version,
+      mupdfVersion: packageJson.dependencies.mupdf,
     },
   },
   routeRules: {
@@ -40,11 +37,6 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2025-03-17',
   vite: {
-    define: {
-      'import.meta.env.MUPDF_PACKAGE_VERSION': JSON.stringify(
-        filterVersion(packageJson?.dependencies?.mupdf || ''),
-      ),
-    },
     plugins: [tailwindVitePlugin()],
     esbuild: {
       legalComments: 'none',

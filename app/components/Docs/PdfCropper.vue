@@ -576,7 +576,7 @@ const image2Urls = [
   Image2,
 ]
 
-if (!(import.meta.env.VITE_IS_ONLINE)) {
+if (!useRuntimeConfig().public.isBuildForWebsite) {
   image1Urls.reverse()
   image2Urls.reverse()
 }
