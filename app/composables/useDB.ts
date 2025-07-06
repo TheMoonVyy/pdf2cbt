@@ -1,3 +1,3 @@
-import { db } from '@/src/db'
+import { db } from '#layers/shared/db'
 
 export default () => db

@@ -1,0 +1,11 @@
+{
+  "version": "1.15.1",
+  "private": true,
+  "description": "Turn PDF of questions into CBT (Computer-Based Test)",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "prepare": "nuxt prepare",
+    "postinstall": "nuxt prepare"
+  }
+}
