@@ -1,11 +1,15 @@
 {
-  "version": "1.15.1",
+  "name": "pdf2cbt",
   "private": true,
   "description": "Turn PDF of questions into CBT (Computer-Based Test)",
   "license": "AGPL-3.0-or-later",
+  "author": {
+    "name": "TheMoonVyy",
+    "email": "themoonvyy@gmail.com"
+  },
   "type": "module",
   "scripts": {
-    "prepare": "nuxt prepare",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "prepare": "nuxt prepare"
   }
 }

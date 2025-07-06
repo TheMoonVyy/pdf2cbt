@@ -1,0 +1,21 @@
+{
+  "name": "pdf2cbt",
+  "private": true,
+  "description": "Turn PDF of questions into CBT (Computer-Based Test)",
+  "license": "AGPL-3.0-or-later",
+  "author": {
+    "name": "TheMoonVyy",
+    "email": "themoonvyy@gmail.com"
+  },
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:prepare": "pnpm --filter ./apps/* dev:prepare",
+    "dev:web": "pnpm --filter ./apps/web dev",
+    "generate:web": "pnpm --filter ./apps/web generate",
+    "prepare:shared": "pnpm --filter ./apps/shared prepare",
+    "prepare:web": "pnpm --filter ./apps/web prepare"
+  }
+}
