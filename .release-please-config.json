@@ -6,8 +6,7 @@
   "initial-version": "1.4.0",
   "changelog-path": "CHANGELOG.md",
   "version-file": [
-    "package.json",
-    "package-lock.json"
+    "apps/web/package.json",
   ],
   "changelog-sections": [
     { "type": "feat", "section": "New Features" },
