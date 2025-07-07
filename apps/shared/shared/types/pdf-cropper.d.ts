@@ -1,3 +1,5 @@
+export type PdfCropperCurrentMode = 'crop' | 'edit' | 'text-pattern'
+
 export type PdfCropperSettings = {
   general: {
     cropperMode: 'line' | 'box'
@@ -71,4 +73,52 @@ export type PdfCropperOverlaysPerQuestion = Map<string, number>
 export type ActiveCroppedOverlay = {
   id: string
   imgNum: number
+}
+
+// this is type as provided by mupdf's structuredText
+export type StructuredTextLine = {
+  wmode: 0 | 1 // 0=horizontal, 1=vertical
+  bbox: {
+    x: number
+    y: number
+    w: number
+    h: number
+  }
+  font: {
+    name: string
+    family: 'serif' | 'sans-serif' | 'monospace'
+    weight: 'normal' | 'bold'
+    style: 'normal' | 'italic'
+    size: number
+  }
+  x: number
+  y: number
+  text: string
+}
+
+// reduced version of structuredText which is needed
+export type LineTextWithCoords = Omit<StructuredTextLine, 'font'>
+export type PageColumnTextWithCoords = LineTextWithCoords[]
+
+export type PdfTextWithCoords = {
+  [pageNum: string | number]: {
+    columns: PageColumnTextWithCoords[]
+    width: number
+    height: number
+  }
+}
+
+export type PdfTextPatternModeConfig = {
+  subject: string
+  section: string
+  questions: string
+  questionsEnd: string
+  minX: number
+  maxX: number
+}
+
+export type PdfTextPatternModeState = {
+  pdfTextWithCoords: PdfTextWithCoords | null
+  isTextPatternMode: boolean
+  config: PdfTextPatternModeConfig
 }

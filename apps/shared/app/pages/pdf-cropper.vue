@@ -136,7 +136,7 @@
         >
           <div class="flex flex-col focus-visible:outline-hidden">
             <div
-              v-if="!isPdfLoaded"
+              v-if="isPdfLoaded"
               class="flex flex-col gap-6 justify-center mt-6"
             >
               <BaseSimpleFileUpload
@@ -149,66 +149,71 @@
               />
               <DocsPdfCropper class="mx-4 sm:mx-10 select-text" />
             </div>
-            <div
-              ref="mainImgPanelElem"
-              class="flex"
-              tabindex="-1"
-              :class="{ hidden: !isPdfLoaded }"
-            >
+            <template v-else>
+              <!-- Pdf Page Container -->
               <div
-                class="relative mx-auto cursor-cell mt-4"
-                :class="{
-                  'blur-cropped': settings.general.blurCroppedRegion,
-                }"
-                :style="{
-                  '--pdf-page-width': currentPageDetails.width,
-                  '--pdf-page-height': currentPageDetails.height,
-                  '--pdf-page-scale': zoomScaleDebounced,
-                  '--pdf-cropped-blur-intensity': settings.general.blurIntensity,
-                  '--crop-selection-guide-color': settings.general.cropSelectionGuideColor,
-                  '--crop-selected-region-color': settings.general.cropSelectedRegionColor,
-                  '--crop-selection-skip-color': settings.general.cropSelectionSkipColor,
-                  '--crop-selection-bg-opacity': settings.general.cropSelectionBgOpacity,
-                  '--crop-selected-region-bg-opacity': settings.general.cropSelectedRegionBgOpacity,
-                }"
+                v-show="(currentMode === 'crop' || currentMode === 'edit')"
+                ref="mainImgPanelElem"
+                class="flex"
+                tabindex="-1"
               >
-                <div class="inline-block">
-                  <img
-                    :src="currentPageDetails.url"
-                    class="border border-gray-500 pdf-cropper-img"
-                    draggable="false"
-                    :style="{
-                      backgroundColor: settings.general.pageBGColor,
-                    }"
-                  >
+                <div
+                  class="relative mx-auto cursor-cell mt-4"
+                  :class="{
+                    'blur-cropped': settings.general.blurCroppedRegion,
+                  }"
+                  :style="{
+                    '--pdf-page-width': currentPageDetails.width,
+                    '--pdf-page-height': currentPageDetails.height,
+                    '--pdf-page-scale': zoomScaleDebounced,
+                    '--pdf-cropped-blur-intensity': settings.general.blurIntensity,
+                    '--crop-selection-guide-color': settings.general.cropSelectionGuideColor,
+                    '--crop-selected-region-color': settings.general.cropSelectedRegionColor,
+                    '--crop-selection-skip-color': settings.general.cropSelectionSkipColor,
+                    '--crop-selection-bg-opacity': settings.general.cropSelectionBgOpacity,
+                    '--crop-selected-region-bg-opacity': settings.general.cropSelectedRegionBgOpacity,
+                  }"
+                >
+                  <div class="inline-block">
+                    <img
+                      :src="currentPageDetails.url"
+                      class="border border-gray-500 pdf-cropper-img"
+                      draggable="false"
+                      :style="{
+                        backgroundColor: settings.general.pageBGColor,
+                      }"
+                    >
+                  </div>
+                  <PdfCropperEditCroppedOverlay
+                    v-if="isPdfLoaded"
+                    v-model="cropperOverlayDatas"
+                    v-model:overlays-per-question-data="overlaysPerQuestionData"
+                    v-model:active-overlay-id="activeCropperOverlayId"
+                    :main-img-panel-elem="mainImgPanelElem"
+                    :current-mode="currentMode"
+                    :current-page-num="pdfState.currentThrottledPageNum"
+                    :page-scale="zoomScaleDebounced"
+                    :page-width="currentPageDetails.width"
+                    :page-height="currentPageDetails.height"
+                    @set-pdf-data="storeCurrentQuestionData"
+                  />
+                  <PdfCropperCropOverlay
+                    v-if="isPdfLoaded"
+                    v-model:current-overlay-data="mainOverlayData"
+                    :main-img-panel-elem="mainImgPanelElem"
+                    :cropper-mode="cropperMode"
+                    :current-mode="currentMode"
+                    :current-page-num="pdfState.currentThrottledPageNum"
+                    :page-scale="zoomScaleDebounced"
+                    :page-width="currentPageDetails.width"
+                    :page-height="currentPageDetails.height"
+                    @set-pdf-data="storeCurrentQuestionData"
+                  />
                 </div>
-                <PdfCropperEditCroppedOverlay
-                  v-if="isPdfLoaded"
-                  v-model="cropperOverlayDatas"
-                  v-model:overlays-per-question-data="overlaysPerQuestionData"
-                  v-model:active-overlay-id="activeCropperOverlayId"
-                  :main-img-panel-elem="mainImgPanelElem"
-                  :current-mode="currentMode"
-                  :current-page-num="pdfState.currentThrottledPageNum"
-                  :page-scale="zoomScaleDebounced"
-                  :page-width="currentPageDetails.width"
-                  :page-height="currentPageDetails.height"
-                  @set-pdf-data="storeCurrentQuestionData"
-                />
-                <PdfCropperCropOverlay
-                  v-if="isPdfLoaded"
-                  v-model:current-overlay-data="mainOverlayData"
-                  :main-img-panel-elem="mainImgPanelElem"
-                  :cropper-mode="cropperMode"
-                  :current-mode="currentMode"
-                  :current-page-num="pdfState.currentThrottledPageNum"
-                  :page-scale="zoomScaleDebounced"
-                  :page-width="currentPageDetails.width"
-                  :page-height="currentPageDetails.height"
-                  @set-pdf-data="storeCurrentQuestionData"
-                />
               </div>
-            </div>
+              <!-- pattern mode main panel -->
+              <PdfCropperPatternModeMainPanel v-show="currentMode === 'text-pattern'" />
+            </template>
           </div>
         </UiScrollArea>
       </UiResizablePanel>
@@ -425,6 +430,11 @@
       @current-question-progress="(questionNum) => generateOutputState.generationProgress = questionNum"
       @image-blobs-generated="addImageBlobsToZipAndDownload"
     />
+    <PdfCropperTextCropMode
+      v-if="textPatternModeState.isTextPatternMode && textPatternModeState.pdfTextWithCoords"
+      v-model="cropperOverlayDatas"
+      :text-pattern-mode-state="textPatternModeState"
+    />
   </div>
 </template>
 
@@ -522,7 +532,7 @@ const testConfig = reactive<PdfCropperJsonOutput['testConfig']>({
   optionalQuestions: [],
 })
 
-const currentMode = shallowRef<'crop' | 'edit'>('crop')
+const currentMode = shallowRef<PdfCropperCurrentMode>('text-pattern')
 
 const isPdfLoaded = shallowRef(false)
 
@@ -537,6 +547,18 @@ const visibilityState = shallowReactive({
 })
 
 const mupdfScripturls = useGetMupdfScriptUrls()
+const textPatternModeState = shallowReactive<PdfTextPatternModeState>({
+  pdfTextWithCoords: null,
+  isTextPatternMode: true,
+  config: {
+    subject: 'PHYSICS',
+    section: 'SEC-A',
+    questions: '/^(0?[1-9]|1[0-9]|20)\\.\\s*(?!\\d)/',
+    questionsEnd: '/^(0?[1-9]|1[0-9]|20)\\.\\s*(?!\\d)|Leader/',
+    minX: 0,
+    maxX: 295,
+  },
+})
 
 const pageImgData = reactive<PageImgData>({})
 
@@ -885,6 +907,10 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
       pdfState.totalPages = pagesCount
       pdfState.currentPageNum = 1
 
+      if (textPatternModeState.isTextPatternMode) {
+        const pages = utilRange(3, pagesCount + 1)
+        textPatternModeState.pdfTextWithCoords = await mupdfWorker.getPdfTextWithCoords([...pages])
+      }
       await renderPage(pdfState.currentPageNum)
       isPdfLoaded.value = true
     }
