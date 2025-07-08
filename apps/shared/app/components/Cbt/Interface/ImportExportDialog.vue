@@ -1,51 +1,41 @@
 <template>
-  <Dialog
-    v-model:visible="visibility"
-    :header="dialogLabel"
-    :modal="true"
-    :closable="true"
-    :draggable="false"
-    maximizable
-    pt:root:class="mx-auto"
-    pt:title:class="p-0 mx-auto"
-    pt:content:class="p-0"
-    pt:header:class="gap-4"
+  <UiDialog
+    v-model:open="showDialog"
   >
-    <div class="flex mb-3">
-      <BaseButton
-        :label="dialogLabel"
-        class="ml-5"
-        variant="warn"
-        :disabled="!Object.keys(selectionKeys).length"
-        @click="processData()"
-      />
-    </div>
-    <div class="mb-2 flex gap-2">
-      <Tree
-        v-model:selection-keys="selectionKeys"
-        :value="treeData"
-        selection-mode="checkbox"
-      />
-    </div>
-  </Dialog>
+    <UiDialogContent class="sm:min-w-fit px-3">
+      <UiDialogHeader>
+        <UiDialogTitle>
+          {{ dialogLabel }}
+        </UiDialogTitle>
+      </UiDialogHeader>
+      <UiScrollArea
+        class="min-h-0 max-h-[80dvh] px-6"
+        type="auto"
+      >
+        <div class="flex w-full my-3">
+          <BaseButton
+            :label="dialogLabel"
+            class="ml-5 mx-auto"
+            variant="warn"
+            :disabled="!selectedNodes || selectedNodes.length === 0"
+            @click="processData()"
+          />
+        </div>
+        <BaseTreeCheckbox
+          v-model="selectedNodes"
+          :items="treeData"
+        />
+      </UiScrollArea>
+    </UiDialogContent>
+  </UiDialog>
 </template>
 
 <script lang="ts" setup>
-import Dialog from '#layers/shared/app/src/volt/Dialog.vue'
-import Tree from '#layers/shared/app/src/volt/Tree.vue'
+import type { TreeNodeData } from '#layers/shared/app/components/Base/Tree'
 
-type TreeNode = {
-  key: string
-  label: string
-  children?: TreeNode[]
-}
-type SelectionKeys = Record<string, { checked?: boolean, partialChecked?: boolean }>
+const selectedNodes = ref<TreeNodeData[] | undefined>(undefined)
 
-const selectionKeys = shallowRef<SelectionKeys>({})
-
-const visibility = defineModel<boolean>('visibility', {
-  default: true,
-})
+const showDialog = defineModel<boolean>({ required: true })
 
 const emit = defineEmits<{
   processed: [type: string, data: Record<string, unknown>]
@@ -58,21 +48,21 @@ const props = defineProps<{
 
 const mainData = props.data
 
-const convertObjToTree = <T extends Record<string, unknown>>(obj: T, parentKey = ''): TreeNode[] => {
+const convertObjToTree = <T extends Record<string, unknown>>(obj: T, parentId = ''): TreeNodeData[] => {
   return Object.entries(obj).map(([key, value]) => {
-    const nodeKey = parentKey ? `${parentKey}.${key}` : key
+    const id = parentId ? `${parentId}.${key}` : key
     const label = utilKeyToLabel(key)
 
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       return {
-        key: nodeKey,
+        id,
         label,
-        children: convertObjToTree(value as Record<string, unknown>, nodeKey),
+        children: convertObjToTree(value as Record<string, unknown>, id),
       }
     }
     else {
       return {
-        key: nodeKey,
+        id,
         label: `${label}: ${
           typeof value === 'string' && value.length > 20
             ? JSON.stringify(value.slice(0, 20) + '...')
@@ -82,10 +72,23 @@ const convertObjToTree = <T extends Record<string, unknown>>(obj: T, parentKey =
   })
 }
 
+function getSelectedTreeNodesIds(treeNodes: TreeNodeData[], selectedIds = new Map<string, string>()) {
+  for (const node of treeNodes) {
+    const { id, children } = node
+
+    if (!selectedIds.has(id))
+      selectedIds.set(id, id)
+
+    if (children && children.length > 0) {
+      getSelectedTreeNodesIds(children, selectedIds)
+    }
+  }
+
+  return selectedIds
+}
+
 function getSelectedData() {
-  const selectedKeys = Object.keys(selectionKeys.value).filter(
-    key => selectionKeys.value[key]?.checked,
-  )
+  const selectedIds = getSelectedTreeNodesIds(selectedNodes.value!)
 
   function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown) {
     const keys = path.split('.')
@@ -121,12 +124,11 @@ function getSelectedData() {
   }
 
   const selectedData: Record<string, unknown> = {}
-  selectedKeys.forEach((key) => {
-    const value = extractData(mainData, key)
-    if (value !== undefined) {
-      setNestedValue(selectedData, key, value)
-    }
-  })
+  for (const id of selectedIds.values()) {
+    const value = extractData(mainData, id)
+    if (value)
+      setNestedValue(selectedData, id, value)
+  }
 
   return selectedData
 }

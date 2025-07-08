@@ -316,9 +316,9 @@ const sections = computed(() => {
 
 const optionItems = {
   questionType: [
-    { name: 'MCQ', value: 'mcq', tooltip: 'Multiple Choice Question' },
-    { name: 'MSQ', value: 'msq', tooltip: 'Multiple Select Question' },
-    { name: 'NAT', value: 'nat', tooltip: 'Numerial Answer Type' },
+    { name: 'MCQ (Multiple Choice Question)', value: 'mcq' },
+    { name: 'MSQ (Multiple Select Question)', value: 'msq' },
+    { name: 'NAT (Numerial Answer Type)', value: 'nat' },
   ],
 }
 

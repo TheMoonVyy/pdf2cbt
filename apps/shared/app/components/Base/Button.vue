@@ -16,7 +16,7 @@ const {
   labelClass?: string | string[]
   iconName?: string
   iconSize?: string
-  iconClass?: string | string[] | Record<string, boolean>
+  iconClass?: string | string[] | Record<string, boolean | undefined>
   iconStyle?: unknown
   size?: ButtonVariants['size']
 }>()

@@ -768,9 +768,9 @@
         </UiCardContent>
       </UiCard>
     </UiScrollArea>
-    <LazyImportExportDialog
+    <LazyCbtInterfaceImportExportDialog
       v-if="importExportDialogState.isDialogOpen"
-      v-model:visibility="importExportDialogState.isDialogOpen"
+      v-model="importExportDialogState.isDialogOpen"
       :data="importExportDialogState.data"
       :type="importExportDialogState.type"
       @processed="processImportExport"

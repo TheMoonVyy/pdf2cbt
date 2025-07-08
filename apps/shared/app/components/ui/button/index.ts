@@ -1,4 +1,5 @@
-import { cva, type VariantProps } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
+import type { VariantProps } from 'class-variance-authority'
 
 export { default as Button } from './Button.vue'
 
@@ -28,6 +29,9 @@ export const buttonVariants = cva(
         sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
         lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
         icon: 'size-9',
+        iconMd: 'size-8',
+        iconSm: 'size-7',
+        iconXs: 'size-6',
       },
     },
     defaultVariants: {
