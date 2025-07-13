@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.15.1...v1.16.0) (2025-07-13)
+
+
+### Features
+
+* add support for multiple select matrix question type ([b37fee7](https://github.com/TheMoonVyy/pdf2cbt/commit/b37fee7a38a45534ef14ae74005d53bde60dfc6f))
+
 ## [1.15.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.15.0...v1.15.1) (2025-06-19)
 
 
