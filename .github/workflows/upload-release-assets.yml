@@ -26,7 +26,7 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack use pnpm@latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
