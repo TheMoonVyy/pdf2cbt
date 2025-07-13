@@ -32,12 +32,31 @@ const defaultUiSettings: CbtUiSettings = {
 
   questionPanel: {
     answerOptionsFormat: {
-      prefix: 'Option ',
-      suffix: '',
-      counterType: 'upper-latin',
-      fontSize: 1.6,
-      zoomSize: 1.2,
-      rowGap: 0.8,
+      mcqAndMsq: {
+        prefix: 'Option ',
+        suffix: '',
+        counterType: 'upper-latin',
+        fontSize: 1.6,
+        zoomSize: 1.2,
+        rowGap: 0.8,
+      },
+      msm: {
+        row: {
+          prefix: '(',
+          suffix: ')',
+          counterType: 'upper-latin',
+          fontSize: 1.6,
+          gap: 1.3,
+        },
+        col: {
+          prefix: '(',
+          suffix: ')',
+          counterType: 'upper-pqrs',
+          fontSize: 1.6,
+          gap: 1.3,
+        },
+        zoomSize: 1.5,
+      },
     },
     questionImgMaxWidth: {
       maxWidthWhenQuestionPaletteOpened: 95,

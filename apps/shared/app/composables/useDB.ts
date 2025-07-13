@@ -1,3 +1,8 @@
-import { db } from '#layers/shared/db'
+import { Pdf2CbtDB } from '#layers/shared/db'
 
-export default () => db
+let db: Pdf2CbtDB | null = null
+export default () => {
+  if (!db)
+    db = new Pdf2CbtDB()
+  return db
+}

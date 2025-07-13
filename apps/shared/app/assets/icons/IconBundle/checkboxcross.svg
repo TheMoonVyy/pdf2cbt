@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <mask id="cutOutCross">
+      <rect width="20" height="20" x="2" y="2" rx="3.2" ry="3.2" fill="white"/>
+      <g stroke="black" stroke-width="2.4" stroke-linecap="round">
+        <line x1="7" y1="7" x2="17" y2="17"/>
+        <line x1="17" y1="7" x2="7" y2="17"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="20" height="20" x="2" y="2" rx="3.2" ry="3.2" fill="currentColor" mask="url(#cutOutCross)"/>
+</svg>

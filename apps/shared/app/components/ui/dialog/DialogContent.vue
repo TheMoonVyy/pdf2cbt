@@ -5,11 +5,11 @@ import { X } from 'lucide-vue-next'
 import {
   DialogClose,
   DialogContent,
-  type DialogContentEmits,
-  type DialogContentProps,
+
   DialogPortal,
   useForwardPropsEmits,
 } from 'reka-ui'
+import type { DialogContentEmits, DialogContentProps } from 'reka-ui'
 import DialogOverlay from './DialogOverlay.vue'
 import { cn } from '#layers/shared/app/lib/utils'
 
@@ -31,7 +31,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
 
 <template>
-  <DialogPortal>
+  <DialogPortal to="#app-root">
     <DialogOverlay />
     <DialogContent
       data-slot="dialog-content"

@@ -1,2 +1,2 @@
-app/components/ui/** linguist-generated
-public/assets/_mupdf/** linguist-generated
+apps/shared/app/components/ui/** linguist-generated
+apps/shared/public/assets/_mupdf/** linguist-generated

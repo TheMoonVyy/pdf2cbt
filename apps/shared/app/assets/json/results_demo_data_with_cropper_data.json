@@ -516,11 +516,13 @@
               1,
               2,
               4
-            ]
+            ],
+            "accuracyNumerator": 1
           },
           "oriQueId": 1,
           "subject": "Physics",
-          "section": "Physics Section 1"
+          "section": "Physics Section 1",
+          "answerOptions": "4"
         },
         "2": {
           "queId": 2,
@@ -552,11 +554,13 @@
             "correctAnswer": [
               2,
               3
-            ]
+            ],
+            "accuracyNumerator": 1
           },
           "oriQueId": 2,
           "subject": "Physics",
-          "section": "Physics Section 1"
+          "section": "Physics Section 1",
+          "answerOptions": "4"
         },
         "3": {
           "queId": 3,
@@ -588,11 +592,13 @@
             "correctAnswer": [
               1,
               4
-            ]
+            ],
+            "accuracyNumerator": 1
           },
           "oriQueId": 3,
           "subject": "Physics",
-          "section": "Physics Section 1"
+          "section": "Physics Section 1",
+          "answerOptions": "4"
         },
         "4": {
           "queId": 4,
@@ -622,11 +628,13 @@
             "status": "incorrect",
             "correctAnswer": [
               3
-            ]
+            ],
+            "accuracyNumerator": 0
           },
           "oriQueId": 4,
           "subject": "Physics",
-          "section": "Physics Section 1"
+          "section": "Physics Section 1",
+          "answerOptions": "4"
         },
         "5": {
           "queId": 5,
@@ -657,11 +665,13 @@
             "correctAnswer": [
               2,
               4
-            ]
+            ],
+            "accuracyNumerator": 0.5
           },
           "oriQueId": 5,
           "subject": "Physics",
-          "section": "Physics Section 1"
+          "section": "Physics Section 1",
+          "answerOptions": "4"
         },
         "6": {
           "queId": 6,
@@ -692,11 +702,13 @@
             "correctAnswer": [
               2,
               3
-            ]
+            ],
+            "accuracyNumerator": 0.5
           },
           "oriQueId": 6,
           "subject": "Physics",
-          "section": "Physics Section 1"
+          "section": "Physics Section 1",
+          "answerOptions": "4"
         },
         "7": {
           "queId": 7,
@@ -730,11 +742,13 @@
               1,
               3,
               4
-            ]
+            ],
+            "accuracyNumerator": 1
           },
           "oriQueId": 7,
           "subject": "Physics",
-          "section": "Physics Section 1"
+          "section": "Physics Section 1",
+          "answerOptions": "4"
         }
       },
       "Physics Section 2": {
@@ -761,7 +775,8 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": "6"
+            "correctAnswer": "6",
+            "accuracyNumerator": 1
           },
           "oriQueId": 8,
           "subject": "Physics",
@@ -790,7 +805,8 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": "5"
+            "correctAnswer": "5",
+            "accuracyNumerator": 1
           },
           "oriQueId": 9,
           "subject": "Physics",
@@ -819,7 +835,8 @@
           "result": {
             "marks": 0,
             "status": "incorrect",
-            "correctAnswer": "8"
+            "correctAnswer": "8",
+            "accuracyNumerator": 0
           },
           "oriQueId": 10,
           "subject": "Physics",
@@ -848,7 +865,8 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": "6"
+            "correctAnswer": "6",
+            "accuracyNumerator": 1
           },
           "oriQueId": 11,
           "subject": "Physics",
@@ -877,7 +895,8 @@
           "result": {
             "marks": 0,
             "status": "incorrect",
-            "correctAnswer": "5"
+            "correctAnswer": "5",
+            "accuracyNumerator": 0
           },
           "oriQueId": 12,
           "subject": "Physics",
@@ -915,11 +934,13 @@
           "result": {
             "marks": -1,
             "status": "incorrect",
-            "correctAnswer": 4
+            "correctAnswer": 4,
+            "accuracyNumerator": 0
           },
           "oriQueId": 13,
           "subject": "Physics",
-          "section": "Physics Section 3"
+          "section": "Physics Section 3",
+          "answerOptions": "4"
         },
         "14": {
           "queId": 14,
@@ -951,11 +972,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 1
+            "correctAnswer": 1,
+            "accuracyNumerator": 1
           },
           "oriQueId": 14,
           "subject": "Physics",
-          "section": "Physics Section 3"
+          "section": "Physics Section 3",
+          "answerOptions": "4"
         },
         "15": {
           "queId": 15,
@@ -987,11 +1010,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 2
+            "correctAnswer": 2,
+            "accuracyNumerator": 1
           },
           "oriQueId": 15,
           "subject": "Physics",
-          "section": "Physics Section 3"
+          "section": "Physics Section 3",
+          "answerOptions": "4"
         },
         "16": {
           "queId": 16,
@@ -1023,11 +1048,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 4
+            "correctAnswer": 4,
+            "accuracyNumerator": 1
           },
           "oriQueId": 16,
           "subject": "Physics",
-          "section": "Physics Section 3"
+          "section": "Physics Section 3",
+          "answerOptions": "4"
         },
         "17": {
           "queId": 17,
@@ -1059,11 +1086,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 2
+            "correctAnswer": 2,
+            "accuracyNumerator": 1
           },
           "oriQueId": 17,
           "subject": "Physics",
-          "section": "Physics Section 3"
+          "section": "Physics Section 3",
+          "answerOptions": "4"
         },
         "18": {
           "queId": 18,
@@ -1095,11 +1124,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 4
+            "correctAnswer": 4,
+            "accuracyNumerator": 1
           },
           "oriQueId": 18,
           "subject": "Physics",
-          "section": "Physics Section 3"
+          "section": "Physics Section 3",
+          "answerOptions": "4"
         }
       }
     },
@@ -1137,11 +1168,13 @@
               1,
               2,
               3
-            ]
+            ],
+            "accuracyNumerator": 1
           },
           "oriQueId": 19,
           "subject": "Chemistry",
-          "section": "Chemistry Section 1"
+          "section": "Chemistry Section 1",
+          "answerOptions": "4"
         },
         "20": {
           "queId": 20,
@@ -1172,11 +1205,13 @@
             "correctAnswer": [
               2,
               4
-            ]
+            ],
+            "accuracyNumerator": 0.5
           },
           "oriQueId": 20,
           "subject": "Chemistry",
-          "section": "Chemistry Section 1"
+          "section": "Chemistry Section 1",
+          "answerOptions": "4"
         },
         "21": {
           "queId": 21,
@@ -1206,11 +1241,13 @@
               1,
               2,
               4
-            ]
+            ],
+            "accuracyNumerator": 0
           },
           "oriQueId": 21,
           "subject": "Chemistry",
-          "section": "Chemistry Section 1"
+          "section": "Chemistry Section 1",
+          "answerOptions": "4"
         },
         "22": {
           "queId": 22,
@@ -1239,11 +1276,13 @@
             "correctAnswer": [
               3,
               4
-            ]
+            ],
+            "accuracyNumerator": 0
           },
           "oriQueId": 22,
           "subject": "Chemistry",
-          "section": "Chemistry Section 1"
+          "section": "Chemistry Section 1",
+          "answerOptions": "4"
         },
         "23": {
           "queId": 23,
@@ -1276,11 +1315,13 @@
               2,
               3,
               4
-            ]
+            ],
+            "accuracyNumerator": 0.67
           },
           "oriQueId": 23,
           "subject": "Chemistry",
-          "section": "Chemistry Section 1"
+          "section": "Chemistry Section 1",
+          "answerOptions": "4"
         },
         "24": {
           "queId": 24,
@@ -1312,11 +1353,13 @@
             "correctAnswer": [
               1,
               2
-            ]
+            ],
+            "accuracyNumerator": 1
           },
           "oriQueId": 24,
           "subject": "Chemistry",
-          "section": "Chemistry Section 1"
+          "section": "Chemistry Section 1",
+          "answerOptions": "4"
         },
         "25": {
           "queId": 25,
@@ -1348,11 +1391,13 @@
             "correctAnswer": [
               2,
               4
-            ]
+            ],
+            "accuracyNumerator": 1
           },
           "oriQueId": 25,
           "subject": "Chemistry",
-          "section": "Chemistry Section 1"
+          "section": "Chemistry Section 1",
+          "answerOptions": "4"
         }
       },
       "Chemistry Section 2": {
@@ -1379,7 +1424,8 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": "2"
+            "correctAnswer": "2",
+            "accuracyNumerator": 1
           },
           "oriQueId": 26,
           "subject": "Chemistry",
@@ -1408,7 +1454,8 @@
           "result": {
             "marks": 0,
             "status": "incorrect",
-            "correctAnswer": "6"
+            "correctAnswer": "6",
+            "accuracyNumerator": 0
           },
           "oriQueId": 27,
           "subject": "Chemistry",
@@ -1437,7 +1484,8 @@
           "result": {
             "marks": 0,
             "status": "incorrect",
-            "correctAnswer": "6"
+            "correctAnswer": "6",
+            "accuracyNumerator": 0
           },
           "oriQueId": 28,
           "subject": "Chemistry",
@@ -1466,7 +1514,8 @@
           "result": {
             "marks": 3,
             "status": "dropped",
-            "correctAnswer": "DROPPED"
+            "correctAnswer": "DROPPED",
+            "accuracyNumerator": 0
           },
           "oriQueId": 29,
           "subject": "Chemistry",
@@ -1495,7 +1544,8 @@
           "result": {
             "marks": 0,
             "status": "notAnswered",
-            "correctAnswer": "5"
+            "correctAnswer": "5",
+            "accuracyNumerator": 0
           },
           "oriQueId": 30,
           "subject": "Chemistry",
@@ -1533,11 +1583,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 3
+            "correctAnswer": 3,
+            "accuracyNumerator": 1
           },
           "oriQueId": 31,
           "subject": "Chemistry",
-          "section": "Chemistry Section 3"
+          "section": "Chemistry Section 3",
+          "answerOptions": "4"
         },
         "32": {
           "queId": 32,
@@ -1569,11 +1621,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 1
+            "correctAnswer": 1,
+            "accuracyNumerator": 1
           },
           "oriQueId": 32,
           "subject": "Chemistry",
-          "section": "Chemistry Section 3"
+          "section": "Chemistry Section 3",
+          "answerOptions": "4"
         },
         "33": {
           "queId": 33,
@@ -1605,11 +1659,13 @@
           "result": {
             "marks": -1,
             "status": "incorrect",
-            "correctAnswer": 3
+            "correctAnswer": 3,
+            "accuracyNumerator": 0
           },
           "oriQueId": 33,
           "subject": "Chemistry",
-          "section": "Chemistry Section 3"
+          "section": "Chemistry Section 3",
+          "answerOptions": "4"
         },
         "34": {
           "queId": 34,
@@ -1641,11 +1697,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 1
+            "correctAnswer": 1,
+            "accuracyNumerator": 1
           },
           "oriQueId": 34,
           "subject": "Chemistry",
-          "section": "Chemistry Section 3"
+          "section": "Chemistry Section 3",
+          "answerOptions": "4"
         },
         "35": {
           "queId": 35,
@@ -1677,11 +1735,13 @@
           "result": {
             "marks": -1,
             "status": "incorrect",
-            "correctAnswer": 3
+            "correctAnswer": 3,
+            "accuracyNumerator": 0
           },
           "oriQueId": 35,
           "subject": "Chemistry",
-          "section": "Chemistry Section 3"
+          "section": "Chemistry Section 3",
+          "answerOptions": "4"
         },
         "36": {
           "queId": 36,
@@ -1713,11 +1773,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 4
+            "correctAnswer": 4,
+            "accuracyNumerator": 1
           },
           "oriQueId": 36,
           "subject": "Chemistry",
-          "section": "Chemistry Section 3"
+          "section": "Chemistry Section 3",
+          "answerOptions": "4"
         }
       }
     },
@@ -1754,11 +1816,13 @@
               1,
               2,
               3
-            ]
+            ],
+            "accuracyNumerator": 0.67
           },
           "oriQueId": 37,
           "subject": "Mathematics",
-          "section": "Mathematics Section 1"
+          "section": "Mathematics Section 1",
+          "answerOptions": "4"
         },
         "38": {
           "queId": 38,
@@ -1786,11 +1850,13 @@
             "status": "notAnswered",
             "correctAnswer": [
               3
-            ]
+            ],
+            "accuracyNumerator": 0
           },
           "oriQueId": 38,
           "subject": "Mathematics",
-          "section": "Mathematics Section 1"
+          "section": "Mathematics Section 1",
+          "answerOptions": "4"
         },
         "39": {
           "queId": 39,
@@ -1816,11 +1882,13 @@
           "result": {
             "marks": 4,
             "status": "dropped",
-            "correctAnswer": "DROPPED"
+            "correctAnswer": "DROPPED",
+            "accuracyNumerator": 0
           },
           "oriQueId": 39,
           "subject": "Mathematics",
-          "section": "Mathematics Section 1"
+          "section": "Mathematics Section 1",
+          "answerOptions": "4"
         },
         "40": {
           "queId": 40,
@@ -1851,11 +1919,13 @@
             "correctAnswer": [
               1,
               2
-            ]
+            ],
+            "accuracyNumerator": 0.5
           },
           "oriQueId": 40,
           "subject": "Mathematics",
-          "section": "Mathematics Section 1"
+          "section": "Mathematics Section 1",
+          "answerOptions": "4"
         },
         "41": {
           "queId": 41,
@@ -1888,11 +1958,13 @@
             "correctAnswer": [
               2,
               4
-            ]
+            ],
+            "accuracyNumerator": 0
           },
           "oriQueId": 41,
           "subject": "Mathematics",
-          "section": "Mathematics Section 1"
+          "section": "Mathematics Section 1",
+          "answerOptions": "4"
         },
         "42": {
           "queId": 42,
@@ -1923,11 +1995,13 @@
             "correctAnswer": [
               1,
               2
-            ]
+            ],
+            "accuracyNumerator": 0.5
           },
           "oriQueId": 42,
           "subject": "Mathematics",
-          "section": "Mathematics Section 1"
+          "section": "Mathematics Section 1",
+          "answerOptions": "4"
         },
         "43": {
           "queId": 43,
@@ -1959,11 +2033,13 @@
             "correctAnswer": [
               1,
               2
-            ]
+            ],
+            "accuracyNumerator": 1
           },
           "oriQueId": 43,
           "subject": "Mathematics",
-          "section": "Mathematics Section 1"
+          "section": "Mathematics Section 1",
+          "answerOptions": "4"
         }
       },
       "Mathematics Section 2": {
@@ -1990,7 +2066,8 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": "2"
+            "correctAnswer": "2",
+            "accuracyNumerator": 1
           },
           "oriQueId": 44,
           "subject": "Mathematics",
@@ -2019,7 +2096,8 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": "2"
+            "correctAnswer": "2",
+            "accuracyNumerator": 1
           },
           "oriQueId": 45,
           "subject": "Mathematics",
@@ -2048,7 +2126,8 @@
           "result": {
             "marks": 0,
             "status": "incorrect",
-            "correctAnswer": "1"
+            "correctAnswer": "1",
+            "accuracyNumerator": 0
           },
           "oriQueId": 46,
           "subject": "Mathematics",
@@ -2077,7 +2156,8 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": "5"
+            "correctAnswer": "5",
+            "accuracyNumerator": 1
           },
           "oriQueId": 47,
           "subject": "Mathematics",
@@ -2106,7 +2186,8 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": "6"
+            "correctAnswer": "6",
+            "accuracyNumerator": 1
           },
           "oriQueId": 48,
           "subject": "Mathematics",
@@ -2144,11 +2225,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 2
+            "correctAnswer": 2,
+            "accuracyNumerator": 1
           },
           "oriQueId": 49,
           "subject": "Mathematics",
-          "section": "Mathematics Section 3"
+          "section": "Mathematics Section 3",
+          "answerOptions": "4"
         },
         "50": {
           "queId": 50,
@@ -2180,11 +2263,13 @@
           "result": {
             "marks": -1,
             "status": "incorrect",
-            "correctAnswer": 3
+            "correctAnswer": 3,
+            "accuracyNumerator": 0
           },
           "oriQueId": 50,
           "subject": "Mathematics",
-          "section": "Mathematics Section 3"
+          "section": "Mathematics Section 3",
+          "answerOptions": "4"
         },
         "51": {
           "queId": 51,
@@ -2216,11 +2301,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 4
+            "correctAnswer": 4,
+            "accuracyNumerator": 1
           },
           "oriQueId": 51,
           "subject": "Mathematics",
-          "section": "Mathematics Section 3"
+          "section": "Mathematics Section 3",
+          "answerOptions": "4"
         },
         "52": {
           "queId": 52,
@@ -2252,11 +2339,13 @@
           "result": {
             "marks": -1,
             "status": "incorrect",
-            "correctAnswer": 2
+            "correctAnswer": 2,
+            "accuracyNumerator": 0
           },
           "oriQueId": 52,
           "subject": "Mathematics",
-          "section": "Mathematics Section 3"
+          "section": "Mathematics Section 3",
+          "answerOptions": "4"
         },
         "53": {
           "queId": 53,
@@ -2288,11 +2377,13 @@
           "result": {
             "marks": 3,
             "status": "correct",
-            "correctAnswer": 2
+            "correctAnswer": 2,
+            "accuracyNumerator": 1
           },
           "oriQueId": 53,
           "subject": "Mathematics",
-          "section": "Mathematics Section 3"
+          "section": "Mathematics Section 3",
+          "answerOptions": "4"
         },
         "54": {
           "queId": 54,
@@ -2324,11 +2415,13 @@
           "result": {
             "marks": 0,
             "status": "notAnswered",
-            "correctAnswer": 3
+            "correctAnswer": 3,
+            "accuracyNumerator": 0
           },
           "oriQueId": 54,
           "subject": "Mathematics",
-          "section": "Mathematics Section 3"
+          "section": "Mathematics Section 3",
+          "answerOptions": "4"
         }
       }
     }
@@ -2346,5 +2439,7 @@
       "questionsAttempted": 48,
       "accuracy": 64.36
     }
-  }
+  },
+  "generatedBy": "testResultsPage",
+  "appVersion": "1.15.1"
 }

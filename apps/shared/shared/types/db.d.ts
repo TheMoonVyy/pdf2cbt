@@ -10,7 +10,7 @@ export type TestNotesDB = {
 
 export type TestOutputDataDB = {
   id: number
-  testOutputData: TestResultCommonOutput
+  testOutputData: TestInterfaceOrResultJsonOutput
 }
 
 export interface IPdf2CbtDB {
@@ -20,12 +20,12 @@ export interface IPdf2CbtDB {
   putTestData(
     testSectionsList: TestSectionListItem[],
     currentTestState: CurrentTestState,
-    testSectionsData: TestSectionsData,
+    testSectionsData: TestSessionSectionsData,
   ): Promise<void>
   getTestData(): Promise<{
     testSectionsList: TestSectionListItem[]
     currentTestState: CurrentTestState
-    testSectionsData: TestSectionsData
+    testSectionsData: TestSessionSectionsData
     totalQuestions: number
     testLogs: TestLog[]
   }>
@@ -35,7 +35,7 @@ export interface IPdf2CbtDB {
   clearCurrentTestState(): Promise<void>
   clearTestLogs(): Promise<void>
   clearTestDataInDB(): Promise<void>
-  updateQuestionData(questionData: TestQuestionData): Promise<void>
+  updateQuestionData(questionData: TestSessionQuestionData): Promise<void>
   updateCurrentTestState(
     currentTestState: CurrentTestState,
     _updateAll?: boolean,
@@ -56,13 +56,13 @@ export interface IPdf2CbtDB {
     sortBy: TestResultOverviewsDBSortByOption,
     limit?: number | null
   ): Promise<TestResultOverviewDB[]>
-  addTestOutputData(testOutputData: TestResultCommonOutput): Promise<number>
-  bulkAddTestOutputData(testOutputDatas: TestResultCommonOutput[]): Promise<number[]>
+  addTestOutputData(testOutputData: TestInterfaceOrResultJsonOutput): Promise<number>
+  bulkAddTestOutputData(testOutputDatas: TestInterfaceOrResultJsonOutput[]): Promise<number[]>
   replaceTestResultOverview(data: TestResultOverviewDB): Promise<number>
   replaceTestOutputData(data: TestOutputDataDB): Promise<number>
   getTestOutputDatas(ids: number[]): Promise<(TestOutputDataDB | undefined)[]>
   removeTestOutputDataAndResultOverview(id: number): Promise<boolean>
-  replaceTestOutputDataAndResultOverview(id: number, data: TestResultCommonOutput): Promise<boolean>
+  replaceTestOutputDataAndResultOverview(id: number, data: TestInterfaceOrResultJsonOutput): Promise<boolean>
   renameTestNameOfTestOutputData(id: number, newName: string): Promise<boolean>
   getTestNotes(testId: number): Promise<TestNotes | null>
   putTestNotes(testId: number, testNotes: TestNotes): Promise<number>

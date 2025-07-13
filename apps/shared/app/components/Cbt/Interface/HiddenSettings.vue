@@ -56,6 +56,33 @@
             </div>
           </UiCardContent>
         </UiCard>
+        <UiCard
+          class="w-full py-2"
+        >
+          <UiCardHeader>
+            <UiCardTitle class="text-base mx-auto">
+              Main Layout
+            </UiCardTitle>
+          </UiCardHeader>
+          <UiCardContent>
+            <div
+              class="flex flex-col items-center gap-3"
+            >
+              <UiLabel
+                for="hidden_settings_main_layout_size"
+                class="text-center"
+              >
+                Layout Size
+              </UiLabel>
+              <BaseInputNumber
+                id="hidden_settings_main_layout_size"
+                v-model="uiSettings.mainLayout.size"
+                :min="5"
+                :max="25"
+              />
+            </div>
+          </UiCardContent>
+        </UiCard>
         <div
           v-if="testSettings.showPauseBtn"
           class="flex mt-6 justify-center w-full"

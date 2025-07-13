@@ -15,8 +15,7 @@ export type StatusStats = {
   total: StatsItem
 }
 
-export type StatsMetaData =
-  | { name: string, type: 'test' | 'subject' }
+export type StatsMetaData = { name: string, type: 'test' | 'subject' }
   | { name: string, type: 'section', subject: string }
 
 export type StatusStatsWithName = StatusStats & StatsMetaData
@@ -85,4 +84,76 @@ export type CbtResultsSettings = {
     imgBgColor: string
     drawerWidth: number
   }
+}
+
+export type QuestionResult = {
+  marks: number
+  status: 'correct' | 'incorrect' | 'partial' | 'dropped' | 'bonus' | 'notAnswered'
+  correctAnswer: QuestionAnswer
+  accuracyNumerator: number
+}
+
+export type TestResultQuestionData = TestInterfaceQuestionData & {
+  subject: string
+  section: string
+  oriQueId: number
+  result: QuestionResult
+}
+
+export type TestResultSectionData = {
+  [question: number | string]: TestResultQuestionData
+}
+
+export type TestResultSubjectData = {
+  [section: string]: TestResultSectionData
+}
+
+export type TestResultData = {
+  [subject: string]: TestResultSubjectData
+}
+
+export type TestResultOverview = {
+  testName: string
+  testStartTime: number // of Date.now()
+  testEndTime: number // of Date.now()
+  overview: {
+    marksObtained?: number
+    maxMarks?: number
+    accuracy?: number // in %
+    timeSpent?: number // seconds
+    testDuration?: number // seconds
+    questionsAttempted?: number
+    totalQuestions?: number
+  }
+}
+
+export type TestResultOverviewDB = TestResultOverview & {
+  id: number // this will be the id of testOutputData as a binding link between both
+}
+
+export type TestResultOverviewsDBSortByOption = 'addedAscending'
+  | 'addedDescending'
+  | 'startTimeAscending'
+  | 'startTimeDescending'
+  | 'endTimeAscending'
+  | 'endTimeDescending'
+
+export type TestNotes = {
+  [queId: string | number]: string
+}
+
+export type ScoreCardData = Required<Omit<TestResultOverview['overview'], 'accuracy' | 'testDuration'>> & {
+  title: string
+  marks: {
+    correct: number
+    partial: number
+    incorrect: number
+    bonus: number
+    dropped: number
+  }
+  accuracy: {
+    count: number
+    denominator: number
+  }
+  testDuration?: number
 }

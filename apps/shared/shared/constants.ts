@@ -3,7 +3,7 @@ export const TEST_OVERALL = 'Test Overall'
 
 export const QUESTION_STATUS_LIST = ['answered', 'markedAnswered', 'notAnswered', 'marked', 'notVisited'] as const
 export const RESULT_STATUS_LIST = ['correct', 'partial', 'incorrect', 'notAnswered', 'bonus', 'dropped'] as const
-export const QUESTION_TYPES_LIST = ['mcq', 'msq', 'nat'] as const
+export const QUESTION_TYPES_LIST = ['mcq', 'msq', 'nat', 'msm'] as const
 
 export const QUESTION_STATUS_LABELS = {
   answered: 'Answered',
@@ -26,6 +26,7 @@ export const QUESTION_TYPES_LABELS = {
   mcq: 'MCQ',
   msq: 'MSQ',
   nat: 'NAT',
+  msm: 'MSM',
 }
 
 export const MARKS_STATUS_LIST = ['positive', 'negative', 'bonus', 'dropped'] as const

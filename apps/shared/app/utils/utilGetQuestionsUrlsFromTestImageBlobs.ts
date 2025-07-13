@@ -1,6 +1,6 @@
 export default (
   testImageBlobs: TestImageBlobs,
-  questionsRelationData: Map<number | string, TestQuestionData>
+  questionsRelationData: Map<number | string, TestSessionQuestionData>
     | [string | number, { que: number | string, section: string }][],
 ): QuestionsImageUrls => {
   const questionsImageUrls: QuestionsImageUrls = {}

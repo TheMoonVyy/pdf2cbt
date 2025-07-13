@@ -67,7 +67,7 @@ type TestResultSeriesDataItem = {
     color: string
   }
   sections: {
-    [section: TestSectionKey]: {
+    [section: string]: {
       count: number
       marks: number
     }
@@ -82,7 +82,7 @@ const {
   chartColors,
 } = defineProps<{
   chartDataState: ChartDataState
-  testResultQuestionsData: Record<number | string, TestResultDataQuestion>
+  testResultQuestionsData: Record<number | string, TestResultQuestionData>
   chartColors: {
     qStatus: Record<QuestionStatus, string>
     resultStatus: Record<QuestionResult['status'], string>
@@ -339,7 +339,7 @@ const chartOptions = {
         const { correctAnswer, status: resultStatus, marks: resultMarks } = result
 
         // don't show subject if section string starts with subject
-        const subjectContentText = (section + '').startsWith(subject + '')
+        const subjectContentText = section.startsWith(subject + '')
           ? null
           : `<p>Subject: ${subject}</p>`
 
@@ -358,7 +358,7 @@ const chartOptions = {
                   color = chartColors.resultStatus.partial
                 }
                 yourAnswerContentText += `
-                    <span style="color: ${color};">${utilStringifyAnswer(ans, type)}&nbsp</span>
+                    <span style="color: ${color};">${utilStringifyAnswer(ans, type, false, ', ', '<br>')}&nbsp</span>
                   `
               })
               yourAnswerContentText += '</p>'
@@ -366,7 +366,7 @@ const chartOptions = {
             else {
               yourAnswerContentText += `
                   <span style="color: ${chartColors.resultStatus[resultStatus]};">
-                    ${utilStringifyAnswer(sortedAnswer, type)}
+                    ${utilStringifyAnswer(sortedAnswer, type, false, ', ', '<br>')}
                   </span></p>
                 `
             }
@@ -374,7 +374,7 @@ const chartOptions = {
           else {
             yourAnswerContentText += `
                 <span style="color: ${chartColors.resultStatus[resultStatus]};">
-                  ${utilStringifyAnswer(answer, type)}
+                  ${utilStringifyAnswer(answer, type, true, ', ', '<br>')}
                 </span></p>
               `
           }
@@ -391,7 +391,7 @@ const chartOptions = {
             ${yourAnswerContentText || ''}
             <p>Correct Answer:
               <span style="color: ${chartColors.resultStatus.correct};">
-                ${utilStringifyAnswer(correctAnswer, type, true)}
+                ${utilStringifyAnswer(correctAnswer, type, true, ', ', '<br>')}
               </span>
             </p>
             <p>Result:

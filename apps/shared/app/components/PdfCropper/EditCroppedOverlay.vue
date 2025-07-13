@@ -37,8 +37,8 @@
         </span>
         <span>
           {{ item.type.toUpperCase() }}
-          <template v-if="item.type !== 'nat' && item.options !== 4">
-            ({{ item.options }})
+          <template v-if="item.type !== 'nat' && item.answerOptions !== '4' && item.answerOptions !== '4x4'">
+            ({{ item.answerOptions }})
           </template>
         </span>
         <span>

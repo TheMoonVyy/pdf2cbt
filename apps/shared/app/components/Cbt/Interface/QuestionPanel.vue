@@ -19,22 +19,30 @@
       >
     </template>
     <CbtInterfaceAnswerOptionsDiv
-      v-model="currentQuestionOptionsAnswer"
+      v-show="currentQuestionDetails.questionType === 'mcq' || currentQuestionDetails.questionType === 'msq'"
+      v-model="currentQuestionMcqOrMsqAnswer"
       :question-type="currentQuestionDetails.questionType"
-      :total-options="currentQuestionDetails.totalOptions"
+      :total-options="currentQuestionDetails.answerOptions"
       class="ml-5 mt-1"
-      @update:model-value="logCurrentAnswer()"
+      @update:model-value="logCurrentAnswer"
+    />
+    <CbtInterfaceMsmAnswerOptionsDiv
+      v-show="currentQuestionDetails.questionType === 'msm'"
+      v-model="currentQuestionMsmAnswer"
+      :question-type="currentQuestionDetails.questionType"
+      :total-options="currentQuestionDetails.answerOptions"
+      class="ml-5 mt-1"
+      @log-current-answer="logCurrentAnswer"
+      @answer-changed="currentQuestionMsmAnswer = $event"
     />
     <CbtInterfaceAnswerNumericDiv
+      v-show="currentQuestionDetails.questionType === 'nat'"
       v-model="currentQuestionNatAnswer"
       :current-que-id="currentQuestionDetails.currentQueId"
       :question-type="currentQuestionDetails.questionType"
       :last-logged-answer="lastLoggedAnswer"
       class="ml-5 mt-2"
-      :class="{
-        hidden: currentQuestionDetails.questionType !== 'nat',
-      }"
-      @log-current-answer="logCurrentAnswer()"
+      @log-current-answer="logCurrentAnswer"
     />
   </div>
 </template>
@@ -116,13 +124,30 @@ const currentQuestionDetails = computed(() => {
 
   const currentQuestion = testQuestionsData.value.get(currentQueId)!
   const questionType = currentQuestion.type
-  const totalOptions = currentQuestion.totalOptions ?? 4
+  const answerOptions = currentQuestion.answerOptions || '4'
 
   return {
     questionType,
-    totalOptions,
+    answerOptions,
     currentQueId,
   }
+})
+
+const currentQuestionMsmAnswer = computed({
+  get: () => {
+    if (currentQuestionDetails.value.questionType === 'msm') {
+      const buffAnswer = currentTestState.value.currentAnswerBuffer
+      if (buffAnswer)
+        return buffAnswer as QuestionMsmAnswerType
+
+      return getNewMsmAnswerObject(currentQuestionDetails.value.answerOptions)
+    }
+    return {} as QuestionMsmAnswerType
+  },
+  set: (newVal) => {
+    const isNoneSelected = Object.values(newVal).every(arr => arr.length === 0)
+    currentTestState.value.currentAnswerBuffer = isNoneSelected ? null : newVal
+  },
 })
 
 const currentQuestionNatAnswer = computed({
@@ -137,7 +162,7 @@ const currentQuestionNatAnswer = computed({
   },
 })
 
-const currentQuestionOptionsAnswer = computed({
+const currentQuestionMcqOrMsqAnswer = computed({
   get: () => {
     const questionType = currentQuestionDetails.value.questionType
 
@@ -187,5 +212,15 @@ const testLogger = useCbtLogger()
 const logCurrentAnswer = () => {
   const currentAnswer = currentTestState.value.currentAnswerBuffer
   testLogger.currentAnswer(currentAnswer)
+}
+
+function getNewMsmAnswerObject(answerOption: string) {
+  const rows = parseInt(answerOption || '4')
+
+  const answerObj: QuestionMsmAnswerType = {}
+  utilRange(1, rows + 1)
+    .forEach(r => answerObj[r] = [])
+
+  return answerObj
 }
 </script>

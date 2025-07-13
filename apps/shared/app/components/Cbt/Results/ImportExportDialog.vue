@@ -50,16 +50,16 @@ const visibility = defineModel<boolean>('visibility', {
 })
 
 const emit = defineEmits<{
-  processed: [type: 'Import' | 'Export', data: (TestResultCommonOutput)[]]
+  processed: [type: 'Import' | 'Export', data: TestInterfaceOrResultJsonOutput[]]
 }>()
 
 const props = defineProps<{
   type: 'Import' | 'Export'
-  data: (TestResultCommonOutput)[]
+  data: TestInterfaceOrResultJsonOutput[]
 }>()
 
 const processData = () => {
-  const processedData: (TestResultCommonOutput)[] = []
+  const processedData: (TestInterfaceOrResultJsonOutput)[] = []
 
   for (const i of selectedKeys.value.values()) {
     const iData = props.data[i]

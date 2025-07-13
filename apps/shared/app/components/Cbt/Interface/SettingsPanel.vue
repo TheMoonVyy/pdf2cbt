@@ -399,7 +399,7 @@
                         <UiLabel
                           class="text-nowrap font-semibold"
                         >
-                          Answer Options Format
+                          MCQ &amp; MSQ Options Format
                         </UiLabel>
                         <div class="flex relative items-center group">
                           <Icon
@@ -417,7 +417,7 @@
                             <div class="py-2 px-4">
                               <CbtInterfaceAnswerOptionsDiv
                                 v-model="dummyValue"
-                                :total-options="4"
+                                total-options="4"
                                 question-type="mcq"
                               />
                             </div>
@@ -434,7 +434,7 @@
                           </UiLabel>
                           <UiInput
                             id="answer_options_prefix"
-                            v-model="settings.questionPanel.answerOptionsFormat.prefix"
+                            v-model="settings.questionPanel.answerOptionsFormat.mcqAndMsq.prefix"
                             type="text"
                             :maxlength="25"
                             class="md:text-base h-8"
@@ -449,7 +449,7 @@
                           </UiLabel>
                           <BaseSelect
                             id="answer_options_counter"
-                            v-model="settings.questionPanel.answerOptionsFormat.counterType"
+                            v-model="settings.questionPanel.answerOptionsFormat.mcqAndMsq.counterType"
                             :options="selectOptions.answerOptionsFormat"
                             size="sm"
                           />
@@ -463,7 +463,7 @@
                           </UiLabel>
                           <UiInput
                             id="answer_options_suffix"
-                            v-model="settings.questionPanel.answerOptionsFormat.suffix"
+                            v-model="settings.questionPanel.answerOptionsFormat.mcqAndMsq.suffix"
                             type="text"
                             :maxlength="25"
                             class="md:text-base h-8"
@@ -472,7 +472,7 @@
                       </div>
                       <div class="col-span-2 grid grid-cols-3 gap-1 mt-2">
                         <div
-                          v-for="item in htmlContent.customizeUi.questionPanel.answerOptionsFormat"
+                          v-for="item in htmlContent.customizeUi.questionPanel.answerOptionsFormat.mcqAndMsq"
                           :key="item.key"
                           class="flex flex-col w-full"
                         >
@@ -485,8 +485,8 @@
                           <BaseInputNumber
                             :id="item.id"
                             v-model="(
-                              settings.questionPanel.answerOptionsFormat[
-                                item.key as keyof CbtUiSettings['questionPanel']['answerOptionsFormat']
+                              settings.questionPanel.answerOptionsFormat.mcqAndMsq[
+                                item.key as keyof CbtUiSettings['questionPanel']['answerOptionsFormat']['mcqAndMsq']
                               ] as number)"
                             :min="item.min"
                             :max="item.max"
@@ -538,6 +538,115 @@
                     </UiCardContent>
                   </UiCard>
                 </div>
+                <UiCard class="py-2 mt-4 rounded-none gap-2 w-full">
+                  <UiCardHeader>
+                    <UiCardTitle class="text-lg mx-auto">
+                      MSM Question Type's Format
+                    </UiCardTitle>
+                  </UiCardHeader>
+                  <UiCardContent class="flex px-4 w-full divide-x-2 divide-border">
+                    <div class="flex flex-col w-60 pr-4">
+                      <UiLabel
+                        class="text-sm"
+                        for="msm-checkbox-zoom-size"
+                      >
+                        Checkbox Size
+                      </UiLabel>
+                      <BaseInputNumber
+                        id="msm-checkbox-zoom-size"
+                        v-model="settings.questionPanel.answerOptionsFormat.msm.zoomSize"
+                        :min="0.5"
+                        :max="5"
+                        :step="0.1"
+                      />
+                    </div>
+                    <div class="grid grid-cols-2 divide-x-2 divide-border">
+                      <div
+                        v-for="(axisLabel, axisKey) in ({ row: 'Rows', col: 'Columns' } as const)"
+                        :key="axisKey"
+                        class="flex flex-col gap-3 px-4"
+                      >
+                        <div class="flex w-full justify-center gap-2 mb-0.5">
+                          <UiLabel
+                            class="text-nowrap font-semibold"
+                          >
+                            {{ axisLabel }} Format
+                          </UiLabel>
+                        </div>
+                        <div class="col-span-2 grid grid-cols-3 gap-4 mt-2">
+                          <div class="flex flex-col">
+                            <UiLabel
+                              class="text-sm"
+                              :for="`msm_${axisKey}_answer_options_prefix`"
+                            >
+                              Prefix
+                            </UiLabel>
+                            <UiInput
+                              :id="`msm_${axisKey}_answer_options_prefix`"
+                              v-model="settings.questionPanel.answerOptionsFormat.msm[axisKey].prefix"
+                              type="text"
+                              :maxlength="25"
+                              class="md:text-base h-8"
+                            />
+                          </div>
+                          <div class="flex flex-col">
+                            <UiLabel
+                              class="text-sm"
+                              :for="`msm_${axisKey}_answer_options_counter`"
+                            >
+                              Counter Type
+                            </UiLabel>
+                            <BaseSelect
+                              :id="`msm_${axisKey}_answer_options_counter`"
+                              v-model="settings.questionPanel.answerOptionsFormat.msm[axisKey].counterType"
+                              :options="selectOptions.answerOptionsFormat"
+                              size="sm"
+                            />
+                          </div>
+                          <div class="flex flex-col">
+                            <UiLabel
+                              class="text-sm"
+                              :for="`msm_${axisKey}_answer_options_suffix`"
+                            >
+                              Suffix
+                            </UiLabel>
+                            <UiInput
+                              :id="`msm_${axisKey}_answer_options_suffix`"
+                              v-model="settings.questionPanel.answerOptionsFormat.msm[axisKey].suffix"
+                              type="text"
+                              :maxlength="25"
+                              class="md:text-base h-8"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-span-2 grid grid-cols-2 gap-4 mt-2">
+                          <div
+                            v-for="item in htmlContent.customizeUi.questionPanel.answerOptionsFormat.msm"
+                            :key="item.key"
+                            class="flex flex-col w-full"
+                          >
+                            <UiLabel
+                              class="text-sm"
+                              :for="item.id"
+                            >
+                              {{ item.label }}
+                            </UiLabel>
+                            <BaseInputNumber
+                              :id="item.id"
+                              v-model="(
+                                settings.questionPanel.answerOptionsFormat.msm[axisKey][
+                                  item.key as keyof CbtUiSettings['questionPanel']['answerOptionsFormat']['msm']['row']
+                                ] as number)"
+                              :min="item.min"
+                              :max="item.max"
+                              :step="item.step || 1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </UiCardContent>
+                </UiCard>
                 <UiCard class="py-2 mt-4 rounded-none gap-2">
                   <UiCardHeader>
                     <UiCardTitle class="text-lg mx-auto">
@@ -967,11 +1076,11 @@
             URLs that work include links to file on public GitHub repositories.<br>
             For example, here is the URL of demo test data on this project's GitHub repo which will work:<br>
             <a
-              href="https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data_pre_generated.zip"
+              href="https://github.com/TheMoonVyy/pdf2cbt/blob/main/apps/shared/app/assets/zip/demo_test_data_pre_generated.zip"
               target="_blank"
               class="text-blue-400 underline"
             >
-              https://github.com/TheMoonVyy/pdf2cbt/blob/main/app/assets/zip/demo_test_data_pre_generated.zip
+              https://github.com/TheMoonVyy/pdf2cbt/blob/main/apps/shared/app/assets/zip/demo_test_data_pre_generated.zip
             </a>
           </p>
           <p>
@@ -1041,11 +1150,17 @@ const htmlContent = {
       { type: 'select', key: 'showQuestionTimeSpent', label: 'Time Spent Per Ques.' },
     ]),
     questionPanel: {
-      answerOptionsFormat: addIds([
-        { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
-        { key: 'zoomSize', label: 'Checkbox Size', min: 0.5, max: 5, step: 0.1 },
-        { key: 'rowGap', label: 'Row Gap', min: 0, max: 10, step: 0.1 },
-      ]),
+      answerOptionsFormat: {
+        mcqAndMsq: addIds([
+          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'zoomSize', label: 'Checkbox Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'rowGap', label: 'Row Gap', min: 0, max: 10, step: 0.1 },
+        ]),
+        msm: addIds([
+          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'gap', label: 'Gap', min: 0, max: 10, step: 0.1 },
+        ]),
+      },
     },
     questionPalette: addIds([
       { key: 'width', label: 'Palette Width (%)', min: 10, max: 40 },
@@ -1134,6 +1249,8 @@ const selectOptions = {
   answerOptionsFormat: [
     { name: 'A, B, C, D...', value: 'upper-latin' },
     { name: 'a, b, c, d...', value: 'lower-latin' },
+    { name: 'P, Q, R, S...', value: 'upper-pqrs' },
+    { name: 'p, q, r, s...', value: 'lower-pqrs' },
     { name: '1, 2, 3, 4...', value: 'decimal' },
     { name: 'I, II, III, IV...', value: 'upper-roman' },
     { name: 'i, ii, iii, iv...', value: 'lower-roman' },
@@ -1170,6 +1287,8 @@ const emit = defineEmits(['prepareTest'])
 
 const db = useDB()
 
+const migrateJsonData = useMigrateJsonData()
+
 const fileUploaderFileType = shallowRef<'zip' | 'json'>('zip')
 
 const zipFileFromUrlState = shallowReactive<{
@@ -1198,7 +1317,7 @@ const hashMismatchDialogState = shallowReactive<{
   showDialog: boolean
   pdfFileHash: string
   pdfBuffer: Uint8Array | null
-  jsonData: Record<string, unknown> | null
+  jsonData: AnswerKeyJsonOutputBasedOnPdfCropper | PdfCropperJsonOutput | null
 }>({
   showDialog: false,
   pdfFileHash: '',
@@ -1216,12 +1335,6 @@ const {
 } = useCbtSettings()
 
 const settings = useThrottle(uiSettings, 400)
-
-const mainLayoutCssVar = useCssVar(
-  '--main-layout-size',
-  null,
-  { initialValue: settings.value.mainLayout.size + 'px' },
-)
 
 const {
   testSectionsList,
@@ -1453,14 +1566,16 @@ async function verifyTestData(
   try {
     const { jsonData, pdfBuffer, testImageBlobs } = uploadedData
     if (jsonData && (pdfBuffer || testImageBlobs)) {
-      const pdfFileHashInJson = jsonData.pdfFileHash as string | undefined
+      const jsonParsedData = migrateJsonData.answerKeyData<AnswerKeyJsonOutputBasedOnPdfCropper>(jsonData)
+      uploadedData.jsonData = jsonParsedData
+      const pdfFileHashInJson = jsonParsedData.testConfig.pdfFileHash
 
       if (pdfBuffer) {
         const currentPdfFileHash = await utilGetHash(pdfBuffer)
 
         if (pdfFileHashInJson && currentPdfFileHash !== pdfFileHashInJson) {
           hashMismatchDialogState.pdfBuffer = pdfBuffer
-          hashMismatchDialogState.jsonData = jsonData
+          hashMismatchDialogState.jsonData = jsonParsedData
           hashMismatchDialogState.pdfFileHash = currentPdfFileHash
           hashMismatchDialogState.showDialog = true
         }
@@ -1468,7 +1583,6 @@ async function verifyTestData(
           if (currentPdfFileHash) {
             testState.value.pdfFileHash = currentPdfFileHash
           }
-
           loadTestData(uploadedData)
         }
       }
@@ -1502,23 +1616,25 @@ async function loadTestData(
     testState.value.testImageBlobs = testImageBlobs
 
     const newCropperSectionsData: CropperSectionsData = {}
-    let newTestSectionsData: TestSectionsData = {}
+    let newTestSectionsData: TestSessionSectionsData = {}
     let sectionsArray: TestSectionListItem[] = []
 
     const isContinueLastTest = testState.value.continueLastTest
 
-    const { pdfCropperData, testAnswerKey, testConfig } = jsonData as {
-      pdfCropperData: CropperOutputData
-      testAnswerKey: TestAnswerKeyData | undefined
-      testConfig?: TestOutputData['testConfig'] & { zipUrl?: string }
-    }
+    const {
+      pdfCropperData,
+      testAnswerKey,
+      testConfig,
+    } = jsonData as unknown as AnswerKeyJsonOutputBasedOnPdfCropper
 
-    if (!testState.value.zipOriginalUrl.trim()) {
-      testState.value.zipOriginalUrl = testConfig?.zipOriginalUrl || testConfig?.zipUrl || ''
-    }
+    if (!testState.value.zipOriginalUrl.trim())
+      testState.value.zipOriginalUrl = testConfig?.zipOriginalUrl || (testConfig?.zipUrl || '')
 
-    if (testAnswerKey) testState.value.testAnswerKey = testAnswerKey
-    if (!pdfCropperData) throw new Error('Error, pdfCropperData not found in json data')
+    if (testAnswerKey)
+      testState.value.testAnswerKey = testAnswerKey
+
+    if (!pdfCropperData)
+      throw new Error('Error, pdfCropperData not found in json data')
 
     // for newCropperSectionsData and sectionsArray
     for (const subject of Object.keys(pdfCropperData)) {
@@ -1558,23 +1674,23 @@ async function loadTestData(
     }
     else {
     // for newTestSectionsData
-      let sectionData: TestSectionData = {}
+      let sectionData: TestSessionSectionData = {}
       const firstData: {
-        section: TestSectionKey | null
+        section: string | null
         question: null | number
       } = {
         section: null,
         question: null,
       }
 
-      const sectionsPrevQuestion: Record<TestSectionKey, number> = {}
-      for (const section of Object.keys(newCropperSectionsData) as TestSectionKey[]) {
+      const sectionsPrevQuestion: Record<string, number> = {}
+      for (const section of Object.keys(newCropperSectionsData)) {
         let firstQuestion: number | null = null
 
         firstData.section ??= section
         let secQueId = 1
         for (const question of Object.keys(newCropperSectionsData[section]!)) {
-          const { que, type, options } = newCropperSectionsData[section]![question]!
+          const { que, type, answerOptions } = newCropperSectionsData[section]![question]!
 
           firstQuestion ??= que
           firstData.question ??= que
@@ -1590,10 +1706,8 @@ async function loadTestData(
             timeSpent: 0,
           }
 
-          if ((type === 'mcq' || type === 'msq')
-            && options && options !== 4) {
-            sectionData[question].totalOptions = options
-          }
+          if (type === 'mcq' || type === 'msq' || type === 'msm')
+            sectionData[question].answerOptions = answerOptions || '4'
 
           totalQuestions++
           secQueId++
@@ -1602,14 +1716,14 @@ async function loadTestData(
         if (firstQuestion !== null) {
           sectionsPrevQuestion[section] = firstQuestion
         }
-        newTestSectionsData[section] = sectionData as TestSectionData
+        newTestSectionsData[section] = sectionData
 
         sectionData = {}
         totalSections++
       }
 
       currentTestState.value.sectionsPrevQuestion = sectionsPrevQuestion
-      currentTestState.value.section = firstData.section as TestSectionKey
+      currentTestState.value.section = firstData.section as string
     }
 
     testState.value.totalSections = totalSections
@@ -1661,13 +1775,6 @@ function prepareTest() {
 const reloadPage = () => {
   window.location.reload()
 }
-
-watch(
-  () => settings.value.mainLayout.size,
-  () => {
-    mainLayoutCssVar.value = settings.value.mainLayout.size + 'px'
-  },
-)
 
 watchDebounced(testSectionsList,
   () => {

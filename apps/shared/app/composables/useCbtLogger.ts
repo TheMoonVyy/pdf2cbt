@@ -5,14 +5,14 @@ const db = useDB()
 class TestLogger {
   logs: TestLog[] = []
   logId: number = 1
-  testSectionsData: Ref<TestSectionsData>
-  testQuestionsData: Ref<Map<number, TestQuestionData>>
+  testSectionsData: Ref<TestSessionSectionsData>
+  testQuestionsData: Ref<Map<number, TestSessionQuestionData>>
   currentTestState: Ref<CurrentTestState>
   lastLoggedAnswer: Ref<QuestionAnswer>
 
   constructor(
-    testSectionsData: Ref<TestSectionsData>,
-    testQuestionsData: Ref<Map<number, TestQuestionData>>,
+    testSectionsData: Ref<TestSessionSectionsData>,
+    testQuestionsData: Ref<Map<number, TestSessionQuestionData>>,
     currentTestState: Ref<CurrentTestState>,
     lastLoggedAnswer: Ref<QuestionAnswer>,
   ) {
@@ -27,16 +27,15 @@ class TestLogger {
     details: Record<string, unknown> | null = null,
     lastLoggedAnswerValue: QuestionAnswer | undefined = undefined,
   ) {
-    const timestamp = Date.now() // in unix time
+    const timestamp = Date.now() // in unix ms utc time
     const testTime = this.currentTestState.value.remainingSeconds!
     const questionStartTime = this.currentTestState.value.currentQuestionStartTime
 
     const currentQueId = this.currentTestState.value.queId
 
     const currentQuestionData = this.testQuestionsData.value.get(currentQueId)!
-    const currentAnswer = currentQuestionData.answer
 
-    const answer = Array.isArray(currentAnswer) ? [...currentAnswer] : currentAnswer
+    const answer = utilCloneJson(currentQuestionData.answer)
 
     const log: TestLog = {
       id: this.logId++,
@@ -63,7 +62,7 @@ class TestLogger {
 
   getPrevAnswer() {
     const prevAnswerValue = this.lastLoggedAnswer.value
-    return Array.isArray(prevAnswerValue) ? [...prevAnswerValue] : prevAnswerValue
+    return utilCloneJson(prevAnswerValue)
   }
 
   replaceLogsArray(newLogArray: TestLog[]) {
@@ -93,7 +92,7 @@ class TestLogger {
   currentQuestion(
     via: CurrentQuestionViaType,
     prevQueId: number,
-    prevSection: TestSectionKey | null = null,
+    prevSection: string | null = null,
   ) {
     const details: UnknownRecord = { via }
 
@@ -125,7 +124,7 @@ class TestLogger {
 
   currentAnswer(answer: QuestionAnswer) {
     const prevAnswer = this.getPrevAnswer()
-    const currAnswer = Array.isArray(answer) ? [...answer] : answer
+    const currAnswer = utilCloneJson(answer)
 
     this.#createLog('currentAnswer', { prevAnswer, currentAnswer: currAnswer }, currAnswer)
   }

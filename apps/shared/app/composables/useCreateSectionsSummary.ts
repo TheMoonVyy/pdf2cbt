@@ -1,11 +1,11 @@
 export default (
-  testSectionsDataRef: Ref<TestSectionsData>,
+  testSectionsDataRef: Ref<TestSessionSectionsData>,
   testSectionsSummaryRef: Ref<TestSectionsSummary>,
 ) => {
   testSectionsSummaryRef.value.clear()
 
   for (const section of Object.keys(testSectionsDataRef.value)) {
-    const sectionKey = section as TestSectionKey
+    const sectionKey = section
 
     const summaryComputed = computed<TestSectionSummary>(() => {
       const summary: TestSectionSummary = {

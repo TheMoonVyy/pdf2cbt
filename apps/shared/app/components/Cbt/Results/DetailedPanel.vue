@@ -5,11 +5,9 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
-  type CellContext,
-  type ColumnHelper,
-  type Table,
-  type Column,
+
 } from '@tanstack/vue-table'
+import type { CellContext, ColumnHelper, Table, Column } from '@tanstack/vue-table'
 import {
   QUESTION_STATUS_LIST,
   QUESTION_TYPES_LIST,
@@ -36,8 +34,8 @@ type SelectedSectionKeys = {
 
 type Props = {
   testResultData: TestResultData
-  testQuestions: TestResultDataQuestion[]
-  testConfig: TestOutputData['testConfig']
+  testQuestions: TestResultQuestionData[]
+  testConfig: TestInterfaceAndResultCommonJsonOutputData['testConfig']
   waitUntil: boolean
 }
 
@@ -47,8 +45,6 @@ const tooltipContent = {
 }
 
 const { testResultData, waitUntil, testConfig, testQuestions } = defineProps<Props>()
-
-const db = useDB()
 
 const currentSelectedState = shallowReactive({
   subject: TEST_OVERALL,
@@ -74,7 +70,7 @@ const questionMarksStats = shallowRef<MarksStatsWithName[]>([])
 
 const currentResultsID = useCbtResultsCurrentID()
 
-const questionsData = shallowRef<TestResultDataQuestion[]>([])
+const questionsData = shallowRef<TestResultQuestionData[]>([])
 
 // to store previously selected sections,
 // so that this can be used to get user back to the section they left for that particular subject
@@ -96,7 +92,6 @@ const questionPreviewState = shallowReactive({
     '--options-suffix': `""`,
     'counter-reset': 'answer-options',
   },
-  isSettingsLoaded: false,
 })
 
 const highlightStyleClasses: Record<string, string> = {
@@ -110,7 +105,7 @@ const highlightStyleClasses: Record<string, string> = {
 
 const settings = shallowReactive({
   highlightMode: 'result.status' as 'result.status' | 'status' | null,
-  queNumOrder: 'oriQueId' as keyof Pick<TestResultDataQuestion, 'oriQueId' | 'queId' | 'secQueId'>,
+  queNumOrder: 'oriQueId' as keyof Pick<TestResultQuestionData, 'oriQueId' | 'queId' | 'secQueId'>,
 })
 
 const questionsTableFilterKeyValues = {
@@ -323,7 +318,7 @@ function changeTablesFilters(changeLevel: 'test' | 'showTestOverall' | 'section'
 }
 
 function getQuestionsTableColumnsData() {
-  const columnHelper = createColumnHelper<TestResultDataQuestion>()
+  const columnHelper = createColumnHelper<TestResultQuestionData>()
 
   const columns = [
     columnHelper.accessor('subject', {
@@ -651,22 +646,6 @@ function showQuestionPreview(queId: number | null = null) {
   const maxIndex = Math.max(0, questionsToPreview.value.length - 1)
   questionPreviewState.currentQueIndex = utilClampNumber(index, 0, maxIndex)
 
-  if (!questionPreviewState.isSettingsLoaded) {
-    db.getSettings()
-      .then((data) => {
-        if (data) {
-          const { prefix, suffix, counterType } = data.uiSettings.questionPanel.answerOptionsFormat
-          questionPreviewState.optionsStyle = {
-            '--counter-type': counterType,
-            '--options-prefix': `"${prefix}"`,
-            '--options-suffix': `"${suffix}"`,
-            'counter-reset': 'answer-options',
-          }
-        }
-      })
-  }
-
-  questionPreviewState.isSettingsLoaded = true
   questionPreviewState.show = true
 }
 
@@ -852,7 +831,7 @@ function createEmptyBaseForStats() {
   return { status, result, marks }
 }
 
-function getSectionStats(sectionData: TestResultDataSection): Stats {
+function getSectionStats(sectionData: TestResultSectionData): Stats {
   const {
     marks: questionMarks,
     status: questionStatus,
@@ -863,7 +842,7 @@ function getSectionStats(sectionData: TestResultDataSection): Stats {
   let accuracyCount = 0
 
   for (const questionData of Object.values(sectionData)) {
-    const { result, timeSpent, totalOptions } = questionData
+    const { result, timeSpent } = questionData
     const { marks, status } = result
 
     questionStatus[questionData.status].count++
@@ -871,7 +850,7 @@ function getSectionStats(sectionData: TestResultDataSection): Stats {
     questionResult[status].count++
     questionResult[status].totalTime += timeSpent
 
-    maxMarks += questionData.marks.cm
+    maxMarks += questionData.marks.max || questionData.marks.cm
 
     if (marks > 0) {
       if (status === 'bonus') {
@@ -892,13 +871,7 @@ function getSectionStats(sectionData: TestResultDataSection): Stats {
       questionMarks.negative.totalTime += timeSpent
     }
 
-    if (status === 'correct') {
-      accuracyCount++
-    }
-    else if (status === 'partial') {
-      const partialCount = marks / (questionData.marks.pm || 1)
-      accuracyCount += partialCount / (totalOptions || 4)
-    }
+    accuracyCount += result.accuracyNumerator
   }
 
   const accuracyDenominator = questionResult.correct.count
@@ -1094,16 +1067,18 @@ const subjectChangeHandler = (subject: string) => {
         </UiScrollArea>
       </UiTabs>
       <UiTabs
+        v-if="(currentSelectedState.subject !== TEST_OVERALL)
+          && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1
+        "
         v-model="selectedTabs[currentSelectedState.subject]"
         class="border-b border-border sticky top-0 z-20 bg-background"
         @update:model-value="(val) => sectionChangeHandler(val as string)"
       >
         <UiScrollArea class="w-full">
-          <BaseTabsListWithIndicator class="flex flex-nowrap px-3 gap-x-1 max-w-max">
+          <BaseTabsListWithIndicator
+            class="flex flex-nowrap px-3 gap-x-1 max-w-max"
+          >
             <BaseTabsTriggerWithIndicator
-              v-if="
-                (currentSelectedState.subject !== TEST_OVERALL)
-                  && Object.keys(subjectsOverallStats[currentSelectedState.subject] ?? {}).length > 1"
               :value="currentSelectedState.subject + OVERALL"
               class="cursor-pointer p-2.5 text-base"
             >
@@ -1484,7 +1459,7 @@ const subjectChangeHandler = (subject: string) => {
                     <UiTableCell
                       v-for="cell in row.getVisibleCells()"
                       :key="cell.id"
-                      class="text-center table-body-size"
+                      class="text-center table-body-size whitespace-pre-line"
                     >
                       <div
                         v-if="cell.column.id === 'queId'"

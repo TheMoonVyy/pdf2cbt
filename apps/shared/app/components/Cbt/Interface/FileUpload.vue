@@ -304,7 +304,7 @@ async function handleUpload(uploadedFiles: File[] | File) {
   }
   else {
     let pdfBuffer: Uint8Array | null = null
-    let jsonData: Record<string, unknown> | null = null
+    let jsonData: PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper | null = null
 
     try {
       for (const file of files) {
@@ -337,10 +337,10 @@ async function handleUpload(uploadedFiles: File[] | File) {
 
 watch(
   () => props.zipFileToLoad,
-  (newVal) => {
-    if (newVal) {
+  (file) => {
+    if (file) {
       selectedFileType.value = 'zip'
-      handleUpload(newVal)
+      handleUpload(file)
     }
   },
 )

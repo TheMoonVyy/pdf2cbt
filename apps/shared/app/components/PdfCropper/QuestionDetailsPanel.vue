@@ -78,12 +78,13 @@
             label-id="answer_options"
             label-class="text-xs start-1/2! -translate-x-1/2"
           >
-            <BaseInputNumber
-              id="marks_correct"
-              v-model="currentData.options"
+            <UiInput
+              id="answer_options"
+              v-model="currentData.answerOptions"
+              class="text-center"
+              type="text"
               :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
-              :min="1"
-              :max="26"
+              @blur="currentData.answerOptions = currentData.answerOptions.trim()"
             />
           </BaseFloatLabel>
         </div>
@@ -319,6 +320,7 @@ const optionItems = {
     { name: 'MCQ (Multiple Choice Question)', value: 'mcq' },
     { name: 'MSQ (Multiple Select Question)', value: 'msq' },
     { name: 'NAT (Numerial Answer Type)', value: 'nat' },
+    { name: 'MSM (Multiple Select Matrix)', value: 'msm' },
   ],
 }
 
