@@ -54,7 +54,7 @@ interface QuestionStatusList {
 }
 
 interface Props {
-  sectionName: TestSectionKey
+  sectionName: string
   questionStatusList: QuestionStatusList[]
   quesIcons: QuesIcons
   dataIdSelector: string

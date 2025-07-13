@@ -1,12 +1,12 @@
 <template>
   <div
-    v-if="props.questionType !== 'nat'"
+    v-if="props.questionType === 'mcq' || props.questionType === 'msq'"
     class="flex flex-col"
     :style="optionsStyle"
   >
     <template v-if="props.questionType === 'msq'">
       <div
-        v-for="n in props.totalOptions"
+        v-for="n in parseInt(props.totalOptions)"
         :key="n"
         class="flex"
       >
@@ -30,7 +30,7 @@
     </template>
     <template v-else>
       <div
-        v-for="n in props.totalOptions"
+        v-for="n in parseInt(props.totalOptions)"
         :key="n"
         class="flex"
       >
@@ -59,7 +59,7 @@
 const { uiSettings } = useCbtSettings()
 
 const optionsStyle = computed(() => {
-  const answerOptionsFormat = uiSettings.value.questionPanel.answerOptionsFormat
+  const answerOptionsFormat = uiSettings.value.questionPanel.answerOptionsFormat.mcqAndMsq
 
   return {
     '--counter-type': answerOptionsFormat.counterType,
@@ -73,7 +73,7 @@ const optionsStyle = computed(() => {
 })
 
 const props = defineProps<{
-  totalOptions: number
+  totalOptions: string
   questionType: QuestionType
 }>()
 

@@ -413,7 +413,8 @@
 <script setup lang="ts">
 import '#layers/shared/app/assets/css/pdf-cropper.css'
 import * as Comlink from 'comlink'
-import { zip, strToU8, type AsyncZippable } from 'fflate'
+import { zip, strToU8 } from 'fflate'
+import type { AsyncZippable } from 'fflate'
 import mupdfWorkerFile from '#layers/shared/app/src/worker/mupdf.worker?worker'
 import type { MuPdfProcessor } from '#layers/shared/app/src/worker/mupdf.worker'
 import { SEPARATOR } from '#layers/shared/shared/constants'
@@ -431,11 +432,6 @@ type PageImgData = {
     url: string
     pageScale: number
   }
-}
-
-type PdfCropperJsonData = {
-  pdfCropperData: CropperOutputData
-  pdfFileHash: string
 }
 
 const selectOptions = {
@@ -467,6 +463,10 @@ const tooltipContent = {
     + 'This doesn\'t take Device Pixel Ratio into account, so if you are using a very high DPI screen, then you can set this to a greater value.',
 }
 
+const migrateJsonData = useMigrateJsonData()
+
+const appVersion = useRuntimeConfig().public.projectVersion
+
 const generateOutputState = shallowReactive({
   filename: 'pdf2cbt_cropperdata',
   fileType: '.zip',
@@ -482,7 +482,7 @@ const generateOutputState = shallowReactive({
 
 const outputFilesToZip = shallowRef<AsyncZippable>({})
 
-const userUploadedCropperDataJson = shallowRef<PdfCropperJsonData | null>(null)
+const userUploadedCropperJsonOutput = shallowRef<PdfCropperJsonOutput | null>(null)
 
 const cropperSectionsDataForPreGenerateImages = shallowRef<CropperSectionsData>({})
 
@@ -538,7 +538,7 @@ const mainOverlayData = reactive<PdfCroppedOverlayData>({
   section: '',
   que: 1,
   type: 'mcq',
-  options: 4,
+  answerOptions: '4',
   marks: {
     cm: 4,
     pm: 1,
@@ -549,11 +549,14 @@ const mainOverlayData = reactive<PdfCroppedOverlayData>({
 
 const overlaysPerQuestionData = reactive<PdfCropperOverlaysPerQuestion>(new Map())
 
-const savedMarkingScheme: {
+const cachedData: {
   [questionType in QuestionType]?: {
-    cm: number
-    pm: number
-    im: number
+    markingScheme: {
+      cm: number
+      pm: number
+      im: number
+    }
+    answerOptions: string
   }
 } = {}
 
@@ -561,19 +564,21 @@ watch(
   () => mainOverlayData.type,
   (newQuestionType, oldQuestionType) => {
     const { cm, pm, im } = mainOverlayData.marks
+    const answerOptions = mainOverlayData.answerOptions
 
-    savedMarkingScheme[oldQuestionType] = {
-      cm,
-      pm,
-      im,
+    cachedData[oldQuestionType] = {
+      markingScheme: { cm, pm, im },
+      answerOptions: /^\d+(x\d+)?$/i.test(answerOptions) ? answerOptions : '',
     }
 
-    const newMarkingScheme = savedMarkingScheme[newQuestionType]
-    if (newMarkingScheme) {
-      const { cm, pm, im } = newMarkingScheme
+    const dataInCache = cachedData[newQuestionType]
+    if (dataInCache) {
+      const { cm, pm, im } = dataInCache.markingScheme
       mainOverlayData.marks.cm = cm
       mainOverlayData.marks.pm = pm
       mainOverlayData.marks.im = im
+      if (dataInCache.answerOptions)
+        mainOverlayData.answerOptions = dataInCache.answerOptions
     }
   },
 )
@@ -616,7 +621,7 @@ const storeOverlayData = (
       section,
       imgNum: newImgNum,
       type: existingFirstOverlay.type,
-      options: existingFirstOverlay.options,
+      answerOptions: existingFirstOverlay.answerOptions,
       marks: {
         ...existingFirstOverlay.marks,
       },
@@ -663,7 +668,7 @@ watch(currentQuestionData,
           if (!nextOverlayData) return
 
           let isDataChanged = false
-          for (const keyData of ['type', 'options'] as const) {
+          for (const keyData of ['type', 'answerOptions'] as const) {
             if (oldOverlay[keyData] !== nextOverlayData[keyData]) {
               isDataChanged = true
               break
@@ -679,13 +684,13 @@ watch(currentQuestionData,
           }
           if (!isDataChanged) return
 
-          const { type, options, marks } = oldOverlay
+          const { type, answerOptions, marks } = oldOverlay
           for (const newImgNum of utilRange(2, oldImgCount + 1)) {
             const overlay = cropperOverlayDatas.get(oldQueId + SEPARATOR + newImgNum)
             if (!overlay) return
 
             overlay.type = type
-            overlay.options = options
+            overlay.answerOptions = answerOptions
             overlay.marks = { ...marks }
           }
         }
@@ -756,8 +761,8 @@ function storeCurrentQuestionData(
   pdfData: PdfCroppedOverlayData['pdfData'] | null = null,
   incrementQuestion: boolean = true,
 ) {
-  const { subject, section, que } = mainOverlayData
-  if (!subject) {
+  const { subject, section, que, answerOptions } = mainOverlayData
+  if (!subject || !(/^\d+(x\d+)?$/i.test(answerOptions))) {
     visibilityState.questionDetailsDialog = true
     return
   }
@@ -778,7 +783,7 @@ function storeCurrentQuestionData(
 }
 
 const handleFileUpload = async (file: File) => {
-  userUploadedCropperDataJson.value = null
+  userUploadedCropperJsonOutput.value = null
   pdfState.fileUint8Array = null
   generateOutputState.isUploadedFileZipFile = false
   visibilityState.isLoadingPdf = true
@@ -792,8 +797,8 @@ const handleFileUpload = async (file: File) => {
       const unzippedData = await utilUnzipTestDataFile(file, 'pdf-and-json', false)
       if (unzippedData.pdfBuffer && unzippedData.jsonData) {
         pdfState.fileUint8Array = unzippedData.pdfBuffer
-        userUploadedCropperDataJson.value = unzippedData.jsonData as PdfCropperJsonData
-        pdfFileHash = userUploadedCropperDataJson.value?.pdfFileHash || ''
+        userUploadedCropperJsonOutput.value = migrateJsonData.pdfCropperData(unzippedData.jsonData)
+        pdfFileHash = userUploadedCropperJsonOutput.value?.testConfig.pdfFileHash || ''
         visibilityState.isLoadingPdf = false
         generateOutputState.isUploadedFileZipFile = true
         visibilityState.generateOutputDialog = true
@@ -864,7 +869,7 @@ async function renderPage(pageNum: number) {
   }
 }
 
-function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>) {
+function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>): PdfCropperJsonOutput {
   type StructuredOverlayData = {
     [subject: string]: {
       [section: string]: {
@@ -903,7 +908,7 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>) {
           return { x1: l, x2: r, y1: t, y2: b, page }
         })
 
-        const { que, type, options, marks } = sortedQuestionOverlays[0]!
+        const { que, type, answerOptions, marks } = sortedQuestionOverlays[0]!
         subjectsData[subject][section][question] = {
           que,
           type: type,
@@ -914,18 +919,24 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>) {
         }
 
         if (type !== 'msq') delete subjectsData[subject][section][question].marks.pm
-        if (type === 'msq' || type === 'mcq') {
-          subjectsData[subject][section][question].options = options || 4
+        if (type === 'msq' || type === 'mcq' || type === 'msm') {
+          subjectsData[subject][section][question].answerOptions = answerOptions || '4'
         }
+        if (type === 'msm')
+          subjectsData[subject][section][question].marks.max = marks.cm * parseInt(answerOptions || '4')
       }
     }
   }
 
   const pdfCropperData = subjectsData
 
-  const outputData = {
+  const outputData: PdfCropperJsonOutput = {
     pdfCropperData,
-    pdfFileHash,
+    testConfig: {
+      pdfFileHash,
+    },
+    appVersion,
+    generatedBy: 'pdfCropperPage',
   }
 
   return outputData
@@ -960,10 +971,10 @@ async function generatePdfCropperOutput() {
   if (!pdfFileHash) pdfFileHash = await utilGetHash(pdfU8Array)
 
   const jsonData = generateOutputState.isUploadedFileZipFile
-    ? userUploadedCropperDataJson.value!
+    ? userUploadedCropperJsonOutput.value!
     : transformDataToOutputFormat(toRaw(cropperOverlayDatas))
 
-  jsonData.pdfFileHash = pdfFileHash
+  jsonData.testConfig.pdfFileHash = pdfFileHash
 
   const jsonString = JSON.stringify(jsonData, null, 2)
 

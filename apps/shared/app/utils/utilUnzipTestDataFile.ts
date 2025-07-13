@@ -1,4 +1,5 @@
-import { unzip, strFromU8, type Unzipped } from 'fflate'
+import { unzip, strFromU8 } from 'fflate'
+import type { Unzipped } from 'fflate'
 import { DataFileNames } from '#layers/shared/shared/enums'
 import { SEPARATOR } from '#layers/shared/shared/constants'
 

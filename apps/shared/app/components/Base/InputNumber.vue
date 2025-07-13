@@ -1,6 +1,13 @@
 <script lang="ts" setup>
 const model = defineModel<number>({ required: true })
 
+// using writeable computed property
+// to prevent model value from being assigned undefined
+const computedModel = computed({
+  get: () => model.value,
+  set: val => typeof val === 'number' && (model.value = val),
+})
+
 const {
   incrementIcon = 'line-md:plus',
   decrementIcon = 'line-md:minus',
@@ -21,7 +28,7 @@ const {
 <template>
   <UiNumberField
     :id="id || (labelId || undefined)"
-    v-model="model"
+    v-model="computedModel"
   >
     <UiNumberFieldContent>
       <UiNumberFieldDecrement

@@ -1,17 +1,17 @@
 import { CbtUseState } from '#layers/shared/shared/enums'
 
-const sectionsPrevQuestion: Record<TestSectionKey, number> = {}
+const sectionsPrevQuestion: Record<string, number> = {}
 
 const getTestDummyData = () => {
   let questionNum = 1
-  const testSectionsdummyData: TestSectionsData = {}
-  const testQuestionsDummyData: Map<number, TestQuestionData> = new Map()
+  const testSectionsdummyData: TestSessionSectionsData = {}
+  const testQuestionsDummyData: Map<number, TestSessionQuestionData> = new Map()
 
   for (const subjectNum of utilRange(1, 4)) {
     const subject = 'Subject' + subjectNum
 
     for (const sectionNum of utilRange(1, 3)) {
-      const section: keyof TestSectionsData = `${subject} Section ${sectionNum}`
+      const section = `${subject} Section ${sectionNum}`
 
       testSectionsdummyData[section] = {}
       const questionsRange = sectionNum === 1 ? 20 : 5
@@ -19,16 +19,17 @@ const getTestDummyData = () => {
       sectionsPrevQuestion[section] = recentQuestion
 
       for (const secQueId of utilRange(1, questionsRange + 1)) {
-        const questionData = {
+        const questionData: TestSessionQuestionData = {
           secQueId,
           queId: questionNum,
           que: questionNum,
           section,
           type: sectionNum === 1 ? 'mcq' : 'nat',
+          answerOptions: '4',
           answer: null,
           status: 'notVisited',
           timeSpent: 0,
-        } as TestQuestionData
+        }
 
         testSectionsdummyData[section][questionNum] = questionData
         testQuestionsDummyData.set(questionNum, questionData)
@@ -109,12 +110,12 @@ export default () => {
     },
   )
 
-  const testSectionsData = useState<TestSectionsData>(
+  const testSectionsData = useState<TestSessionSectionsData>(
     CbtUseState.TestSectionsData,
     () => testSectionsdummyData,
   )
 
-  const testQuestionsData = useState<Map<number, TestQuestionData>>(
+  const testQuestionsData = useState<Map<number, TestSessionQuestionData>>(
     CbtUseState.TestQuestionsData,
     () => testQuestionsDummyData,
   )

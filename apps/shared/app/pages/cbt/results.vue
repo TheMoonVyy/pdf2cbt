@@ -24,7 +24,7 @@
               <ClientOnly>
                 <span class="font-bold">
                   {{
-                    testResultsOutputData?.testConfig.testName
+                    testResultJsonData?.testConfig.testName
                       ?? (currentResultsID
                         ? ''
                         : 'Demo Mock Test')
@@ -83,12 +83,12 @@
             :chart-colors="chartColors"
           />
           <CbtResultsDetailedPanel
-            v-if="testResultsOutputData?.testResultData"
+            v-if="testResultJsonData?.testResultData"
             v-show="currentPanelName === ResultsPagePanels.Detailed"
             :wait-until="currentPanelName === ResultsPagePanels.Detailed"
-            :test-result-data="testResultsOutputData.testResultData"
+            :test-result-data="testResultJsonData.testResultData"
             :test-questions="Object.values(testResultQuestionsData)"
-            :test-config="testResultsOutputData.testConfig"
+            :test-config="testResultJsonData.testConfig"
           />
           <CbtResultsMyTestsPanel
             v-show="currentPanelName === ResultsPagePanels.MyTests"
@@ -143,7 +143,7 @@ type TestResultSeriesDataItem = {
     color: string
   }
   sections: {
-    [section: TestSectionKey]: {
+    [section: string]: {
       count: number
       marks: number
     }
@@ -179,6 +179,10 @@ const screenBreakpoints = useBreakpoints(
 
 const db = useDB()
 
+const appVersion = useRuntimeConfig().public.projectVersion
+
+const migrateJsonData = useMigrateJsonData()
+
 const currentResultsID = useCbtResultsCurrentID()
 
 const currentPanelName = shallowRef<ResultsPagePanels>(ResultsPagePanels.Summary)
@@ -192,7 +196,7 @@ const showAnswerKeyMissingDialog = shallowRef(false)
 const importExportDialogState = shallowReactive<{
   isVisible: boolean
   type: 'Import' | 'Export'
-  data: TestOutputData[] | null
+  data: TestInterfaceOrResultJsonOutput[] | null
 }>({
   isVisible: false,
   type: 'Import',
@@ -207,16 +211,16 @@ const showChart = shallowRef(false)
 // disable export btn if no data is found in db
 const disableExportDataBtn = shallowRef(false)
 
-// This holds the output of cbt interface for current results.
-const testOutputData = shallowRef<TestOutputData | null>(null)
+// This holds the output of test interface or results for current results.
+const testOutputData = shallowRef<TestInterfaceOrResultJsonOutput | null>(null)
 
 // This holds output of cbt interface but with results generated
 // This is the data this page will mainly be using.
-const testResultsOutputData = ref<TestResultsOutputData | null>(null)
+const testResultJsonData = ref<TestResultJsonOutput | null>(null)
 
 // This contains a reduced version of testResultData,
 // with queId as the key and questionData as the value
-const testResultQuestionsData = shallowRef<Record<number | string, TestResultDataQuestion>>({})
+const testResultQuestionsData = shallowRef<Record<number | string, TestResultQuestionData>>({})
 
 // This contains questions notes of current test
 const testNotes = useCurrentTestNotes()
@@ -237,10 +241,10 @@ const chartDataState = reactive<ChartDataState>({
 const scoreCardsData = shallowRef<ScoreCardData[]>([])
 
 function loadDataToChartDataState(id: number) {
-  if (testResultsOutputData.value) {
-    const { testResultData } = testResultsOutputData.value
+  if (testResultJsonData.value) {
+    const { testResultData } = testResultJsonData.value
 
-    const newTestResultQuestionsData: Record<number | string, TestResultDataQuestion> = {}
+    const newTestResultQuestionsData: Record<number | string, TestResultQuestionData> = {}
     for (const subjectData of Object.values(testResultData)) {
       for (const sectionData of Object.values(subjectData)) {
         for (const questionData of Object.values(sectionData)) {
@@ -267,15 +271,15 @@ function loadDataToChartDataState(id: number) {
 function loadTestResultToChartDataState() {
   type InitialData = {
     [resultStatus in QuestionResult['status']]: {
-      [section in TestSectionKey]: {
+      [section in string]: {
         count: number
         marks: number
       }
     }
   }
 
-  const testResultData = testResultsOutputData.value?.testResultData
-  if (!testResultsOutputData.value || !testResultData) return
+  const testResultData = testResultJsonData.value?.testResultData
+  if (!testResultJsonData.value || !testResultData) return
 
   const colors: Record<QuestionResult['status'], string> = {
     correct: '#00CC00', // Green
@@ -316,7 +320,7 @@ function loadTestResultToChartDataState() {
   const seriesData: TestResultSeriesDataItem[] = []
 
   for (const [resultStatus, resultStatusData] of Object.entries(initialData)) {
-    const filteredSections: Record<TestSectionKey, { count: number, marks: number }> = {}
+    const filteredSections: Record<string, { count: number, marks: number }> = {}
 
     let resultStatusValue = 0
     let resultStatusMarks = 0
@@ -357,7 +361,7 @@ function loadQuestionsSummaryToChartDataState() {
     markedAnswered: 0,
   }
 
-  const testSummary = testResultsOutputData.value?.testSummary
+  const testSummary = testResultJsonData.value?.testSummary
   if (testSummary) {
     for (const row of testSummary) {
       for (const summaryType of Object.keys(summary) as (keyof TestSectionSummary)[]) {
@@ -386,7 +390,7 @@ function getTestTimebySection() {
     label: string
   }
   const time: timebySection[] = []
-  const testResultData = testResultsOutputData.value?.testResultData
+  const testResultData = testResultJsonData.value?.testResultData
   if (testResultData) {
     for (const [subject, subjectData] of Object.entries(testResultData)) {
       for (const [section, sectionData] of Object.entries(subjectData)) {
@@ -416,9 +420,9 @@ function loadTestJourneyToChartDataState() {
     [resultStatus in QuestionResult['status']]: SeriesDataObj[]
   }
 
-  if (!testResultsOutputData.value) return
+  if (!testResultJsonData.value) return
 
-  const { testLogs } = testResultsOutputData.value
+  const { testLogs } = testResultJsonData.value
 
   const startCountdownTime = getTestStartedCountdownTime(testLogs)
   const finishedCountdownTime = getTestFinishedCountdownTime(testLogs)
@@ -571,8 +575,8 @@ function loadTestJourneyToChartDataState() {
 }
 
 function loadScoreCardsData() {
-  const subjectsData = testResultsOutputData.value?.testResultData
-  const testDuration = testResultsOutputData.value?.testConfig.testDurationInSeconds
+  const subjectsData = testResultJsonData.value?.testResultData
+  const testDuration = testResultJsonData.value?.testConfig.testDurationInSeconds
 
   if (!subjectsData || !testDuration) return
 
@@ -646,26 +650,21 @@ function getEmptyScoreCardData(): ScoreCardData {
   }
 }
 
-function getSectionScoreCardData(sectionData: TestResultDataSection, title: string = '') {
+function getSectionScoreCardData(sectionData: TestResultSectionData, title: string = '') {
   const cardData = getEmptyScoreCardData()
 
   for (const question of Object.values(sectionData)) {
-    const { status, result, marks, timeSpent, totalOptions } = question
+    const { status, result, marks, timeSpent } = question
 
     cardData.timeSpent += timeSpent
-    cardData.maxMarks += marks.cm
+    cardData.maxMarks += marks.max ?? marks.cm
     if (status === 'answered' || status === 'markedAnswered') cardData.questionsAttempted++
     cardData.totalQuestions++
 
     if (result.status !== 'notAnswered') {
       cardData.marks[result.status] += result.marks
-      if (result.status === 'correct') {
-        cardData.accuracy.count++
-        cardData.accuracy.denominator++
-      }
-      else if (result.status === 'partial') {
-        const partialCount = result.marks / (marks.pm || 1)
-        cardData.accuracy.count += partialCount / (totalOptions || 4)
+      if (result.status === 'correct' || result.status === 'partial') {
+        cardData.accuracy.count += result.accuracyNumerator
         cardData.accuracy.denominator++
       }
       else if (result.status === 'incorrect') {
@@ -704,7 +703,7 @@ function getSumOfScoreCardData(cardDatas: ScoreCardData[], title: string = '') {
 
 // returns the testTime (countdown seconds) of testFinished log from the test logs.
 function getTestFinishedCountdownTime(testLogs: TestLog[]) {
-  // loop backwards
+  // loop in reverse
   for (let i = testLogs.length - 1; i >= 0; i--) {
     if (testLogs[i]?.type === 'testFinished') {
       return testLogs[i]!.testTime
@@ -717,7 +716,7 @@ function getTestFinishedCountdownTime(testLogs: TestLog[]) {
 function getTestStartedCountdownTime(testLogs: TestLog[]) {
   let testTime = testLogs.find(log => log.type === 'testStarted')?.testTime
   if (testTime === undefined) {
-    const testDuration = testResultsOutputData.value?.testConfig.testDurationInSeconds
+    const testDuration = testResultJsonData.value?.testConfig.testDurationInSeconds
     testTime = testDuration ? testDuration : 0
   }
 
@@ -726,8 +725,8 @@ function getTestStartedCountdownTime(testLogs: TestLog[]) {
 
 // function to evaluate a question and return QuestionResult
 function getQuestionResult(
-  questionData: TestOutputDataQuestion,
-  questionCorrectAnswer: TestAnswerKeyQuestionData,
+  questionData: TestInterfaceQuestionData,
+  questionCorrectAnswer: TestAnswerKeyData[string][string][string],
 ): QuestionResult {
   const { type, status, answer } = questionData
   const marks = {
@@ -740,6 +739,7 @@ function getQuestionResult(
     marks: 0,
     status: 'notAnswered',
     correctAnswer: questionCorrectAnswer,
+    accuracyNumerator: 0,
   }
 
   if (questionCorrectAnswer === 'DROPPED') {
@@ -761,6 +761,7 @@ function getQuestionResult(
       ) {
         result.marks = marks.cm
         result.status = 'correct'
+        result.accuracyNumerator = 1
       }
       else {
         result.marks = marks.im
@@ -778,12 +779,14 @@ function getQuestionResult(
           if (answerFloat <= upperLimit! && answerFloat >= lowerLimit!) {
             result.marks = marks.cm
             result.status = 'correct'
+            result.accuracyNumerator = 1
             return result
           }
         }
         else if (parseFloat(maybeRangeAnswerStr) === answerFloat) { // just one correct answer
           result.marks = marks.cm
           result.status = 'correct'
+          result.accuracyNumerator = 1
           return result
         }
       }
@@ -791,6 +794,52 @@ function getQuestionResult(
       result.marks = marks.im
       result.status = 'incorrect'
       return result
+    }
+    else if (type === 'msm') {
+      // user answer's checkboxes in row has to match that of correct answer's row's
+      // (marks is given on per row basis)
+      const userAnswerEntries = Object.entries(answer as QuestionMsmAnswerType)
+        .filter(([_, cols]) => cols.length > 0)
+      const correctAnswerEntries = Object.entries(questionCorrectAnswer as QuestionMsmAnswerType)
+        .filter(([_, cols]) => cols.length > 0)
+
+      const correctAnswer = Object.fromEntries(correctAnswerEntries)
+
+      const partialAccuracyDenominator = correctAnswerEntries.length || 1
+      let partialAccuracyNumerator = 0
+
+      const questionResultRowsStatus = new Set<'correct' | 'incorrect'>()
+      for (const [rowKey, userAnswerRowValues] of userAnswerEntries) {
+        const correctAnswerRowValues = correctAnswer[rowKey]
+
+        if (correctAnswerRowValues
+          && (new Set(correctAnswerRowValues).size === new Set(userAnswerRowValues).size)
+          && correctAnswerRowValues.every(n => userAnswerRowValues.includes(n))
+        ) {
+          result.marks += marks.cm
+          questionResultRowsStatus.add('correct')
+          partialAccuracyNumerator++
+        }
+        else {
+          result.marks += marks.im
+          questionResultRowsStatus.add('incorrect')
+        }
+      }
+
+      if (questionResultRowsStatus.size === 1) {
+        result.status = questionResultRowsStatus.values().toArray()[0]!
+      }
+      else {
+        result.status = 'partial'
+      }
+
+      if (result.status === 'correct') {
+        result.accuracyNumerator = 1
+      }
+      else if (result.status === 'partial') {
+        const relAccNum = (partialAccuracyNumerator / partialAccuracyDenominator) * 100
+        result.accuracyNumerator = Math.round(relAccNum) / 100
+      }
     }
     else { // type is msq
       const userAnswers = new Set(answer as number[])
@@ -803,10 +852,12 @@ function getQuestionResult(
         if (userAnswers.size === correctAnswers.size) {
           result.marks = marks.cm
           result.status = 'correct'
+          result.accuracyNumerator = 1
         }
         else {
           result.marks = marks.pm * userAnswers.size
           result.status = 'partial'
+          result.accuracyNumerator = Math.round((userAnswers.size / correctAnswers.size) * 100) / 100
         }
       }
       else {
@@ -820,22 +871,23 @@ function getQuestionResult(
 }
 
 function generateTestResults(loadToTestResultsOutputData?: true): boolean | null
-function generateTestResults(loadToTestResultsOutputData: false): TestResultsOutputData | null | false
+function generateTestResults(loadToTestResultsOutputData: false): TestResultJsonOutput | null | false
 function generateTestResults(loadToTestResultsOutputData: boolean = true) {
   if (!testOutputData.value) return false
 
-  const { testConfig, testData, testSummary, testLogs, testAnswerKey } = testOutputData.value
+  const {
+    testConfig,
+    testData,
+    testSummary,
+    testLogs,
+    testAnswerKey,
+  } = testOutputData.value as TestInterfaceJsonOutput
 
   if (!testConfig || !testData || !testSummary || !testLogs) return false
 
-  try {
+  if (!testOutputData.value.testResultOverview) {
     testOutputData.value.testResultOverview = utilGetTestResultOverview(testOutputData.value)
   }
-  catch (err) {
-    console.error(err)
-  }
-
-  if (!testOutputData.value.testResultOverview) return false
 
   if (!testAnswerKey) {
     showAnswerKeyMissingDialog.value = true
@@ -857,7 +909,7 @@ function generateTestResults(loadToTestResultsOutputData: boolean = true) {
 
         for (const [section, sectionData] of Object.entries(subjectData)) {
           testResultData[subject][section] = {}
-          const testResultDataSection = testResultData[subject][section]
+          const testResultSectionData = testResultData[subject][section]
 
           for (const [question, questionData] of Object.entries(sectionData)) {
             const correctAnswer = testAnswerKey[subject]?.[section]?.[question] ?? null
@@ -868,37 +920,30 @@ function generateTestResults(loadToTestResultsOutputData: boolean = true) {
               )
             }
 
-            testResultDataSection[question] = JSON.parse(JSON.stringify(questionData)) ?? {}
+            const currentQuestionData = utilCloneJson(questionData as TestResultQuestionData)
 
-            testResultDataSection[question]!.result = getQuestionResult(questionData, correctAnswer)
-            testResultDataSection[question]!.oriQueId = parseInt(question)
-            testResultDataSection[question]!.subject = subject
-            testResultDataSection[question]!.section = section
+            currentQuestionData.result = getQuestionResult(currentQuestionData, correctAnswer)
+            currentQuestionData.oriQueId = parseInt(question)
+            currentQuestionData.subject = subject
+            currentQuestionData.section = section
 
-            const currentQuestionData = testResultDataSection[question]!
-
-            maxMarks += currentQuestionData.marks.cm
+            maxMarks += currentQuestionData.marks.max ?? currentQuestionData.marks.cm
             marksObtained += currentQuestionData.result.marks
-            if (currentQuestionData.status === 'answered' || currentQuestionData.status === 'markedAnswered') {
+            if (currentQuestionData.status === 'answered'
+              || currentQuestionData.status === 'markedAnswered')
               questionsAttempted++
-            }
-            const resultStatus = currentQuestionData.result.status
-            if (resultStatus === 'correct') {
-              totalCorrect++
-              totalAnswered++
-            }
-            else if (resultStatus === 'partial') {
-            // result.marks was obtained by count * marks.pm
-            // so dividing by marks.pm to get count back
-              const count = currentQuestionData.result.marks / (currentQuestionData.marks.pm || 1)
-              // fraction count
-              totalCorrect += count / (currentQuestionData.totalOptions || 4)
-              totalAnswered++
-            }
-            else if (resultStatus === 'incorrect') {
-              totalAnswered++
+
+            switch (currentQuestionData.result.status) {
+              case 'correct':
+              case 'partial':
+                totalCorrect += currentQuestionData.result.accuracyNumerator
+                totalAnswered++
+                break
+              case 'incorrect':
+                totalAnswered++
             }
 
+            testResultSectionData[question] = currentQuestionData
             totalQuestions++
           }
         }
@@ -915,21 +960,23 @@ function generateTestResults(loadToTestResultsOutputData: boolean = true) {
         accuracy: Math.round((totalCorrect / (totalAnswered || 1)) * 10000) / 100,
       }
 
-      const resultsOutputData = {
+      const resultsOutputData: TestResultJsonOutput = {
         testConfig,
         testSummary,
         testLogs,
         testResultData,
         testResultOverview,
+        appVersion,
+        generatedBy: 'testResultsPage',
       }
 
       if (loadToTestResultsOutputData) {
-        testResultsOutputData.value = resultsOutputData
+        testResultJsonData.value = resultsOutputData
         testOutputData.value = null // not required anymore
         return true // success flag
       }
       else {
-        return resultsOutputData as TestResultsOutputData
+        return resultsOutputData
       }
     }
     catch (err) {
@@ -944,7 +991,7 @@ async function loadTestOutputData(
   fallbackToDemo: boolean = true,
   verifyId: boolean = true,
 ) {
-  let data: TestOutputData | null = null
+  let data: TestInterfaceOrResultJsonOutput | null = null
   let testNotesData: TestNotes = {}
 
   try {
@@ -958,7 +1005,7 @@ async function loadTestOutputData(
     if (id) {
       const outputData = await db.getTestOutputData(id)
       if (outputData?.testOutputData) {
-        data = outputData.testOutputData as TestOutputData
+        data = outputData.testOutputData
       }
       const testDBNotes = await db.getTestNotes(id)
       testNotesData = testDBNotes || {}
@@ -973,7 +1020,7 @@ async function loadTestOutputData(
   if (!data && fallbackToDemo) {
     const demoData = await import('#layers/shared/app/assets/json/results_demo_data.json').then(m => m.default)
     if (demoData) {
-      data = demoData as unknown as TestOutputData
+      data = demoData as unknown as TestResultJsonOutput
     }
   }
 
@@ -990,8 +1037,8 @@ async function loadTestOutputData(
 async function myTestsPanelViewOrGenerateHandler(id: number, btnType: 'generate' | 'view') {
   const { status } = await loadTestOutputData(id, false, false)
   if (status) {
-    if (btnType === 'view' && testOutputData.value?.testResultData) {
-      testResultsOutputData.value = testOutputData.value as TestResultsOutputData
+    if (btnType === 'view' && testOutputData.value?.generatedBy === 'testResultsPage') {
+      testResultJsonData.value = testOutputData.value as TestResultJsonOutput
       currentPanelName.value = ResultsPagePanels.Summary
       loadDataToChartDataState(id)
       return
@@ -1002,11 +1049,13 @@ async function myTestsPanelViewOrGenerateHandler(id: number, btnType: 'generate'
       await db.replaceTestOutputDataAndResultOverview(id, utilCloneJson(data))
     }
   }
+
+  testOutputData.value = null // not needed anymore
 }
 
 async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
   if (answerKeyData && testOutputData.value) {
-    testOutputData.value.testAnswerKey = answerKeyData
+    (testOutputData.value as TestInterfaceJsonOutput).testAnswerKey = answerKeyData
     const testResultOverview = utilCloneJson(utilGetTestResultOverview(testOutputData.value))
     testOutputData.value.testResultOverview = testResultOverview
     const testResultOverviewDB = await db.getTestResultOverviewByCompoundIndex(testResultOverview)
@@ -1018,7 +1067,7 @@ async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
         try {
           await db.replaceTestOutputDataAndResultOverview(
             testResultOverviewDB.id,
-            utilCloneJson(testResultsOutputData.value as TestOutputData),
+            utilCloneJson(testResultJsonData.value!),
           )
           id = testResultOverviewDB.id
         }
@@ -1039,11 +1088,11 @@ async function showImportExportDialog(
     if (type === 'Export') {
       const data = await db.getTestResultOverviews('addedDescending')
       if (Array.isArray(data) && data.length > 0) {
-        const testResultOverviews: Partial<TestOutputData>[] = []
+        const testResultOverviews: Partial<TestInterfaceOrResultJsonOutput>[] = []
         data.forEach(data => testResultOverviews.push({ testResultOverview: data }))
 
         importExportDialogState.type = type
-        importExportDialogState.data = testResultOverviews as TestOutputData[]
+        importExportDialogState.data = testResultOverviews as TestInterfaceOrResultJsonOutput[]
         importExportDialogState.isVisible = true
       }
     }
@@ -1051,17 +1100,18 @@ async function showImportExportDialog(
       importExportDialogState.data = null
 
       const importedData = await utilParseJsonFile(importDataFile)
+      if (Array.isArray(importedData.testOutputDatas)) {
+        const testOutputDatas = importedData.testOutputDatas
+          .map((data: unknown) => migrateJsonData.testInterfaceOrResultData(data))
 
-      if (importedData.testOutputDatas) {
-        importExportDialogState.data = importedData.testOutputDatas as TestOutputData[]
+        importExportDialogState.data = testOutputDatas
       }
       else if (importedData.testConfig
         && (importedData.testData || importedData.testResultData)
         && importedData.testSummary
         && importedData.testLogs
       ) {
-        importedData.testResultOverview = utilGetTestResultOverview(importedData)
-        importExportDialogState.data = [importedData] as TestOutputData[]
+        importExportDialogState.data = [migrateJsonData.testInterfaceOrResultData(importedData)]
       }
 
       if (importExportDialogState.data !== null) {
@@ -1077,7 +1127,7 @@ async function showImportExportDialog(
 
 async function processImportExport(
   type: 'Import' | 'Export',
-  data: (TestResultCommonOutput)[],
+  data: (TestInterfaceOrResultJsonOutput)[],
 ) {
   if (type === 'Import') {
     try {
@@ -1129,7 +1179,7 @@ async function processImportExport(
         }
       }
 
-      const testOutputDatas: (TestResultCommonOutput)[] = []
+      const testOutputDatas: TestInterfaceOrResultJsonOutput[] = []
 
       for (const outputData of testOutputDataDBList) {
         const { id, testOutputData } = outputData ?? {}
@@ -1156,33 +1206,45 @@ async function processImportExport(
 }
 
 const renameCurrentTest = (newName: string) => {
-  if (!testResultsOutputData.value) return
+  if (!testResultJsonData.value) return
 
-  testResultsOutputData.value.testConfig.testName = newName
-  testResultsOutputData.value.testResultOverview.testName = newName
+  testResultJsonData.value.testConfig.testName = newName
+  testResultJsonData.value.testResultOverview.testName = newName
 }
 
 function onMountedCallback(id: number | null = null) {
-  loadTestOutputData(id).then((statusObj) => {
-    if (statusObj.status) {
-      let isReadyToLoad = true
-      if (!testOutputData.value?.testResultData) {
-        isReadyToLoad = generateTestResults() || false
-        if (isReadyToLoad && id && testResultsOutputData.value) {
-          db.replaceTestOutputDataAndResultOverview(
-            id,
-            utilCloneJson(testResultsOutputData.value as TestOutputData),
-          )
+  loadTestOutputData(id)
+    .then((statusObj) => {
+      if (statusObj.status) {
+        let isReadyToLoad = true
+        if (testOutputData.value?.generatedBy !== 'testResultsPage') {
+          isReadyToLoad = generateTestResults() || false
+          if (isReadyToLoad && id && testResultJsonData.value) {
+            db.replaceTestOutputDataAndResultOverview(
+              id,
+              utilCloneJson(testResultJsonData.value),
+            )
+          }
         }
-      }
-      else {
-        testResultsOutputData.value = testOutputData.value as TestResultsOutputData
-        testOutputData.value = null
-      }
+        else {
+          testResultJsonData.value = testOutputData.value as TestResultJsonOutput
+          testOutputData.value = null
+        }
 
-      if (isReadyToLoad) loadDataToChartDataState(statusObj.id || 0)
-    }
-  })
+        if (isReadyToLoad)
+          loadDataToChartDataState(statusObj.id || 0)
+      }
+    })
+    .finally(() => {
+      db.getSettings()
+        .then((data) => {
+          const settings = data?.uiSettings
+          if (settings) {
+            const { uiSettings } = useCbtSettings()
+            utilSelectiveMergeObj(uiSettings.value, settings)
+          }
+        })
+    })
 }
 
 onMounted(() => onMountedCallback(currentResultsID.value || null))

@@ -1,5 +1,8 @@
 <template>
-  <div class="max-h-dvh min-h-dvh w-full flex flex-col overflow-hidden">
+  <div
+    id="app-root"
+    class="max-h-dvh min-h-dvh w-full flex flex-col overflow-hidden"
+  >
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

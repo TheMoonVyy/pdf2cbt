@@ -146,7 +146,7 @@
           </thead>
           <tbody class="divide-y divide-gray-300 text-center">
             <tr
-              v-for="(questionData, quesNum, index) in subjectsData?.[currentPageData.subject]?.[currentPageData.section]"
+              v-for="(questionData, quesNum, index) in subjectsData[currentPageData.subject]?.[currentPageData.section]"
               :key="quesNum"
               class="divide-x divide-gray-300 sm:text-lg md:text-xl"
             >
@@ -172,7 +172,7 @@
                   @update:model-value="parseInputAnswer(
                     subjectsAnswerKeysData![currentPageData.subject]![currentPageData.section]![quesNum]!,
                     questionData.type,
-                    questionData.type !== 'nat' ? getQuestionOptions(questionData) : null,
+                    questionData.type !== 'nat' ? questionData.answerOptions : null,
                   )"
                   @keydown.up="(e: Event) => keyDownHandler('arrowUp', e, index)"
                   @keydown.down="(e: Event) => keyDownHandler('arrowDown', e, index)"
@@ -186,12 +186,14 @@
                     questionData.type,
                   )"
                 class="relative p-2 sm:p-3 md:px-4
+                  whitespace-pre-line
                   before:content-[attr(data-answer)]
                   before:block
                   before:text-green-400
                   before:font-semibold
                   data-[answer=null]:before:text-red-400
                   before:empty:hidden"
+                :class="questionData.type === 'msm' ? 'not-data-[answer=null]:text-left' : ''"
               />
             </tr>
           </tbody>
@@ -309,7 +311,8 @@
 </template>
 
 <script lang="ts" setup>
-import { zip, strToU8, type AsyncZippable } from 'fflate'
+import { zip, strToU8 } from 'fflate'
+import type { AsyncZippable } from 'fflate'
 import { DataFileNames } from '#layers/shared/shared/enums'
 
 type UnknownRecord = Record<string, unknown>
@@ -318,16 +321,12 @@ type SectionListItem = TestSectionListItem & { totalQuestions: number }
 
 type QuestionAnswerKeyData = {
   inputAnswer: string
-  savedAnswer: QuestionAnswer | 'DROPPED' | 'BONUS'
+  savedAnswer: QuestionAnswer
 }
 
-type SubjectsAnswerKeysData = {
-  [subject: keyof CropperOutputData]: {
-    [section: TestSectionKey]: {
-      [question: number | string]: QuestionAnswerKeyData
-    }
-  }
-}
+type SubjectsAnswerKeysData = GenericSubjectsTree<QuestionAnswerKeyData>
+
+type SubjectsData = GenericSubjectsTree<CropperQuestionData | TestInterfaceQuestionData>
 
 interface DBTestOutputDataState {
   isDataFound: boolean
@@ -352,6 +351,8 @@ const tooltipContent = {
 
 const INPUT_ID_PREFIX = 'input-answer-q-'
 
+const migrateJsonData = useMigrateJsonData()
+
 // if yes then load that and this below will be storing it
 const dbTestOutputDataState = shallowReactive<DBTestOutputDataState>({
   isDataFound: false, // boolean to indicate if testResultOverviews without results generated is found or not
@@ -365,7 +366,7 @@ const dbTestOutputDataState = shallowReactive<DBTestOutputDataState>({
 const fileUploaderState = shallowReactive<{
   isFileLoaded: boolean
   unzippedFiles: AsyncZippable | null
-  jsonData: Record<string, unknown> | null
+  jsonData: AnswerKeyJsonOutput | null
 }>({
   isFileLoaded: false,
   unzippedFiles: null,
@@ -387,17 +388,17 @@ const settingsState = shallowReactive({
   isStarted: false,
 })
 
-const currentPageSectionName = shallowRef<TestSectionKey>('')
+const currentPageSectionName = shallowRef<string>('')
 
 const sectionsState = reactive<{
   sectionsList: SectionListItem[]
-  currentPageSectionName: TestSectionKey
+  currentPageSectionName: string
 }>({
   sectionsList: [],
   currentPageSectionName: '',
 })
 
-let subjectsData: CropperOutputData | TestOutputDataSubjects | null = null
+let subjectsData: SubjectsData | null = null
 
 const subjectsAnswerKeysData = ref<SubjectsAnswerKeysData>({})
 
@@ -433,7 +434,7 @@ const outputFileTypeOptions = computed(() => {
 })
 
 const currentPageData = computed(() => {
-  let subjectName: keyof CropperOutputData = ''
+  let subjectName = ''
   const currentSectionName = currentPageSectionName.value
   // zero based as x+1 is being done in template
   // null to imply to use original numbering
@@ -478,8 +479,8 @@ const currentPageData = computed(() => {
 
 const prevAndNextSectionsName = computed(() => {
   const currentSection = currentPageSectionName.value
-  let prevSection: TestSectionKey | null = null
-  let nextSection: TestSectionKey | null = null
+  let prevSection: string | null = null
+  let nextSection: string | null = null
 
   if (currentSection && currentPageData.value) {
     const i = sectionsState.sectionsList.findIndex(
@@ -527,7 +528,7 @@ const changeCurrentPage = (changeTo: 'prev' | 'next') => {
 }
 
 // for "Q. Type" column
-const formatQuestionTypeText = (questionData: CropperQuestionData | TestOutputDataQuestion) => {
+const formatQuestionTypeText = (questionData: CropperQuestionData | TestInterfaceQuestionData) => {
   const questionType = questionData.type
   const questionTypeUpperCase = questionType.toUpperCase()
 
@@ -535,13 +536,12 @@ const formatQuestionTypeText = (questionData: CropperQuestionData | TestOutputDa
     return questionTypeUpperCase
   }
   else {
-    const options = getQuestionOptions(questionData) as number
-    return `${questionTypeUpperCase} (${options})`
+    return `${questionTypeUpperCase} (${questionData.answerOptions})`
   }
 }
 
 // parse and convert string character to number or null
-const parseInputTextChar = (text: string, totalOptions: number) => {
+const parseInputTextChar = (text: string, answerOptions: number) => {
   if (text.length !== 1) return null
 
   let parsedNum: number | null = null
@@ -552,7 +552,7 @@ const parseInputTextChar = (text: string, totalOptions: number) => {
     parsedNum = parseInt(text, 10)
   }
 
-  if (parsedNum !== null && parsedNum <= totalOptions) {
+  if (parsedNum !== null && parsedNum <= answerOptions) {
     return parsedNum
   }
 
@@ -560,11 +560,11 @@ const parseInputTextChar = (text: string, totalOptions: number) => {
 }
 
 // parse and convert text to number[] or null while removing duplicate chars
-const parseMcqOrMsqInputText = (text: string, totalOptions: number) => {
+const parseMcqOrMsqInputText = (text: string, answerOptions: number) => {
   const chars = [...text]
   const filteredChars = chars.filter(ch => /[A-Z1-9]/.test(ch))
   const parsedList = filteredChars
-    .map(char => parseInputTextChar(char, totalOptions))
+    .map(char => parseInputTextChar(char, answerOptions))
 
   // Remove duplicates from final numbers and delete null if present
   const uniqueValues = new Set(parsedList)
@@ -606,11 +606,64 @@ const parseNatInputText = (text: string) => {
   return results.length > 0 ? results.join(',') : null
 }
 
+const parseMsmInputText = (inputText: string, options: string): QuestionMsmAnswerType | null => {
+  const charCodeOfA = 'A'.charCodeAt(0)
+  const charCodeOfP = 'P'.charCodeAt(0)
+  const wrapNum = charCodeOfP - charCodeOfA
+
+  const answerParts = inputText
+    .replace(/[A-Z]/g, (char) => {
+      const charNum = char.charCodeAt(0) - charCodeOfA
+      const wrapped = (charNum % wrapNum) + 1
+      return wrapped.toString()
+    })
+    .replace(/\(/g, '[')
+    .replace(/\)/g, ']')
+    .split(',').map(n => n.trim())
+
+  const optionsMaxData = utilGetMaxRowsAndColsFromMsmOptions(options)
+  const rowsCharPattern = `[1-${optionsMaxData.rows % 10}]`
+  const colsCharPattern = `[1-${optionsMaxData.cols % 10}]`
+  const partPattern = new RegExp(`^(${rowsCharPattern}+)\\s*-\\s*\\[?\\s*(${colsCharPattern}+)\\s*\\]?$`)
+
+  const isValidFormat = answerParts.every(part => partPattern.test(part))
+
+  if (!isValidFormat)
+    return null
+
+  const resultSet: Record<number | string, Set<number>> = {}
+
+  for (const part of answerParts) {
+    const match = part.match(partPattern)
+    if (!match) continue
+
+    const rowStr = match[1]!
+    const colStr = match[2]!
+
+    const row = Number(rowStr)
+    const cols = colStr.split('').map(Number).sort((a, b) => a - b)
+
+    if (resultSet[row]) {
+      for (const col of cols) {
+        resultSet[row].add(col)
+      }
+    }
+    else {
+      resultSet[row] = new Set(cols)
+    }
+  }
+
+  const entries = Object.entries(resultSet)
+    .map(([rowNum, colsSet]) => [rowNum, [...colsSet].sort((a, b) => a - b)])
+
+  return Object.fromEntries(entries)
+}
+
 // for parsing Input Answer and then storing it to savedAnswer
 function parseInputAnswer(
   questionData: QuestionAnswerKeyData,
   questionType: QuestionType,
-  totalOptions: number | null,
+  answerOptions?: string | null,
 ) {
   const inputAnswer = questionData.inputAnswer.toUpperCase()
 
@@ -625,8 +678,11 @@ function parseInputAnswer(
       if (questionType === 'nat') {
         questionData.savedAnswer = parseNatInputText(inputAnswer)
       }
+      else if (questionType === 'msm') {
+        questionData.savedAnswer = parseMsmInputText(inputAnswer, answerOptions || '4')
+      }
       else {
-        questionData.savedAnswer = parseMcqOrMsqInputText(inputAnswer, totalOptions ?? 4)
+        questionData.savedAnswer = parseMcqOrMsqInputText(inputAnswer, parseInt(answerOptions || '4'))
       }
     }
   }
@@ -635,32 +691,13 @@ function parseInputAnswer(
   }
 }
 
-function getQuestionOptions(questionData: CropperQuestionData | TestOutputDataQuestion) {
-  if (questionData.type === 'nat') return null
-
-  if ('options' in questionData) {
-    return questionData.options ?? 4
-  }
-  else if ('totalOptions' in questionData) {
-    return questionData?.totalOptions ?? 4
-  }
-
-  return 4
-}
-
 function loadFileData() {
   const jsonData = fileUploaderState.jsonData
-  if (jsonData?.testData) {
-    subjectsData = jsonData.testData as TestOutputDataSubjects ?? null
+  if (jsonData?.generatedBasedOn === 'testInterfacePage') {
+    subjectsData = jsonData?.testData ?? null
   }
-  else if (jsonData?.testOutputDatas) {
-    const testOutputData = (jsonData.testOutputDatas as Record<string, unknown>[])[0]
-    if (testOutputData?.testData) {
-      subjectsData = testOutputData.testData as TestOutputDataSubjects ?? null
-    }
-  }
-  else {
-    subjectsData = jsonData?.pdfCropperData as CropperOutputData ?? null
+  else if (jsonData?.generatedBasedOn === 'pdfCropperPage') {
+    subjectsData = jsonData?.pdfCropperData ?? null
   }
 
   if (subjectsData === null) {
@@ -682,11 +719,11 @@ async function handleFileUpload(files: File | File[]) {
     const zipFileCheckStatus = await utilIsZipFile(file)
     if (zipFileCheckStatus > 0) {
       const { jsonData, unzippedFiles } = await utilUnzipTestDataFile(file, 'json-only', true)
-      fileUploaderState.jsonData = jsonData
+      fileUploaderState.jsonData = migrateJsonData.answerKeyData(jsonData)
       fileUploaderState.unzippedFiles = unzippedFiles ?? null
     }
     else {
-      fileUploaderState.jsonData = await utilParseJsonFile(file)
+      fileUploaderState.jsonData = migrateJsonData.answerKeyData(await utilParseJsonFile(file))
     }
 
     loadFileData()
@@ -706,7 +743,7 @@ function loadDataState() {
       const sectionListItem: SectionListItem = {
         subject,
         name: sectionName,
-        totalQuestions: Object.keys(questionsData as UnknownRecord).length,
+        totalQuestions: Object.keys(questionsData).length,
       }
       sectionsState.sectionsList.push(sectionListItem)
 
@@ -726,7 +763,7 @@ function loadDataState() {
 }
 
 function generateAnswerKey() {
-  const rawData = JSON.parse(JSON.stringify(subjectsAnswerKeysData.value)) as SubjectsAnswerKeysData
+  const rawData = utilCloneJson(subjectsAnswerKeysData.value)
   for (const [subjectName, sectionsData] of Object.entries(rawData)) {
     testAnswerKeyData[subjectName] ??= {}
 
@@ -735,10 +772,7 @@ function generateAnswerKey() {
 
       for (const [quesNum, questionData] of Object.entries(questionsData)) {
         const savedAnswer = questionData.savedAnswer
-        const copiedSavedAnswer = Array.isArray(savedAnswer)
-          ? [...savedAnswer]
-          : savedAnswer
-        testAnswerKeyData[subjectName][sectionName][quesNum] = copiedSavedAnswer
+        testAnswerKeyData[subjectName][sectionName][quesNum] = utilCloneJson(savedAnswer)
       }
     }
   }
@@ -758,10 +792,11 @@ async function downloadOutput() {
   let outputJsonString = ''
 
   if (selectedFileType === 'json-separate') {
-    outputJsonString = JSON.stringify({ testAnswerKey: testAnswerKeyData }, null, 2)
+    const jsonData = migrateJsonData.answerKeyData({ testAnswerKey: testAnswerKeyData })
+    outputJsonString = JSON.stringify(jsonData, null, 2)
   }
   else {
-    const jsonData = fileUploaderState.jsonData ?? {}
+    const jsonData = fileUploaderState.jsonData ?? {} as AnswerKeyJsonOutput
     jsonData.testAnswerKey = testAnswerKeyData
 
     outputJsonString = JSON.stringify(jsonData, null, 2)
@@ -804,12 +839,16 @@ async function loadDataFromDB() {
       try {
         const data = await db.getTestOutputData(id)
         const testOutputData = data?.testOutputData
-        if (testOutputData && 'testData' in testOutputData) {
-          subjectsData = testOutputData.testData
+        if (testOutputData) {
+          const generatedBy = testOutputData.generatedBy
+          if (generatedBy === 'testInterfacePage') {
+            subjectsData = testOutputData.testData
+          }
+          else if (generatedBy === 'testResultsPage') {
+            subjectsData = testOutputData.testResultData
+          }
         }
-        else if (testOutputData && 'testResultData' in testOutputData) {
-          subjectsData = testOutputData.testResultData
-        }
+
         if (subjectsData) {
           dbTestOutputDataState.isDataFound = false
           dbTestOutputDataState.testResultOverviews = []

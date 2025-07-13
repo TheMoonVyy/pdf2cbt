@@ -190,13 +190,13 @@
         </div>
         <div class="grow flex flex-col items-center shrink-0 w-full @container">
           <div
-            v-if="currentQuestionState.data.type !== 'nat'"
+            v-if="currentQuestionState.data.type === 'mcq' || currentQuestionState.data.type === 'msq'"
             class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 sm:@min-lg:gap-x-10 gap-y-10 mx-auto
           font-bold text-lg text-center"
             :style="optionsStyle"
           >
             <div
-              v-for="n in (currentQuestionState.data.totalOptions || 4)"
+              v-for="n in parseInt(currentQuestionState.data.answerOptions || '4')"
               :key="n"
               class="relative border-2 border-gray-300 rounded-lg p-2 min-w-64 sm:min-w-60 sm:@min-lg:min-w-64
             has-[.option-status-correct]:border-green-500 has-[.option-status-correct]:bg-green-500/2
@@ -231,7 +231,7 @@
             </div>
           </div>
           <div
-            v-else
+            v-else-if="currentQuestionState.data.type === 'nat'"
             class="grid grid-cols-1 gap-10"
           >
             <div
@@ -292,6 +292,9 @@
               }}
             </div>
           </div>
+          <CbtResultsQuestionPanelMsmQuestionTypeDiv
+            :question-data="currentQuestionState.data"
+          />
         </div>
         <div class="grid grid-cols-2 mx-auto gap-3 @min-md:gap-20 shrink-0 mt-6 mb-8">
           <div class="flex items-center justify-center">
@@ -425,10 +428,10 @@ import {
 } from '#layers/shared/shared/constants'
 
 interface Props {
-  allQuestions: TestResultDataQuestion[]
-  questionsToPreview: TestResultDataQuestion[]
-  testConfig: TestOutputData['testConfig']
-  questionsNumberingOrder: keyof Pick<TestResultDataQuestion, 'oriQueId' | 'queId' | 'secQueId'>
+  allQuestions: TestResultQuestionData[]
+  questionsToPreview: TestResultQuestionData[]
+  testConfig: TestResultJsonOutput['testConfig']
+  questionsNumberingOrder: keyof Pick<TestResultQuestionData, 'oriQueId' | 'queId' | 'secQueId'>
   optionsStyle: Record<string, string>
 }
 
@@ -457,6 +460,8 @@ const showPanel = defineModel<boolean>('showPanel', { required: true })
 const currentQueIndex = defineModel<number>({ required: true })
 
 const showNotesDialog = shallowRef(false)
+
+const migrateJsonData = useMigrateJsonData()
 
 const {
   allQuestions,
@@ -761,10 +766,12 @@ async function loadUploadedFile(file: File, fileType: 'zip' | 'pdf' | 'json') {
       const data = await utilUnzipTestDataFile(file, 'all')
       fileUploaderState.testImageBlobs = data.testImageBlobs
       fileUploaderState.pdfUint8Array = data.pdfBuffer
-      fileUploaderState.cropperData = data.jsonData as PdfCropperJsonData | null
+      fileUploaderState.cropperData = migrateJsonData.pdfCropperData(data.jsonData)
     }
     else {
-      fileUploaderState.cropperData = JSON.parse(strFromU8(new Uint8Array(await file.arrayBuffer())))
+      fileUploaderState.cropperData = migrateJsonData.pdfCropperData(
+        JSON.parse(strFromU8(new Uint8Array(await file.arrayBuffer()))),
+      )
     }
 
     if (fileUploaderState.pdfUint8Array || fileUploaderState.testImageBlobs) {
@@ -840,7 +847,7 @@ async function loadDemoTestZip() {
   }
 }
 
-function getQuestionsPdfData(questions: TestResultDataQuestion[]) {
+function getQuestionsPdfData(questions: TestResultQuestionData[]) {
   const newQuestionsPdfData: QuestionsPdfData = {}
   const pdfCropperData = fileUploaderState.cropperData?.pdfCropperData
 

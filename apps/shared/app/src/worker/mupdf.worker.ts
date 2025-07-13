@@ -2,7 +2,7 @@
 
 import * as Comlink from 'comlink'
 import type { Document, Pixmap } from 'mupdf'
-import type { TestSectionKey, TestImageBlobs } from '#layers/shared/shared/types'
+import type { TestImageBlobs } from '#layers/shared/shared/types/cbt-interface'
 
 interface PdfData {
   page: number
@@ -17,7 +17,7 @@ type PageNumKey = number | string
 type ProcessedCropperData = {
   [page: PageNumKey]: {
     pdfData: PdfData
-    section: TestSectionKey
+    section: string
     question: number | string
   }[]
 }

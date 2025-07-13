@@ -18,7 +18,6 @@ const selectedTreeNodesData = defineModel<TreeNodeData[] | undefined>({ required
     :propagate-select="true"
     :bubble-select="true"
     :multiple="true"
-    @update:model-value="console.log"
   >
     <TreeItem
       v-for="item in flattenItems"
@@ -54,9 +53,9 @@ const selectedTreeNodesData = defineModel<TreeNodeData[] | undefined>({ required
         <BaseButton
           :icon-name="
             slot.isSelected
-              ? 'material-symbols:check-box-outline-rounded'
+              ? 'material-symbols:check-box-rounded'
               : slot.isIndeterminate
-                ? 'material-symbols:indeterminate-check-box-outline'
+                ? 'material-symbols:indeterminate-check-box'
                 : 'material-symbols:check-box-outline-blank'
           "
           :icon-class="{

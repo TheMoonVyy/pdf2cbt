@@ -18,7 +18,7 @@ type ProcessedCropperData = {
       w: number
       h: number
     }
-    section: TestSectionKey
+    section: string
     question: number | string
   }[]
 }
@@ -54,7 +54,7 @@ function processCropperData(
   const processedData: ProcessedCropperData = {}
   const scale = pdfState.scale
 
-  for (const sectionKey of Object.keys(cropperData) as TestSectionKey[]) {
+  for (const sectionKey of Object.keys(cropperData)) {
     const section = cropperData[sectionKey]!
 
     for (const questionKey of Object.keys(section)) {

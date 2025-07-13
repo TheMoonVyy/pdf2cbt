@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
 import { reactiveOmit } from '@vueuse/core'
-import { TabsList, TabsIndicator, type TabsListProps } from 'reka-ui'
+import { TabsList, TabsIndicator } from 'reka-ui'
+import type { TabsListProps } from 'reka-ui'
 import { cn } from '#layers/shared/app/lib/utils'
 
 const props = defineProps<TabsListProps & { class?: HTMLAttributes['class'] }>()

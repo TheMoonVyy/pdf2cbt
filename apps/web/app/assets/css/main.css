@@ -256,10 +256,22 @@
   }
 }
 
-/* For CbtResultsQuestionPanel and CbtInterfaceAnswerOptionsDiv */
+/* For CbtInterfaceAnswerOptionsDiv */
 .option-content::after {
   counter-increment: answer-options;
   content: var(--options-prefix) counter(answer-options, var(--counter-type)) var(--options-suffix);
+}
+
+.msm-row-label-content::after {
+  counter-increment: msm-row-labels;
+  content: var(--msm-row-prefix) counter(msm-row-labels, var(--msm-row-counter-type)) var(--msm-row-suffix);
+  font-size: var(--msm-row-font-size);
+}
+
+.msm-col-label-content::after {
+  counter-increment: msm-col-labels;
+  content: var(--msm-col-prefix) counter(msm-col-labels, var(--msm-col-counter-type)) var(--msm-col-suffix);
+  font-size: var(--msm-col-font-size);
 }
 
 .p-popover:after, .p-popover:before {
@@ -358,4 +370,16 @@
   --colorPickerShadowOut: #00000033 !important;
   --colorPickerShadowIn: #00000033 !important;
   --colorPickerSlider: #fff !important;
+}
+
+@counter-style lower-pqrs {
+  system: fixed;
+  symbols: p q r s t u v w x y z;
+  suffix: ') ';
+}
+
+@counter-style upper-pqrs {
+  system: fixed;
+  symbols: P Q R S T U V W X Y Z;
+  suffix: ') ';
 }

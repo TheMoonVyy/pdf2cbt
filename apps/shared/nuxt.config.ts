@@ -1,7 +1,4 @@
 export default defineNuxtConfig({
-  $meta: {
-    name: 'shared',
-  },
   modules: [
     '@vueuse/nuxt',
     '@nuxt/icon',
@@ -11,21 +8,17 @@ export default defineNuxtConfig({
     'shadcn-nuxt',
     'nuxt-color-picker',
   ],
-  devtools: { enabled: true },
+  $meta: {
+    name: 'shared',
+  },
+  devtools: { enabled: false },
   app: {
     head: {
       htmlAttrs: {
-        class: 'dark',
+        'class': 'dark',
         'data-theme-variant': 'blue',
       },
     },
-  },
-  routeRules: {
-    '/cbt': { redirect: { to: '/cbt/interface', statusCode: 301 } },
-  },
-  compatibilityDate: '2025-03-17',
-  future: {
-    compatibilityVersion: 4
   },
   runtimeConfig: {
     public: {
@@ -35,16 +28,23 @@ export default defineNuxtConfig({
       mupdfVersion: '',
     },
   },
+  routeRules: {
+    '/cbt': { redirect: { to: '/cbt/interface', statusCode: 301 } },
+  },
+  future: {
+    compatibilityVersion: 4,
+  },
+  compatibilityDate: '2025-03-17',
   vite: {
     esbuild: {
       legalComments: 'none',
     },
     build: {
       terserOptions: {
-        format: { comments: false }
+        format: { comments: false },
       },
-      cssMinify: 'lightningcss'
-    }
+      cssMinify: 'lightningcss',
+    },
   },
   echarts: {
     charts: ['LineChart', 'PieChart'],
@@ -54,11 +54,11 @@ export default defineNuxtConfig({
       'GridComponent',
       'TooltipComponent',
       'DataZoomSliderComponent',
-      'DataZoomInsideComponent'
-    ]
+      'DataZoomInsideComponent',
+    ],
   },
   eslint: {
-    config: { stylistic: true }
+    config: { stylistic: true },
   },
   icon: {
     customCollections: [
@@ -72,5 +72,5 @@ export default defineNuxtConfig({
   },
   shadcn: {
     componentDir: '../shared/app/components/ui',
-  }
+  },
 })

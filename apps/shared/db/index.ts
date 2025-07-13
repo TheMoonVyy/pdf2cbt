@@ -4,14 +4,21 @@ import type {
   CbtUiSettings,
   TestSectionListItem,
   CurrentTestState,
-  TestSectionsData,
-  TestQuestionData,
+  TestSessionSectionsData,
+  TestSessionQuestionData,
   TestLog,
+} from '#layers/shared/shared/types/cbt-interface'
+
+import type {
   TestResultOverviewDB,
   TestResultOverviewsDBSortByOption,
-  TestResultCommonOutput,
   TestNotes,
+} from '#layers/shared/shared/types/cbt-results'
+
+import type {
+  TestInterfaceOrResultJsonOutput,
 } from '#layers/shared/shared/types'
+
 import { utilGetTestResultOverview } from '#layers/shared/app/utils/utils'
 import type {
   SettingsData,
@@ -19,6 +26,7 @@ import type {
   TestNotesDB,
   IPdf2CbtDB,
 } from '#layers/shared/shared/types/db'
+import { MigrateJsonData } from '#layers/shared/app/src/scripts/migrate-json-data'
 
 type SettingsDataWithID = SettingsData & {
   id: number
@@ -32,11 +40,11 @@ type TestSectionListItemDB = TestSectionListItem & {
   id: number
 }
 
-class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
+export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
   settingsData!: EntityTable<SettingsDataWithID, 'id'>
   testSectionsList!: EntityTable<TestSectionListItemDB, 'id'>
   currentTestState!: EntityTable<CurrentTestStateDB, 'id'>
-  testQuestionsData!: EntityTable<TestQuestionData, 'queId'>
+  testQuestionsData!: EntityTable<TestSessionQuestionData, 'queId'>
   testLog!: EntityTable<TestLog, 'id'>
   testResultOverviews!: EntityTable<TestResultOverviewDB, 'id'>
   testOutputDatas!: EntityTable<TestOutputDataDB, 'id'>
@@ -45,7 +53,7 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
   constructor() {
     super('CBT-Interface')
 
-    this.version(4).stores({
+    const dbScheme = {
       settingsData: 'id',
       testSectionsList: 'id++',
       currentTestState: 'id',
@@ -54,7 +62,9 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
       testResultOverviews: 'id,testName,testStartTime,testEndTime,[testName+testStartTime+testEndTime]',
       testOutputDatas: 'id++',
       testNotes: 'id',
-    }).upgrade(async (tx) => {
+    }
+
+    this.version(4).stores(dbScheme).upgrade(async (tx) => {
       const table = tx.table('settingsData')
 
       await table.toCollection().modify((record) => {
@@ -79,6 +89,44 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
         }
       })
     })
+
+    this.version(5).stores(dbScheme).upgrade(async (tx) => {
+      const migrateJsonData = new MigrateJsonData()
+      const testQuestionsDataTable = tx.table('testQuestionsData')
+      const testOutputDatasTable = tx.table('testOutputDatas')
+      const settingsData = tx.table('settingsData')
+
+      await testQuestionsDataTable
+        .toCollection()
+        .modify((questionData) => {
+          migrateJsonData.questionData(questionData, false)
+        })
+
+      await testOutputDatasTable
+        .toCollection()
+        .modify((data: TestOutputDataDB) => {
+          if ('testResultData' in data.testOutputData) {
+            data.testOutputData = migrateJsonData.testResultData(data.testOutputData)
+          }
+          else {
+            data.testOutputData = migrateJsonData.testInterfaceData(data.testOutputData)
+          }
+        })
+
+      await settingsData
+        .toCollection()
+        .modify((record) => {
+          const ui = record.uiSettings as CbtUiSettings
+          if (!ui) return
+
+          const answerOptionsFormat = ui.questionPanel?.answerOptionsFormat
+          if (answerOptionsFormat) {
+            ui.questionPanel.answerOptionsFormat = {
+              mcqAndMsq: answerOptionsFormat,
+            } as unknown as CbtUiSettings['questionPanel']['answerOptionsFormat']
+          }
+        })
+    })
   }
 
   async getSettings() {
@@ -102,9 +150,9 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
   async putTestData(
     testSectionsList: TestSectionListItem[],
     currentTestState: CurrentTestState,
-    testSectionsData: TestSectionsData,
+    testSectionsData: TestSessionSubjectData,
   ) {
-    const testQuestionsData: TestQuestionData[] = testSectionsList
+    const testQuestionsData: TestSessionQuestionData[] = testSectionsList
       .flatMap(({ name: sectionName }) => Object.values(testSectionsData[sectionName] ?? {}))
 
     return this.transaction(
@@ -144,7 +192,7 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
         if (testQuestionsData.length === 0)
           throw new Error('testQuestionsData is empty in db')
 
-        const testSectionsData: TestSectionsData = {}
+        const testSectionsData: TestSessionSectionsData = {}
         for (const questionData of testQuestionsData) {
           const section = questionData.section
           const questionKey = questionData.que
@@ -201,7 +249,7 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
     )
   }
 
-  async updateQuestionData(questionData: TestQuestionData) {
+  async updateQuestionData(questionData: TestSessionQuestionData) {
     const { status, answer, timeSpent, queId } = questionData
     const updatedData = {
       status,
@@ -323,7 +371,7 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
     return collection.toArray()
   }
 
-  async addTestOutputData(testOutputData: TestResultCommonOutput) {
+  async addTestOutputData(testOutputData: TestInterfaceOrResultJsonOutput) {
     const testResultOverview = utilGetTestResultOverview(testOutputData)
     testOutputData.testResultOverview = testResultOverview
 
@@ -340,8 +388,8 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
     })
   }
 
-  async bulkAddTestOutputData(testOutputDatas: TestResultCommonOutput[]) {
-    const newTestOutputDatas: { testOutputData: TestResultCommonOutput }[] = []
+  async bulkAddTestOutputData(testOutputDatas: TestInterfaceOrResultJsonOutput[]) {
+    const newTestOutputDatas: { testOutputData: TestInterfaceOrResultJsonOutput }[] = []
     const newTestResultOverviews: TestResultOverviewDB[] = []
 
     const testNotes: (TestNotes | null)[] = []
@@ -412,7 +460,7 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
     })
   }
 
-  async replaceTestOutputDataAndResultOverview(id: number, data: TestResultCommonOutput) {
+  async replaceTestOutputDataAndResultOverview(id: number, data: TestInterfaceOrResultJsonOutput) {
     return this.transaction(
       'rw',
       [this.testOutputDatas, this.testResultOverviews],
@@ -479,5 +527,3 @@ class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
     })
   }
 }
-
-export const db = new Pdf2CbtDB()

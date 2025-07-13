@@ -20,6 +20,9 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2025-03-17',
   vite: {
+    define: {
+      'import.meta.env.PROJECT_VERSION': `"${packageJson.version}"`,
+    },
     plugins: [tailwindVitePlugin()],
   },
   icon: {

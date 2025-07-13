@@ -634,7 +634,7 @@ const profileDetailsContainerElem = useTemplateRef('profileDetailsContainerElem'
 
 const hiddenSettingsVisibility = shallowRef(false)
 
-let testOutputData: TestOutputData | null = null
+let testOutputData: TestInterfaceJsonOutput | null = null
 
 const { isFullscreen, toggle: toggleFullScreen } = useFullscreen()
 
@@ -749,7 +749,7 @@ const testSummaryDataTable = computed<TestSummaryDataTableRow[]>(() => {
   return data
 })
 
-const scrollSectionIntoView = (section: TestSectionKey) => {
+const scrollSectionIntoView = (section: string) => {
   const el = document.querySelector(`[data-id="data-id_${section}"]`) as HTMLElement | null
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' })
@@ -759,7 +759,7 @@ const scrollSectionIntoView = (section: TestSectionKey) => {
 function changeCurrentQuestion(
   via: 'save&next' | 'mfr' | 'previous' | 'palette' | 'sectionBtn',
   newQueId: number | null = null,
-  newSection: TestSectionKey | null = null,
+  newSection: string | null = null,
 ) {
   const {
     section: currentSection,
@@ -823,9 +823,7 @@ function changeCurrentQuestion(
         currentTestState.value.question = newQuestionData.que
         currentTestState.value.queId = newQueId
         currentTestState.value.currentQuestionStartTime = currentRemainingTime!
-        currentTestState.value.currentAnswerBuffer = Array.isArray(newQuestionData.answer)
-          ? [...newQuestionData.answer]
-          : newQuestionData.answer
+        currentTestState.value.currentAnswerBuffer = utilCloneJson(newQuestionData.answer)
 
         const newQuestionStatus = newQuestionData.status
         if (newQuestionStatus === 'notVisited') {
@@ -1051,6 +1049,19 @@ onLongPress(
   },
 )
 
+const mainLayoutCssVar = useCssVar(
+  '--main-layout-size',
+  null,
+  { initialValue: uiSettings.value.mainLayout.size + 'px' },
+)
+
+watch(
+  () => uiSettings.value.mainLayout.size,
+  () => {
+    mainLayoutCssVar.value = uiSettings.value.mainLayout.size + 'px'
+  },
+)
+
 const pageCleanUpCallback = () => {
   window.removeEventListener('beforeunload', onBeforeUnloadCallback)
   document.documentElement.style.removeProperty('--main-layout-size')
@@ -1115,7 +1126,7 @@ async function submitTest(isAuto: boolean) {
 function generateTestOutputData() {
   const { testName, testDuration } = currentTestState.value
   const { zipOriginalUrl, zipConvertedUrl } = testState
-  const testConfig: TestOutputData['testConfig'] = {
+  const testConfig: TestInterfaceJsonOutput['testConfig'] = {
     testName,
     testDurationInSeconds: testDuration,
     pdfFileHash: testState.pdfFileHash,
@@ -1127,7 +1138,7 @@ function generateTestOutputData() {
 
   const testLogs = testLogger.getLogs()
 
-  const testData: TestOutputData['testData'] = {}
+  const testData: TestInterfaceJsonOutput['testData'] = {}
 
   for (const sectionItem of testSectionsList.value) {
     const { name: section } = sectionItem
@@ -1142,19 +1153,19 @@ function generateTestOutputData() {
         queId, secQueId,
         type, status,
         answer, timeSpent,
-        totalOptions,
+        answerOptions,
       } = testQuestionData
 
       const data = {
         queId, secQueId,
         type, status,
         answer, timeSpent,
-        totalOptions,
+        answerOptions,
         marks,
         pdfData,
       }
 
-      if (type === 'nat') delete data.totalOptions
+      if (type === 'nat') delete data.answerOptions
       if (type !== 'msq') delete data.marks.pm
 
       testData[subject][section][question] = data
@@ -1162,7 +1173,16 @@ function generateTestOutputData() {
   }
 
   const testSummary = testSummaryDataTable.value
-  const outputData = { testConfig, testData, testSummary, testLogs }
+  const outputData: TestInterfaceJsonOutput = {
+    testConfig,
+    testData,
+    testSummary,
+    testLogs,
+    appVersion: useRuntimeConfig().public.projectVersion,
+    testResultOverview: {} as TestInterfaceJsonOutput['testResultOverview'],
+    generatedBy: 'testInterfacePage',
+  }
+
   const testResultOverview = utilGetTestResultOverview(outputData, true)
   testOutputData = {
     ...outputData,
