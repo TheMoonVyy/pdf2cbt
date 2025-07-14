@@ -246,14 +246,27 @@
                   <li><strong>MCQ:</strong> Multiple Choice Question, only one correct option.</li>
                   <li><strong>MSQ:</strong> Multiple Select Question, one or more correct options.</li>
                   <li><strong>NAT:</strong> Numerical Answer Type, answer is a number (integer or decimal).</li>
+                  <li>
+                    <strong>MSM:</strong> Multiple Select Matrix,
+                    this is a question format used by JEE Advanced uptill 2015.<br>
+                    In this format, you have 2 columns say column A and column B,
+                    options in column A can match with one or more options of column B.
+                    So it basically is one to many (or one) matching.
+                    If you look carefully this basically becomes a matrix, where rows options in column A and columns are options in column B.
+                  </li>
                 </ul>
               </div>
               <div>
                 <strong>Answer Options:</strong>
                 <ul class="list-disc ml-6">
                   <li>
-                    Applicable only for MCQ and MSQ. Specify the number of answer options
-                    (e.g. 4 for A, B, C, D).
+                    Specifies total answer options for MCQ, MSQ, and MSM question types.<br>
+                    For <strong>MCQ</strong> and <strong>MSQ</strong> types,
+                    input a number (e.g. 4 for A, B, C, D).<br>
+                    For <strong>MSM</strong> type, input total rows (options in column 1)
+                    and total columns (options in column 2) in mxn format respectively (e.g. 4x6, which gives A to D as rows and P to U as columns).<br>
+                    Also in <strong>MSM</strong> type, for square matrix,
+                    while you can use mxn (m = n) format, you can also enter just m (e.g. 4x4 or just 4).
                   </li>
                 </ul>
               </div>
@@ -261,8 +274,10 @@
               <div>
                 <strong>Marking Scheme:</strong>
                 <ul class="list-disc ml-6">
-                  <li><strong>Correct:</strong> Marks awarded for a correct answer.</li>
-                  <li><strong>Incorrect:</strong> Marks deducted for an incorrect answer.</li>
+                  <li>
+                    <strong>Correct:</strong> Marks awarded for a correct answer. For MSM type, this is marks awarded per correct row.
+                  </li>
+                  <li><strong>Incorrect:</strong> Marks deducted for an incorrect answer. For MSM type, this is marks deducted per incorrect row.</li>
                   <li>
                     <strong>Partial (Only for MSQ):</strong> Marks awarded
                     <strong>per correct option</strong>.<br>
@@ -347,20 +362,19 @@
                       <strong>With "Line" Cropper Mode:</strong>
                       <ul class="list-disc ml-6">
                         <li>
-                          <strong>Undo Line</strong>
+                          <strong>Undo Last Line</strong>
                           ( <UiBadge variant="success">
                             CTRL + Z
                           </UiBadge> ):<br>
                           Undo the last selection line (boundary) set.
-                          This option doesn't appear if no lines are set.<br>
                           This reverts to the previous boundary selection.<br>
-                          Note: This only undoes the line; it does not delete cropped areas
+                          Note: This only undoes the line; it doesn't delete cropped areas
                           (before v1.12.0, undo would delete them as well).
                         </li>
                         <li>
                           <strong>Skip Next Bottom Line</strong>
                           ( <UiBadge variant="success">
-                            hold CTRL + V
+                            hold SHIFT
                           </UiBadge> ):<br>
                           Signal the tool to skip the next bottom line.<br>
                           Use this to jump over parts of the PDF
@@ -376,14 +390,6 @@
                 <li>
                   <strong>When in "Edit" mode:</strong>
                   <ul class="list-disc ml-6">
-                    <li>
-                      <strong>Delete</strong>
-                      ( <UiBadge variant="success">
-                        Delete key
-                      </UiBadge> ):<br>
-                      Deletes the selected cropped region.
-                      This action is irreversible, so use it carefully.
-                    </li>
                     <li>
                       <strong>Copy Region</strong>
                       ( <UiBadge variant="success">
@@ -402,6 +408,19 @@
                       This creates a new cropped region with the copied location
                       but uses the current question details.<br>
                       Mainly <strong>useful</strong> when cropping <strong>Paragraph type questions</strong>.
+                    </li>
+                    <li>
+                      <strong>Delete Region</strong>
+                      ( <UiBadge variant="success">
+                        Delete key
+                      </UiBadge> ):<br>
+                      Deletes the selected cropped region.
+                      This action is irreversible, so use it carefully.
+                    </li>
+                    <li>
+                      <strong>Delete all on...</strong><br>
+                      <strong>Current Page:</strong>Deletes all cropped regions that are on current page.<br>
+                      <strong>All Pages</strong>Deletes all cropped regions on all pages (effectively clearing everything).
                     </li>
                   </ul>
                 </li>

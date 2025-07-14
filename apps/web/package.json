@@ -12,7 +12,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxi dev",
-    "dev:prepare": "nuxt prepare",
+    "prepare": "nuxt prepare",
     "generate": "nuxt generate",
     "lint": "eslint .",
     "preview": "nuxt preview"

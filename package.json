@@ -12,7 +12,7 @@
     "apps/*"
   ],
   "scripts": {
-    "dev:prepare": "pnpm --filter ./apps/* dev:prepare",
+    "prepare": "pnpm --filter ./apps/shared prepare",
     "dev:web": "pnpm --filter ./apps/web dev",
     "generate:web": "pnpm --filter ./apps/web generate",
     "prepare:shared": "pnpm --filter ./apps/shared prepare",
