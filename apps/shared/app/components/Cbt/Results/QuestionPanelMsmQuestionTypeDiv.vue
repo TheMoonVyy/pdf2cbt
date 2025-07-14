@@ -47,8 +47,14 @@
 </template>
 
 <script lang="ts" setup>
-const props = defineProps<{
+const {
+  questionData,
+  useDefaultUiSettings = false,
+  fontSizeFactor = 0.9,
+} = defineProps<{
   questionData: TestResultQuestionData
+  useDefaultUiSettings?: boolean
+  fontSizeFactor?: number
 }>()
 
 const checkboxIconNameAndColor = {
@@ -79,16 +85,16 @@ const checkboxIconNameAndColor = {
 } as const
 
 const totalRowsAndCols = computed(
-  () => utilGetMaxRowsAndColsFromMsmOptions(props.questionData.answerOptions || '4'),
+  () => utilGetMaxRowsAndColsFromMsmOptions(questionData.answerOptions || '4'),
 )
 
 const datas = computed(() => {
   const dataToReturn = new Map<number, QuestionResult['status'][]>()
 
-  if (props.questionData.type !== 'msm')
+  if (questionData.type !== 'msm')
     return dataToReturn
 
-  const { answer, result } = props.questionData
+  const { answer, result } = questionData
 
   const resultStatus = result.status
   const userAnswerObj = (answer ?? {}) as QuestionMsmAnswerType
@@ -147,7 +153,9 @@ const datas = computed(() => {
   return dataToReturn
 })
 
-const { uiSettings } = useCbtSettings()
+const uiSettings = useDefaultUiSettings
+  ? shallowRef(useCbtSettings().defaultUiSettings)
+  : useCbtSettings().uiSettings
 
 const optionsStyle = computed(() => {
   const msmFormats = uiSettings.value.questionPanel.answerOptionsFormat.msm
@@ -157,11 +165,11 @@ const optionsStyle = computed(() => {
     '--msm-row-counter-type': row.counterType,
     '--msm-row-prefix': `"${row.prefix}"`,
     '--msm-row-suffix': `"${row.suffix}"`,
-    '--msm-row-font-size': `${row.fontSize * 0.9}rem`,
+    '--msm-row-font-size': `${row.fontSize * fontSizeFactor}rem`,
     '--msm-col-counter-type': col.counterType,
     '--msm-col-prefix': `"${col.prefix}"`,
     '--msm-col-suffix': `"${col.suffix}"`,
-    '--msm-col-font-size': `${col.fontSize * 0.9}rem`,
+    '--msm-col-font-size': `${col.fontSize * fontSizeFactor}rem`,
     'counter-reset': 'msm-row-labels msm-col-labels',
   }
 })

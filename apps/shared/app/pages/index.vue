@@ -168,67 +168,12 @@
         </ul>
 
         <p class="mt-4 text-left">
-          These steps are common to both method (
-          <NuxtLink
-            to="https://www.youtube.com/watch?v=L0EWtvrZNYE"
+          The rest of the steps are common to both paths, instructions/docs is on <NuxtLink
+            to="/cbt/generate-answer-key"
             class="underline text-green-400"
             target="_blank"
-          >
-            📺Video of generating answer key data
-          </NuxtLink>
-          ):
+          >Generate Answer Key</NuxtLink> page itself.
         </p>
-        <ul class="list-disc list-outside mt-2 text-left ml-8">
-          <li>
-            Now you should be seeing "Sort Sections Order" & "Questions Numbering Order", these two are optional and you can use it if you want, the end result has no effect as they serve just visual use.
-          </li>
-          <li class="mt-2">
-            Click on "Start", and you should be on the page's table-like layout.<br>
-          </li>
-          <li class="mt-2">
-            Columns are:
-            <p>
-              <strong>Q. Num</strong> → number of the question.<br>
-              <strong>Q. Type</strong> → The type of the question, i.e. MCQ, MSQ, NAT.<br>
-              In MCQ & MSQ, the number in the bracket is the total options and hence max options in that question (this is the options you had entered in pdf cropper page).<br>
-              <strong>Input Answer</strong> → This is the input area you will be entering correct answers in.<br>
-              <strong>Parsed Answer</strong> → This will show the output of answer you have inputted.<br>
-              “null” implies nothing.
-            </p>
-          </li>
-          <li class="mt-2">
-            You can now enter the correct answers to the questions, and see the "Parsed Answer" to know how it is interpreted.<br>
-            You can use a, b, c, d... for mcq/msq or you can also use 1, 2, 3, 4... to denote a, b, c, d... so that you can navigate the process via just the numpad.<br>
-            You can press Arrow Up to move to the row above, and Arrow down or enter key to move to next row.<br>
-            Only when all answers are valid you can move to next section, keep going till the end and click on "Generate Answer Key Data" to download the file.
-          </li>
-        </ul>
-        <p class="mt-3 text-left">
-          <strong>NOTE:</strong><br>
-          <strong>In NAT Type</strong>, you can also define a range of numbers or multiple numbers as correct answer in the <strong>Input Answer</strong> part of <strong>generate answer key page</strong>.
-        </p>
-        <ul class="list-disc list-outside mt-2 text-left ml-8">
-          <li>
-            <strong>Defining Range of Correct Answers:</strong> You can define this by using <strong>to</strong> between two numbers.<br>
-            For Example, 1to5 or 1 to 5 (both does the same thing ), this will mean correct answer is greater or equal to 1 AND less than or equal to 5. SO if your answer in test is say 3, then it will be correct answer as it is in the range.<br><br>
-          </li>
-          <li>
-            <strong>Defining multiple numbers as Correct Answers:</strong> You can define this by using <strong>, (i.e. comma)</strong> between numbers.<br>
-            For Example, 1,-1,5 or 1, -1, 5 (both does the same thing, space doesn't matter ), this will mean correct answer is 1 or -1 or 5. So if your answer in test is either of these, then it will be correct answer.
-          </li>
-        </ul>
-        <p class="mt-4 text-left">
-          Althrough you will rarely require it but "dropped" &amp; "bonus" are two special keywords you can use as the answer as well<br><br>
-          There is too much confusion on what dropped/bonus really means, hence the project has its own definition, use the one you want based on these condition:<br>
-        </p>
-        <ul class="list-disc list-outside mt-1 text-left ml-8">
-          <li class="mt-2">
-            <strong>DROPPED:</strong> Correct marks of that question is given <strong>irrespective</strong> of whether you have answered the question or not.
-          </li>
-          <li class="mt-2">
-            <strong>BONUS:</strong> Correct marks of that question is given <strong>only if</strong> you have answered the question.
-          </li>
-        </ul>
       </div>
 
       <!-- Step 3 -->

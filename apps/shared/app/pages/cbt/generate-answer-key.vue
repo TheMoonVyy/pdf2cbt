@@ -64,6 +64,7 @@
         @upload="handleFileUpload"
       />
     </div>
+
     <div
       v-else
       class="flex flex-col items-center gap-4 px-2 md:px-4"
@@ -245,6 +246,11 @@
         </div>
       </div>
     </div>
+
+    <DocsGenerateAnswerKey
+      v-if="!fileUploaderState.isFileLoaded || dbTestOutputDataState.isDataFound"
+    />
+
     <UiDialog
       v-model:open="generateOutputState.showDialog"
     >

@@ -730,6 +730,7 @@ function getQuestionResult(
 ): QuestionResult {
   const { type, status, answer } = questionData
   const marks = {
+    max: Math.abs(questionData.marks.max || 0),
     cm: Math.abs(questionData.marks.cm),
     pm: Math.abs(questionData.marks.pm ?? 0),
     im: Math.abs(questionData.marks.im) * -1,
@@ -743,14 +744,14 @@ function getQuestionResult(
   }
 
   if (questionCorrectAnswer === 'DROPPED') {
-    result.marks = marks.cm
+    result.marks = marks.max || marks.cm
     result.status = 'dropped'
     return result
   }
 
   if (status === 'answered' || status === 'markedAnswered') {
     if (questionCorrectAnswer === 'BONUS') {
-      result.marks = marks.cm
+      result.marks = marks.max || marks.cm
       result.status = 'bonus'
       return result
     }
