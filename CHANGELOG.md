@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.16.0...v1.17.0) (2025-07-14)
+
+
+### Features
+
+* **docs:** add docs to generate answer key page and msm question type docs to pdf cropper docs ([cd52515](https://github.com/TheMoonVyy/pdf2cbt/commit/cd52515c1a113fddf1d8d52d089f818669329c3e))
+
 ## [1.16.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.15.1...v1.16.0) (2025-07-13)
 
 
