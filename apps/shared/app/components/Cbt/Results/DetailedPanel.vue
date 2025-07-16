@@ -438,7 +438,9 @@ function getStatsTablesFirstColumnDef<T extends StatsMetaData>(
             return (original.type === 'subject' && original.name === subject)
           }
 
-          return original.type === 'section' && original.subject === subject
+          return original.type === 'section'
+            && original.subject === subject
+            && original.name === section
         },
       }),
     ],
@@ -850,7 +852,7 @@ function getSectionStats(sectionData: TestResultSectionData): Stats {
     questionResult[status].count++
     questionResult[status].totalTime += timeSpent
 
-    maxMarks += questionData.marks.max || questionData.marks.cm
+    maxMarks += questionData.marks.max ?? questionData.marks.cm
 
     if (marks > 0) {
       if (status === 'bonus') {
