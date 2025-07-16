@@ -1,11 +1,15 @@
 <script lang="ts" setup>
-const model = defineModel<number>({ required: true })
+const model = defineModel<number | null>({ required: true })
 
 // using writeable computed property
 // to prevent model value from being assigned undefined
 const computedModel = computed({
   get: () => model.value,
-  set: val => typeof val === 'number' && (model.value = val),
+  set: (val) => {
+    if (typeof val !== 'number')
+      val = null
+    model.value = val
+  },
 })
 
 const {
