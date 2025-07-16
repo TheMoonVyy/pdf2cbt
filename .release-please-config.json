@@ -5,7 +5,9 @@
   "include-v-in-tag": true,
   "initial-version": "1.4.0",
   "changelog-path": "CHANGELOG.md",
-  "version-file": "apps/web/package.json",
+  "extra-files": [
+    "apps/web/package.json"
+  ],
   "changelog-sections": [
     { "type": "feat", "section": "New Features" },
     { "type": "fix", "section": "Bug Fixes" },
