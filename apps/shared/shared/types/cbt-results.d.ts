@@ -27,6 +27,7 @@ export type ResultStats = {
   notAnswered: StatsItem
   bonus: StatsItem
   dropped: StatsItem
+  notConsidered: StatsItem
   total: StatsItem & { accuracy: string }
 }
 
@@ -86,9 +87,11 @@ export type CbtResultsSettings = {
   }
 }
 
+export type ValidQuestionResultStatus = 'correct' | 'incorrect' | 'partial' | 'dropped' | 'bonus' | 'notAnswered'
+
 export type QuestionResult = {
   marks: number
-  status: 'correct' | 'incorrect' | 'partial' | 'dropped' | 'bonus' | 'notAnswered'
+  status: ValidQuestionResultStatus | 'notConsidered'
   correctAnswer: QuestionAnswer
   accuracyNumerator: number
 }

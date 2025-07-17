@@ -177,7 +177,7 @@
                   Consider the following as the correct answers to an MSM question:
                   <CbtResultsQuestionPanelMsmQuestionTypeDiv
                     :question-data="dummyQuestionData"
-                    use-default-ui-settings
+                    is-use-default-ui-settings
                     :font-size-factor="0.7"
                     class="max-w-sm my-2 gap-1.5!"
                   />

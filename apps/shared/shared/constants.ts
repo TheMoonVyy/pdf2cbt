@@ -2,7 +2,7 @@ export const OVERALL = ' Overall'
 export const TEST_OVERALL = 'Test Overall'
 
 export const QUESTION_STATUS_LIST = ['answered', 'markedAnswered', 'notAnswered', 'marked', 'notVisited'] as const
-export const RESULT_STATUS_LIST = ['correct', 'partial', 'incorrect', 'notAnswered', 'bonus', 'dropped'] as const
+export const RESULT_STATUS_LIST = ['correct', 'partial', 'incorrect', 'notAnswered', 'bonus', 'dropped', 'notConsidered'] as const
 export const QUESTION_TYPES_LIST = ['mcq', 'msq', 'nat', 'msm'] as const
 
 export const QUESTION_STATUS_LABELS = {
@@ -20,6 +20,7 @@ export const RESULT_STATUS_LABELS = {
   notAnswered: 'Not Answered',
   bonus: 'Bonus',
   dropped: 'Dropped',
+  notConsidered: 'Not Considered',
 }
 
 export const QUESTION_TYPES_LABELS = {
@@ -38,3 +39,20 @@ export const FONT_SIZES = {
 } as const
 
 export const SEPARATOR = '__--__'
+
+export const QUESTION_TYPES_OPTIONS = [
+  { name: 'MCQ (Multiple Choice Question)', value: 'mcq' },
+  { name: 'MSQ (Multiple Select Question)', value: 'msq' },
+  { name: 'NAT (Numerial Answer Type)', value: 'nat' },
+  { name: 'MSM (Multiple Select Matrix)', value: 'msm' },
+]
+
+export const ANSWER_OPTIONS_COUNTER_TYPES = [
+  { name: 'A, B, C, D...', value: 'upper-latin' },
+  { name: 'a, b, c, d...', value: 'lower-latin' },
+  { name: 'P, Q, R, S...', value: 'upper-pqrs' },
+  { name: 'p, q, r, s...', value: 'lower-pqrs' },
+  { name: '1, 2, 3, 4...', value: 'decimal' },
+  { name: 'I, II, III, IV...', value: 'upper-roman' },
+  { name: 'i, ii, iii, iv...', value: 'lower-roman' },
+]

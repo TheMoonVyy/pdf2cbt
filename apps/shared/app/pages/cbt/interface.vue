@@ -199,6 +199,7 @@
               hidden: testState.currentProcess !== 'test-started',
             }"
             :is-question-pallete-collapsed="isQuestionPalleteCollapsed"
+            :cropper-sections-data="cropperSectionsData"
           />
           <div
             class="flex absolute py-3 cursor-pointer right-0 top-1/2 z-10 bg-black"
@@ -642,12 +643,16 @@ const { uiSettings, testSettings, miscSettings } = useCbtSettings()
 
 const testLogger = useCbtLogger(true)
 
-const testState = shallowReactive<TestState>({
+const testState = reactive<TestState>({
   pdfFile: null,
   testImageBlobs: null,
-  pdfFileHash: '',
-  zipOriginalUrl: '',
-  zipConvertedUrl: '',
+  testConfig: {
+    testName: '',
+    testDurationInSeconds: 0,
+    pdfFileHash: '',
+    zipOriginalUrl: '',
+    zipConvertedUrl: '',
+  },
   testAnswerKey: null,
   isSectionsDataLoaded: false,
   totalQuestions: 75,
@@ -1125,16 +1130,18 @@ async function submitTest(isAuto: boolean) {
 
 function generateTestOutputData() {
   const { testName, testDuration } = currentTestState.value
-  const { zipOriginalUrl, zipConvertedUrl } = testState
-  const testConfig: TestInterfaceJsonOutput['testConfig'] = {
-    testName,
-    testDurationInSeconds: testDuration,
-    pdfFileHash: testState.pdfFileHash,
+  const testConfig = utilCloneJson(testState.testConfig)
+
+  testConfig.testName = testName
+  testConfig.testDurationInSeconds = testDuration
+  if (!testConfig.zipOriginalUrl) {
+    delete testConfig.zipOriginalUrl
+    delete testConfig.zipConvertedUrl
   }
-  if (zipOriginalUrl) {
-    testConfig.zipOriginalUrl = zipOriginalUrl
-    if (zipConvertedUrl) testConfig.zipConvertedUrl = zipConvertedUrl
-  }
+  if (!testConfig.zipConvertedUrl)
+    delete testConfig.zipConvertedUrl
+  if (!testConfig.optionalQuestions?.length)
+    delete testConfig.optionalQuestions
 
   const testLogs = testLogger.getLogs()
 
@@ -1148,7 +1155,11 @@ function generateTestOutputData() {
     testData[subject][section] = {}
 
     for (const [question, testQuestionData] of Object.entries(testSectionsData.value[section] ?? {})) {
-      const { marks, pdfData } = cropperSectionsData.value[section]![question]!
+      const {
+        marks,
+        pdfData,
+        answerOptionsCounterType: ogAnswerOptionsCounterType,
+      } = cropperSectionsData.value[section]![question]!
       const {
         queId, secQueId,
         type, status,
@@ -1156,7 +1167,7 @@ function generateTestOutputData() {
         answerOptions,
       } = testQuestionData
 
-      const data = {
+      const data: TestInterfaceQuestionData = {
         queId, secQueId,
         type, status,
         answer, timeSpent,
@@ -1165,8 +1176,28 @@ function generateTestOutputData() {
         pdfData,
       }
 
-      if (type === 'nat') delete data.answerOptions
-      if (type !== 'msq') delete data.marks.pm
+      if (type === 'nat')
+        delete data.answerOptions
+
+      if (type === 'mcq' || type === 'msq' || type === 'msm') {
+        const answerOptionsCounterType: TestInterfaceQuestionData['answerOptionsCounterType'] = {}
+        const primary = ogAnswerOptionsCounterType?.primary?.replace('default', '').trim()
+        if (primary)
+          answerOptionsCounterType.primary = primary
+
+        if (type === 'msm') {
+          const secondary = ogAnswerOptionsCounterType?.secondary?.replace('default', '').trim()
+          if (secondary)
+            answerOptionsCounterType.secondary = secondary
+        }
+
+        if (answerOptionsCounterType.primary || answerOptionsCounterType.secondary) {
+          data.answerOptionsCounterType = answerOptionsCounterType
+        }
+      }
+
+      if (type !== 'msq')
+        delete data.marks.pm
 
       testData[subject][section][question] = data
     }

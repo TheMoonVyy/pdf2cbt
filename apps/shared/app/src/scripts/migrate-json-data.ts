@@ -53,12 +53,27 @@ export class MigrateJsonData {
     }
   }
 
+  private removeEmptyKeysFromTestConfig<
+    T extends (TestInterfaceAndResultCommonJsonOutputData['testConfig'] | PdfCropperJsonOutput['testConfig']),
+  >(testConfig: T) {
+    for (const key of Object.keys(testConfig) as (keyof T)[])
+      if (key === 'optionalQuestions') {
+        if (!testConfig.optionalQuestions?.length)
+          delete testConfig.optionalQuestions
+      }
+      else {
+        if (!testConfig[key])
+          delete testConfig[key] // eslint-disable-line @typescript-eslint/no-dynamic-delete
+      }
+  }
+
   pdfCropperData(data: any): PdfCropperJsonOutput {
     const output: PdfCropperJsonOutput = {
       testConfig: {
         zipConvertedUrl: '',
         zipOriginalUrl: '',
         zipUrl: '',
+        optionalQuestions: [],
         pdfFileHash: '',
       },
       pdfCropperData: {},
@@ -84,6 +99,7 @@ export class MigrateJsonData {
       Object.assign(output, data)
     }
 
+    this.removeEmptyKeysFromTestConfig(output.testConfig)
     return output
   }
 
@@ -146,6 +162,7 @@ export class MigrateJsonData {
       Object.assign(output, data)
     }
 
+    this.removeEmptyKeysFromTestConfig(output.testConfig)
     return output
   }
 
@@ -176,11 +193,6 @@ export class MigrateJsonData {
         utilSelectiveMergeObj(output.testConfig, data.testConfig)
       }
 
-      if (!output.testConfig.zipOriginalUrl)
-        delete output.testConfig.zipOriginalUrl
-      if (!output.testConfig.zipConvertedUrl)
-        delete output.testConfig.zipConvertedUrl
-
       if ('testLogs' in data && Array.isArray(data.testLogs)) {
         output.testLogs = data.testLogs
       }
@@ -202,6 +214,7 @@ export class MigrateJsonData {
     else {
       Object.assign(output, data)
     }
+    this.removeEmptyKeysFromTestConfig(output.testConfig)
 
     return output
   }

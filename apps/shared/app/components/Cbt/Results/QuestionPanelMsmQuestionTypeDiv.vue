@@ -21,7 +21,7 @@
 
     <!-- Now the main grid (row by row) -->
     <template
-      v-for="[rowNum, cols] in datas"
+      v-for="[rowNum, cols] in matrixStatusData"
       :key="rowNum"
     >
       <!-- Row label -->
@@ -36,7 +36,6 @@
         class="w-full h-full flex items-center justify-center"
       >
         <Icon
-
           :name="checkboxIconNameAndColor[colStatus].name"
           :class="checkboxIconNameAndColor[colStatus].class"
           size="1.5rem"
@@ -49,11 +48,13 @@
 <script lang="ts" setup>
 const {
   questionData,
-  useDefaultUiSettings = false,
+  isUseDefaultUiSettings = false,
   fontSizeFactor = 0.9,
+  optionsFormatSettings,
 } = defineProps<{
   questionData: TestResultQuestionData
-  useDefaultUiSettings?: boolean
+  optionsFormatSettings?: CbtUiSettings['questionPanel']['answerOptionsFormat']['msm']
+  isUseDefaultUiSettings?: boolean
   fontSizeFactor?: number
 }>()
 
@@ -84,19 +85,45 @@ const checkboxIconNameAndColor = {
   },
 } as const
 
+const questionResultStatusOfNotConsideredQues = new Map<number, ValidQuestionResultStatus>()
+
 const totalRowsAndCols = computed(
   () => utilGetMaxRowsAndColsFromMsmOptions(questionData.answerOptions || '4'),
 )
 
-const datas = computed(() => {
-  const dataToReturn = new Map<number, QuestionResult['status'][]>()
+const getNotConsideredQuestionResultStatus = (
+  questionData: TestResultQuestionData,
+): ValidQuestionResultStatus => {
+  let resultStatus: ValidQuestionResultStatus
+
+  const status = questionResultStatusOfNotConsideredQues.get(questionData.queId)
+  if (status)
+    resultStatus = status
+  else {
+    if (questionData.status !== 'answered' && questionData.status !== 'markedAnswered')
+      resultStatus = 'notAnswered'
+    else
+      resultStatus = utilGetQuestionResult(questionData, questionData.result.correctAnswer).status
+
+    questionResultStatusOfNotConsideredQues.set(questionData.queId, resultStatus)
+  }
+
+  return resultStatus
+}
+
+const matrixStatusData = computed(() => {
+  const dataToReturn = new Map<number, ValidQuestionResultStatus[]>()
 
   if (questionData.type !== 'msm')
     return dataToReturn
 
   const { answer, result } = questionData
 
-  const resultStatus = result.status
+  let resultStatus = result.status
+
+  if (resultStatus === 'notConsidered')
+    resultStatus = getNotConsideredQuestionResultStatus(questionData)
+
   const userAnswerObj = (answer ?? {}) as QuestionMsmAnswerType
   const correctAnswerObj = typeof result.correctAnswer === 'object'
     ? (result.correctAnswer || {}) as QuestionMsmAnswerType
@@ -119,7 +146,7 @@ const datas = computed(() => {
   const { rows, cols } = totalRowsAndCols.value
 
   for (let row = 1; row <= rows; row++) {
-    const rowData: QuestionResult['status'][] = []
+    const rowData: ValidQuestionResultStatus[] = []
 
     for (let col = 1; col <= cols; col++) {
       if (resultStatus === 'dropped' || resultStatus === 'bonus') {
@@ -153,23 +180,24 @@ const datas = computed(() => {
   return dataToReturn
 })
 
-const uiSettings = useDefaultUiSettings
-  ? shallowRef(useCbtSettings().defaultUiSettings)
-  : useCbtSettings().uiSettings
+const { row: rowFormat, col: colFormat } = optionsFormatSettings
+  ? optionsFormatSettings
+  : isUseDefaultUiSettings
+    ? useCbtSettings().defaultUiSettings.questionPanel.answerOptionsFormat.msm
+    : useCbtSettings().uiSettings.value.questionPanel.answerOptionsFormat.msm
 
 const optionsStyle = computed(() => {
-  const msmFormats = uiSettings.value.questionPanel.answerOptionsFormat.msm
-  const { row, col } = msmFormats
-
+  const rowCounterType = questionData.answerOptionsCounterType?.primary?.replace('default', '').trim()
+  const colCounterType = questionData.answerOptionsCounterType?.secondary?.replace('default', '').trim()
   return {
-    '--msm-row-counter-type': row.counterType,
-    '--msm-row-prefix': `"${row.prefix}"`,
-    '--msm-row-suffix': `"${row.suffix}"`,
-    '--msm-row-font-size': `${row.fontSize * fontSizeFactor}rem`,
-    '--msm-col-counter-type': col.counterType,
-    '--msm-col-prefix': `"${col.prefix}"`,
-    '--msm-col-suffix': `"${col.suffix}"`,
-    '--msm-col-font-size': `${col.fontSize * fontSizeFactor}rem`,
+    '--msm-row-counter-type': rowCounterType || rowFormat.counterType,
+    '--msm-row-prefix': `"${rowFormat.prefix}"`,
+    '--msm-row-suffix': `"${rowFormat.suffix}"`,
+    '--msm-row-font-size': `${rowFormat.fontSize * fontSizeFactor}rem`,
+    '--msm-col-counter-type': colCounterType || colFormat.counterType,
+    '--msm-col-prefix': `"${colFormat.prefix}"`,
+    '--msm-col-suffix': `"${colFormat.suffix}"`,
+    '--msm-col-font-size': `${colFormat.fontSize * fontSizeFactor}rem`,
     'counter-reset': 'msm-row-labels msm-col-labels',
   }
 })

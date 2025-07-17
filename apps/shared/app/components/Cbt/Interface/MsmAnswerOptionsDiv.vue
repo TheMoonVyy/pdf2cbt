@@ -53,6 +53,7 @@
 const props = defineProps<{
   totalOptions: string
   questionType: QuestionType
+  answerOptionsCounterType?: TestInterfaceQuestionData['answerOptionsCounterType']
 }>()
 
 const emit = defineEmits<{
@@ -69,13 +70,15 @@ const { uiSettings } = useCbtSettings()
 const optionsStyle = computed(() => {
   const msmFormats = uiSettings.value.questionPanel.answerOptionsFormat.msm
   const { row, col, zoomSize } = msmFormats
+  const rowCounterType = props.answerOptionsCounterType?.primary?.replace('default', '').trim()
+  const colCounterType = props.answerOptionsCounterType?.secondary?.replace('default', '').trim()
 
   return {
-    '--msm-row-counter-type': row.counterType,
+    '--msm-row-counter-type': rowCounterType || row.counterType,
     '--msm-row-prefix': `"${row.prefix}"`,
     '--msm-row-suffix': `"${row.suffix}"`,
     '--msm-row-font-size': `${row.fontSize}rem`,
-    '--msm-col-counter-type': col.counterType,
+    '--msm-col-counter-type': colCounterType || col.counterType,
     '--msm-col-prefix': `"${col.prefix}"`,
     '--msm-col-suffix': `"${col.suffix}"`,
     '--msm-col-font-size': `${col.fontSize}rem`,

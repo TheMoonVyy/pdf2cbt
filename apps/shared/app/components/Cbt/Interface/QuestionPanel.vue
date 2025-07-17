@@ -23,6 +23,7 @@
       v-model="currentQuestionMcqOrMsqAnswer"
       :question-type="currentQuestionDetails.questionType"
       :total-options="currentQuestionDetails.answerOptions"
+      :answer-options-counter-type="currentQuestionDetails.answerOptionsCounterType"
       class="ml-5 mt-1"
       @update:model-value="logCurrentAnswer"
     />
@@ -31,6 +32,7 @@
       v-model="currentQuestionMsmAnswer"
       :question-type="currentQuestionDetails.questionType"
       :total-options="currentQuestionDetails.answerOptions"
+      :answer-options-counter-type="currentQuestionDetails.answerOptionsCounterType"
       class="ml-5 mt-1"
       @log-current-answer="logCurrentAnswer"
       @answer-changed="currentQuestionMsmAnswer = $event"
@@ -56,6 +58,7 @@ type QuestionsImgWidths = {
 
 const props = defineProps<{
   isQuestionPalleteCollapsed: boolean
+  cropperSectionsData: CropperSectionsData
 }>()
 
 const imageContainerElem = useTemplateRef('imageContainerElem')
@@ -125,11 +128,13 @@ const currentQuestionDetails = computed(() => {
   const currentQuestion = testQuestionsData.value.get(currentQueId)!
   const questionType = currentQuestion.type
   const answerOptions = currentQuestion.answerOptions || '4'
+  const { answerOptionsCounterType } = props.cropperSectionsData[currentQuestion.section]?.[currentQuestion.que] ?? {}
 
   return {
     questionType,
     answerOptions,
     currentQueId,
+    answerOptionsCounterType,
   }
 })
 

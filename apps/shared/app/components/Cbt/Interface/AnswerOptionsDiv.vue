@@ -58,11 +58,18 @@
 <script lang="ts" setup>
 const { uiSettings } = useCbtSettings()
 
+const props = defineProps<{
+  totalOptions: string
+  questionType: QuestionType
+  answerOptionsCounterType?: TestInterfaceQuestionData['answerOptionsCounterType']
+}>()
+
 const optionsStyle = computed(() => {
   const answerOptionsFormat = uiSettings.value.questionPanel.answerOptionsFormat.mcqAndMsq
+  const counterType = props.answerOptionsCounterType?.primary?.replace('default', '').trim()
 
   return {
-    '--counter-type': answerOptionsFormat.counterType,
+    '--counter-type': counterType || answerOptionsFormat.counterType,
     '--options-prefix': `"${answerOptionsFormat.prefix}"`,
     '--options-suffix': `"${answerOptionsFormat.suffix}"`,
     '--options-font-size': `${answerOptionsFormat.fontSize}rem`,
@@ -71,11 +78,6 @@ const optionsStyle = computed(() => {
     'counter-reset': 'answer-options',
   }
 })
-
-const props = defineProps<{
-  totalOptions: string
-  questionType: QuestionType
-}>()
 
 const questionAnswer = defineModel<QuestionAnswer>({ required: true })
 </script>

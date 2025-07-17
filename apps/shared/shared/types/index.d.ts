@@ -1,3 +1,7 @@
+import type { ClassValue } from 'clsx'
+
+export type { ClassValue }
+
 export type QuestionType = 'mcq' | 'msq' | 'nat' | 'msm'
 
 export type QuestionMarks = {
@@ -35,6 +39,7 @@ export interface TestInterfaceAndResultCommonJsonOutputData extends JsonOutput {
     zipOriginalUrl?: string
     zipConvertedUrl?: string
     pdfFileHash: string
+    optionalQuestions?: { subject: string, section: string, count: number }[]
   }
   testSummary: TestSummaryDataTableRow[]
   testLogs: TestLog[]
@@ -60,7 +65,7 @@ export interface PdfCropperJsonOutput extends JsonOutput {
   pdfCropperData: CropperOutputData
   testConfig: Pick<
     TestInterfaceJsonOutput['testConfig'],
-    'pdfFileHash' | 'zipOriginalUrl' | 'zipConvertedUrl'
+    'pdfFileHash' | 'zipOriginalUrl' | 'zipConvertedUrl' | 'optionalQuestions'
   > & { zipUrl?: string }
 }
 

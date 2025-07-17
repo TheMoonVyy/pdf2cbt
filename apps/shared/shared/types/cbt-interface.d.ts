@@ -111,7 +111,9 @@ export interface TestLog {
   actionDetails?: Record<string, unknown>
 }
 
-export type TestSessionQuestionData = Pick<CropperQuestionData, 'que' | 'type' | 'answerOptions'> & {
+export type TestSessionQuestionData = Pick<
+  CropperQuestionData, 'que' | 'type' | 'answerOptions'
+> & {
   secQueId: number
   queId: number
   section: string
@@ -169,7 +171,7 @@ export type TestSectionsImgUrls = {
 }
 
 export type TestInterfaceQuestionData = Omit<TestSessionQuestionData, 'section' | 'que'>
-  & Pick<CropperQuestionData, 'marks' | 'pdfData'>
+  & Pick<CropperQuestionData, 'marks' | 'pdfData' | 'answerOptionsCounterType'>
 
 export type TestInterfaceSectionData = {
   [question: number | string]: TestInterfaceQuestionData
@@ -188,9 +190,7 @@ export type TestImageBlobs = GenericSubjectsTree<Blob[]>[string]
 export interface TestState {
   pdfFile: Uint8Array | null
   testImageBlobs: TestImageBlobs | null
-  pdfFileHash: string
-  zipOriginalUrl: string
-  zipConvertedUrl: string
+  testConfig: TestInterfaceJsonOutput['testConfig']
   testAnswerKey: null | TestAnswerKeyData
   isSectionsDataLoaded: boolean
   totalQuestions: number
