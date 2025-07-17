@@ -15,6 +15,7 @@
       >
         <UiScrollArea
           class="h-full w-full rounded-md border"
+          type="auto"
         >
           <div class="flex flex-col items-center">
             <div class="flex flex-col items-center p-4 pb-0 gap-5 w-full">
@@ -499,13 +500,14 @@ const pdfState = shallowReactive({
   fileUint8Array: null as Uint8Array | null,
 })
 
+const testConfig = shallowReactive<PdfCropperJsonOutput['testConfig']>({
+  pdfFileHash: '', // SHA-256 hash of pdf file
+  optionalQuestions: [],
+})
+
 const currentMode = shallowRef<'crop' | 'edit'>('crop')
 
 const isPdfLoaded = shallowRef(false)
-
-// to store SHA-256 hash of pdf file,
-// which will be included in generated output file
-let pdfFileHash = ''
 
 const settings = usePdfCropperLocalStorageSettings()
 
@@ -545,6 +547,8 @@ const mainOverlayData = reactive<PdfCroppedOverlayData>({
     im: -1,
   },
   pdfData: { l: 0, r: 0, t: 0, b: 0, page: 1 },
+  answerOptionsCounterTypePrimary: 'default',
+  answerOptionsCounterTypeSecondary: 'default',
 })
 
 const overlaysPerQuestionData = reactive<PdfCropperOverlaysPerQuestion>(new Map())
@@ -557,6 +561,8 @@ const cachedData: {
       im: number
     }
     answerOptions: string
+    answerOptionsCounterTypePrimary: string
+    answerOptionsCounterTypeSecondary: string
   }
 } = {}
 
@@ -564,11 +570,17 @@ watch(
   () => mainOverlayData.type,
   (newQuestionType, oldQuestionType) => {
     const { cm, pm, im } = mainOverlayData.marks
-    const answerOptions = mainOverlayData.answerOptions
+    const {
+      answerOptions,
+      answerOptionsCounterTypePrimary,
+      answerOptionsCounterTypeSecondary,
+    } = mainOverlayData
 
     cachedData[oldQuestionType] = {
       markingScheme: { cm, pm, im },
       answerOptions: /^\d+(x\d+)?$/i.test(answerOptions) ? answerOptions : '',
+      answerOptionsCounterTypePrimary,
+      answerOptionsCounterTypeSecondary,
     }
 
     const dataInCache = cachedData[newQuestionType]
@@ -577,6 +589,8 @@ watch(
       mainOverlayData.marks.cm = cm
       mainOverlayData.marks.pm = pm
       mainOverlayData.marks.im = im
+      mainOverlayData.answerOptionsCounterTypePrimary = answerOptionsCounterTypePrimary
+      mainOverlayData.answerOptionsCounterTypeSecondary = answerOptionsCounterTypeSecondary
       if (dataInCache.answerOptions)
         mainOverlayData.answerOptions = dataInCache.answerOptions
     }
@@ -622,6 +636,8 @@ const storeOverlayData = (
       imgNum: newImgNum,
       type: existingFirstOverlay.type,
       answerOptions: existingFirstOverlay.answerOptions,
+      answerOptionsCounterTypePrimary: existingFirstOverlay.answerOptionsCounterTypePrimary,
+      answerOptionsCounterTypeSecondary: existingFirstOverlay.answerOptionsCounterTypeSecondary,
       marks: {
         ...existingFirstOverlay.marks,
       },
@@ -668,8 +684,13 @@ watch(currentQuestionData,
           if (!nextOverlayData) return
 
           let isDataChanged = false
-          for (const keyData of ['type', 'answerOptions'] as const) {
-            if (oldOverlay[keyData] !== nextOverlayData[keyData]) {
+          const keys = [
+            'type', 'answerOptionsCounterTypePrimary',
+            'answerOptionsCounterTypeSecondary', 'answerOptions',
+          ] as const
+
+          for (const key of keys) {
+            if (oldOverlay[key] !== nextOverlayData[key]) {
               isDataChanged = true
               break
             }
@@ -684,7 +705,14 @@ watch(currentQuestionData,
           }
           if (!isDataChanged) return
 
-          const { type, answerOptions, marks } = oldOverlay
+          const {
+            type,
+            answerOptions,
+            marks,
+            answerOptionsCounterTypePrimary,
+            answerOptionsCounterTypeSecondary,
+          } = oldOverlay
+
           for (const newImgNum of utilRange(2, oldImgCount + 1)) {
             const overlay = cropperOverlayDatas.get(oldQueId + SEPARATOR + newImgNum)
             if (!overlay) return
@@ -692,6 +720,8 @@ watch(currentQuestionData,
             overlay.type = type
             overlay.answerOptions = answerOptions
             overlay.marks = { ...marks }
+            overlay.answerOptionsCounterTypePrimary = answerOptionsCounterTypePrimary
+            overlay.answerOptionsCounterTypeSecondary = answerOptionsCounterTypeSecondary
           }
         }
 
@@ -790,7 +820,7 @@ const handleFileUpload = async (file: File) => {
 
   await nextTick()
 
-  pdfFileHash = ''
+  testConfig.pdfFileHash = ''
   try {
     const zipCheckStatus = await utilIsZipFile(file)
     if (zipCheckStatus > 0) {
@@ -798,7 +828,7 @@ const handleFileUpload = async (file: File) => {
       if (unzippedData.pdfBuffer && unzippedData.jsonData) {
         pdfState.fileUint8Array = unzippedData.pdfBuffer
         userUploadedCropperJsonOutput.value = migrateJsonData.pdfCropperData(unzippedData.jsonData)
-        pdfFileHash = userUploadedCropperJsonOutput.value?.testConfig.pdfFileHash || ''
+        testConfig.pdfFileHash = userUploadedCropperJsonOutput.value?.testConfig.pdfFileHash || ''
         visibilityState.isLoadingPdf = false
         generateOutputState.isUploadedFileZipFile = true
         visibilityState.generateOutputDialog = true
@@ -908,8 +938,15 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>): 
           return { x1: l, x2: r, y1: t, y2: b, page }
         })
 
-        const { que, type, answerOptions, marks } = sortedQuestionOverlays[0]!
-        subjectsData[subject][section][question] = {
+        const {
+          que,
+          type,
+          answerOptions,
+          marks,
+          answerOptionsCounterTypePrimary,
+          answerOptionsCounterTypeSecondary,
+        } = sortedQuestionOverlays[0]!
+        const questionData: CropperQuestionData = {
           que,
           type: type,
           marks: {
@@ -918,12 +955,26 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>): 
           pdfData,
         }
 
-        if (type !== 'msq') delete subjectsData[subject][section][question].marks.pm
+        const answerOptionsCounterType: CropperQuestionData['answerOptionsCounterType'] = {}
+
+        if (type !== 'msq') delete questionData.marks.pm
         if (type === 'msq' || type === 'mcq' || type === 'msm') {
-          subjectsData[subject][section][question].answerOptions = answerOptions || '4'
+          questionData.answerOptions = answerOptions || '4'
+
+          if (answerOptionsCounterTypePrimary !== 'default') {
+            answerOptionsCounterType.primary = answerOptionsCounterTypePrimary
+          }
+          if (type === 'msm') {
+            questionData.marks.max = marks.cm * parseInt(answerOptions || '4')
+            if (answerOptionsCounterTypeSecondary !== 'default')
+              answerOptionsCounterType.secondary = answerOptionsCounterTypeSecondary
+          }
         }
-        if (type === 'msm')
-          subjectsData[subject][section][question].marks.max = marks.cm * parseInt(answerOptions || '4')
+        if (answerOptionsCounterType.primary || answerOptionsCounterType.secondary) {
+          questionData.answerOptionsCounterType = answerOptionsCounterType
+        }
+
+        subjectsData[subject][section][question] = questionData
       }
     }
   }
@@ -933,11 +984,14 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>): 
   const outputData: PdfCropperJsonOutput = {
     pdfCropperData,
     testConfig: {
-      pdfFileHash,
+      pdfFileHash: testConfig.pdfFileHash,
     },
     appVersion,
     generatedBy: 'pdfCropperPage',
   }
+
+  if (testConfig.optionalQuestions?.length)
+    outputData.testConfig.optionalQuestions = utilCloneJson(testConfig.optionalQuestions)
 
   return outputData
 }
@@ -968,13 +1022,19 @@ async function generatePdfCropperOutput() {
 
   const filename = generateOutputState.filename + fileType
 
-  if (!pdfFileHash) pdfFileHash = await utilGetHash(pdfU8Array)
+  if (!testConfig.pdfFileHash)
+    testConfig.pdfFileHash = await utilGetHash(pdfU8Array)
 
-  const jsonData = generateOutputState.isUploadedFileZipFile
-    ? userUploadedCropperJsonOutput.value!
-    : transformDataToOutputFormat(toRaw(cropperOverlayDatas))
-
-  jsonData.testConfig.pdfFileHash = pdfFileHash
+  let jsonData: PdfCropperJsonOutput
+  if (generateOutputState.isUploadedFileZipFile) {
+    const data = userUploadedCropperJsonOutput.value!
+    data.testConfig.pdfFileHash = testConfig.pdfFileHash
+    if (testConfig.optionalQuestions?.length)
+      data.testConfig.optionalQuestions = utilCloneJson(testConfig.optionalQuestions)
+    jsonData = data
+  }
+  else
+    jsonData = transformDataToOutputFormat(toRaw(cropperOverlayDatas))
 
   const jsonString = JSON.stringify(jsonData, null, 2)
 

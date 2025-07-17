@@ -8,14 +8,16 @@ const {
   selectClass,
   inputClass,
   disabled = false,
+  commonClass = '',
 } = defineProps<{
   label: string
   selectOptions: string[]
   placeholder?: string
-  labelRootClass?: string
+  labelRootClass?: ClassValue
   selectClass?: string
   labelClass?: string
   inputClass?: string
+  commonClass?: ClassValue
   disabled?: boolean
 }>()
 
@@ -34,7 +36,7 @@ const input = defineModel<string>({ required: true })
         :placeholder
         variant="outline"
         class="rounded-r-none"
-        :class="inputClass"
+        :class="[commonClass, inputClass]"
         :disabled
         @blur="input = input.trim()"
       />
@@ -42,7 +44,7 @@ const input = defineModel<string>({ required: true })
     <UiSelect v-model="input">
       <UiSelectTrigger
         class="shrink-0 rounded-l-none border-l-0 focus-visible:ring-0 focus-visible:border-input"
-        :class="selectClass"
+        :class="[commonClass, selectClass]"
         :disabled
       />
       <UiSelectContent>

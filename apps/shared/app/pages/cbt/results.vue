@@ -169,6 +169,7 @@ const chartColors: {
     dropped: '#e879f9',
     bonus: '#00ffff',
     notAnswered: '#eee',
+    notConsidered: '#eee',
   },
 }
 
@@ -270,7 +271,7 @@ function loadDataToChartDataState(id: number) {
 
 function loadTestResultToChartDataState() {
   type InitialData = {
-    [resultStatus in QuestionResult['status']]: {
+    [k in ValidQuestionResultStatus]: {
       [section in string]: {
         count: number
         marks: number
@@ -288,6 +289,7 @@ function loadTestResultToChartDataState() {
     dropped: '#FF8A45', // Orange
     bonus: '#58D9F9', // Light Blue
     notAnswered: '#BDBDBD', // Grey
+    notConsidered: '#BDBDBD', // Grey
   }
 
   const initialData: InitialData = {
@@ -309,7 +311,7 @@ function loadTestResultToChartDataState() {
       for (const questionData of Object.values(sectionData)) {
         const { result } = questionData
 
-        if (result) {
+        if (result && result.status !== 'notConsidered') {
           initialData[result.status][section]!.marks += result.marks
           initialData[result.status][section]!.count++
         }
@@ -444,6 +446,7 @@ function loadTestJourneyToChartDataState() {
     dropped: [],
     bonus: [],
     notAnswered: [],
+    notConsidered: [],
   }
 
   const symbolItemStyle = { color: '#0ff' }
@@ -656,6 +659,9 @@ function getSectionScoreCardData(sectionData: TestResultSectionData, title: stri
   for (const question of Object.values(sectionData)) {
     const { status, result, marks, timeSpent } = question
 
+    if (result.status === 'notConsidered')
+      continue
+
     cardData.timeSpent += timeSpent
     cardData.maxMarks += marks.max ?? marks.cm
     if (status === 'answered' || status === 'markedAnswered') cardData.questionsAttempted++
@@ -723,154 +729,6 @@ function getTestStartedCountdownTime(testLogs: TestLog[]) {
   return testTime
 }
 
-// function to evaluate a question and return QuestionResult
-function getQuestionResult(
-  questionData: TestInterfaceQuestionData,
-  questionCorrectAnswer: TestAnswerKeyData[string][string][string],
-): QuestionResult {
-  const { type, status, answer } = questionData
-  const marks = {
-    max: Math.abs(questionData.marks.max || 0),
-    cm: Math.abs(questionData.marks.cm),
-    pm: Math.abs(questionData.marks.pm ?? 0),
-    im: Math.abs(questionData.marks.im) * -1,
-  }
-
-  const result: QuestionResult = {
-    marks: 0,
-    status: 'notAnswered',
-    correctAnswer: questionCorrectAnswer,
-    accuracyNumerator: 0,
-  }
-
-  if (questionCorrectAnswer === 'DROPPED') {
-    result.marks = marks.max || marks.cm
-    result.status = 'dropped'
-    return result
-  }
-
-  if (status === 'answered' || status === 'markedAnswered') {
-    if (questionCorrectAnswer === 'BONUS') {
-      result.marks = marks.max || marks.cm
-      result.status = 'bonus'
-      return result
-    }
-
-    if (type === 'mcq') {
-      if (answer === questionCorrectAnswer
-        || (Array.isArray(questionCorrectAnswer) && questionCorrectAnswer.includes(answer as number))
-      ) {
-        result.marks = marks.cm
-        result.status = 'correct'
-        result.accuracyNumerator = 1
-      }
-      else {
-        result.marks = marks.im
-        result.status = 'incorrect'
-      }
-    }
-    else if (type === 'nat') {
-      const answerFloat = parseFloat(answer + '')
-      const correctAnswerStr = questionCorrectAnswer + ''
-      const maybeRangesAnswerStrs = correctAnswerStr.split(',').map(n => n.trim())
-      for (const maybeRangeAnswerStr of maybeRangesAnswerStrs) {
-        if (maybeRangeAnswerStr.includes('TO')) { // range of correct answers
-          const [lowerLimit, upperLimit] = maybeRangeAnswerStr.split('TO').map(n => parseFloat(n.trim()))
-
-          if (answerFloat <= upperLimit! && answerFloat >= lowerLimit!) {
-            result.marks = marks.cm
-            result.status = 'correct'
-            result.accuracyNumerator = 1
-            return result
-          }
-        }
-        else if (parseFloat(maybeRangeAnswerStr) === answerFloat) { // just one correct answer
-          result.marks = marks.cm
-          result.status = 'correct'
-          result.accuracyNumerator = 1
-          return result
-        }
-      }
-      // If none of the above matched, answer is incorrect
-      result.marks = marks.im
-      result.status = 'incorrect'
-      return result
-    }
-    else if (type === 'msm') {
-      // user answer's checkboxes in row has to match that of correct answer's row's
-      // (marks is given on per row basis)
-      const userAnswerEntries = Object.entries(answer as QuestionMsmAnswerType)
-        .filter(([_, cols]) => cols.length > 0)
-      const correctAnswerEntries = Object.entries(questionCorrectAnswer as QuestionMsmAnswerType)
-        .filter(([_, cols]) => cols.length > 0)
-
-      const correctAnswer = Object.fromEntries(correctAnswerEntries)
-
-      const partialAccuracyDenominator = correctAnswerEntries.length || 1
-      let partialAccuracyNumerator = 0
-
-      const questionResultRowsStatus = new Set<'correct' | 'incorrect'>()
-      for (const [rowKey, userAnswerRowValues] of userAnswerEntries) {
-        const correctAnswerRowValues = correctAnswer[rowKey]
-
-        if (correctAnswerRowValues
-          && (new Set(correctAnswerRowValues).size === new Set(userAnswerRowValues).size)
-          && correctAnswerRowValues.every(n => userAnswerRowValues.includes(n))
-        ) {
-          result.marks += marks.cm
-          questionResultRowsStatus.add('correct')
-          partialAccuracyNumerator++
-        }
-        else {
-          result.marks += marks.im
-          questionResultRowsStatus.add('incorrect')
-        }
-      }
-
-      if (questionResultRowsStatus.size === 1) {
-        result.status = questionResultRowsStatus.values().toArray()[0]!
-      }
-      else {
-        result.status = 'partial'
-      }
-
-      if (result.status === 'correct') {
-        result.accuracyNumerator = 1
-      }
-      else if (result.status === 'partial') {
-        const relAccNum = (partialAccuracyNumerator / partialAccuracyDenominator) * 100
-        result.accuracyNumerator = Math.round(relAccNum) / 100
-      }
-    }
-    else { // type is msq
-      const userAnswers = new Set(answer as number[])
-      const correctAnswers = new Set(questionCorrectAnswer as number[])
-
-      // here subset also includes same/equal to correctAnswers as well (not proper subset)
-      const isUserAnswersSubsetOfCorrectAnswers = [...userAnswers].every(a => correctAnswers.has(a))
-
-      if (isUserAnswersSubsetOfCorrectAnswers) {
-        if (userAnswers.size === correctAnswers.size) {
-          result.marks = marks.cm
-          result.status = 'correct'
-          result.accuracyNumerator = 1
-        }
-        else {
-          result.marks = marks.pm * userAnswers.size
-          result.status = 'partial'
-          result.accuracyNumerator = Math.round((userAnswers.size / correctAnswers.size) * 100) / 100
-        }
-      }
-      else {
-        result.marks = marks.im
-        result.status = 'incorrect'
-      }
-    }
-  }
-
-  return result
-}
-
 function generateTestResults(loadToTestResultsOutputData?: true): boolean | null
 function generateTestResults(loadToTestResultsOutputData: false): TestResultJsonOutput | null | false
 function generateTestResults(loadToTestResultsOutputData: boolean = true) {
@@ -923,28 +781,63 @@ function generateTestResults(loadToTestResultsOutputData: boolean = true) {
 
             const currentQuestionData = utilCloneJson(questionData as TestResultQuestionData)
 
-            currentQuestionData.result = getQuestionResult(currentQuestionData, correctAnswer)
+            currentQuestionData.result = utilGetQuestionResult(currentQuestionData, correctAnswer)
             currentQuestionData.oriQueId = parseInt(question)
             currentQuestionData.subject = subject
             currentQuestionData.section = section
 
-            maxMarks += currentQuestionData.marks.max ?? currentQuestionData.marks.cm
-            marksObtained += currentQuestionData.result.marks
-            if (currentQuestionData.status === 'answered'
-              || currentQuestionData.status === 'markedAnswered')
+            testResultSectionData[question] = currentQuestionData
+          }
+
+          const sectionQuestions = Object.values(testResultSectionData)
+          const totalOptionalQuestions = testConfig.optionalQuestions
+            ?.find(obj => obj.subject === subject && obj.section === section)
+            ?.count || 0
+
+          if (totalOptionalQuestions > 0) {
+            // sort questions such that attempted questions are to the left of the array,
+            // unattempted questions will thus be to the right but in their original relative order
+            sectionQuestions.sort((a, b) => {
+              const isAttemptedA = a.status === 'answered' || a.status === 'markedAnswered'
+              const isAttemptedB = b.status === 'answered' || b.status === 'markedAnswered'
+
+              if (isAttemptedA !== isAttemptedB) {
+                return isAttemptedA ? -1 : 1
+              }
+
+              return a.queId - b.queId
+            })
+
+            // set questions after mandatory questions to notConsidered as they are optional ones
+            let i = Math.max(0, sectionQuestions.length - totalOptionalQuestions)
+            for (; i < sectionQuestions.length; i++) {
+              const q = sectionQuestions[i]!
+              q.result.status = 'notConsidered'
+              q.result.marks = 0
+              q.result.accuracyNumerator = 0
+              q.marks.max = 0
+            }
+          }
+
+          for (const question of sectionQuestions) {
+            if (question.result.status === 'notConsidered')
+              continue
+
+            maxMarks += question.marks.max ?? question.marks.cm
+            marksObtained += question.result.marks
+            if (question.status === 'answered'
+              || question.status === 'markedAnswered')
               questionsAttempted++
 
-            switch (currentQuestionData.result.status) {
+            switch (question.result.status) {
               case 'correct':
               case 'partial':
-                totalCorrect += currentQuestionData.result.accuracyNumerator
+                totalCorrect += question.result.accuracyNumerator
                 totalAnswered++
                 break
               case 'incorrect':
                 totalAnswered++
             }
-
-            testResultSectionData[question] = currentQuestionData
             totalQuestions++
           }
         }

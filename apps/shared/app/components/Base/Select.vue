@@ -41,7 +41,7 @@ type SelectOption = { value: AcceptableValue, name: string } | string
 const props = defineProps<{
   id?: string
   options: SelectOptionWithMaybeBoolean[]
-  triggerClass?: string
+  triggerClass?: ClassValue
   size?: 'sm' | 'default' | 'base' | 'lg'
 }>()
 

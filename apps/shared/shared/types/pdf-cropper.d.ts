@@ -33,6 +33,10 @@ export type CropperQuestionData = {
   answerOptions?: string
   marks: QuestionMarks
   pdfData: PdfCropperCoords[]
+  answerOptionsCounterType?: {
+    primary?: string
+    secondary?: string
+  }
 }
 
 export type CropperSectionsData = GenericSubjectsTree<CropperQuestionData>[string]
@@ -58,6 +62,8 @@ export type PdfCroppedOverlayData = {
     b: number // bottom
     page: number // page number
   }
+  answerOptionsCounterTypePrimary: string
+  answerOptionsCounterTypeSecondary: string
 }
 
 export type PdfCropperOverlaysPerQuestion = Map<string, number>

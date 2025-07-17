@@ -294,6 +294,7 @@
           </div>
           <CbtResultsQuestionPanelMsmQuestionTypeDiv
             :question-data="currentQuestionState.data"
+            :options-format-settings="answerOptionsFormat.msm"
           />
         </div>
         <div class="grid grid-cols-2 mx-auto gap-3 @min-md:gap-20 shrink-0 mt-6 mb-8">
@@ -432,7 +433,7 @@ interface Props {
   questionsToPreview: TestResultQuestionData[]
   testConfig: TestResultJsonOutput['testConfig']
   questionsNumberingOrder: keyof Pick<TestResultQuestionData, 'oriQueId' | 'queId' | 'secQueId'>
-  optionsStyle: Record<string, string>
+  answerOptionsFormat: CbtUiSettings['questionPanel']['answerOptionsFormat']
 }
 
 type QuestionsPdfData = {
@@ -468,7 +469,7 @@ const {
   questionsToPreview,
   testConfig,
   questionsNumberingOrder,
-  optionsStyle,
+  answerOptionsFormat,
 } = defineProps<Props>()
 
 const drawerVisibility = shallowRef(false)
@@ -492,6 +493,8 @@ const fileUploaderState = shallowReactive<{
 const pdfRenderingProgress = shallowRef<PdfRenderingProgress>('loading-file')
 
 const storageSettings = useCbtResultsLocalStorageSettings()
+
+const questionResultStatusOfNotConsideredQues = new Map<number, ValidQuestionResultStatus>()
 
 // style for <img> width, % as unit
 const imageWidth = shallowRef(100)
@@ -523,6 +526,7 @@ const styleClasses = {
     bonus: 'text-sky-400',
     dropped: 'text-fuchsia-400',
     notAnswered: 'text-gray-300',
+    notConsidered: 'text-gray-400',
   },
   questionStatus: {
     answered: 'text-green-400',
@@ -536,8 +540,8 @@ const styleClasses = {
 // scale used for rendering imgs from pdf
 const imgScale = 2
 
-// just a simple watcher to set showPanel to false if both question Panel and uploadPDF dialog is not visible
-// this will allow parent to trigger (the watcher above) question panel again.
+// just a simple watcher to set showPanel to false if no dialogs/question panel is being shown
+// showPanel is being used as v-if on this component (so false will unmount this component)
 watch(
   [
     drawerVisibility,
@@ -557,6 +561,20 @@ const currentQuestionState = computed(() => {
   return { data, id }
 })
 
+const optionsStyle = computed(() => {
+  const options = answerOptionsFormat.mcqAndMsq
+  const counterType = currentQuestionState.value.data.answerOptionsCounterType?.primary
+    ?.replace('default', '')
+    .trim()
+
+  return {
+    '--counter-type': counterType || options.counterType,
+    '--options-prefix': `"${options.prefix}"`,
+    '--options-suffix': `"${options.suffix}"`,
+    'counter-reset': 'answer-options',
+  }
+})
+
 const displayQuestionNumber = computed(() => {
   if (questionsNumberingOrder === 'oriQueId') {
     return currentQuestionState.value.data.oriQueId
@@ -571,19 +589,18 @@ const displayQuestionNumber = computed(() => {
 
 // to determine label to show on option's left side, for any question type
 const getCorrectAnswerStatus = (optionNum: number) => {
-  if (currentQuestionState.value.data.result.status === 'bonus') {
-    return 'bonus'
+  const questionData = currentQuestionState.value.data
+  const resultStatus = questionData.result.status
+  if (resultStatus === 'bonus'
+    || resultStatus === 'dropped') {
+    return resultStatus
   }
 
-  if (currentQuestionState.value.data.result.status === 'dropped') {
-    return 'dropped'
-  }
-
-  if (currentQuestionState.value.data.type === 'mcq') {
-    if (optionNum === currentQuestionState.value.data.result.correctAnswer
+  if (questionData.type === 'mcq') {
+    if (optionNum === questionData.result.correctAnswer
       || (
-        Array.isArray(currentQuestionState.value.data.result.correctAnswer)
-        && currentQuestionState.value.data.result.correctAnswer.includes(optionNum)
+        Array.isArray(questionData.result.correctAnswer)
+        && questionData.result.correctAnswer.includes(optionNum)
       )
     ) {
       return 'correct'
@@ -592,9 +609,9 @@ const getCorrectAnswerStatus = (optionNum: number) => {
       return 'notCorrect'
     }
   }
-  else if (currentQuestionState.value.data.type === 'msq') {
-    if (Array.isArray(currentQuestionState.value.data.result.correctAnswer)) {
-      if (currentQuestionState.value.data.result.correctAnswer.includes(optionNum)) {
+  else if (questionData.type === 'msq') {
+    if (Array.isArray(questionData.result.correctAnswer)) {
+      if (questionData.result.correctAnswer.includes(optionNum)) {
         return 'correct'
       }
       else {
@@ -610,27 +627,55 @@ const getCorrectAnswerStatus = (optionNum: number) => {
   }
 }
 
+const getNotConsideredQuestionResultStatus = (
+  questionData: TestResultQuestionData,
+): ValidQuestionResultStatus => {
+  let resultStatus: ValidQuestionResultStatus
+
+  const status = questionResultStatusOfNotConsideredQues.get(questionData.queId)
+  if (status)
+    resultStatus = status
+  else {
+    if (questionData.status !== 'answered' && questionData.status !== 'markedAnswered')
+      resultStatus = 'notAnswered'
+    else
+      resultStatus = utilGetQuestionResult(questionData, questionData.result.correctAnswer).status
+
+    questionResultStatusOfNotConsideredQues.set(questionData.queId, resultStatus)
+  }
+
+  return resultStatus
+}
+
 // label to show on option's right side, for any question type
 const getYourAnswerStatus = (optionNum: number) => {
-  const resultStatus = currentQuestionState.value.data.result.status
+  const questionData = currentQuestionState.value.data
+  const { result, type, answer } = questionData
+
+  let resultStatus = result.status
+
+  if (resultStatus === 'notConsidered') {
+    resultStatus = getNotConsideredQuestionResultStatus(questionData)
+  }
+
   if (resultStatus === 'notAnswered') {
     return 'none'
   }
 
-  if (currentQuestionState.value.data.type === 'mcq') {
-    if (optionNum === currentQuestionState.value.data.answer) {
+  if (type === 'mcq') {
+    if (optionNum === answer) {
       if (resultStatus === 'bonus' || resultStatus === 'dropped') {
         return 'neutral'
       }
       return resultStatus
     }
   }
-  else if (currentQuestionState.value.data.type === 'msq') {
-    if (Array.isArray(currentQuestionState.value.data.answer)
-      && Array.isArray(currentQuestionState.value.data.result.correctAnswer)
-      && currentQuestionState.value.data.answer.includes(optionNum)) {
+  else if (type === 'msq') {
+    if (Array.isArray(answer)
+      && Array.isArray(result.correctAnswer)
+      && answer.includes(optionNum)) {
       if (resultStatus === 'incorrect') {
-        if (currentQuestionState.value.data.result.correctAnswer.includes(optionNum)) {
+        if (result.correctAnswer.includes(optionNum)) {
           return 'partial'
         }
         else {

@@ -68,7 +68,7 @@
               id="question_type"
               v-model="currentData.type"
               :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
-              :options="optionItems.questionType"
+              :options="QUESTION_TYPES_OPTIONS"
             />
           </BaseFloatLabel>
           <BaseFloatLabel
@@ -92,7 +92,7 @@
           default-value="1"
           :unmount-on-hide="false"
           class="w-full"
-          collapsible
+          type="multiple"
         >
           <UiAccordionItem value="1">
             <UiAccordionTrigger title-class="text-lg">
@@ -157,6 +157,56 @@
                     :tooltip-content="tooltipContent.partialMarking"
                     icon-class="text-2xl"
                   />
+                </div>
+              </div>
+            </UiAccordionContent>
+          </UiAccordionItem>
+          <UiAccordionItem value="2">
+            <UiAccordionTrigger title-class="text-base">
+              Test UI Settings (optional)
+            </UiAccordionTrigger>
+            <UiAccordionContent>
+              <div class="flex flex-col gap-4 mt-2 items-center">
+                <div class="flex gap-4 px-4 items-center justify-center">
+                  <span>Answer Options Counter Type</span>
+                  <IconWithTooltip
+                    :tooltip-content="tooltipContent.answerOptionsCounterType"
+                    icon-class="text-xl"
+                  />
+                </div>
+                <div class="flex gap-3 justify-center">
+                  <BaseFloatLabel
+                    class="min-w-32 max-w-40"
+                    :label="currentData.type === 'msm'
+                      ? 'For MSM Rows'
+                      : 'For MCQ & MSQ'
+                    "
+                    label-id="answer_options_counter_type_primary"
+                    label-class="start-1/2! -translate-x-1/2 text-xs"
+                  >
+                    <BaseSelect
+                      id="answer_options_counter_type_primary"
+                      v-model="currentData.answerOptionsCounterTypePrimary"
+                      :disabled="!props.isPdfLoaded
+                        || questionState.disableQueDataInput
+                        || currentData.type === 'nat'"
+                      :options="answerOptionsCounterTypesWithDefault"
+                    />
+                  </BaseFloatLabel>
+                  <BaseFloatLabel
+                    v-if="currentData.type === 'msm'"
+                    class="min-w-32 max-w-40"
+                    label="For MSM columns"
+                    label-id="answer_options_counter_type_secondary"
+                    label-class="start-1/2! -translate-x-1/2 text-xs"
+                  >
+                    <BaseSelect
+                      id="answer_options_counter_type_secondary"
+                      v-model="currentData.answerOptionsCounterTypeSecondary"
+                      :options="answerOptionsCounterTypesWithDefault"
+                      :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
+                    />
+                  </BaseFloatLabel>
                 </div>
               </div>
             </UiAccordionContent>
@@ -233,7 +283,11 @@
 </template>
 
 <script setup lang="ts">
-import { SEPARATOR } from '#layers/shared/shared/constants'
+import {
+  QUESTION_TYPES_OPTIONS,
+  SEPARATOR,
+  ANSWER_OPTIONS_COUNTER_TYPES,
+} from '#layers/shared/shared/constants'
 
 const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
 
@@ -245,6 +299,9 @@ const props = defineProps<{
   pageHeight: number
   pageWidth: number
 }>()
+
+const answerOptionsCounterTypesWithDefault = structuredClone(ANSWER_OPTIONS_COUNTER_TYPES)
+answerOptionsCounterTypesWithDefault.unshift({ name: 'Default', value: 'default' })
 
 const questionState = computed(() => {
   const id = currentData.value.id
@@ -315,15 +372,6 @@ const sections = computed(() => {
   return sectionsList
 })
 
-const optionItems = {
-  questionType: [
-    { name: 'MCQ (Multiple Choice Question)', value: 'mcq' },
-    { name: 'MSQ (Multiple Select Question)', value: 'msq' },
-    { name: 'NAT (Numerial Answer Type)', value: 'nat' },
-    { name: 'MSM (Multiple Select Matrix)', value: 'msm' },
-  ],
-}
-
 const tooltipContent = {
   partialMarking:
     'If you want JEE Advanced format then use +1 as partial marking.\n'
@@ -331,5 +379,9 @@ const tooltipContent = {
     + 'marks awarded = no. of partically correct answer * 1\n\n'
     + 'Look at the their format properly,\n'
     + 'if you notice you get +1 for each partially correct answer when the case is of "partially correct answers"',
+
+  answerOptionsCounterType:
+    'Counter type to use while showing options in test interface and question preview (of results page).\n\n'
+    + 'if set as Default, then uses the counter type as it is in test interface\'s UI Settings & Customization.',
 }
 </script>

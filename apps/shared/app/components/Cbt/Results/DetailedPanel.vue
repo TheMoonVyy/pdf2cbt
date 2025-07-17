@@ -86,13 +86,9 @@ const storageSettings = useCbtResultsLocalStorageSettings()
 const questionPreviewState = shallowReactive({
   show: false,
   currentQueIndex: 0,
-  optionsStyle: {
-    '--counter-type': 'upper-latin',
-    '--options-prefix': `"Option "`,
-    '--options-suffix': `""`,
-    'counter-reset': 'answer-options',
-  },
 })
+
+const answerOptionsFormat = useCbtSettings().uiSettings.value.questionPanel.answerOptionsFormat
 
 const highlightStyleClasses: Record<string, string> = {
   'status': `status-answered:bg-green-400/20 status-not-answered:bg-red-500/20
@@ -438,7 +434,9 @@ function getStatsTablesFirstColumnDef<T extends StatsMetaData>(
             return (original.type === 'subject' && original.name === subject)
           }
 
-          return original.type === 'section' && original.subject === subject
+          return original.type === 'section'
+            && original.subject === subject
+            && original.name === section
         },
       }),
     ],
@@ -850,7 +848,7 @@ function getSectionStats(sectionData: TestResultSectionData): Stats {
     questionResult[status].count++
     questionResult[status].totalTime += timeSpent
 
-    maxMarks += questionData.marks.max || questionData.marks.cm
+    maxMarks += questionData.marks.max ?? questionData.marks.cm
 
     if (marks > 0) {
       if (status === 'bonus') {
@@ -1526,7 +1524,7 @@ const subjectChangeHandler = (subject: string) => {
           :all-questions="questionsData"
           :test-config="testConfig"
           :questions-numbering-order="settings.queNumOrder"
-          :options-style="questionPreviewState.optionsStyle"
+          :answer-options-format="answerOptionsFormat"
         />
       </div>
     </div>

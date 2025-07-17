@@ -1021,7 +1021,7 @@
 
               const { pdfBuffer, jsonData, pdfFileHash } = hashMismatchDialogState
               if (pdfBuffer && jsonData) {
-                testState.pdfFileHash = pdfFileHash || ''
+                testState.testConfig.pdfFileHash = pdfFileHash || ''
                 loadTestData({ pdfBuffer, jsonData, testImageBlobs: null })
               }
             }"
@@ -1116,6 +1116,7 @@
 <script lang="ts" setup>
 import type { LocationQueryValue } from 'vue-router'
 import { CBTInterfaceQueryParams } from '#layers/shared/shared/enums'
+import { ANSWER_OPTIONS_COUNTER_TYPES } from '#layers/shared/shared/constants'
 
 type ImportExportTypeKey = 'import' | 'export' | 'restoreFromSaved' | 'reset'
 
@@ -1246,15 +1247,7 @@ const selectOptions = {
     { name: 'No', value: false },
   ],
 
-  answerOptionsFormat: [
-    { name: 'A, B, C, D...', value: 'upper-latin' },
-    { name: 'a, b, c, d...', value: 'lower-latin' },
-    { name: 'P, Q, R, S...', value: 'upper-pqrs' },
-    { name: 'p, q, r, s...', value: 'lower-pqrs' },
-    { name: '1, 2, 3, 4...', value: 'decimal' },
-    { name: 'I, II, III, IV...', value: 'upper-roman' },
-    { name: 'i, ii, iii, iv...', value: 'lower-roman' },
-  ],
+  answerOptionsFormat: ANSWER_OPTIONS_COUNTER_TYPES,
 
   showHide: [
     { name: 'Show', value: true },
@@ -1421,8 +1414,8 @@ const fetchZipFile = async (isRetry: boolean = false) => {
 
     if (data.zipFile) {
       zipFileFromUrlState.zipFile = new File([data.zipFile], 'testData.zip', { type: 'application/zip' })
-      testState.value.zipOriginalUrl = data.originalUrl
-      testState.value.zipConvertedUrl = data.convertedUrl || ''
+      testState.value.testConfig.zipOriginalUrl = data.originalUrl
+      testState.value.testConfig.zipConvertedUrl = data.convertedUrl || ''
       zipFileFromUrlState.isDialogOpen = false
       zipFileFromUrlState.isLoading = false
     }
@@ -1434,8 +1427,8 @@ const fetchZipFile = async (isRetry: boolean = false) => {
     console.error('Error fetching zip file from url:', error)
     zipFileFromUrlState.errorMsg = error instanceof Error ? error.message : String(error)
     zipFileFromUrlState.isLoading = false
-    testState.value.zipOriginalUrl = ''
-    testState.value.zipConvertedUrl = ''
+    testState.value.testConfig.zipOriginalUrl = ''
+    testState.value.testConfig.zipConvertedUrl = ''
     if (isRetry) zipFileFromUrlState.retryCount++
   }
 }
@@ -1581,13 +1574,13 @@ async function verifyTestData(
         }
         else {
           if (currentPdfFileHash) {
-            testState.value.pdfFileHash = currentPdfFileHash
+            testState.value.testConfig.pdfFileHash = currentPdfFileHash
           }
           loadTestData(uploadedData)
         }
       }
       else {
-        testState.value.pdfFileHash = pdfFileHashInJson ?? ''
+        testState.value.testConfig.pdfFileHash = pdfFileHashInJson || ''
         loadTestData(uploadedData)
       }
     }
@@ -1627,8 +1620,11 @@ async function loadTestData(
       testConfig,
     } = jsonData as unknown as AnswerKeyJsonOutputBasedOnPdfCropper
 
-    if (!testState.value.zipOriginalUrl.trim())
-      testState.value.zipOriginalUrl = testConfig?.zipOriginalUrl || (testConfig?.zipUrl || '')
+    if (!testState.value.testConfig.zipOriginalUrl)
+      testState.value.testConfig.zipOriginalUrl = testConfig?.zipOriginalUrl || (testConfig?.zipUrl || '')
+
+    if (testConfig.optionalQuestions?.length)
+      testState.value.testConfig.optionalQuestions = testConfig.optionalQuestions
 
     if (testAnswerKey)
       testState.value.testAnswerKey = testAnswerKey
