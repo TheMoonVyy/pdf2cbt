@@ -6,7 +6,11 @@
   "initial-version": "1.4.0",
   "changelog-path": "CHANGELOG.md",
   "extra-files": [
-    "apps/web/package.json"
+    {
+      "type": "json",
+      "path": "apps/web/package.json",
+      "jsonpath": "$.version"
+    }
   ],
   "draft": true,
   "changelog-sections": [
