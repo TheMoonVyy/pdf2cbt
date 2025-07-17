@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.17.0...v1.18.0) (2025-07-17)
+
+
+### Features
+
+* add ability to make questions in section/subject optional, and add ability to set answer options counter type per question in pdf cropper ([#53](https://github.com/TheMoonVyy/pdf2cbt/issues/53)) ([56150e5](https://github.com/TheMoonVyy/pdf2cbt/commit/56150e5833afb056b9b13c17d49c090640f1b736))
+
 ## [1.17.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.16.0...v1.17.0) (2025-07-14)
 
 
