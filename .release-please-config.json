@@ -3,7 +3,7 @@
   "release-type": "node",
   "include-component-in-tag": false,
   "include-v-in-tag": true,
-  "initial-version": "1.4.0",
+  "initial-version": "1.8.0",
   "changelog-path": "CHANGELOG.md",
   "extra-files": [
     {
@@ -44,7 +44,8 @@
     },
     {
       "type": "ci",
-      "section": "Continuous Integration"
+      "section": "Continuous Integration",
+      "hidden": true
     },
     {
       "type": "test",
