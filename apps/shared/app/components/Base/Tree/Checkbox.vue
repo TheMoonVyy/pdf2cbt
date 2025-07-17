@@ -2,8 +2,9 @@
 import { TreeRoot, TreeItem } from 'reka-ui'
 import type { TreeNodeData } from '.'
 
-const { items } = defineProps<{
+const { items, disabled } = defineProps<{
   items: TreeNodeData[]
+  disabled?: boolean
 }>()
 
 const selectedTreeNodesData = defineModel<TreeNodeData[] | undefined>({ required: true })
@@ -17,6 +18,7 @@ const selectedTreeNodesData = defineModel<TreeNodeData[] | undefined>({ required
     :get-key="(item) => item.id"
     :propagate-select="true"
     :bubble-select="true"
+    :disabled="disabled"
     :multiple="true"
   >
     <TreeItem
@@ -28,12 +30,15 @@ const selectedTreeNodesData = defineModel<TreeNodeData[] | undefined>({ required
         paddingLeft: `${item.level - 0.7}rem`,
       }"
       class="group my-0.5 select-none focus-visible:outline-hidden px-0.5"
+      @keydown="disabled && $event.stopImmediatePropagation()"
+      @click.capture="disabled && $event.stopImmediatePropagation()"
     >
       <div
         class="flex items-center gap-1.5 py-1 rounded-md hover:bg-muted transition-colors cursor-pointer
           group-focus-visible:ring-2 group-focus-visible:ring-ring"
         :class="{
           'pl-6': !item.hasChildren,
+          'cursor-not-allowed!': disabled,
           'bg-green-400 dark:bg-emerald-400/15': slot.isSelected,
           'bg-orange-400 dark:bg-orange-500/15': slot.isIndeterminate,
         }"
@@ -47,7 +52,8 @@ const selectedTreeNodesData = defineModel<TreeNodeData[] | undefined>({ required
           icon-size="1.6rem"
           variant="ghost"
           tabindex="-1"
-          class="hover:text-yellow-500"
+          :class="disabled ? '' : 'hover:text-yellow-500'"
+          :disabled="disabled"
           @click.stop="slot.handleToggle"
         />
         <BaseButton
@@ -64,6 +70,7 @@ const selectedTreeNodesData = defineModel<TreeNodeData[] | undefined>({ required
           }"
           size="iconSm"
           variant="ghost"
+          :disabled="disabled"
           tabindex="-1"
         />
 
