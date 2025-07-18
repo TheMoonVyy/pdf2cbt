@@ -12,55 +12,5 @@
         "apps/web/package.json"
       ]
     }
-  },
-  "changelog-sections": [
-    {
-      "type": "feat",
-      "section": "New Features"
-    },
-    {
-      "type": "fix",
-      "section": "Bug Fixes"
-    },
-    {
-      "type": "perf",
-      "section": "Performance Improvements"
-    },
-    {
-      "type": "revert",
-      "section": "Reverts"
-    },
-    {
-      "type": "docs",
-      "section": "Documentation"
-    },
-    {
-      "type": "style",
-      "section": "Styles"
-    },
-    {
-      "type": "refactor",
-      "section": "Code Refactoring"
-    },
-    {
-      "type": "ci",
-      "section": "Continuous Integration",
-      "hidden": true
-    },
-    {
-      "type": "test",
-      "section": "Tests",
-      "hidden": true
-    },
-    {
-      "type": "build",
-      "section": "Build System",
-      "hidden": true
-    },
-    {
-      "type": "chore",
-      "section": "Miscellaneous Chores",
-      "hidden": true
-    }
-  ]
+  }
 }
