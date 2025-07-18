@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.19.0...v1.19.1) (2025-07-18)
+
+
+### Styles
+
+* **pdf-cropper:** change bulk edit btn icon to edit icon ([f7029d6](https://github.com/TheMoonVyy/pdf2cbt/commit/f7029d650b7c1d2f908f6f5c80dac7e4fc527b9d))
+
 ## [1.19.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.18.0...v1.19.0) (2025-07-18)
 
 
