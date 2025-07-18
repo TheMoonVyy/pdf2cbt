@@ -80,7 +80,7 @@
                   class="flex-[1_1_45%] min-w-[40%]"
                   variant="warn"
                   label="Bulk Edit"
-                  icon-name="line-md:cog-filled"
+                  icon-name="line-md:edit"
                   icon-size="1.2rem"
                   :disabled="cropperOverlayDatas.size === 0"
                   @click="visibilityState.bulkEditDialog = true"
