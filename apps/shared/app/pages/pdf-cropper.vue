@@ -75,21 +75,32 @@
                   />
                 </BaseFloatLabel>
               </div>
-              <BaseFloatLabel
-                class="w-full"
-                label="Page Number"
-                label-id="pdf_page_num"
-                label-class="start-1/2! -translate-x-1/2"
-              >
-                <BaseInputNumber
-                  id="pdf_page_num"
-                  v-model="pdfState.currentPageNum"
-                  input-class="h-10 text-base"
-                  :disabled="pdfState.currentPageNum === 0 || !isPdfLoaded"
-                  :min="1"
-                  :max="pdfState.totalPages"
+              <div class="flex flex-wrap gap-4">
+                <BaseButton
+                  class="flex-[1_1_45%] min-w-[40%]"
+                  variant="warn"
+                  label="Bulk Edit"
+                  icon-name="line-md:cog-filled"
+                  icon-size="1.2rem"
+                  :disabled="cropperOverlayDatas.size === 0"
+                  @click="visibilityState.bulkEditDialog = true"
                 />
-              </BaseFloatLabel>
+                <BaseFloatLabel
+                  class="flex-[1_1_45%] min-w-[40%]"
+                  label="Page Number"
+                  label-id="pdf_page_num"
+                  label-class="start-1/2! -translate-x-1/2"
+                >
+                  <BaseInputNumber
+                    id="pdf_page_num"
+                    v-model="pdfState.currentPageNum"
+                    input-class="h-10 text-base"
+                    :disabled="pdfState.currentPageNum === 0 || !isPdfLoaded"
+                    :min="1"
+                    :max="pdfState.totalPages"
+                  />
+                </BaseFloatLabel>
+              </div>
             </div>
             <BaseButton
               class="my-3.5 shrink-0"
@@ -400,6 +411,12 @@
         </UiScrollArea>
       </UiDialogContent>
     </UiDialog>
+    <PdfCropperBulkEditDialog
+      v-model="visibilityState.bulkEditDialog"
+      v-model:optional-questions="testConfig.optionalQuestions!"
+      v-model:overlay-datas="cropperOverlayDatas"
+      :pages-dimensions="pageImgData"
+    />
     <LazyGenerateTestImages
       v-if="generateOutputState.generatingImages && (generateOutputState.totalQuestions > 0)"
       :pdf-uint8-array="pdfState.fileUint8Array"
@@ -500,7 +517,7 @@ const pdfState = shallowReactive({
   fileUint8Array: null as Uint8Array | null,
 })
 
-const testConfig = shallowReactive<PdfCropperJsonOutput['testConfig']>({
+const testConfig = reactive<PdfCropperJsonOutput['testConfig']>({
   pdfFileHash: '', // SHA-256 hash of pdf file
   optionalQuestions: [],
 })
@@ -516,6 +533,7 @@ const visibilityState = shallowReactive({
   advanceSettings: false,
   questionDetailsDialog: false,
   generateOutputDialog: false,
+  bulkEditDialog: false,
 })
 
 const mupdfScripturls = useGetMupdfScriptUrls()
@@ -593,6 +611,16 @@ watch(
       mainOverlayData.answerOptionsCounterTypeSecondary = answerOptionsCounterTypeSecondary
       if (dataInCache.answerOptions)
         mainOverlayData.answerOptions = dataInCache.answerOptions
+    }
+    else if (oldQuestionType !== 'nat'
+      && newQuestionType !== 'nat'
+      && (oldQuestionType === 'msm' || newQuestionType === 'msm')) {
+      mainOverlayData.answerOptionsCounterTypePrimary = 'default'
+    }
+
+    if (newQuestionType === 'nat') {
+      mainOverlayData.answerOptionsCounterTypePrimary = 'default'
+      mainOverlayData.answerOptionsCounterTypeSecondary = 'default'
     }
   },
 )

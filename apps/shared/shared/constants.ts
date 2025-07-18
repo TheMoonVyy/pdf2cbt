@@ -56,3 +56,13 @@ export const ANSWER_OPTIONS_COUNTER_TYPES = [
   { name: 'I, II, III, IV...', value: 'upper-roman' },
   { name: 'i, ii, iii, iv...', value: 'lower-roman' },
 ]
+
+export const SUBJECTS = [
+  'Physics', 'Chemistry', 'Mathematics',
+  'Biology', 'English', 'Logical Reasoning', 'English & LR',
+]
+
+const counterTypesWithDefault = structuredClone(ANSWER_OPTIONS_COUNTER_TYPES)
+counterTypesWithDefault.unshift({ name: 'Default', value: 'default' })
+
+export const ANSWER_OPTIONS_COUNTER_TYPES_WITH_DEFAULT = counterTypesWithDefault
