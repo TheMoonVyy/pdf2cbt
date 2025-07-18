@@ -20,7 +20,7 @@
         <div class="flex flex-col gap-4 w-full mt-2">
           <BaseInputTextWithSelect
             v-model="currentData.subject"
-            :select-options="subjects"
+            :select-options="SUBJECTS"
             label="Subject Name"
             :disabled="!isPdfLoaded"
             label-root-class="grow"
@@ -190,7 +190,7 @@
                       :disabled="!props.isPdfLoaded
                         || questionState.disableQueDataInput
                         || currentData.type === 'nat'"
-                      :options="answerOptionsCounterTypesWithDefault"
+                      :options="ANSWER_OPTIONS_COUNTER_TYPES_WITH_DEFAULT"
                     />
                   </BaseFloatLabel>
                   <BaseFloatLabel
@@ -203,7 +203,7 @@
                     <BaseSelect
                       id="answer_options_counter_type_secondary"
                       v-model="currentData.answerOptionsCounterTypeSecondary"
-                      :options="answerOptionsCounterTypesWithDefault"
+                      :options="ANSWER_OPTIONS_COUNTER_TYPES_WITH_DEFAULT"
                       :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
                     />
                   </BaseFloatLabel>
@@ -286,7 +286,8 @@
 import {
   QUESTION_TYPES_OPTIONS,
   SEPARATOR,
-  ANSWER_OPTIONS_COUNTER_TYPES,
+  ANSWER_OPTIONS_COUNTER_TYPES_WITH_DEFAULT,
+  SUBJECTS,
 } from '#layers/shared/shared/constants'
 
 const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
@@ -299,9 +300,6 @@ const props = defineProps<{
   pageHeight: number
   pageWidth: number
 }>()
-
-const answerOptionsCounterTypesWithDefault = structuredClone(ANSWER_OPTIONS_COUNTER_TYPES)
-answerOptionsCounterTypesWithDefault.unshift({ name: 'Default', value: 'default' })
 
 const questionState = computed(() => {
   const id = currentData.value.id
@@ -345,11 +343,6 @@ const questionDetailsHeader = computed(() => {
   return `Question Details [ #${que} ${imgNumStr}]`
 })
 
-const subjects = [
-  'Physics', 'Chemistry', 'Mathematics',
-  'Biology', 'English', 'Logical Reasoning', 'English & LR',
-]
-
 const sections = computed(() => {
   const subject = currentData.value.subject
 
@@ -360,7 +353,7 @@ const sections = computed(() => {
     subjectList.push(subject)
   }
   else {
-    subjectList.push(...subjects.slice(0, 3))
+    subjectList.push(...SUBJECTS.slice(0, 3))
   }
 
   for (const subjectName of subjectList) {
