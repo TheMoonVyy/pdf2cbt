@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.9.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.8.0...v1.9.0) (2025-07-18)
+
+
+### New Features
+
+* **pdf-cropper:** add ability to bulk edit group of questions, sections, subjects on pdf cropper ([51140ae](https://github.com/TheMoonVyy/pdf2cbt/commit/51140ae5ece531665eea84462f9b9f178de53d0d))
+
+
+### Reverts
+
+* **ci:** restore last-release-sha config of release please ([b3cc172](https://github.com/TheMoonVyy/pdf2cbt/commit/b3cc172dc42ed1471c694fbf061598ce1ab1b63b))
+
 ## [1.18.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.17.0...v1.18.0) (2025-07-17)
 
 
