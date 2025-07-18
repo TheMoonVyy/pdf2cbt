@@ -2,7 +2,7 @@ name: Upload Release Assets
 
 on:
   release:
-    types: [published]
+    types: [created]
   workflow_dispatch:
 
 env:
@@ -49,6 +49,8 @@ jobs:
       - name: Upload release asset triggered by release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./${{ env.STATIC_ASSET_NAME }}.zip
