@@ -4,6 +4,7 @@
   "include-component-in-tag": false,
   "include-v-in-tag": true,
   "changelog-path": "CHANGELOG.md",
+  "bootstrap-sha": "db520eef7c4c95b7dcf58d16d3ceaa415d133578",
   "draft": true,
   "packages": {
     ".": {
