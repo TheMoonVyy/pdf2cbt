@@ -4,6 +4,7 @@
   "include-component-in-tag": false,
   "include-v-in-tag": true,
   "changelog-path": "CHANGELOG.md",
+  "last-release-sha": "d49127ad98c2fbfbc5a192bbe014bb649c60821d",
   "draft": true,
   "packages": {
     ".": {
