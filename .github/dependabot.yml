@@ -1,0 +1,51 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: /
+    schedule:
+      interval: "weekly"
+      day: sunday
+      time: "00:00"
+
+    versioning-strategy: increase
+    rebase-strategy: disabled
+    open-pull-requests-limit: 20
+
+    groups:
+      nuxt:
+        patterns:
+          - "nuxt"
+          - "@nuxt/*"
+          - "@nuxtjs/*"
+        exclude-patterns:
+          - "@nuxt/eslint"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "@nuxtjs/tailwindcss"
+          - "tw-animate-css"
+          - "tailwind-merge"
+      vue:
+        patterns:
+          - "vue"
+          - "vue-router"
+          - "@vueuse/*"
+          - "@tanstack/vue-table"
+          - "lucide-vue-next"
+      ui:
+        patterns:
+          - "shadcn-nuxt"
+          - "class-variance-authority"
+          - "reka-ui"
+      dev:
+        patterns:
+          - "@iconify-json/*"
+          - "@types/*"
+          - "@nuxt/eslint"
+          - "eslint"
+
+    ignore:
+      - dependency-name: "@types/node"
+        update-types:
+          - version-update:semver-major

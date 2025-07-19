@@ -6,6 +6,8 @@
 .cache
 dist
 dist-*/
+**/jiti/
+**/node-compile-cache/
 
 # Node dependencies
 node_modules
