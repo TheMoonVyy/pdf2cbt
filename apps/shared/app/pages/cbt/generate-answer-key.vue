@@ -94,8 +94,7 @@
               Questions Numbering Order
             </label>
             <IconWithTooltip
-              :tooltip-content="tooltipContent.questionsNumberingOrderType"
-              icon-class="text-lg"
+              :content="tooltipContent.questionsNumberingOrderType"
             />
           </div>
           <div class="flex flex-col grow items-center gap-5">
@@ -284,8 +283,8 @@
                   File Type
                 </UiLabel>
                 <IconWithTooltip
-                  :tooltip-content="tooltipContent.outputFileType"
-                  icon-class="text-xl"
+                  :content="tooltipContent.outputFileType"
+                  icon-size="1.25rem"
                 />
               </div>
               <BaseSelect
@@ -342,17 +341,48 @@ interface DBTestOutputDataState {
 }
 
 const tooltipContent = {
-  questionsNumberingOrderType:
-    'Select how question numbers appear in the "Q. Num" Column. This is for visual use only (internally all questions are referred by original Q. Num):\n\n'
-    + 'Original → Uses the numbering as provided in the data.\n\n'
-    + 'Cumulative → Continues numbering across sections (e.g., 1-20, 21-40, 41-60).\n\n'
-    + 'Section-wise → Resets numbering in each section (e.g., 1-20, 1-20, 1-20).',
+  questionsNumberingOrderType: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', [
+        'Select how question numbers appear in the "Q. Num" Column. ',
+        'This is for visual use only (internally all questions are referred by original Q. Num):',
+      ]),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'Original'),
+          ': Uses original numbering as it is.',
+        ]),
+        h('li', [
+          h('strong', 'Cumulative'),
+          ': Continues numbering across sections (e.g. 1-20, 21-40, 41-60).',
+        ]),
+        h('li', [
+          h('strong', 'Section-wise'),
+          ': Resets numbering in each section (e.g. 1-20, 1-20, 1-20).',
+        ]),
+      ]),
+    ]),
 
-  outputFileType:
-    'zip → Merges Answer Key data into data.json file of uploaded zip file.\n\n'
-    + 'json (merged) → Merges Answer Key data into the uploaded json file.\n\n'
-    + 'json (separate) → Separate Answer Key Data json file\n\n\n'
-    + 'some may not be available depending on the input file/data',
+  outputFileType: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', '(some may not be available depending on the input file/data.)'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'ZIP'),
+          ': Merges Answer Key data into data.json file of loaded ZIP file. ',
+          'The ZIP file will contain all existing data as it was in the loaded ZIP file. ',
+          'So you safely replace the input ZIP file with this new ZIP file.',
+        ]),
+        h('li', [
+          h('strong', 'JSON (merged)'),
+          ': Merges Answer Key data into the uploaded json file, preserving existing data.',
+        ]),
+        h('li', [
+          h('strong', 'JSON (separate)'),
+          ': JSON file will contain only the Answer Key Data.',
+        ]),
+      ]),
+    ]),
 }
 
 const INPUT_ID_PREFIX = 'input-answer-q-'
@@ -431,7 +461,7 @@ const outputFileTypeOptions = computed(() => {
   }
 
   if (dbTestOutputDataState.isDataFromDB) {
-    return [{ name: '.json', value: 'json-separate' }]
+    return [options.at(-1)!]
   }
   else {
     options.shift()

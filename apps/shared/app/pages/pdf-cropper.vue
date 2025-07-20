@@ -151,7 +151,7 @@
             </div>
             <div
               ref="mainImgPanelElem"
-              class="flex"
+              class="flex select-none"
               tabindex="-1"
               :class="{ hidden: !isPdfLoaded }"
             >
@@ -267,8 +267,8 @@
                   File Type
                 </UiLabel>
                 <IconWithTooltip
-                  :tooltip-content="tooltipContent.outputFileType"
-                  icon-class="text-xl"
+                  :content="tooltipContent.outputFileType"
+                  icon-size="1.25rem"
                 />
               </div>
               <BaseSelect
@@ -291,8 +291,8 @@
                   Pre-Generate Images
                 </UiLabel>
                 <IconWithTooltip
-                  :tooltip-content="tooltipContent.preGenerateImages"
-                  icon-class="text-xl"
+                  :content="tooltipContent.preGenerateImages"
+                  icon-size="1.25rem"
                 />
               </div>
               <BaseSelect
@@ -309,8 +309,8 @@
                   Img Scale
                 </UiLabel>
                 <IconWithTooltip
-                  :tooltip-content="tooltipContent.preGenerateImagesScale"
-                  icon-class="text-xl"
+                  :content="tooltipContent.preGenerateImagesScale"
+                  icon-size="1.25rem"
                 />
               </div>
               <BaseInputNumber
@@ -465,20 +465,47 @@ const selectOptions = {
 }
 
 const tooltipContent = {
-  outputFileType:
-    '".zip" → Includes the JSON and PDF/Image files.\n'
-    + '(Recommended to keep files together in one archive).\n\n'
-    + '".json" → Downloads only the JSON file.',
+  outputFileType: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Output file formats:'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'ZIP'),
+          ': Includes the JSON and PDF/Image files (Recommended to keep files together in one archive).',
+        ]),
+        h('li', [
+          h('strong', 'JSON'),
+          ': Downloads only the JSON file. You will have to upload PDF + JSON files going forward.',
+        ]),
+      ]),
+    ]),
 
-  preGenerateImages:
-    '"Yes" → Pre-Generates Question Images from PDF now itself to store in zip as png files, this will skip the image generation steps in test interface and results page\'s question preview as images in the zip will be used (Recommended).\n'
-    + 'Size of zip file will depend on pdf, questions area and image quality scale. Generally, size of this will be less than the PDF file size.\n\n'
-    + '"No" → Zip will contain pdf instead of png. Generates Question Images from PDF when needed in test interface and results page\'s question preview.\n'
-    + 'Size of zip file will be almost equal to PDF File size.',
+  preGenerateImages: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Pre-Generate Question Images?'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'Yes'),
+          ': Pre-Generates Question Images from PDF now itself to store in zip as png files, ',
+          'this will skip the image generation steps in test interface and results page\'s question preview as, ',
+          'images in the zip will be used (Recommended).',
+        ]),
+        h('li', [
+          h('strong', 'No'),
+          ': Zip will contain the PDF instead of PNGs. ',
+          'Generates Question Images from PDF when needed in test interface and results page\'s question preview.\n',
+        ]),
+      ]),
+    ]),
 
-  preGenerateImagesScale:
-    'Scale/Quality of the generated images, higher the scale, better the quality but takes more resources.\n'
-    + 'This doesn\'t take Device Pixel Ratio into account, so if you are using a very high DPI screen, then you can set this to a greater value.',
+  preGenerateImagesScale: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Scale/Quality of the generated images, higher the scale, better the quality but takes more resources.'),
+      h('p', [
+        'This doesn\'t take Device Pixel Ratio into account, ',
+        'so if you are using a very high DPI screen, then you can set this to a greater value.',
+      ]),
+    ]),
 }
 
 const migrateJsonData = useMigrateJsonData()

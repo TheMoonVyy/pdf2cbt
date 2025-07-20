@@ -40,8 +40,11 @@ type Props = {
 }
 
 const tooltipContent = {
-  marksSummary: 'In this, Avg. Time Spent is time spent per mark ("Time Spent" divided by "marks").\n\n'
-    + 'if marks is zero then avg time spent will be equal to "Time Spent".',
+  marksSummary: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'In this, Avg. Time Spent is time spent per mark ("Time Spent" divided by "Marks").'),
+      h('p', 'if marks is zero then avg time spent will be equal to "Time Spent".'),
+    ]),
 }
 
 const { testResultData, waitUntil, testConfig, testQuestions } = defineProps<Props>()
@@ -1218,7 +1221,8 @@ const subjectChangeHandler = (subject: string) => {
             />
             <IconWithTooltip
               v-else-if="tableItem.id === 'marksStats'"
-              :tooltip-content="tooltipContent.marksSummary"
+              :content="tooltipContent.marksSummary"
+              icon-size="1.4rem"
             />
           </div>
           <UiScrollArea
