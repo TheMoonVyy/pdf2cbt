@@ -80,7 +80,7 @@
             <span class="pl-5 pr-3 text-lg font-bold">Sort Sections Order</span>
           </div>
           <div class="flex mt-2">
-            <CbtInterfaceSectionsOrderList
+            <CbtSectionsOrderList
               v-model="sectionsState.sectionsList"
             />
           </div>
