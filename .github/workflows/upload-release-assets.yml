@@ -2,7 +2,7 @@ name: Upload Release Assets
 
 on:
   release:
-    types: [created]
+    types: [prereleased]
   workflow_dispatch:
 
 env:
