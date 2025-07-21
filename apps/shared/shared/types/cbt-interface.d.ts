@@ -134,6 +134,7 @@ export type TestSessionSectionsData = TestSessionSubjectData
 export type TestSectionListItem = {
   name: string
   subject: string
+  id: number
 }
 
 export type TestSectionSummary = {

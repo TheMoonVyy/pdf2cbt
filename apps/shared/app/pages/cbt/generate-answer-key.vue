@@ -426,11 +426,8 @@ const settingsState = shallowReactive({
 
 const currentPageSectionName = shallowRef<string>('')
 
-const sectionsState = reactive<{
-  sectionsList: SectionListItem[]
-  currentPageSectionName: string
-}>({
-  sectionsList: [],
+const sectionsState = reactive({
+  sectionsList: [] as SectionListItem[],
   currentPageSectionName: '',
 })
 
@@ -780,6 +777,7 @@ function loadDataState() {
         subject,
         name: sectionName,
         totalQuestions: Object.keys(questionsData).length,
+        id: 0, // initial, proper id is being set below
       }
       sectionsState.sectionsList.push(sectionListItem)
 
@@ -793,6 +791,8 @@ function loadDataState() {
       }
     }
   }
+
+  sectionsState.sectionsList.forEach((item, idx) => item.id = idx + 1) // set id
 
   currentPageSectionName.value = sectionsState.sectionsList[0]!.name
   fileUploaderState.isFileLoaded = true

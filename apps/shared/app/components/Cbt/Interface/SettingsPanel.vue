@@ -1694,6 +1694,7 @@ async function loadTestData(
         const sectionsItem: TestSectionListItem = {
           name: section,
           subject,
+          id: 0, // initial, proper id is being set later
         }
         sectionsArray.push(sectionsItem)
       }
@@ -1776,6 +1777,9 @@ async function loadTestData(
 
     testState.value.totalSections = totalSections
     testState.value.totalQuestions = totalQuestions
+
+    sectionsArray.forEach((item, idx) => item.id = idx + 1)
+
     testSectionsList.value.splice(0, testSectionsList.value.length, ...sectionsArray)
     cropperSectionsData.value = newCropperSectionsData
     testSectionsData.value = newTestSectionsData
