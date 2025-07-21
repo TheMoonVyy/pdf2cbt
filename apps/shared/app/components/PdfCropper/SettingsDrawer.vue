@@ -26,7 +26,8 @@
               </h3>
               <IconWithTooltip
                 v-if="panelHeaderTooltipContent[panelName]"
-                :tooltip-content="panelHeaderTooltipContent[panelName]"
+                :content="panelHeaderTooltipContent[panelName]"
+                icon-size="1.5rem"
               />
             </UiCardTitle>
           </UiCardHeader>
@@ -60,8 +61,9 @@
                 </BaseFloatLabel>
                 <IconWithTooltip
                   v-if="tooltipContent[item.model]"
-                  class="justify-center w-fit"
-                  :tooltip-content="tooltipContent[item.model]"
+                  class="justify-center"
+                  :content="tooltipContent[item.model]!"
+                  icon-size="1.5rem"
                 />
               </div>
               <div
@@ -83,8 +85,9 @@
                 </div>
                 <IconWithTooltip
                   v-if="tooltipContent[item.model]"
-                  class="justify-center w-fit"
-                  :tooltip-content="tooltipContent[item.model]"
+                  class="justify-center"
+                  :content="tooltipContent[item.model]!"
+                  icon-size="1.5rem"
                 />
               </div>
               <div
@@ -114,8 +117,9 @@
                 </div>
                 <IconWithTooltip
                   v-if="tooltipContent[item.model]"
-                  class="justify-center w-fit  ml-1"
-                  :tooltip-content="tooltipContent[item.model]"
+                  class="justify-center ml-1"
+                  :content="tooltipContent[item.model]!"
+                  icon-size="1.5rem"
                 />
                 <div v-else />
               </div>
@@ -129,7 +133,7 @@
 
 <script setup lang="ts">
 type ToolTipContent = {
-  [key in keyof Partial<PdfCropperSettings['general']>]: string
+  [key in keyof Partial<PdfCropperSettings['general']>]: (() => VNode)
 }
 
 type SettingsBase = {
@@ -271,24 +275,47 @@ const settingsContent: SettingsContent = {
   ],
 }
 
-const panelHeaderTooltipContent: Record<string, string> = {
-  'Crop Selection':
-    'Crop Selection is the line/box you see when you are trying to crop, or on edit panel when you select a cropped region',
-  'Cropped Region':
-    'Cropped Region is the region/box that appears when a region is cropped, this region is also the preview of what regions will be in final output file',
+const panelHeaderTooltipContent: Record<string, (() => VNode)> = {
+  'Crop Selection': () =>
+    h('p', [
+      'Crop Selection is the line/box you see when you are trying to crop, ',
+      'or on edit panel when you select a cropped region',
+    ]),
+
+  'Cropped Region': () =>
+    h('p', [
+      'Cropped Region is the region/box that appears when a region is cropped, ',
+      'this region is also the preview of what regions will be in final output file',
+    ]),
 }
 
 const tooltipContent: ToolTipContent = {
-  moveOnKeyPressDistance:
-    'Distance Line/Region needs to move/resize by when using arrow keys of keyboard',
-  pageBGColor:
-    'Background color of the PDF viewer. This change is only for visual purposes while cropping the PDF and does not apply to the CBT.',
-  qualityFactor:
-    'Quality (sharpness) of the rendered PDF. Higher values make the page clearer and sharper but increases resource usage (rendering time, processing, memory, etc.). Lower values make the page blurrier and reduces resource consumption.',
-  selectionThrottleInterval:
-    'Time interval (in milliseconds) for updating (redrawing) the Selection Guide. Lower values make the Selection Guide smoother and more responsive but may increase processing load. Higher values reduce update frequency, improving performance but making the Selection Guide feel less responsive.',
-  minCropDimension:
-    'Minimum allowed width and height (in same units as coordinates section) for a valid crop selection. Ensures that the selected crop area is not too small, preventing accidental or invalid selections.',
+  moveOnKeyPressDistance: () =>
+    h('p', 'Distance Line/Region needs to move/resize by when using arrow keys of keyboard'),
+  pageBGColor: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Background color of the PDF viewer. '),
+      h('p', 'This change is only for visual purposes while cropping the PDF and does not apply to the CBT.'),
+    ]),
+  qualityFactor: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Quality (sharpness) of the rendered PDF Pages. '),
+      h('p', [
+        'Higher values make the page quality clearer and sharper, ',
+        'but increases resource usage (rendering time, processing, memory etc.)',
+      ]),
+    ]),
+  selectionThrottleInterval: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Time interval (in milliseconds) for updating (redrawing) the Selection Guide.'),
+      h('p', 'Lower values make the Selection Guide smoother and more responsive.'),
+      h('p', 'Higher values reduce update frequency, making the Selection Guide feel less responsive.'),
+    ]),
+  minCropDimension: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Minimum allowed width and height (in same units as coordinates section) for a valid crop selection.'),
+      h('p', 'Ensures that the selected crop area is not too small, preventing accidental or invalid selections.'),
+    ]),
 }
 
 const isColorPickerOpen = shallowRef(false)

@@ -154,8 +154,8 @@
                     />
                   </BaseFloatLabel>
                   <IconWithTooltip
-                    :tooltip-content="tooltipContent.partialMarking"
-                    icon-class="text-2xl"
+                    :content="tooltipContent.partialMarking"
+                    icon-size="1.25rem"
                   />
                 </div>
               </div>
@@ -170,8 +170,8 @@
                 <div class="flex gap-4 px-4 items-center justify-center">
                   <span>Answer Options Counter Type</span>
                   <IconWithTooltip
-                    :tooltip-content="tooltipContent.answerOptionsCounterType"
-                    icon-class="text-xl"
+                    :content="tooltipContent.answerOptionsCounterType"
+                    icon-size="1.25rem"
                   />
                 </div>
                 <div class="flex gap-3 justify-center">
@@ -366,15 +366,23 @@ const sections = computed(() => {
 })
 
 const tooltipContent = {
-  partialMarking:
-    'If you want JEE Advanced format then use +1 as partial marking.\n'
-    + 'While JEE Advanced format looks complex, the logic for partial marking in a nutshell is:\n'
-    + 'marks awarded = no. of partically correct answer * 1\n\n'
-    + 'Look at the their format properly,\n'
-    + 'if you notice you get +1 for each partially correct answer when the case is of "partially correct answers"',
+  partialMarking: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p',
+        h('strong', 'If you want JEE Advanced format then use +1 as partial marking.'),
+      ),
+      h('p', 'While JEE Advanced format looks complex, the logic for partial marking in a nutshell is:'),
+      h('p', 'marks awarded = no. of partically correct answer * 1.'),
+      h('p', { class: 'mt-3' }, [
+        'Look at their format properly, you will notice you get +1 for each option you answer correctly',
+        ' (when the case is of "partially correct").',
+      ]),
+    ]),
 
-  answerOptionsCounterType:
-    'Counter type to use while showing options in test interface and question preview (of results page).\n\n'
-    + 'if set as Default, then uses the counter type as it is in test interface\'s UI Settings & Customization.',
+  answerOptionsCounterType: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Counter type to use while showing options in test interface and question preview (of results page).'),
+      h('p', 'If "Default" is selected then uses the counter type as it is in test interface\'s UI Settings & Customization.'),
+    ]),
 }
 </script>

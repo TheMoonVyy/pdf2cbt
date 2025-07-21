@@ -68,12 +68,12 @@ export default () => {
 
         for (const sectionNum of utilRange(1, 3)) {
           const name = subject + ' Section ' + sectionNum
-          const sectionsItem: TestSectionListItem = { name, subject }
+          const sectionsItem: TestSectionListItem = { name, subject, id: 0 }
 
           dummyData.push(sectionsItem)
         }
       }
-
+      dummyData.forEach((item, idx) => item.id = idx + 1)
       return dummyData
     },
   )

@@ -78,8 +78,7 @@
                           Submit Button
                         </UiLabel>
                         <IconWithTooltip
-                          :tooltip-content="tooltipContent.submitBtn"
-                          icon-class="text-lg"
+                          :content="tooltipContent.submitBtn"
                         />
                       </div>
                       <BaseSelect
@@ -97,9 +96,8 @@
                         Test Duration
                       </UiLabel>
                       <IconWithTooltip
-                        :tooltip-content="tooltipContent.testDuration"
-                        icon-class="text-lg"
-                        root-class="ml-2 mt-2"
+                        :content="tooltipContent.testDuration"
+                        class="ml-2 mt-2"
                       />
                     </div>
                     <div class="grid grid-cols-6 w-full gap-1">
@@ -186,8 +184,7 @@
                           Allow Pausing Test
                         </UiLabel>
                         <IconWithTooltip
-                          :tooltip-content="tooltipContent.showPauseBtn"
-                          icon-class="text-lg"
+                          :content="tooltipContent.showPauseBtn"
                         />
                       </div>
                       <BaseSelect
@@ -206,8 +203,7 @@
                           Questions Image Scale
                         </UiLabel>
                         <IconWithTooltip
-                          :tooltip-content="tooltipContent.questionImgScale"
-                          icon-class="text-lg"
+                          :content="tooltipContent.questionImgScale"
                         />
                       </div>
                       <div class="flex justify-center gap-3 w-full mt-1.5">
@@ -228,8 +224,7 @@
                   <div class="flex justify-center">
                     <span class="pl-5 pr-3 text-lg font-bold">Load PDF Questions Data</span>
                     <IconWithTooltip
-                      :tooltip-content="tooltipContent.testDataFileUpload"
-                      icon-class="text-lg"
+                      :content="tooltipContent.testDataFileUpload"
                     />
                   </div>
                   <CbtInterfaceFileUpload
@@ -250,7 +245,7 @@
                         <span class="pl-5 pr-3 text-lg font-bold">Sort Sections Order</span>
                       </div>
                       <div class="flex mx-auto mt-2">
-                        <CbtInterfaceSectionsOrderList
+                        <CbtSectionsOrderList
                           v-model="testSectionsList"
                         />
                       </div>
@@ -264,8 +259,7 @@
                           Questions Numbering Order
                         </UiLabel>
                         <IconWithTooltip
-                          :tooltip-content="tooltipContent.questionsNumberingOrderType"
-                          icon-class="text-lg"
+                          :content="tooltipContent.questionsNumberingOrderType"
                         />
                       </div>
                       <div class="flex flex-col grow items-center">
@@ -683,8 +677,8 @@
                         Customize Icons & its sizes
                       </UiLabel>
                       <IconWithTooltip
-                        :tooltip-content="tooltipContent.iconSettings"
-                        icon-class="text-xl"
+                        :content="tooltipContent.iconSettings"
+                        icon-size="1.25rem"
                       />
                     </div>
                     <div class="grid grid-cols-5 border-2 border-gray-500 divide-x-2 divide-gray-500">
@@ -1178,54 +1172,112 @@ const htmlContent = {
 }
 
 const tooltipContent = {
-  testDataFileUpload:
-    'Load the file(s) downloaded from the PDF Cropper Page.\n\n'
-    + 'If you chose ZIP format, upload only the ZIP file.\n'
-    + 'If you chose JSON format, upload both the JSON file and its corresponding PDF.',
+  testDataFileUpload: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Load the file(s) downloaded from the PDF Cropper Page.'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'ZIP format'),
+          ': Upload only the ZIP file.',
+        ]),
+        h('li', [
+          h('strong', 'PDF + JSON format'),
+          ': Upload both the JSON file and its corresponding PDF.',
+        ]),
+      ]),
+    ]),
 
-  iconSettings:
-    'When you are changing the icon/image,\n'
-    + 'it is recommended to upload an icon with equal width and height (i.e. a square) for best compatibility.',
+  iconSettings: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', [
+        'When you are changing the icon/image, it is recommended to upload an icon with ',
+        h('strong', 'equal width and height'),
+        ' (i.e. a square) for best compatibility.',
+      ]),
+    ]),
 
-  testDuration:
-    'Duration of Test, time formats:\n\n'
-    + 'mmm:ss → Remaining minutes-seconds format (e.g. 150:45 means 150 minutes, 45 seconds).\n\n'
-    + 'hh:mm:ss → 24-hour format (e.g. 14:30:45).',
+  testDuration: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Duration of test, time formats:'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'mmm:ss'),
+          ': minutes-seconds format (e.g. 150:45 means 150 minutes, 45 seconds).',
+        ]),
+        h('li', [
+          h('strong', 'hh:mm:ss'),
+          ': 24-hour format (e.g. 14:30:45).',
+        ]),
+      ]),
+    ]),
 
-  submitBtn:
-    '"Enabled" → Submit Button is functional and test can be submitted anytime before timeout.\n\n'
-    + '"Disabled" → Submit Button is disabled and test cannot be submitted before timeout.\n\n'
-    + '"Hidden" → Submit Button is hidden (i.e. not visible) and test cannot be submitted before timeout.\n\n'
-    + 'In all cases, test will be submitted automatically on timeout.',
+  submitBtn: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Submit Button:'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'Enabled'),
+          ': Submit Button is functional and test can be submitted anytime before timeout.',
+        ]),
+        h('li', [
+          h('strong', 'Disabled'),
+          ': Submit Button is disabled and test cannot be submitted before timeout.',
+        ]),
+        h('li', [
+          h('strong', 'Hidden'),
+          ': Submit Button is hidden (i.e. not visible) and test cannot be submitted before timeout.',
+        ]),
+      ]),
+      h('p', { class: 'font-semibold' }, 'In all cases, test will be submitted automatically on timeout.'),
+    ]),
 
-  showPauseBtn:
-    '"Yes" → During the test, you will be able to Pause/Resume the test.\n'
-    + 'you can access the Pause Button in the hidden settings.\n'
-    + 'To access hidden settings, long press on profile icon (the one that you see in the upper-right corner).\n'
-    + 'You can access hidden settings whenever you want, now and while the test is ongoing.\n\n'
-    + '"No" → You will not have the ability to pause the test (pause button will not be provided in hidden settings)',
+  showPauseBtn: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Allow pausing test?'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'Yes'),
+          ': You will be able to pause/resume the test. The pause button is available in hidden settings, ',
+          'which can be accessed by long-pressing the profile icon (top-right corner).',
+        ]),
+        h('li', [
+          h('strong', 'No'),
+          ': You will not be able to pause the test (pause button will not be provided).',
+        ]),
+      ]),
+      h('strong', 'You can access hidden settings any time, be it before or during the test.'),
+    ]),
 
-  questionImgScale:
-    '(This is ignored for Zip file containing Pre Generated Images)\n'
-    + 'The scale of question image dimensions (resolution) to be generated relative to original dimensions.\n'
-    + 'device pixel ratio (DPR) is also multipled separately.\n\n'
-    + 'Higher values increases resolution and improve image clarity but increase file size, '
-    + 'requiring more RAM and processing time\n\n'
-    + 'Ensure your device has enough RAM to handle the selected scale.\n'
-    + 'If RAM is insufficient, the browser may kill the tab/window, or on low-end devices, '
-    + 'the system might freeze, requiring a restart',
+  questionImgScale: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', '(This is ignored for ZIP files with pre-generated images)'),
+      h('p', [
+        'The scale controls the size (hence quality) of the generated question images, relative to its original size. ',
+        'Device Pixel Ratio (DPR) is applied separately.',
+      ]),
+      h('p',
+        'Higher scale value increases resolution and clarity, but also increases file size, ram usage and processing power.',
+      ),
+    ]),
 
-  misc:
-    'Misc. settings for Profile Details (Top-right corner one)\n\n'
-    + 'Everthing under this is for visual use only and thus is optional, '
-    + 'none of these are saved or exported for privacy reasons',
-
-  questionsNumberingOrderType:
-    'Select how question numbers appear in the Question Palette:\n\n'
-    + 'Original → Uses the numbering as provided in the data.\n\n'
-    + 'Cumulative → Continues numbering across sections (e.g., 1-20, 21-40, 41-60).\n\n'
-    + 'Section-wise → Resets numbering in each section (e.g., 1-20, 1-20, 1-20).',
-
+  questionsNumberingOrderType: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Choose how question numbers appear in the Question Palette:'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'Original'),
+          ': Uses original numbering as it is.',
+        ]),
+        h('li', [
+          h('strong', 'Cumulative'),
+          ': Continues numbering across sections (e.g. 1-20, 21-40, 41-60).',
+        ]),
+        h('li', [
+          h('strong', 'Section-wise'),
+          ': Resets numbering in each section (e.g. 1-20, 1-20, 1-20).',
+        ]),
+      ]),
+    ]),
 }
 
 const dummyValue = ref<QuestionAnswer>(null)
@@ -1642,6 +1694,7 @@ async function loadTestData(
         const sectionsItem: TestSectionListItem = {
           name: section,
           subject,
+          id: 0, // initial, proper id is being set later
         }
         sectionsArray.push(sectionsItem)
       }
@@ -1724,6 +1777,9 @@ async function loadTestData(
 
     testState.value.totalSections = totalSections
     testState.value.totalQuestions = totalQuestions
+
+    sectionsArray.forEach((item, idx) => item.id = idx + 1)
+
     testSectionsList.value.splice(0, testSectionsList.value.length, ...sectionsArray)
     cropperSectionsData.value = newCropperSectionsData
     testSectionsData.value = newTestSectionsData
