@@ -611,7 +611,10 @@ const parseMcqOrMsqInputText = (text: string, answerOptions: number) => {
 const isStringValidNatNumFormat = (text: string) => /^-?\d+(\.\d+)?$/.test(text)
 
 const parseNatInputText = (text: string) => {
-  const maybeRangeAnswerStrs = text.split(',').map(n => n.trim())
+  const maybeRangeAnswerStrs = text
+    .replace(',', 'OR')
+    .split('OR').map(n => n.trim())
+
   const results: string[] = []
 
   for (const maybeRangeAnswerStr of maybeRangeAnswerStrs) {
