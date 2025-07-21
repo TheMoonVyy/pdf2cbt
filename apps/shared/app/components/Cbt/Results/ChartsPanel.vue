@@ -349,7 +349,7 @@ const chartOptions = {
           yourAnswerContentText = '<p>Your Answer: '
 
           if (Array.isArray(answer)) {
-            const sortedAnswer = answer.toSorted()
+            const sortedAnswer = answer.toSorted((a, b) => a - b)
             if (resultStatus === 'incorrect') {
               sortedAnswer.forEach((ans) => {
                 let color = chartColors.resultStatus.incorrect
