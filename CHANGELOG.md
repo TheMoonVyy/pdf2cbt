@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.19.0...v1.19.1) (2025-07-21)
+
+
+### Bug Fixes
+
+* **generate-answer-key-page:** fix OR not working in input answer field for NAT question type ([7ea8ee0](https://github.com/TheMoonVyy/pdf2cbt/commit/7ea8ee0ceb188371f9557a40b3c0f833dcf92c8a))
+
 ## [1.19.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.18.0...v1.19.0) (2025-07-18)
 
 
