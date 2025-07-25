@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.20.0...v1.20.1) (2025-07-25)
+
+
+### Bug Fixes
+
+* **cbt-results:** fix notes dialog not showing up when opened ([2861c5a](https://github.com/TheMoonVyy/pdf2cbt/commit/2861c5acd16783f253c58833df1b7b42dc9e5ef6))
+
 ## [1.20.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.19.1...v1.20.0) (2025-07-25)
 
 
