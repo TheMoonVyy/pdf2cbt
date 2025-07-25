@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.19.1...v1.20.0) (2025-07-25)
+
+
+### Features
+
+* **cbt-results:** improve layout of question preview panel, separating question images and info into different columns for width screens ([6c78b1f](https://github.com/TheMoonVyy/pdf2cbt/commit/6c78b1f79be626bf5e22bd8b7d151d35e402b9f9))
+
 ## [1.19.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.19.0...v1.19.1) (2025-07-21)
 
 
