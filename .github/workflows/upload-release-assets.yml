@@ -19,9 +19,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 20
+        uses: actions/checkout@v4
 
       - name: Install pnpm
         run: |
@@ -46,22 +44,15 @@ jobs:
           mv "$BUILD_OUTPUT_FOLDER" "$STATIC_ASSET_NAME"
           zip -r "${STATIC_ASSET_NAME}.zip" "$STATIC_ASSET_NAME"
 
-      - name: Upload release asset triggered by release
-        if: github.event_name == 'release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ env.STATIC_ASSET_NAME }}.zip
-          asset_name: ${{ env.STATIC_ASSET_NAME }}.zip
-          asset_content_type: application/zip
-
-      - name: Upload release asset using GitHub CLI
-        if: github.event_name == 'workflow_dispatch'
+      - name: Upload release asset
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git fetch origin 'refs/tags/*:refs/tags/*'
-          TAG_NAME=$(git describe --tags --abbrev=0)
-          gh release upload "$TAG_NAME" "${STATIC_ASSET_NAME}.zip" --clobber
+          TAG_NAME=$(gh release list --json tagName --limit 1 --jq '.[0].tagName')
+          if [[ -n "$TAG_NAME" ]]; then
+            echo "Uploading to release: $TAG_NAME"
+            gh release upload "$TAG_NAME" "${STATIC_ASSET_NAME}.zip" --clobber
+          else
+            echo "tagName of Latest Release is empty"
+            exit 1
+          fi
