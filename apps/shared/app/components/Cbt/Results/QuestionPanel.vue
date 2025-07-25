@@ -3,319 +3,408 @@
     <UiSheet
       v-if="currentQuestionState.data"
       v-model:open="drawerVisibility"
+      class="max-h-dvh"
     >
       <UiSheetContent
         side="right"
-        class="sm:max-w-none w-full! sm:w-[calc(var(--view-question-drawer)*1%)]! @container"
+        class="sm:max-w-none w-full! sm:w-[calc(var(--view-question-drawer)*1%)]! @container
+          divide-y divide-gray-500 gap-0"
         :style="{
           '--view-question-drawer': storageSettings.quePreview.drawerWidth,
         }"
         @pointer-down-outside="sheetElemState.onClickOutside($event)"
       >
-        <UiSheetHeader class="p-3 pb-1">
+        <UiSheetHeader class="p-3 pb-2">
           <UiSheetTitle class="flex">
-            <span class="text-xl mx-auto">
+            <span class="text-lg sm:text-xl mx-auto">
               Question Num: {{ displayQuestionNumber }}
             </span>
             <div class="flex gap-2 mr-12 sm:gap-4">
               <BaseButton
                 variant="outline"
-                size="icon"
+                size="iconMd"
                 title="Question Notes"
                 icon-name="mdi:text-box-edit-outline"
                 :icon-class="testNotes[currentQuestionState.id] ? 'text-green-400' : 'text-orange-500'"
-                icon-size="1.875rem"
                 @click="() => showNotesDialog = !showNotesDialog"
               />
-              <div class="flex items-center justify-center">
-                <BaseColorPicker
-                  v-model="storageSettings.quePreview.imgBgColor"
-                  with-alpha
-                  title="Question Image BG Color"
-                  @show="sheetElemState.preventClose = true"
-                  @close="sheetElemState.preventClose = false"
-                />
-              </div>
+              <BaseColorPicker
+                v-model="storageSettings.quePreview.imgBgColor"
+                with-alpha
+                title="Question Image BG Color"
+                @show="sheetElemState.preventClose = true"
+                @close="sheetElemState.preventClose = false"
+              />
               <BaseButton
                 variant="outline"
-                size="icon"
+                size="iconMd"
+                title="Layout Type"
+                class="hidden! sm:inline-flex!"
+                :class="{
+                  'rotate-y-180': storageSettings.quePreview.imgPanelDir === 'right',
+                }"
+                icon-name="my-icon:sidebar"
+                @click="() => {
+                  storageSettings.quePreview.imgPanelDir = storageSettings.quePreview.imgPanelDir === 'left'
+                    ? 'right'
+                    : 'left'
+                }"
+              />
+              <BaseButton
+                variant="outline"
+                size="iconMd"
                 title="Increase Width"
                 class="hidden! sm:inline-flex!"
                 icon-name="mdi:arrow-expand-left"
                 icon-class="text-fuchsia-500"
-                icon-size="1.5rem"
                 :disabled="storageSettings.quePreview.drawerWidth >= 100"
                 @click="resizeDrawer('increase')"
               />
               <BaseButton
                 variant="outline"
-                size="icon"
+                size="iconMd"
                 title="Decrease Width"
                 class="hidden! sm:inline-flex!"
                 icon-name="mdi:arrow-expand-right"
                 icon-class="text-fuchsia-500"
-                icon-size="1.5rem"
-                :disabled="storageSettings.quePreview.drawerWidth <= 40"
+                :disabled="storageSettings.quePreview.drawerWidth <= RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE"
                 @click="resizeDrawer('decrease')"
               />
               <BaseButton
                 variant="outline"
-                size="icon"
+                size="iconMd"
                 title="Increase Image Size"
                 class="hidden! sm:inline-flex!"
                 icon-name="mdi:file-image-plus"
                 icon-class="text-fuchsia-500"
-                icon-size="1.5rem"
                 :disabled="imageWidth >= 100"
                 @click="resizeImage('increase')"
               />
               <BaseButton
                 variant="outline"
-                size="icon"
+                size="iconMd"
                 title="Decrease Image Size"
                 class="hidden! sm:inline-flex!"
                 icon-name="mdi:file-image-minus"
                 icon-class="text-fuchsia-500"
-                icon-size="1.5rem"
                 :disabled="imageWidth <= 20"
                 @click="resizeImage('decrease')"
               />
             </div>
           </UiSheetTitle>
         </UiSheetHeader>
-        <div class="flex flex-col w-full border border-gray-500 divide divide-y divide-gray-500 rounded">
+
+        <div
+          class="flex w-full h-full min-h-0 group divide-x divide-gray-500
+            data-[vertical=false]:flex-col
+            data-[orientation=left]:flex-row-reverse
+            data-[orientation=left]:divide-x-reverse"
+          :data-vertical="screenWidth.isSmOrAbove"
+          :data-orientation="storageSettings.quePreview.imgPanelDir"
+        >
           <div
-            class="flex items-center justify-between gap-10 w-full py-0.5 px-4 sm:pr-8"
-          >
-            <span class="shrink-0">
-              <span>Time Spent:&nbsp;</span>
-              <span class="font-semibold">
-                {{ utilSecondsToTime(currentQuestionState.data.timeSpent, 'mmm:ss') }}
-              </span>
-            </span>
-            <span class="truncate grow text-right">
-              {{ currentQuestionState.data.section }}
-            </span>
-          </div>
-          <div
-            class="flex shrink-0 py-0.5 px-4 sm:pr-8 w-full justify-between items-center
-          text-nowrap overflow-hidden"
-          >
-            <div>
-              <span>Result:&nbsp;</span>
-              <span
-                class="font-semibold"
-                :class="styleClasses.resultStatus[currentQuestionState.data.result.status]"
-              >
-                {{ RESULT_STATUS_LABELS[currentQuestionState.data.result.status] }}
-              </span>
-            </div>
-            <div>
-              <span>Type: {{ currentQuestionState.data.type.toUpperCase() }}</span>
-            </div>
-          </div>
-          <div
-            class="flex shrink-0 py-0.5 px-4 sm:pr-8 w-full justify-between items-center
-          text-nowrap overflow-hidden"
-          >
-            <div>
-              <span>Marks:&nbsp;</span>
-              <span
-                class="font-semibold"
-                :class="styleClasses.resultStatus[currentQuestionState.data.result.status]"
-              >
-                {{ utilMarksWithSign(currentQuestionState.data.result.marks) }}
-              </span>
-            </div>
-            <div>
-              <span>Status:&nbsp;</span>
-              <span
-                class="font-semibold"
-                :class="styleClasses.questionStatus[currentQuestionState.data.status]"
-              >
-                {{ QUESTION_STATUS_LABELS[currentQuestionState.data.status] }}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="flex flex-col items-center mt-2 mb-6 overflow-auto px-3">
-          <template v-if="testQuestionsImgUrls[currentTestResultsId]?.[currentQuestionState.id]">
-            <img
-              v-for="(url, index) in testQuestionsImgUrls[currentTestResultsId]![currentQuestionState.id]"
-              :key="index"
-              :src="url"
-              :style="{
-                backgroundColor: storageSettings.quePreview.imgBgColor,
-                width: `${imageWidth}%`,
-              }"
-              draggable="false"
-            >
-          </template>
-          <template v-else-if="pdfRenderingProgress === 'loading-zip-from-url'">
-            <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
-              <Icon name="line-md:loading-twotone-loop" />
-              <span>Loading ZIP from URL, please wait...</span>
-            </div>
-          </template>
-          <template v-else-if="pdfRenderingProgress === 'loading-file'">
-            <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
-              <Icon name="line-md:loading-twotone-loop" />
-              <span>Loading your pdf/zip, please wait...</span>
-            </div>
-          </template>
-          <template v-else-if="pdfRenderingProgress === 'loading-pdf-renderer'">
-            <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
-              <Icon name="line-md:loading-twotone-loop" />
-              <span>Loading PDF Renderer, please wait...</span>
-            </div>
-          </template>
-          <template v-else-if="pdfRenderingProgress === 'generating-img'">
-            <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
-              <Icon name="material-symbols:rocket-launch" />
-              <span>Generating Question Image, please wait...</span>
-            </div>
-          </template>
-          <template v-else-if="pdfRenderingProgress === 'failed'">
-            <div class="flex items-center gap-4 justify-center text-red-400 p-6 text-xl sm:text-2xl">
-              <Icon name="mdi:alert-circle-outline" />
-              <span>Failed to generate question image from pdf.</span>
-            </div>
-          </template>
-          <template v-else>
-            <div class="flex items-center gap-4 justify-center p-6 text-red-400 text-xl sm:text-2xl">
-              <Icon name="mdi:image-off-outline" />
-              <span>Encountered an Error or No image available to generate.</span>
-            </div>
-          </template>
-        </div>
-        <div class="grow flex flex-col items-center shrink-0 w-full @container">
-          <div
-            v-if="currentQuestionState.data.type === 'mcq' || currentQuestionState.data.type === 'msq'"
-            class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 sm:@min-lg:gap-x-10 gap-y-10 mx-auto
-          font-bold text-lg text-center"
-            :style="optionsStyle"
+            id="question-panel-side-container"
+            class="flex flex-col gap-8 divide-y min-h-0 divide-gray-500 min-w-90 text-[0.8rem] sm:text-base"
           >
             <div
-              v-for="n in parseInt(currentQuestionState.data.answerOptions || '4')"
-              :key="n"
-              class="relative border-2 border-gray-300 rounded-lg p-2 min-w-64 sm:min-w-60 sm:@min-lg:min-w-64
-            has-[.option-status-correct]:border-green-500 has-[.option-status-correct]:bg-green-500/2
-            has-[.option-result-partial]:border-yellow-500! has-[.option-result-partial]:bg-yellow-500/2!
-            has-[.option-result-incorrect]:border-red-500! has-[.option-result-incorrect]:bg-red-500/2!
-            has-[.option-status-dropped]:border-fuchsia-500
-            has-[.option-status-bonus]:border-cyan-500"
+              class="grid h-fit divide-y divide-gray-500 border-gray-500 rounded
+              group-data-[vertical=false]:border
+              [&>div]:group-data-[vertical=true]:[&>*]:p-1
+              [&>div]:group-data-[vertical=true]:pl-2
+              [&>div]:group-data-[vertical=false]:sm:pr-8
+              [&>div]:group-data-[vertical=false]:gap-4"
             >
-              <span
-                :class="'option-status-' + getCorrectAnswerStatus(n)"
-                class="absolute top-0 left-3 -translate-y-1/2 rounded-md px-2 text-xs
-             [.option-status-correct]:bg-green-800 [.option-status-correct]:[&>.status-correct]:inline!
-             [.option-status-bonus]:bg-cyan-800 [.option-status-bonus]:[&>.status-bonus]:inline!
-             [.option-status-dropped]:bg-fuchsia-800 [.option-status-dropped]:[&>.status-dropped]:inline!"
-              >
-                <span class="status-correct hidden">Correct Answer</span>
-                <span class="status-bonus hidden">Bonus</span>
-                <span class="status-dropped hidden">Dropped</span>
-              </span>
-              <span
-                :class="'option-result-' + getYourAnswerStatus(n)"
-                class="absolute top-0 right-5 -translate-y-1/2 rounded-md text-white px-2 text-xs bg-green-800
-              [.option-result-correct]:bg-green-800 [.option-result-partial]:bg-yellow-800
-              [.option-result-incorrect]:bg-red-800 [.option-result-none]:hidden
-              [.option-result-neutral]:bg-gray-600"
-              >
-                Your Answer
-              </span>
-              <label
-                class="option-content inline-block"
-              />
+              <div class="flex justify-between items-center py-0.5 px-4">
+                <span class="shrink-0 text-nowrap">
+                  <span>Time Spent:&nbsp;</span>
+                  <span class="font-semibold">
+                    {{ utilSecondsToTime(currentQuestionState.data.timeSpent, 'mmm:ss') }}
+                  </span>
+                </span>
+                <span class="text-ellipsis text-right text-nowrap">
+                  {{ currentQuestionState.data.section }}
+                </span>
+              </div>
+
+              <div class="flex justify-between items-center py-0.5 px-4 group-data-[vertical=false]:text-nowrap">
+                <div>
+                  <span>Result:&nbsp;</span>
+                  <span
+                    class="font-semibold"
+                    :class="styleClasses.resultStatus[currentQuestionState.data.result.status]"
+                  >
+                    {{ RESULT_STATUS_LABELS[currentQuestionState.data.result.status] }}
+                  </span>
+                </div>
+                <div class="text-right">
+                  <span>Type: {{ currentQuestionState.data.type.toUpperCase() }}</span>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center py-0.5 px-4 group-data-[vertical=false]:text-nowrap">
+                <div>
+                  <span>Marks:&nbsp;</span>
+                  <span
+                    class="font-semibold"
+                    :class="styleClasses.resultStatus[currentQuestionState.data.result.status]"
+                  >
+                    {{ utilMarksWithSign(currentQuestionState.data.result.marks) }}
+                  </span>
+                </div>
+                <div class="text-right">
+                  <span>Status:&nbsp;</span>
+                  <span
+                    class="font-semibold"
+                    :class="styleClasses.questionStatus[currentQuestionState.data.status]"
+                  >
+                    {{ QUESTION_STATUS_LABELS[currentQuestionState.data.status] }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          <div
-            v-else-if="currentQuestionState.data.type === 'nat'"
-            class="grid grid-cols-1 gap-10"
-          >
-            <div
-              v-for="n in (
-            (
-              currentQuestionState.data.result.status === 'incorrect'
-              || currentQuestionState.data.result.status === 'notAnswered'
-            ) ? 2
-              : 1
-              )"
-              :key="n"
-              class="relative text-center text-xl font-bold p-2
-            border-2 border-gray-300 rounded-lg min-w-64 sm:min-w-60 sm:@min-lg:min-w-64
-            has-[.numeric-status-correct]:border-green-500 has-[.numeric-status-correct]:bg-green-500/2
-            has-[.numeric-result-incorrect]:border-red-500! has-[.numeric-result-incorrect]:bg-red-500/2!
-            has-[.numeric-status-dropped]:border-fuchsia-500
-            has-[.numeric-status-bonus]:border-cyan-500"
-            >
-              <span
-                v-if="
-                  (
-                    n === 1
-                    && currentQuestionState.data.result.status !== 'incorrect'
-                    && currentQuestionState.data.result.status !== 'notAnswered'
-                  ) || (
-                    n === 2
-                    && (
-                      currentQuestionState.data.result.status === 'incorrect'
-                      || currentQuestionState.data.result.status === 'notAnswered'
-                    )
-                  )"
-                :class="'numeric-status-' + getCorrectAnswerStatus(0)"
-                class="absolute top-0 left-3 -translate-y-1/2 rounded-md px-2 text-xs
-             [.numeric-status-correct]:bg-green-800 [.numeric-status-correct]:[&>.status-correct]:inline!
-             [.numeric-status-bonus]:bg-cyan-800 [.numeric-status-bonus]:[&>.status-bonus]:inline!
-             [.numeric-status-dropped]:bg-fuchsia-800 [.numeric-status-dropped]:[&>.status-dropped]:inline!"
+          <div class="grow flex flex-col min-h-0 justify-between">
+            <div class="flex flex-col min-h-0 gap-6">
+              <UiScrollArea type="auto">
+                <div class="grid mt-2 px-4 [&>*]:mx-auto">
+                  <template v-if="testQuestionsImgUrls[currentTestResultsId]?.[currentQuestionState.id]">
+                    <img
+                      v-for="(url, index) in testQuestionsImgUrls[currentTestResultsId]![currentQuestionState.id]"
+                      :key="index"
+                      :src="url"
+                      :style="{
+                        backgroundColor: storageSettings.quePreview.imgBgColor,
+                        width: `${imageWidth}%`,
+                      }"
+                      draggable="false"
+                    >
+                  </template>
+                  <template v-else-if="pdfRenderingProgress === 'loading-zip-from-url'">
+                    <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
+                      <Icon name="line-md:loading-twotone-loop" />
+                      <span>Loading ZIP from URL, please wait...</span>
+                    </div>
+                  </template>
+                  <template v-else-if="pdfRenderingProgress === 'loading-file'">
+                    <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
+                      <Icon name="line-md:loading-twotone-loop" />
+                      <span>Loading your pdf/zip, please wait...</span>
+                    </div>
+                  </template>
+                  <template v-else-if="pdfRenderingProgress === 'loading-pdf-renderer'">
+                    <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
+                      <Icon name="line-md:loading-twotone-loop" />
+                      <span>Loading PDF Renderer, please wait...</span>
+                    </div>
+                  </template>
+                  <template v-else-if="pdfRenderingProgress === 'generating-img'">
+                    <div class="flex items-center gap-4 text-gray-200 justify-center p-6 text-xl sm:text-2xl">
+                      <Icon name="material-symbols:rocket-launch" />
+                      <span>Generating Question Image, please wait...</span>
+                    </div>
+                  </template>
+                  <template v-else-if="pdfRenderingProgress === 'failed'">
+                    <div class="flex items-center gap-4 justify-center text-red-400 p-6 text-xl sm:text-2xl">
+                      <Icon name="mdi:alert-circle-outline" />
+                      <span>Failed to generate question image from pdf.</span>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="flex items-center gap-4 justify-center p-6 text-red-400 text-xl sm:text-2xl">
+                      <Icon name="mdi:image-off-outline" />
+                      <span>Encountered an Error or No image available to generate.</span>
+                    </div>
+                  </template>
+                </div>
+              </UiScrollArea>
+              <Teleport
+                to="#question-panel-side-container"
+                defer
+                :disabled="!screenWidth.isSmOrAbove"
               >
-                <span class="status-correct hidden">Correct Answer</span>
-                <span class="status-bonus hidden">Bonus</span>
-                <span class="status-dropped hidden">Dropped</span>
-              </span>
-              <span
-                v-if="n === 1"
-                :class="'numeric-result-' + getYourAnswerStatus(0)"
-                class="absolute top-0 right-5 -translate-y-1/2 rounded-md text-white px-2 text-xs bg-gray-600
-              [.numeric-result-correct]:bg-green-800 [.numeric-result-partial]:bg-yellow-800
-              [.numeric-result-incorrect]:bg-red-800"
-              >
-                Your Answer
-              </span>
-              {{
-                utilStringifyAnswer(
-                  currentQuestionState.data.result.status === 'correct'
-                    ? currentQuestionState.data.result.correctAnswer
-                    : (n === 1 ? currentQuestionState.data.answer : currentQuestionState.data.result.correctAnswer),
-                  currentQuestionState.data.type,
-                )
-              }}
+                <UiScrollArea type="auto">
+                  <div class="flex flex-col items-center shrink-0 mt-3 w-full h-full @container px-2">
+                    <div
+                      v-if="currentQuestionState.data.type === 'mcq' || currentQuestionState.data.type === 'msq'"
+                      class="grid grid-cols-2 gap-x-5 sm:@min-lg:gap-x-10 gap-y-10 mx-auto
+                        font-bold text-lg text-center"
+                      :style="optionsStyle"
+                    >
+                      <div
+                        v-for="n in parseInt(currentQuestionState.data.answerOptions || '4')"
+                        :key="n"
+                        class="relative border-2 border-gray-300 rounded-lg p-1
+                          min-w-35
+                        has-[.option-status-correct]:border-green-500
+                        has-[.option-status-correct]:bg-green-500/2
+                        has-[.option-result-partial]:border-yellow-500!
+                        has-[.option-result-partial]:bg-yellow-500/2!
+                        has-[.option-result-incorrect]:border-red-500!
+                        has-[.option-result-incorrect]:bg-red-500/2!
+                        has-[.option-status-dropped]:border-fuchsia-500
+                        has-[.option-status-bonus]:border-cyan-500"
+                      >
+                        <span
+                          :class="'option-status-' + getCorrectAnswerStatus(n)"
+                          class="absolute top-0 left-2 -translate-y-1/2 rounded-sm bg-background
+                            flex items-center justify-center
+                            [.option-status-correct]:[&>.status-correct]:inline-block!
+                            [.option-status-bonus]:[&>.status-bonus]:inline-block!
+                            [.option-status-dropped]:[&>.status-dropped]:inline-block!
+                          [.option-status-correct]:text-green-500
+                          [.option-status-bonus]:text-cyan-500
+                          [.option-status-dropped]:text-fuchsia-500"
+                        >
+                          <Icon
+                            name="mdi:check-circle"
+                            size="1.4rem"
+                            class="status-correct hidden!"
+                          />
+                          <Icon
+                            name="mdi:star-circle"
+                            size="1.4rem"
+                            class="status-bonus hidden!"
+                          />
+                          <Icon
+                            name="mdi:triangle-down"
+                            size="1.4rem"
+                            class="status-dropped hidden!"
+                          />
+                        </span>
+                        <span
+                          :class="'option-result-' + getYourAnswerStatus(n)"
+                          class="absolute top-0 right-2 -translate-y-1/2 rounded-sm bg-background
+                            flex items-center justify-center text-green-500
+                              [.option-result-none]:hidden!
+                            [.option-result-partial]:text-yellow-500
+                            [.option-result-incorrect]:text-red-500
+                            [.option-result-neutral]:text-gray-500"
+                          title="Your Answer"
+                        >
+                          <Icon
+                            name="mdi:account-edit"
+                            size="1.4rem"
+                          />
+                        </span>
+                        <label class="option-content inline-block" />
+                      </div>
+                    </div>
+                    <div
+                      v-else-if="currentQuestionState.data.type === 'nat'"
+                      class="grid grid-cols-1 gap-10"
+                    >
+                      <div
+                        v-for="n in (
+                        (
+                          currentQuestionState.data.result.status === 'incorrect'
+                          || currentQuestionState.data.result.status === 'notAnswered'
+                        ) ? 2
+                          : 1
+                        )"
+                        :key="n"
+                        class="relative text-center text-xl font-bold pb-1
+                          border-2 border-gray-300 rounded-lg
+                          min-w-35
+                        has-[.numeric-status-correct]:border-green-500
+                        has-[.numeric-status-correct]:bg-green-500/2
+                        has-[.numeric-result-incorrect]:border-red-500!
+                        has-[.numeric-result-incorrect]:bg-red-500/2!
+                        has-[.numeric-status-dropped]:border-fuchsia-500
+                        has-[.numeric-status-bonus]:border-cyan-500"
+                      >
+                        <span
+                          v-if="
+                            (
+                              n === 1
+                              && currentQuestionState.data.result.status !== 'incorrect'
+                              && currentQuestionState.data.result.status !== 'notAnswered'
+                            ) || (
+                              n === 2
+                              && (
+                                currentQuestionState.data.result.status === 'incorrect'
+                                || currentQuestionState.data.result.status === 'notAnswered'
+                              )
+                            )"
+                          :class="'numeric-status-' + getCorrectAnswerStatus(0)"
+                          class="absolute top-0 left-2 -translate-y-1/2 rounded-sm bg-background
+                            flex items-center justify-center
+                            [.numeric-status-correct]:[&>.status-correct]:inline-block!
+                            [.numeric-status-bonus]:[&>.status-bonus]:inline-block!
+                            [.numeric-status-dropped]:[&>.status-dropped]:inline-block!
+                          [.numeric-status-correct]:text-green-500
+                          [.numeric-status-bonus]:text-cyan-500
+                          [.numeric-status-dropped]:text-fuchsia-500"
+                        >
+                          <Icon
+                            name="mdi:check-circle"
+                            size="1.4rem"
+                            class="status-correct hidden!"
+                          />
+                          <Icon
+                            name="mdi:star-circle"
+                            size="1.4rem"
+                            class="status-bonus hidden!"
+                          />
+                          <Icon
+                            name="mdi:triangle-down"
+                            size="1.4rem"
+                            class="status-dropped hidden!"
+                          />
+                        </span>
+                        <span
+                          v-if="n === 1"
+                          :class="'numeric-result-' + getYourAnswerStatus(0)"
+                          class="absolute top-0 right-2 -translate-y-1/2 rounded-sm bg-background
+                            flex items-center justify-center text-gray-300
+                            [.numeric-result-correct]:text-green-500
+                            [.numeric-result-partial]:text-yellow-500
+                            [.numeric-result-incorrect]:text-red-500"
+                          title="Your Answer"
+                        >
+                          <Icon
+                            name="mdi:account-edit"
+                            size="1.4rem"
+                          />
+                        </span>
+                        {{
+                          utilStringifyAnswer(
+                            currentQuestionState.data.result.status === 'correct'
+                              ? currentQuestionState.data.result.correctAnswer
+                              : (n === 1 ? currentQuestionState.data.answer : currentQuestionState.data.result.correctAnswer),
+                            currentQuestionState.data.type,
+                          )
+                        }}
+                      </div>
+                    </div>
+                    <CbtResultsQuestionPanelMsmQuestionTypeDiv
+                      :question-data="currentQuestionState.data"
+                      :options-format-settings="answerOptionsFormat.msm"
+                    />
+                  </div>
+                </UiScrollArea>
+              </Teleport>
             </div>
-          </div>
-          <CbtResultsQuestionPanelMsmQuestionTypeDiv
-            :question-data="currentQuestionState.data"
-            :options-format-settings="answerOptionsFormat.msm"
-          />
-        </div>
-        <div class="grid grid-cols-2 mx-auto gap-3 @min-md:gap-20 shrink-0 mt-6 mb-8">
-          <div class="flex items-center justify-center">
-            <BaseButton
-              v-if="currentQueIndex !== 0"
-              label="Prev Question"
-              variant="help"
-              icon-name="material-symbols:arrow-back-ios-rounded"
-              @click="navigateQuestion('prev')"
-            />
-          </div>
-          <div class="flex items-center justify-center">
-            <BaseButton
-              v-if="currentQueIndex !== (questionsToPreview.length - 1)"
-              label="Next Question"
-              class="flex flex-row-reverse"
-              variant="help"
-              icon-name="material-symbols:arrow-forward-ios-rounded"
-              @click="navigateQuestion('next')"
-            />
+            <div class="grid grid-cols-2 mx-auto gap-3 @min-md:gap-20 shrink-0 mt-6 mb-8">
+              <div class="flex items-center justify-center">
+                <BaseButton
+                  v-if="currentQueIndex !== 0"
+                  label="Prev Question"
+                  variant="help"
+                  icon-name="material-symbols:arrow-back-ios-rounded"
+                  @click="navigateQuestion('prev')"
+                />
+              </div>
+              <div class="flex items-center justify-center">
+                <BaseButton
+                  v-if="currentQueIndex !== (questionsToPreview.length - 1)"
+                  label="Next Question"
+                  class="flex flex-row-reverse"
+                  variant="help"
+                  icon-name="material-symbols:arrow-forward-ios-rounded"
+                  @click="navigateQuestion('next')"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </UiSheetContent>
@@ -426,6 +515,7 @@ import type { MuPdfProcessor } from '#layers/shared/app/src/worker/mupdf.worker'
 import {
   QUESTION_STATUS_LABELS,
   RESULT_STATUS_LABELS,
+  RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE,
 } from '#layers/shared/shared/constants'
 
 interface Props {
@@ -488,6 +578,15 @@ const fileUploaderState = shallowReactive<{
   showLoadPdfDialog: false,
   showPdfHashMismatchDialog: false,
   showLoadPdfDataDialog: false,
+})
+
+const screenBreakpoints = useBreakpoints(
+  { sm: 640 },
+  { ssrWidth: 1024 },
+)
+
+const screenWidth = reactive({
+  isSmOrAbove: screenBreakpoints.greaterOrEqual('sm'),
 })
 
 const pdfRenderingProgress = shallowRef<PdfRenderingProgress>('loading-file')
@@ -716,7 +815,7 @@ const resizeDrawer = (resizeType: 'increase' | 'decrease') => {
     storageSettings.value.quePreview.drawerWidth = Math.min(currentSize + 5, 100)
   }
   else if (resizeType === 'decrease' && currentSize > 0) {
-    storageSettings.value.quePreview.drawerWidth = Math.max(currentSize - 5, 40)
+    storageSettings.value.quePreview.drawerWidth = Math.max(currentSize - 5, RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE)
   }
 }
 

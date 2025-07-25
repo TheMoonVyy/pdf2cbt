@@ -66,3 +66,5 @@ const counterTypesWithDefault = structuredClone(ANSWER_OPTIONS_COUNTER_TYPES)
 counterTypesWithDefault.unshift({ name: 'Default', value: 'default' })
 
 export const ANSWER_OPTIONS_COUNTER_TYPES_WITH_DEFAULT = counterTypesWithDefault
+
+export const RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE = 80

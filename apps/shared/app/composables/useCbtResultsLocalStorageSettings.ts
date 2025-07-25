@@ -1,4 +1,5 @@
 import { LocalStorageKeys } from '#layers/shared/shared/enums'
+import { RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE } from '#layers/shared/shared/constants'
 
 let storageSettings: ReturnType<typeof useLocalStorage<CbtResultsSettings>> | null = null
 
@@ -27,10 +28,19 @@ export default () => {
         },
         quePreview: {
           imgBgColor: '#ffffff',
-          drawerWidth: 60,
+          drawerWidth: RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE,
+          imgPanelDir: 'left',
         },
       },
-      { mergeDefaults: (storageValue, defaults) => utilSelectiveMergeObj(defaults, storageValue) },
+      {
+        mergeDefaults: (storageValue, defaults) => {
+          const result = utilSelectiveMergeObj(defaults, storageValue) as CbtResultsSettings
+          // if drawerWidth in local storage is less then 80, then set to min size
+          if (result.quePreview.drawerWidth < RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE)
+            result.quePreview.drawerWidth = RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE
+          return result
+        },
+      },
     )
   }
 

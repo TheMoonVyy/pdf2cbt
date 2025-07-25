@@ -84,6 +84,7 @@ export type CbtResultsSettings = {
   quePreview: {
     imgBgColor: string
     drawerWidth: number
+    imgPanelDir: 'left' | 'right'
   }
 }
 
