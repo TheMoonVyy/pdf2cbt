@@ -9,7 +9,7 @@
         </UiDialogTitle>
       </UiDialogHeader>
       <UiScrollArea
-        class="min-h-0 max-h-[80dvh] px-6"
+        class="max-h-[80dvh] px-6"
         type="auto"
       >
         <div class="flex w-full my-3">

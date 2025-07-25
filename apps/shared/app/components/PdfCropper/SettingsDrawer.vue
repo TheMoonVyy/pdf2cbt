@@ -12,7 +12,7 @@
         </UiSheetTitle>
       </UiSheetHeader>
       <UiScrollArea
-        class="h-full w-full min-h-0"
+        class="h-full w-full"
       >
         <UiCard
           v-for="(settingsItems, panelName, index) in settingsContent"

@@ -104,7 +104,8 @@
         >
           <div
             id="question-panel-side-container"
-            class="flex flex-col gap-8 divide-y min-h-0 divide-gray-500 min-w-90 text-[0.8rem] sm:text-base"
+            class="flex flex-col shrink-0 gap-8 divide-y min-h-0 divide-gray-500
+            min-w-90 sm:min-w-80 lg:min-w-90 text-[0.8rem] lg:text-base"
           >
             <div
               class="grid h-fit divide-y divide-gray-500 border-gray-500 rounded
@@ -227,7 +228,7 @@
                     <div
                       v-if="currentQuestionState.data.type === 'mcq' || currentQuestionState.data.type === 'msq'"
                       class="grid grid-cols-2 gap-x-5 sm:@min-lg:gap-x-10 gap-y-10 mx-auto
-                        font-bold text-lg text-center"
+                        font-bold text-base sm:text-sm lg:text-lg text-center"
                       :style="optionsStyle"
                     >
                       <div
@@ -384,11 +385,11 @@
                 </UiScrollArea>
               </Teleport>
             </div>
-            <div class="grid grid-cols-2 mx-auto gap-3 @min-md:gap-20 shrink-0 mt-6 mb-8">
+            <div class="grid grid-cols-2 mx-auto gap-7 @min-md:gap-20 shrink-0 mt-6 mb-8">
               <div class="flex items-center justify-center">
                 <BaseButton
                   v-if="currentQueIndex !== 0"
-                  label="Prev Question"
+                  :label="screenWidth.isLgOrAbove ? 'Prev Question' : 'Prev Q.'"
                   variant="help"
                   icon-name="material-symbols:arrow-back-ios-rounded"
                   @click="navigateQuestion('prev')"
@@ -397,7 +398,7 @@
               <div class="flex items-center justify-center">
                 <BaseButton
                   v-if="currentQueIndex !== (questionsToPreview.length - 1)"
-                  label="Next Question"
+                  :label="screenWidth.isLgOrAbove ? 'Next Question' : 'Next Q.'"
                   class="flex flex-row-reverse"
                   variant="help"
                   icon-name="material-symbols:arrow-forward-ios-rounded"
@@ -581,12 +582,13 @@ const fileUploaderState = shallowReactive<{
 })
 
 const screenBreakpoints = useBreakpoints(
-  { sm: 640 },
+  { sm: 640, lg: 1024 },
   { ssrWidth: 1024 },
 )
 
 const screenWidth = reactive({
   isSmOrAbove: screenBreakpoints.greaterOrEqual('sm'),
+  isLgOrAbove: screenBreakpoints.greaterOrEqual('lg'),
 })
 
 const pdfRenderingProgress = shallowRef<PdfRenderingProgress>('loading-file')

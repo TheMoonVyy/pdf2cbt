@@ -9,7 +9,7 @@
         </UiSheetTitle>
       </UiSheetHeader>
       <UiScrollArea
-        class="h-full w-full min-h-0"
+        class="h-full w-full"
       >
         <UiCard
           class="w-full py-2"
