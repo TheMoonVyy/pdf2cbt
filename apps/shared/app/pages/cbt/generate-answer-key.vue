@@ -737,7 +737,7 @@ function loadFileData() {
   }
 
   if (subjectsData === null) {
-    console.error('Error: Uploaded file is not in valid format')
+    useErrorToast('Error: Uploaded file is not in valid format')
     return
   }
 
@@ -765,7 +765,7 @@ async function handleFileUpload(files: File | File[]) {
     loadFileData()
   }
   catch (err) {
-    console.error('Error while handling file upload', err)
+    useErrorToast('Error while handling file upload', err)
   }
 }
 
@@ -859,7 +859,7 @@ async function downloadOutput() {
 
     zip(fileUploaderState.unzippedFiles, { level: 0 }, (err, compressedZip) => {
       if (err) {
-        console.error('Error creating zip:', err)
+        useErrorToast('Error creating zip file:', err)
         return
       }
       const outputBlob = new Blob([compressedZip], { type: 'application/zip' })
@@ -897,7 +897,7 @@ async function loadDataFromDB() {
         }
       }
       catch (err) {
-        console.error('Error while loading selected testOutputData from db', err)
+        useErrorToast('Error while loading selected Test Data from db', err)
       }
     }
   }
@@ -919,7 +919,7 @@ async function checkForTestOutputDataInDB() {
     }
   }
   catch (err) {
-    console.error('Error while trying to load test result overviews from db:', err)
+    useErrorToast('Error while trying to load test result overviews from db:', err)
   }
 }
 

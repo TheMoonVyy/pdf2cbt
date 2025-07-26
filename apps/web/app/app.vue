@@ -1,4 +1,13 @@
 <template>
+  <Toaster
+    class="pointer-events-auto"
+    close-button
+    rich-colors
+    offset="80px"
+    theme="dark"
+    :duration="10000"
+    :position="toastPosition"
+  />
   <div
     id="app-root"
     class="max-h-dvh min-h-dvh w-full flex flex-col overflow-hidden"
@@ -15,9 +24,13 @@
 
 <script setup lang="ts">
 import { MiscConsts, DeprecatedLocalStorageKeys } from '#layers/shared/shared/enums'
+import { Toaster } from '#layers/shared/app/components/ui/sonner'
+
+const toastPosition = useToastPosition()
 
 const showBackupWebsiteNotice = shallowRef(false)
 
+// migrate old settings in localStorage
 function checkAndMigratePdfCropperSettings() {
   const oldSettingsString = localStorage.getItem(DeprecatedLocalStorageKeys.PDfCropperOldSettings)
   if (!oldSettingsString) return

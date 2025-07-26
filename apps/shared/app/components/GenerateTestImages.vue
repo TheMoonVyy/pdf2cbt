@@ -90,7 +90,7 @@ async function loadPdfFile() {
     generateQuestionImages()
   }
   catch (err) {
-    console.error('Error loading PDF:', err)
+    useErrorToast('Error Generating Images from PDF:', err)
   }
 }
 
