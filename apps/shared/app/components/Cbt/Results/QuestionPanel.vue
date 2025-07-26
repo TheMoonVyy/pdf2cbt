@@ -166,7 +166,10 @@
           </div>
           <div class="grow flex flex-col min-h-0 justify-between">
             <div class="flex flex-col min-h-0 gap-6">
-              <UiScrollArea type="auto">
+              <UiScrollArea
+                ref="imgContainerScrollAreaElem"
+                type="auto"
+              >
                 <div class="grid mt-2 px-4 [&>*]:mx-auto">
                   <template v-if="testQuestionsImgUrls[currentTestResultsId]?.[currentQuestionState.id]">
                     <img
@@ -223,7 +226,10 @@
                 defer
                 :disabled="!screenWidth.isSmOrAbove"
               >
-                <UiScrollArea type="auto">
+                <UiScrollArea
+                  ref="answersContainerScrollAreaElem"
+                  type="auto"
+                >
                   <div class="flex flex-col items-center shrink-0 mt-3 w-full h-full @container px-2">
                     <div
                       v-if="currentQuestionState.data.type === 'mcq' || currentQuestionState.data.type === 'msq'"
@@ -553,6 +559,9 @@ const currentQueIndex = defineModel<number>({ required: true })
 
 const showNotesDialog = shallowRef(false)
 
+const imgContainerScrollAreaElem = useTemplateRef('imgContainerScrollAreaElem')
+const answersContainerScrollAreaElem = useTemplateRef('answersContainerScrollAreaElem')
+
 const migrateJsonData = useMigrateJsonData()
 
 const {
@@ -808,6 +817,9 @@ const navigateQuestion = (type: 'next' | 'prev') => {
   else {
     currentQueIndex.value = Math.min(questionsToPreview.length - 1, currentQueIndex.value + 1)
   }
+
+  imgContainerScrollAreaElem.value?.scrollTopLeft()
+  answersContainerScrollAreaElem.value?.scrollTopLeft()
 }
 
 const resizeDrawer = (resizeType: 'increase' | 'decrease') => {

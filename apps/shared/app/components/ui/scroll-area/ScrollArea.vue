@@ -13,10 +13,19 @@ import { cn } from '#layers/shared/app/lib/utils'
 const props = defineProps<ScrollAreaRootProps & { class?: HTMLAttributes['class'], viewportClass?: HTMLAttributes['class'] }>()
 
 const delegatedProps = reactiveOmit(props, 'class', 'viewportClass')
+
+const scrollAreaRootRef = useTemplateRef<InstanceType<typeof ScrollAreaRoot>>('scrollArea')
+
+// Expose ScrollAreaRoot's methods to parent
+defineExpose({
+  scrollTopLeft: () => { scrollAreaRootRef.value?.scrollTopLeft() },
+  scrollTop: () => { scrollAreaRootRef.value?.scrollTop() },
+})
 </script>
 
 <template>
   <ScrollAreaRoot
+    ref="scrollArea"
     data-slot="scroll-area"
     v-bind="delegatedProps"
     :class="cn('relative min-h-0', props.class)"

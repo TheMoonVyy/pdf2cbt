@@ -3,7 +3,7 @@
     v-model:open="showNotesDialog"
     class="min-w-64 sm:min-w-lg lg:min-w-xl"
   >
-    <UiDialogContent class="pt-2 gap-2">
+    <UiDialogContent class="pt-2 gap-2 z-51">
       <UiDialogHeader>
         <UiDialogTitle class="flex ml-0 mr-5">
           <span class="text-xl mx-auto flex items-center">
