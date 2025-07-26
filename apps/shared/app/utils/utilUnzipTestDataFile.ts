@@ -9,7 +9,7 @@ type UnzippedData = UploadedTestData & {
 
 export default (
   zipFile: File | Blob,
-  requiredData: 'json-only' | 'pdf-or-images-only' | 'pdf-and-json' | 'all',
+  requiredData: 'json-only' | 'pdf-or-images-only' | 'pdf-and-json' | 'json-and-maybe-pdf' | 'all',
   alsoReturnUnzippedFiles: boolean = false,
 ) => {
   return new Promise<UnzippedData>((resolve, reject) => {
@@ -108,6 +108,7 @@ export default (
           if (
             requiredData === 'json-only'
             || requiredData === 'pdf-and-json'
+            || requiredData === 'json-and-maybe-pdf'
             || requiredData === 'all'
           ) {
             if (jsonData) {
@@ -118,6 +119,11 @@ export default (
               return
             }
           }
+
+          if (requiredData === 'json-and-maybe-pdf' && pdfFile) {
+            data.pdfBuffer = pdfFile
+          }
+
           if (alsoReturnUnzippedFiles) {
             data.unzippedFiles = files
           }

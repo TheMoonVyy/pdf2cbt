@@ -72,3 +72,12 @@ export type ActiveCroppedOverlay = {
   id: string
   imgNum: number
 }
+
+export type PageImgData = {
+  [pageNum: number]: {
+    width: number
+    height: number
+    url: string
+    pageScale: number
+  }
+}

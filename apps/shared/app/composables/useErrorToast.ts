@@ -7,8 +7,10 @@ export default (
   title: string,
   err: any = '', // eslint-disable-line @typescript-eslint/no-explicit-any
   data: Parameters<typeof toastType['error']>[1] | null = undefined,
+  printToConsole: boolean = true,
 ) => {
-  console.error(title, err)
+  if (printToConsole)
+    console.error(title, err)
 
   toast ??= useNuxtApp().$toast
 
