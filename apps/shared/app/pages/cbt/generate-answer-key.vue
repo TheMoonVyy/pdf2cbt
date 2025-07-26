@@ -59,7 +59,7 @@
       <BaseSimpleFileUpload
         accept="application/json,application/zip,.json,.zip"
         :label="'Select ZIP/JSON File'"
-        invalid-file-type-message="Invalid file. Please select a valid ZIP or JSON file from PDF Cropper Page"
+        invalid-file-type-message="Please select a valid ZIP or JSON file from PDF Cropper Page."
         icon-name="line-md:plus"
         @upload="handleFileUpload"
       />

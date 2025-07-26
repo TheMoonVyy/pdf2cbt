@@ -34,6 +34,7 @@ const {
   buttonClass = 'px-3',
   variant = 'success',
   size,
+  invalidFileTypeMessage = 'Please Select Valid File',
 } = defineProps<{
   accept?: string
   label?: string
@@ -44,6 +45,7 @@ const {
   buttonClass?: string
   variant?: ButtonVariants['variant']
   size?: ButtonVariants['size']
+  invalidFileTypeMessage?: string
 }>()
 
 const emit = defineEmits<{
@@ -52,11 +54,40 @@ const emit = defineEmits<{
 
 const inputElem = useTemplateRef('inputElem')
 
+const { $toast } = useNuxtApp()
+
+const isUploadedFileAcceptable = (file: File): boolean => {
+  if (!accept) return true
+
+  const rules = accept.toLowerCase().split(',').map(rule => rule.trim())
+  const fileName = file.name.toLowerCase()
+  const fileType = file.type.toLowerCase()
+
+  return rules.some((rule) => {
+    if (rule.startsWith('.')) {
+      return fileName.endsWith(rule)
+    }
+    else if (rule.endsWith('/*')) {
+      const typeGroup = rule.slice(0, -1)
+      return fileType.startsWith(typeGroup)
+    }
+
+    return fileType === rule
+  })
+}
+
 const uploadHandler = async () => {
   const file = inputElem.value?.files?.item(0)
 
   if (file) {
-    emit('upload', file)
+    if (isUploadedFileAcceptable(file)) {
+      emit('upload', file)
+    }
+    else {
+      $toast.error('Invalid File', {
+        description: `${file.name} is  invalid. ${invalidFileTypeMessage}`,
+      })
+    }
   }
 }
 </script>

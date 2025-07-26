@@ -144,7 +144,7 @@
                 accept="application/pdf,application/zip,.pdf,.zip"
                 :label="visibilityState.isLoadingPdf ? 'Please wait, loading PDF...' : 'Select a PDF'"
                 :icon-name="visibilityState.isLoadingPdf ? 'line-md:loading-twotone-loop' : 'line-md:plus'"
-                invalid-file-type-message="Invalid file. Please select a valid PDF"
+                invalid-file-type-message="Please select a valid PDF."
                 @upload="handleFileUpload"
               />
               <DocsPdfCropper class="mx-4 sm:mx-10 select-text" />

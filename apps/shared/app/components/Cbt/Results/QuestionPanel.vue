@@ -429,7 +429,7 @@
           <BaseSimpleFileUpload
             accept="application/pdf,application/zip,.pdf,.zip"
             label="Upload PDF or ZIP file"
-            invalid-file-type-message="Invalid file. Please select a valid PDF or ZIP file which you had uploaded on Test Interface"
+            invalid-file-type-message="Please select a valid PDF or ZIP file which you had uploaded on Test Interface."
             icon-name="prime:upload"
             @upload="handleFileUpload"
           />
@@ -493,7 +493,7 @@
           <BaseSimpleFileUpload
             accept="application/json,application/zip,.json,.zip"
             label="Upload Cropper's ZIP or JSON file"
-            invalid-file-type-message="Invalid file. Please select a valid PDF or JSON file which you had uploaded on Test Interface"
+            invalid-file-type-message="Please select a valid PDF or JSON file which you had uploaded on Test Interface."
             icon-name="prime:upload"
             @upload="(file) => handleFileUpload(file, 'zip-or-json')"
           />

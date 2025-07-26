@@ -13,7 +13,7 @@
               <BaseSimpleFileUpload
                 accept="application/json,.json"
                 label="Import Settings"
-                invalid-file-type-message="Invalid file. Please select a valid JSON file"
+                invalid-file-type-message="Please select a valid JSON file that was exported from this page."
                 icon-name="prime:download"
                 @upload="(files) => handleImportExportBtn('import', files)"
               />
@@ -694,7 +694,7 @@
                             accept="image/*"
                             label="Change Icon"
                             variant="help"
-                            invalid-file-type-message="Invalid file. Please select a valid Image"
+                            invalid-file-type-message="Please select a valid Image."
                             class="mx-auto"
                             @upload="(file) => changeIcon(file, key)"
                           />
@@ -840,7 +840,7 @@
                         variant="help"
                         button-class="px-2 pt-[.5rem]"
                         class="mx-auto"
-                        invalid-file-type-message="Invalid file. Please select a valid Image"
+                        invalid-file-type-message="Please select a valid Image."
                         @upload="(file) => changeProfileIcon(file)"
                       />
                     </div>

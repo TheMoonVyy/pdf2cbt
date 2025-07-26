@@ -46,7 +46,7 @@
                   class="col-span-2 sm:col-span-1 flex flex-col"
                   accept="application/json,.json"
                   :label="screenWidth.isSmOrAbove ? 'Import Test Data' : 'Import Data'"
-                  invalid-file-type-message="Invalid file. Please select a valid JSON file"
+                  invalid-file-type-message="Please select a valid JSON file containing Test Data."
                   :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:download'"
                   @upload="(file) => showImportExportDialog('Import', file)"
                 />
