@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.20.1...v1.21.0) (2025-07-26)
+
+
+### Features
+
+* add toast and show errors via toast ([b6959a6](https://github.com/TheMoonVyy/pdf2cbt/commit/b6959a67aba806ac0c7322e3806be60f971ab8d2))
+
 ## [1.20.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.20.0...v1.20.1) (2025-07-25)
 
 
