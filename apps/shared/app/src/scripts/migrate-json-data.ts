@@ -53,7 +53,7 @@ export class MigrateJsonData {
     }
   }
 
-  private removeEmptyKeysFromTestConfig<
+  removeEmptyKeysFromTestConfig<
     T extends (TestInterfaceAndResultCommonJsonOutputData['testConfig'] | PdfCropperJsonOutput['testConfig']),
   >(testConfig: T) {
     for (const key of Object.keys(testConfig) as (keyof T)[])
@@ -67,8 +67,8 @@ export class MigrateJsonData {
       }
   }
 
-  pdfCropperData(data: any): PdfCropperJsonOutput {
-    const output: PdfCropperJsonOutput = {
+  getPdfCropperJsonOutputTemplate(): PdfCropperJsonOutput {
+    return {
       testConfig: {
         zipConvertedUrl: '',
         zipOriginalUrl: '',
@@ -80,7 +80,12 @@ export class MigrateJsonData {
       appVersion: this.currentAppVersion,
       generatedBy: 'pdfCropperPage',
     }
+  }
 
+  pdfCropperData(
+    data: any,
+    output = this.getPdfCropperJsonOutputTemplate(),
+  ): PdfCropperJsonOutput {
     if (!('appVersion' in data)) {
       if ('pdfFileHash' in data) {
         output.testConfig.pdfFileHash = data.pdfFileHash
