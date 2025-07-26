@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     'nuxt-echarts',
     'shadcn-nuxt',
     'nuxt-color-picker',
+    'vue-sonner/nuxt',
   ],
   $meta: {
     name: 'shared',
@@ -20,6 +21,7 @@ export default defineNuxtConfig({
       },
     },
   },
+  css: ['vue-sonner/style.css'],
   runtimeConfig: {
     public: {
       isBackupWebsite: '',
