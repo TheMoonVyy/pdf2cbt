@@ -897,7 +897,7 @@ const handleFileUpload = async (file: File) => {
     }
   }
   catch (err) {
-    console.error('Error loading uploaded file:', err)
+    useErrorToast('Error loading uploaded file:', err)
   }
 }
 
@@ -917,7 +917,7 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
     }
   }
   catch (err) {
-    console.error('Error loading PDF:', err)
+    useErrorToast('Error loading PDF:', err)
   }
 }
 
@@ -950,7 +950,7 @@ async function renderPage(pageNum: number) {
     }
   }
   catch (err) {
-    console.error('Error rendering page:', err)
+    useErrorToast('Error rendering PDF Page:', err)
   }
 }
 
@@ -1132,7 +1132,7 @@ async function zipAndDownloadOutput() {
   if (Object.keys(filesToZip).length > 0) {
     zip(filesToZip, { level: 0 }, (err, compressedZip) => {
       if (err) {
-        console.error('Error creating zip:', err)
+        useErrorToast('Error creating zip file:', err)
         generateOutputState.preparingDownload = false
         return
       }

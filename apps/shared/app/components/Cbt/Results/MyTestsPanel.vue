@@ -236,7 +236,7 @@ const renameTestDialogHandler = async (type: 'show' | 'rename') => {
       showRenameTestDialogState.visibility = true
     }
     else {
-      console.error('No Test Result Overview found with id of: ' + id)
+      useErrorToast('Error: No Test Result Overview found with id of: ' + id)
     }
   }
   else if (type === 'rename') {

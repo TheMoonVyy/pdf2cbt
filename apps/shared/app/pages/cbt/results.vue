@@ -874,7 +874,11 @@ function generateTestResults(loadToTestResultsOutputData: boolean = true) {
       }
     }
     catch (err) {
-      console.error(err)
+      if (err instanceof Error)
+        useErrorToast(err.name, err)
+      else
+        useErrorToast('Error evaluating Test Results', err)
+
       return false
     }
   }
@@ -906,7 +910,7 @@ async function loadTestOutputData(
     }
   }
   catch (err) {
-    console.error('Error while loading test results from db:', err)
+    useErrorToast('Error loading test data from db:', err)
   }
 
   // either there is no data in db or there was an error
@@ -966,7 +970,7 @@ async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
           id = testResultOverviewDB.id
         }
         catch (err) {
-          console.error('Error while replacing test data with generated results after loading answer key data', err)
+          useErrorToast('Error updating test data after loading answer key', err)
         }
         loadDataToChartDataState(id)
       }
@@ -1015,7 +1019,7 @@ async function showImportExportDialog(
     }
   }
   catch (err) {
-    console.error(`Error while ${type}ing Test Data`, err)
+    useErrorToast(`Error while ${type}ing Test Data`, err)
   }
 }
 
@@ -1039,7 +1043,7 @@ async function processImportExport(
         const duplicateDatas = await db.getTestResultOverviewsByCompoundIndexes(queryList)
 
         if (duplicateDatas.length > 0) {
-          console.error('Error: Importing duplicate test data is disallowed, a better way to handle this will be available soon')
+          useErrorToast('Error: Importing duplicate test data is disallowed, a better way to handle this will be available soon')
         }
         else if (queryList.length > 0) {
           await db.bulkAddTestOutputData(utilCloneJson(data))
@@ -1047,7 +1051,7 @@ async function processImportExport(
       }
     }
     catch (err) {
-      console.error('Error while trying to save Imported Test Data to DB:', err)
+      useErrorToast('Error while trying to save Imported Test Data to DB:', err)
     }
   }
   else {
@@ -1091,7 +1095,7 @@ async function processImportExport(
       }
     }
     catch (err) {
-      console.error(err)
+      useErrorToast(`Error ${type}ing Test Data(s)`, err)
     }
   }
 

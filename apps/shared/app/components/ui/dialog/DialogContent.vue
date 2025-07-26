@@ -44,6 +44,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
           props.class,
         )"
       v-on="preventClosingIfNonClosable"
+      @interact-outside="e => {
+        if ((e.target as HTMLElement)?.closest('[data-sonner-toaster]'))
+          return e.preventDefault()
+      }"
     >
       <slot />
 

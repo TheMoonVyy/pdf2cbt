@@ -1476,7 +1476,7 @@ const fetchZipFile = async (isRetry: boolean = false) => {
     }
   }
   catch (error) {
-    console.error('Error fetching zip file from url:', error)
+    useErrorToast('Error fetching zip file from url:', error)
     zipFileFromUrlState.errorMsg = error instanceof Error ? error.message : String(error)
     zipFileFromUrlState.isLoading = false
     testState.value.testConfig.zipOriginalUrl = ''
@@ -1509,7 +1509,7 @@ const handleImportExportBtn = async (name: ImportExportTypeKey, file: File | nul
               importExportDialogState.isDialogOpen = true
             }
           })
-          .catch((e: unknown) => console.error('Error importing settings:', e))
+          .catch((e: unknown) => useErrorToast('Error importing settings:', e))
       }
       break
     }
@@ -1535,7 +1535,7 @@ const handleImportExportBtn = async (name: ImportExportTypeKey, file: File | nul
         }
       }
       catch (e: unknown) {
-        console.error('Error getting settings from db', e)
+        useErrorToast('Error getting settings from db', e)
       }
 
       name = 'reset' as ImportExportTypeKey
@@ -1647,7 +1647,7 @@ async function verifyTestData(
     }
   }
   catch (err) {
-    console.error('Error while verifying test data:', err)
+    useErrorToast('Error while verifying test data:', err)
   }
 }
 
@@ -1717,7 +1717,7 @@ async function loadTestData(
         testLogger.replaceLogsArray(testData.testLogs)
       }
       catch (e: unknown) {
-        console.error('Error getting Test Data in db', e)
+        useErrorToast('Error getting Test Data in db', e)
         testState.value.continueLastTest = null
       }
     }
@@ -1790,7 +1790,7 @@ async function loadTestData(
     testState.value.isSectionsDataLoaded = true
   }
   catch (err) {
-    console.error('Error loading TestData', err)
+    useErrorToast('Error loading TestData', err)
   }
 }
 
@@ -1941,7 +1941,7 @@ onMounted(() => {
         prepareTestState.isOngoingTestFoundInDB = true
       }
     })
-    .catch((e: unknown) => console.error(
+    .catch((e: unknown) => useErrorToast(
       'Error getting last test data (if present) in db', e,
     ))
 })

@@ -325,11 +325,11 @@ async function handleUpload(uploadedFiles: File[] | File) {
       }
     }
     catch (err: unknown) {
-      const customMsg = 'An unknown error occurred while processing the files'
+      const customMsg = 'Error processing the files'
       const msg = err instanceof Error
         ? customMsg + ':\n' + err.message
         : customMsg
-      console.error(customMsg, err)
+      useErrorToast(customMsg, err)
       invalidFilesErrorHandler(msg)
     }
   }
