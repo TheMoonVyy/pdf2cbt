@@ -343,6 +343,8 @@ const chartOptions = {
           ? null
           : `<p>Subject: ${subject}</p>`
 
+        const stringifyAnswerSeparators = { msm: { rows: '<br>' } }
+
         // user answer won't be shown if it is null
         let yourAnswerContentText = ''
         if (answer !== null) {
@@ -358,7 +360,7 @@ const chartOptions = {
                   color = chartColors.resultStatus.partial
                 }
                 yourAnswerContentText += `
-                    <span style="color: ${color};">${utilStringifyAnswer(ans, type, false, ', ', '<br>')}&nbsp</span>
+                    <span style="color: ${color};">${utilStringifyAnswer(ans, type, false, stringifyAnswerSeparators)}&nbsp</span>
                   `
               })
               yourAnswerContentText += '</p>'
@@ -366,7 +368,7 @@ const chartOptions = {
             else {
               yourAnswerContentText += `
                   <span style="color: ${chartColors.resultStatus[resultStatus]};">
-                    ${utilStringifyAnswer(sortedAnswer, type, false, ', ', '<br>')}
+                    ${utilStringifyAnswer(sortedAnswer, type, false, stringifyAnswerSeparators)}
                   </span></p>
                 `
             }
@@ -374,7 +376,7 @@ const chartOptions = {
           else {
             yourAnswerContentText += `
                 <span style="color: ${chartColors.resultStatus[resultStatus]};">
-                  ${utilStringifyAnswer(answer, type, true, ', ', '<br>')}
+                  ${utilStringifyAnswer(answer, type, true, stringifyAnswerSeparators)}
                 </span></p>
               `
           }
@@ -391,7 +393,7 @@ const chartOptions = {
             ${yourAnswerContentText || ''}
             <p>Correct Answer:
               <span style="color: ${chartColors.resultStatus.correct};">
-                ${utilStringifyAnswer(correctAnswer, type, true, ', ', '<br>')}
+                ${utilStringifyAnswer(correctAnswer, type, true, stringifyAnswerSeparators)}
               </span>
             </p>
             <p>Result:
