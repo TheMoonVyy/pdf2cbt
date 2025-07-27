@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.21.0...v1.22.0) (2025-07-27)
+
+
+### Features
+
+* add ability to load existing data to edit on pdf cropper page, and in generate answer key page load answer key present in the loaded json data ([9ef765d](https://github.com/TheMoonVyy/pdf2cbt/commit/9ef765dde1ec9f89ebeab48f56471b32b3cf6504))
+
 ## [1.21.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.20.1...v1.21.0) (2025-07-26)
 
 
