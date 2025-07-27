@@ -3,7 +3,7 @@
   given that property name and type of value are same, else ignored
   This function is specificially for settings objects
 */
-const utilSelectiveMergeObj = <T extends Record<string, unknown>>(
+const utilSelectiveMergeObj = <T extends object>(
   target: T,
   data: Partial<T>,
 ): T => {
@@ -29,8 +29,8 @@ const utilSelectiveMergeObj = <T extends Record<string, unknown>>(
       && typeof dataValue === 'object' && dataValue !== null
     ) {
       target[key] = utilSelectiveMergeObj(
-        targetValue as Record<string, unknown>,
-        dataValue as Record<string, unknown>,
+        targetValue,
+        dataValue,
       ) as T[keyof T]
     }
     else if (typeof dataValue === typeof targetValue && targetValue !== dataValue) {

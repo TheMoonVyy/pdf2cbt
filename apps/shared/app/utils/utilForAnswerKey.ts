@@ -3,22 +3,32 @@ export const utilConvertNumberToChar = (
   startingChar: string = 'A',
 ) => String.fromCharCode(startingChar.charCodeAt(0) + num - 1)
 
+type Separators = {
+  mcq?: string
+  msq?: string
+  nat?: string
+  msm?: {
+    cols?: string
+    rows?: string
+    rowColIndicator?: string
+  }
+}
+
 // stringify Answer without mutating answer (i.e. when it is an array or object)
 export const utilStringifyAnswer = (
   answer: QuestionAnswer,
   questionType: QuestionType,
   sortArray: boolean = false,
-  optionsJoinSeparator: string = ', ',
-  rowsJsonSeparator = '\n',
+  separators: Separators = {},
 ) => {
   if (answer === null) return 'null'
 
   if (Array.isArray(answer)) {
     const answerArray = sortArray ? answer.toSorted() : answer
     if (questionType === 'mcq') {
-      return answerArray.map(n => utilConvertNumberToChar(n)).join(' or ')
+      return answerArray.map(n => utilConvertNumberToChar(n)).join(separators.mcq ?? ' or ')
     }
-    return answerArray.map(n => utilConvertNumberToChar(n)).join(optionsJoinSeparator)
+    return answerArray.map(n => utilConvertNumberToChar(n)).join(separators.msq ?? ', ')
   }
   else if (typeof answer === 'number') {
     return utilConvertNumberToChar(answer)
@@ -28,9 +38,13 @@ export const utilStringifyAnswer = (
       return 'DROPPED'
 
     if (answer.toUpperCase().includes('BONUS'))
-      return 'Bonus'
+      return 'BONUS'
 
-    const maybeRanges = answer.split(',')
+    const maybeRanges = answer
+      .toUpperCase()
+      .replace('OR', ',')
+      .split(',')
+
     const results: string[] = []
 
     for (const maybeRange of maybeRanges) {
@@ -41,7 +55,7 @@ export const utilStringifyAnswer = (
         results.push(maybeRange.trim())
       }
     }
-    return results.join(' or ')
+    return results.join(separators.nat ?? ' or ')
   }
   else if (questionType === 'msm') {
     const formatedRowsStrs: string[] = []
@@ -52,7 +66,8 @@ export const utilStringifyAnswer = (
       const colsChars = colsArray.map(n => utilConvertNumberToChar(n, 'P'))
       if (colsChars.length > 0) {
         const rowChar = utilConvertNumberToChar(parseInt(rowNumStr))
-        const formattedRowStr = `${rowChar}: ${colsChars.join(optionsJoinSeparator)}`
+        const colsString = colsChars.join(separators.msm?.cols ?? ', ')
+        const formattedRowStr = `${rowChar}${separators.msm?.rowColIndicator ?? ': '}${colsString}`
         formatedRowsStrs.push(formattedRowStr)
       }
     }
@@ -60,6 +75,7 @@ export const utilStringifyAnswer = (
     if (formatedRowsStrs.length === 0)
       return 'null'
 
-    return formatedRowsStrs.join(rowsJsonSeparator)
+    return formatedRowsStrs.join(separators.msm?.rows ?? '\n')
   }
+  return 'null'
 }

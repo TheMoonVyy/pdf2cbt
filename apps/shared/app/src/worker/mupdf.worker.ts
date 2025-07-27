@@ -3,6 +3,7 @@
 import * as Comlink from 'comlink'
 import type { Document, Pixmap } from 'mupdf'
 import type { TestImageBlobs } from '#layers/shared/shared/types/cbt-interface'
+import type { PageImgData } from '#layers/shared/shared/types/pdf-cropper'
 
 interface PdfData {
   page: number
@@ -48,7 +49,8 @@ export class MuPdfProcessor {
     await this.loadMuPdf(scriptUrls)
     this.doc = this.mupdf.Document.openDocument(pdfFile, 'application/pdf')
 
-    if (getPageCount) return this.doc?.countPages()
+    if (getPageCount)
+      return this.doc?.countPages()
   }
 
   private async getPagePixmap(
@@ -67,23 +69,36 @@ export class MuPdfProcessor {
     )
   }
 
+  async getAllPagesDimensionsData(): Promise<PageImgData> {
+    if (!this.doc)
+      throw new Error('PDF not loaded')
+
+    const totalPagesCount = this.doc.countPages()
+    const pageImgData: PageImgData = {}
+
+    for (let i = 0; i < totalPagesCount; i++) {
+      const [ulx, uly, lrx, lry] = this.doc.loadPage(i).getBounds()
+      pageImgData[i + 1] = {
+        width: Math.abs(lrx - ulx),
+        height: Math.abs(lry - uly),
+        url: '',
+        pageScale: 1,
+      }
+    }
+
+    return pageImgData
+  }
+
   async getPageImage(
     pageNum: number,
     scale: number,
     transparent: boolean = false,
-  ): Promise<{ blob: Blob, dimensions: { w: number, h: number } }> {
+  ): Promise<Blob> {
     if (!this.doc) throw new Error('PDF not loaded')
 
     const pixmap = await this.getPagePixmap(pageNum, scale, transparent)
-    const [ulx, uly, lrx, lry] = this.doc.loadPage(pageNum - 1).getBounds()
 
-    return {
-      blob: new Blob([pixmap.asPNG()], { type: 'image/png' }),
-      dimensions: {
-        w: Math.abs(lrx - ulx),
-        h: Math.abs(lry - uly),
-      },
-    }
+    return new Blob([pixmap.asPNG()], { type: 'image/png' })
   }
 
   async generateQuestionImages(

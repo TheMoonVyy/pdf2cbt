@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col grow min-h-0">
     <PdfCropperSettingsDrawer
-      v-model:advance-settings-visible="visibilityState.advanceSettings"
+      v-model:advance-settings-visible="dialogsState.showSettings"
     />
     <UiResizablePanelGroup
       direction="horizontal"
@@ -26,7 +26,7 @@
                     label="Settings"
                     icon-name="line-md:cog-filled"
                     icon-size="1.2rem"
-                    @click="visibilityState.advanceSettings = true"
+                    @click="dialogsState.showSettings = true"
                   />
                 </div>
                 <UiTabs
@@ -83,7 +83,7 @@
                   icon-name="line-md:edit"
                   icon-size="1.2rem"
                   :disabled="cropperOverlayDatas.size === 0"
-                  @click="visibilityState.bulkEditDialog = true"
+                  @click="dialogsState.showBulkEdit = true"
                 />
                 <BaseFloatLabel
                   class="flex-[1_1_45%] min-w-[40%]"
@@ -109,7 +109,7 @@
               :disabled="!hasQuestionsData"
               @click="() => {
                 generateOutputState.downloaded = false
-                visibilityState.generateOutputDialog = true
+                dialogsState.showGenerateOutput = true
               }"
             />
             <PdfCropperQuestionDetailsPanel
@@ -131,6 +131,7 @@
         :collapsible="false"
       >
         <UiScrollArea
+          ref="pdfPageScrollAreaElem"
           class="w-full h-full rounded border"
           type="auto"
         >
@@ -139,14 +140,20 @@
               v-if="!isPdfLoaded"
               class="flex flex-col gap-6 justify-center mt-6"
             >
-              <BaseSimpleFileUpload
-                class="mx-auto"
-                accept="application/pdf,application/zip,.pdf,.zip"
-                :label="visibilityState.isLoadingPdf ? 'Please wait, loading PDF...' : 'Select a PDF'"
-                :icon-name="visibilityState.isLoadingPdf ? 'line-md:loading-twotone-loop' : 'line-md:plus'"
-                invalid-file-type-message="Please select a valid PDF."
-                @upload="handleFileUpload"
-              />
+              <div class="flex gap-5 items-center justify-center">
+                <BaseSimpleFileUpload
+                  accept="application/pdf,.pdf"
+                  :label="dialogsState.isLoadingPdf ? 'Please wait, loading PDF...' : 'Select a PDF'"
+                  :icon-name="dialogsState.isLoadingPdf ? 'line-md:loading-twotone-loop' : 'line-md:plus'"
+                  invalid-file-type-message="Please select a valid PDF."
+                  @upload="handlePdfFileUpload"
+                />
+                <BaseButton
+                  label="Load Existing Data"
+                  variant="warn"
+                  @click="dialogsState.showEditExistingFiles = true"
+                />
+              </div>
               <DocsPdfCropper class="mx-4 sm:mx-10 select-text" />
             </div>
             <div
@@ -214,7 +221,7 @@
       </UiResizablePanel>
     </UiResizablePanelGroup>
     <UiDialog
-      v-model:open="visibilityState.questionDetailsDialog"
+      v-model:open="dialogsState.showQuestionDetails"
     >
       <UiDialogContent>
         <UiDialogHeader>
@@ -229,13 +236,13 @@
         <div class="flex justify-center my-3">
           <BaseButton
             label="Okay"
-            @click="visibilityState.questionDetailsDialog = false"
+            @click="dialogsState.showQuestionDetails = false"
           />
         </div>
       </UiDialogContent>
     </UiDialog>
     <UiDialog
-      v-model:open="visibilityState.generateOutputDialog"
+      v-model:open="dialogsState.showGenerateOutput"
     >
       <UiDialogContent class="max-w-full sm:max-w-md px-0">
         <UiDialogHeader class="mb-4">
@@ -412,7 +419,7 @@
       </UiDialogContent>
     </UiDialog>
     <PdfCropperBulkEditDialog
-      v-model="visibilityState.bulkEditDialog"
+      v-model="dialogsState.showBulkEdit"
       v-model:optional-questions="testConfig.optionalQuestions!"
       v-model:overlay-datas="cropperOverlayDatas"
       :pages-dimensions="pageImgData"
@@ -424,6 +431,11 @@
       :cropper-sections-data="cropperSectionsDataForPreGenerateImages"
       @current-question-progress="(questionNum) => generateOutputState.generationProgress = questionNum"
       @image-blobs-generated="addImageBlobsToZipAndDownload"
+    />
+    <PdfCropperEditExistingFilesDialog
+      v-if="dialogsState.showEditExistingFiles"
+      v-model="dialogsState.showEditExistingFiles"
+      @uploaded-data="loadExistingData"
     />
   </div>
 </template>
@@ -443,14 +455,7 @@ type CropperMode = {
   isLine: boolean
 }
 
-type PageImgData = {
-  [pageNum: number]: {
-    width: number
-    height: number
-    url: string
-    pageScale: number
-  }
-}
+type JsonOutputData = PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper
 
 const selectOptions = {
   cropperMode: [
@@ -510,7 +515,11 @@ const tooltipContent = {
 
 const migrateJsonData = useMigrateJsonData()
 
-const appVersion = useRuntimeConfig().public.projectVersion
+const jsonOutputData = shallowRef<JsonOutputData>(
+  migrateJsonData.getPdfCropperJsonOutputTemplate(),
+)
+
+const pdfPageScrollAreaElem = useTemplateRef('pdfPageScrollAreaElem')
 
 const generateOutputState = shallowReactive({
   filename: 'pdf2cbt_cropperdata',
@@ -519,15 +528,12 @@ const generateOutputState = shallowReactive({
   preGenerateImagesScale: 2,
   generatingImages: false,
   generationProgress: 0,
-  isUploadedFileZipFile: false,
   totalQuestions: 0,
   preparingDownload: false,
   downloaded: false,
 })
 
 const outputFilesToZip = shallowRef<AsyncZippable>({})
-
-const userUploadedCropperJsonOutput = shallowRef<PdfCropperJsonOutput | null>(null)
 
 const cropperSectionsDataForPreGenerateImages = shallowRef<CropperSectionsData>({})
 
@@ -555,12 +561,13 @@ const isPdfLoaded = shallowRef(false)
 
 const settings = usePdfCropperLocalStorageSettings()
 
-const visibilityState = shallowReactive({
+const dialogsState = shallowReactive({
   isLoadingPdf: false,
-  advanceSettings: false,
-  questionDetailsDialog: false,
-  generateOutputDialog: false,
-  bulkEditDialog: false,
+  showSettings: false,
+  showQuestionDetails: false,
+  showGenerateOutput: false,
+  showBulkEdit: false,
+  showEditExistingFiles: false,
 })
 
 const mupdfScripturls = useGetMupdfScriptUrls()
@@ -596,6 +603,7 @@ const mainOverlayData = reactive<PdfCroppedOverlayData>({
   answerOptionsCounterTypeSecondary: 'default',
 })
 
+// count of overlays per question using queId as key
 const overlaysPerQuestionData = reactive<PdfCropperOverlaysPerQuestion>(new Map())
 
 const cachedData: {
@@ -611,6 +619,7 @@ const cachedData: {
   }
 } = {}
 
+// store and use marking scheme, answer options, counter type datas for each question type
 watch(
   () => mainOverlayData.type,
   (newQuestionType, oldQuestionType) => {
@@ -720,6 +729,8 @@ const storeOverlayData = (
   overlaysPerQuestionData.set(newQueId, newImgNum)
 }
 
+// watch for changes to currentQuestionData user does from questions details fields
+// if details has changed, and modify the overlay data based on what was changed
 watch(currentQuestionData,
   (newData, oldData) => {
     if (newData.id === oldData.id) return
@@ -730,10 +741,12 @@ watch(currentQuestionData,
     const oldOverlay = cropperOverlayDatas.get(id)
     if (oldOverlay) {
       const newQueId = `${section || subject}${SEPARATOR}${que}`
-      if (id.includes(newQueId + SEPARATOR)) {
+      if (id.includes(newQueId + SEPARATOR)) { // is id upto queId same
         const imgNum = oldOverlay.imgNum
         const oldImgCount = overlaysPerQuestionData.get(oldQueId) || 1
 
+        // if oldOverlay is first overlay/img of the question and question contains multiple overlays
+        // then copy data (if changed) to other overlays of the question as well
         if (imgNum === 1 && oldImgCount > 1) {
           const nextOverlayData = cropperOverlayDatas.get(oldQueId + SEPARATOR + 2)
           if (!nextOverlayData) return
@@ -785,9 +798,7 @@ watch(currentQuestionData,
       storeOverlayData(oldOverlay, newQueId)
     }
 
-    // Shift overlays to left to fill the one that was deleted/moved
-    // Delete last one since it's now duplicated in the previous one
-    // if there is no next overlay to begin with, then deletes the current one that needs to be deleted
+    // Shift overlays to left to fill the oldOverlay that has been deleted/moved
     let currentImgNum = oldOverlay?.imgNum || oldData.imgNum
     while (true) {
       const currentId = oldQueId + SEPARATOR + currentImgNum
@@ -800,6 +811,8 @@ watch(currentQuestionData,
         cropperOverlayDatas.set(currentId, nextOverlayData)
       }
       else {
+        // Delete last one since it's now duplicated in the previous one
+        // if there is no next overlay to begin with, then deletes the current one that needs to be deleted
         cropperOverlayDatas.delete(currentId)
         break
       }
@@ -809,8 +822,10 @@ watch(currentQuestionData,
 
     const oldImgCount = overlaysPerQuestionData.get(oldQueId)
     if (typeof oldImgCount === 'number') {
-      if (oldImgCount > 1) overlaysPerQuestionData.set(oldQueId, oldImgCount - 1)
-      else overlaysPerQuestionData.delete(oldQueId)
+      if (oldImgCount > 1)
+        overlaysPerQuestionData.set(oldQueId, oldImgCount - 1)
+      else
+        overlaysPerQuestionData.delete(oldQueId)
     }
   },
   { deep: false, flush: 'pre' },
@@ -820,14 +835,12 @@ const currentPageDetails = computed(() => {
   const { url = '', width = 0, height = 0 } = pageImgData[pdfState.currentThrottledPageNum] ?? {}
   const zoomScale = zoomScaleDebounced.value
 
-  const data = {
+  return {
     url,
     width,
     height,
     zoomScale,
   }
-
-  return data
 })
 
 /*
@@ -839,7 +852,7 @@ const cropperMode = computed<CropperMode>(() => ({
   isLine: settings.value.general.cropperMode === 'line',
 }))
 
-// Flag for generate ouput btn
+// Flag for generate output btn
 const hasQuestionsData = computed<boolean>(() => cropperOverlayDatas.size > 0)
 
 function storeCurrentQuestionData(
@@ -848,7 +861,7 @@ function storeCurrentQuestionData(
 ) {
   const { subject, section, que, answerOptions } = mainOverlayData
   if (!subject || !(/^\d+(x\d+)?$/i.test(answerOptions))) {
-    visibilityState.questionDetailsDialog = true
+    dialogsState.showQuestionDetails = true
     return
   }
 
@@ -867,34 +880,17 @@ function storeCurrentQuestionData(
   if (incrementQuestion) mainOverlayData.que++
 }
 
-const handleFileUpload = async (file: File) => {
-  userUploadedCropperJsonOutput.value = null
-  pdfState.fileUint8Array = null
-  generateOutputState.isUploadedFileZipFile = false
-  visibilityState.isLoadingPdf = true
-
-  await nextTick()
-
+async function handlePdfFileUpload(file: File | Uint8Array) {
+  dialogsState.isLoadingPdf = true
   testConfig.pdfFileHash = ''
+  testConfig.optionalQuestions = []
+
   try {
-    const zipCheckStatus = await utilIsZipFile(file)
-    if (zipCheckStatus > 0) {
-      const unzippedData = await utilUnzipTestDataFile(file, 'pdf-and-json', false)
-      if (unzippedData.pdfBuffer && unzippedData.jsonData) {
-        pdfState.fileUint8Array = unzippedData.pdfBuffer
-        userUploadedCropperJsonOutput.value = migrateJsonData.pdfCropperData(unzippedData.jsonData)
-        testConfig.pdfFileHash = userUploadedCropperJsonOutput.value?.testConfig.pdfFileHash || ''
-        visibilityState.isLoadingPdf = false
-        generateOutputState.isUploadedFileZipFile = true
-        visibilityState.generateOutputDialog = true
-      }
-    }
-    else {
-      file.arrayBuffer().then((buffer) => {
-        pdfState.fileUint8Array = new Uint8Array(buffer)
-        loadPdfFile()
-      })
-    }
+    pdfState.fileUint8Array = file instanceof File
+      ? new Uint8Array(await file.arrayBuffer())
+      : file
+
+    loadPdfFile()
   }
   catch (err) {
     useErrorToast('Error loading uploaded file:', err)
@@ -907,14 +903,17 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
     closeMupdfWorker()
     mupdfWorker = Comlink.wrap<MuPdfProcessor>(new mupdfWorkerFile())
 
-    const pagesCount = await mupdfWorker.loadPdf(pdfState.fileUint8Array, mupdfScripturls, true)
+    const pagesCount = await mupdfWorker.loadPdf(pdfState.fileUint8Array, mupdfScripturls, isFirstLoad)
     if (pagesCount && isFirstLoad) {
       pdfState.totalPages = pagesCount
       pdfState.currentPageNum = 1
 
-      await renderPage(pdfState.currentPageNum)
-      isPdfLoaded.value = true
+      const _pageImgData = await mupdfWorker.getAllPagesDimensionsData()
+      Object.assign(pageImgData, _pageImgData)
     }
+    await renderPage(pdfState.currentPageNum)
+    dialogsState.isLoadingPdf = false
+    isPdfLoaded.value = true
   }
   catch (err) {
     useErrorToast('Error loading PDF:', err)
@@ -922,31 +921,28 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
 }
 
 async function renderPage(pageNum: number) {
-  if (mupdfWorker === null) {
-    await loadPdfFile()
-  }
-  if (!mupdfWorker) return
-
   try {
+    if (!mupdfWorker)
+      await loadPdfFile(false)
+
+    if (!mupdfWorker) return
+
     const dpr = devicePixelRatio.value || 1
     const qualityFactor = settings.value.general.qualityFactor
 
     const pageScale = dpr * qualityFactor
 
     const maybeExistingPage = pageImgData[pageNum]
-    if (!maybeExistingPage || maybeExistingPage.pageScale !== pageScale) {
+    if (!maybeExistingPage?.url || maybeExistingPage?.pageScale !== pageScale) {
       if (maybeExistingPage?.url) {
         URL.revokeObjectURL(maybeExistingPage.url)
       }
 
-      const pageData = await mupdfWorker.getPageImage(pageNum, pageScale, true)
+      const pageImgBlob = await mupdfWorker.getPageImage(pageNum, pageScale, true)
 
-      pageImgData[pageNum] = {
-        url: URL.createObjectURL(pageData.blob),
-        width: pageData.dimensions.w,
-        height: pageData.dimensions.h,
-        pageScale,
-      }
+      const pageData = pageImgData[pageNum]!
+      pageData.url = URL.createObjectURL(pageImgBlob)
+      pageData.pageScale = pageScale
     }
   }
   catch (err) {
@@ -954,7 +950,7 @@ async function renderPage(pageNum: number) {
   }
 }
 
-function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>): PdfCropperJsonOutput {
+function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>): JsonOutputData {
   type StructuredOverlayData = {
     [subject: string]: {
       [section: string]: {
@@ -1034,19 +1030,14 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>): 
     }
   }
 
-  const pdfCropperData = subjectsData
-
-  const outputData: PdfCropperJsonOutput = {
-    pdfCropperData,
-    testConfig: {
-      pdfFileHash: testConfig.pdfFileHash,
-    },
-    appVersion,
-    generatedBy: 'pdfCropperPage',
-  }
+  const outputData = utilCloneJson(jsonOutputData.value)
+  outputData.pdfCropperData = subjectsData
+  outputData.testConfig.pdfFileHash = testConfig.pdfFileHash
 
   if (testConfig.optionalQuestions?.length)
     outputData.testConfig.optionalQuestions = utilCloneJson(testConfig.optionalQuestions)
+
+  migrateJsonData.removeEmptyKeysFromTestConfig(outputData.testConfig)
 
   return outputData
 }
@@ -1080,16 +1071,7 @@ async function generatePdfCropperOutput() {
   if (!testConfig.pdfFileHash)
     testConfig.pdfFileHash = await utilGetHash(pdfU8Array)
 
-  let jsonData: PdfCropperJsonOutput
-  if (generateOutputState.isUploadedFileZipFile) {
-    const data = userUploadedCropperJsonOutput.value!
-    data.testConfig.pdfFileHash = testConfig.pdfFileHash
-    if (testConfig.optionalQuestions?.length)
-      data.testConfig.optionalQuestions = utilCloneJson(testConfig.optionalQuestions)
-    jsonData = data
-  }
-  else
-    jsonData = transformDataToOutputFormat(toRaw(cropperOverlayDatas))
+  const jsonData = transformDataToOutputFormat(toRaw(cropperOverlayDatas))
 
   const jsonString = JSON.stringify(jsonData, null, 2)
 
@@ -1123,6 +1105,83 @@ async function generatePdfCropperOutput() {
       outputFilesToZip.value[DataFileNames.QuestionsPdf] = pdfU8Array
       zipAndDownloadOutput()
     }
+  }
+}
+
+async function loadExistingData(
+  data: {
+    pdfBuffer: Uint8Array
+    jsonData: PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper
+  },
+) {
+  try {
+    await handlePdfFileUpload(data.pdfBuffer)
+
+    jsonOutputData.value = data.jsonData
+
+    const { pdfFileHash, optionalQuestions } = data.jsonData.testConfig ?? {}
+    testConfig.pdfFileHash = pdfFileHash || ''
+    if (Array.isArray(optionalQuestions) && optionalQuestions.length > 0) {
+      testConfig.optionalQuestions = optionalQuestions
+    }
+
+    for (const [subject, subjectData] of Object.entries(data.jsonData.pdfCropperData)) {
+      for (const [section, sectionData] of Object.entries(subjectData)) {
+        for (const [question, questionData] of Object.entries(sectionData)) {
+          const {
+            pdfData,
+            que,
+            answerOptions,
+            answerOptionsCounterType,
+            type,
+          } = questionData
+
+          const marks: PdfCroppedOverlayData['marks'] = {
+            cm: questionData.marks.cm,
+            pm: questionData.marks.pm ?? 1,
+            im: questionData.marks.im,
+          }
+
+          const queId = `${section}${SEPARATOR}${question}`
+
+          let imgNum = 0
+          for (const data of pdfData) {
+            imgNum++
+            const id = `${queId}${SEPARATOR}${imgNum}`
+            const { page, x1, x2, y1, y2 } = data
+
+            const pdfData = {
+              page,
+              l: Math.min(x1, x2),
+              r: Math.max(x1, x2),
+              t: Math.min(y1, y2),
+              b: Math.max(y1, y2),
+            }
+
+            const overlayData: PdfCroppedOverlayData = {
+              id,
+              queId,
+              que,
+              subject,
+              section,
+              imgNum,
+              type,
+              answerOptions: answerOptions || '4',
+              marks,
+              pdfData,
+              answerOptionsCounterTypePrimary: answerOptionsCounterType?.primary || 'default',
+              answerOptionsCounterTypeSecondary: answerOptionsCounterType?.secondary || 'default',
+            }
+
+            cropperOverlayDatas.set(id, overlayData)
+          }
+          overlaysPerQuestionData.set(queId, imgNum)
+        }
+      }
+    }
+  }
+  catch (err) {
+    useErrorToast('Error loading JSON Data of Existing files', err)
   }
 }
 
@@ -1196,8 +1255,9 @@ onMounted(() => {
         pdfState.currentThrottledPageNum = newPageNum
 
         if (newPageNum <= 1) return
+        pdfPageScrollAreaElem.value?.scrollTopLeft()
 
-        if (!pageImgData[newPageNum]) {
+        if (!pageImgData[newPageNum]?.url) {
           renderPage(newPageNum)
         }
       }
