@@ -320,8 +320,6 @@ import { zip, strToU8 } from 'fflate'
 import type { AsyncZippable } from 'fflate'
 import { DataFileNames } from '#layers/shared/shared/enums'
 
-type UnknownRecord = Record<string, unknown>
-
 type SectionListItem = TestSectionListItem & { totalQuestions: number }
 
 type QuestionAnswerKeyData = {
@@ -772,6 +770,19 @@ async function handleFileUpload(files: File | File[]) {
 function loadDataState() {
   if (!subjectsData) return
 
+  const existingTestAnswerKey = fileUploaderState.jsonData?.testAnswerKey || {}
+
+  const stringifyAnswerSeparators = {
+    mcq: ', ',
+    msq: ', ',
+    nat: ' or ',
+    msm: {
+      cols: '',
+      rows: ', ',
+      rowColsIndicator: '-',
+    },
+  }
+
   for (const [subject, sectionData] of Object.entries(subjectsData)) {
     subjectsAnswerKeysData.value[subject] ??= {}
 
@@ -786,11 +797,14 @@ function loadDataState() {
 
       subjectsAnswerKeysData.value[subject][sectionName] ??= {}
 
-      for (const question of Object.keys(questionsData as UnknownRecord)) {
-        subjectsAnswerKeysData.value[subject][sectionName][question] = {
-          inputAnswer: '',
-          savedAnswer: null,
-        }
+      for (const [question, questionData] of Object.entries(questionsData)) {
+        // load existing testAnswerKey if present in loaded json data
+        const savedAnswer = existingTestAnswerKey?.[subject]?.[sectionName]?.[question] ?? null
+
+        const answerText = utilStringifyAnswer(savedAnswer, questionData.type, true, stringifyAnswerSeparators)
+
+        const inputAnswer = answerText === 'null' ? '' : answerText
+        subjectsAnswerKeysData.value[subject][sectionName][question] = { inputAnswer, savedAnswer }
       }
     }
   }
