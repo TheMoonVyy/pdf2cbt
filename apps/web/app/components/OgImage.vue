@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const siteUrl = useRuntimeConfig().public.siteUrl
+const siteUrl = useRuntimeConfig().public.websiteUrl
 
 const title = 'PDF2CBT'
 const description = 'Turn PDF of questions into CBT (Computer Based Test).'
