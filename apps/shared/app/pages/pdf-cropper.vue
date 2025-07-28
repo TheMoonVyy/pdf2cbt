@@ -241,7 +241,8 @@
         </div>
       </UiDialogContent>
     </UiDialog>
-    <UiDialog
+    <LazyUiDialog
+      v-if="isPdfLoaded"
       v-model:open="dialogsState.showGenerateOutput"
     >
       <UiDialogContent class="max-w-full sm:max-w-md px-0">
@@ -417,8 +418,9 @@
           </UiAccordion>
         </UiScrollArea>
       </UiDialogContent>
-    </UiDialog>
-    <PdfCropperBulkEditDialog
+    </LazyUiDialog>
+    <LazyPdfCropperBulkEditDialog
+      v-if="isPdfLoaded"
       v-model="dialogsState.showBulkEdit"
       v-model:optional-questions="testConfig.optionalQuestions!"
       v-model:overlay-datas="cropperOverlayDatas"
@@ -432,7 +434,7 @@
       @current-question-progress="(questionNum) => generateOutputState.generationProgress = questionNum"
       @image-blobs-generated="addImageBlobsToZipAndDownload"
     />
-    <PdfCropperEditExistingFilesDialog
+    <LazyPdfCropperEditExistingFilesDialog
       v-if="dialogsState.showEditExistingFiles"
       v-model="dialogsState.showEditExistingFiles"
       @uploaded-data="loadExistingData"
@@ -456,6 +458,10 @@ type CropperMode = {
 }
 
 type JsonOutputData = PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper
+
+useSeoMeta({
+  title: 'PDF Cropper - PDF2CBT',
+})
 
 const selectOptions = {
   cropperMode: [

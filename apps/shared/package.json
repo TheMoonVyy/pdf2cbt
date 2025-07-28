@@ -8,6 +8,7 @@
     "email": "themoonvyy@gmail.com"
   },
   "type": "module",
+  "main": "./nuxt.config.ts",
   "scripts": {
     "postinstall": "nuxt prepare",
     "prepare": "nuxt prepare"

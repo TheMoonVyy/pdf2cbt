@@ -23,12 +23,7 @@
               <span>Showing Results for&nbsp;</span>
               <ClientOnly>
                 <span class="font-bold">
-                  {{
-                    testResultJsonData?.testConfig.testName
-                      ?? (currentResultsID
-                        ? ''
-                        : 'Demo Mock Test')
-                  }}
+                  {{ computedTestName }}
                 </span>
               </ClientOnly>
             </h4>
@@ -236,6 +231,22 @@ const chartDataState = reactive<ChartDataState>({
     series: [],
   },
   testResultSummary: [],
+})
+
+const computedTestName = computed(() => {
+  const testName = testResultJsonData.value?.testConfig?.testName
+  if (testName)
+    return testName
+  else if (currentResultsID) {
+    return ''
+  }
+
+  return 'Demo Mock Test'
+})
+
+useSeoMeta({
+  title: () => 'Test Results - PDF2CBT'
+    + (computedTestName.value ? ` | ${computedTestName.value}` : ''),
 })
 
 // stores data for score card component

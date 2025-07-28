@@ -3,6 +3,7 @@ import packageJson from './package.json'
 
 export default defineNuxtConfig({
   extends: ['../shared'],
+  modules: ['@nuxtjs/robots', '@nuxtjs/sitemap', 'nuxt-og-image'],
   $meta: {
     name: 'web',
   },

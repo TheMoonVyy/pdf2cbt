@@ -18,7 +18,15 @@ export default defineNuxtConfig({
       htmlAttrs: {
         'class': 'dark',
         'data-theme-variant': 'blue',
+        'lang': 'en',
       },
+      title: 'PDF2CBT - Turn PDF of Questions into CBT (Computer Based Test)',
+      meta: [
+        {
+          name: 'description',
+          content: 'Turn PDF of Questions into CBT (Computer Based Test).',
+        },
+      ],
     },
   },
   css: ['vue-sonner/style.css'],

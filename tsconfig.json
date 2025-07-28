@@ -1,0 +1,3 @@
+{
+  "extends": [ "apps/shared/tsconfig.json", "apps/web/tsconfig.json"]
+}

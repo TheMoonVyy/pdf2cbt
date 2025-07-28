@@ -26,6 +26,8 @@
 import { MiscConsts, DeprecatedLocalStorageKeys } from '#layers/shared/shared/enums'
 import { Toaster } from '#layers/shared/app/components/ui/sonner'
 
+defineOgImageComponent('OgImage')
+
 const toastPosition = useToastPosition()
 
 const showBackupWebsiteNotice = shallowRef(false)

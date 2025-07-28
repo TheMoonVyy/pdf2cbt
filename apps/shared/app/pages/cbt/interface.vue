@@ -567,6 +567,10 @@ definePageMeta({
   layout: false,
 })
 
+useSeoMeta({
+  title: 'CBT Interface - PDF2CBT',
+})
+
 const testSummaryDataTableKeys: (keyof TestSummaryDataTableRow)[] = [
   'section', 'totalQuestions',
   'answered', 'notAnswered', 'marked', 'markedAnswered', 'notVisited',

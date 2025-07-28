@@ -27,7 +27,7 @@ const delegatedProps = reactiveOmit(props, 'class', 'titleClass')
         )
       "
     >
-      <h3
+      <span
         :class="
           cn(
             'text-xl mx-auto font-semibold transition-colors duration-200 text-muted-foreground group-hover:text-foreground group-data-[state=open]:text-foreground',
@@ -36,7 +36,7 @@ const delegatedProps = reactiveOmit(props, 'class', 'titleClass')
         "
       >
         <slot />
-      </h3>
+      </span>
       <slot name="icon">
         <ChevronDown
           class="text-muted-foreground pointer-events-none size-5.5 shrink-0 translate-y-0.5 transition-transform duration-200"
