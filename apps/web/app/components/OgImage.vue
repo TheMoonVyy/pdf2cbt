@@ -36,7 +36,10 @@ const description = 'Turn PDF of questions into CBT (Computer Based Test).'
           </p>
         </div>
       </div>
-      <div v-if="typeof siteConfig?.url === 'string'" class="flex flex-row justify-center items-center text-[35px] w-full">
+      <div
+        v-if="typeof siteConfig?.url === 'string'"
+        class="flex flex-row justify-center items-center text-[35px] w-full"
+      >
         {{ siteConfig.url }}
       </div>
     </div>

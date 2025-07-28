@@ -338,9 +338,9 @@ interface DBTestOutputDataState {
   isDataFromDB: boolean
 }
 
-  useSeoMeta({
-    title: 'Generate Answer Key - PDF2CBT',
-  })
+useSeoMeta({
+  title: 'Generate Answer Key - PDF2CBT',
+})
 
 const tooltipContent = {
   questionsNumberingOrderType: () =>

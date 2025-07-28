@@ -24,7 +24,7 @@ export const utilStringifyAnswer = (
   if (answer === null) return 'null'
 
   if (Array.isArray(answer)) {
-    const answerArray = sortArray ? answer.toSorted() : answer
+    const answerArray = sortArray ? answer.toSorted((a, b) => a - b) : answer
     if (questionType === 'mcq') {
       return answerArray.map(n => utilConvertNumberToChar(n)).join(separators.mcq ?? ' or ')
     }
@@ -61,7 +61,7 @@ export const utilStringifyAnswer = (
     const formatedRowsStrs: string[] = []
 
     for (const [rowNumStr, cols] of Object.entries(answer)) {
-      const colsArray = sortArray ? cols.toSorted() : cols
+      const colsArray = sortArray ? cols.toSorted((a, b) => a - b) : cols
 
       const colsChars = colsArray.map(n => utilConvertNumberToChar(n, 'P'))
       if (colsChars.length > 0) {
