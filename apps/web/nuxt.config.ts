@@ -10,6 +10,7 @@ export default defineNuxtConfig({
   css: ['./app/assets/css/main.css'],
   runtimeConfig: {
     public: {
+      siteUrl: 'https://pdf2cbt.vercel.app',
       isBackupWebsite: '',
       isBuildForWebsite: '',
       projectVersion: packageJson.version,

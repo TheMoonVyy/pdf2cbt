@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { useSiteConfig } from '#site-config/app/composables'
-
-const siteConfig = useSiteConfig()
+const siteUrl = useRuntimeConfig().public.siteUrl
 
 const title = 'PDF2CBT'
 const description = 'Turn PDF of questions into CBT (Computer Based Test).'
@@ -37,10 +35,10 @@ const description = 'Turn PDF of questions into CBT (Computer Based Test).'
         </div>
       </div>
       <div
-        v-if="typeof siteConfig?.url === 'string'"
+        v-if="siteUrl && typeof siteUrl === 'string'"
         class="flex flex-row justify-center items-center text-[35px] w-full"
       >
-        {{ siteConfig.url }}
+        {{ siteUrl }}
       </div>
     </div>
   </div>
