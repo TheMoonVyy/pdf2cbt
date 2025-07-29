@@ -905,6 +905,7 @@
       </UiDialogContent>
     </UiDialog>
     <UiDialog
+      v-if="!zipFileFromUrlState.isDialogOpen"
       v-model:open="prepareTestState.isOngoingTestFoundInDB"
     >
       <UiDialogContent
@@ -1083,13 +1084,23 @@
           type="text"
           class="w-4/5 mx-auto"
         />
+        <div
+          v-if="prepareTestState.isOngoingTestFoundInDB"
+          class="text-red-400 my-3"
+        >
+          <strong>Warning: An Unfinished Test has been found!</strong>
+          <p>The unfinished test will be discarded if you chose to load this test from url.</p>
+        </div>
         <UiDialogFooter
           v-if="!zipFileFromUrlState.isLoading"
         >
           <BaseButton
             :label="zipFileFromUrlState.errorMsg ? 'Retry' : 'Load File'"
             :disabled="zipFileFromUrlState.isLoading || !zipFileFromUrlState.url.trim()"
-            @click="fetchZipFile(Boolean(zipFileFromUrlState.errorMsg))"
+            @click="() => {
+              prepareTestState.isOngoingTestFoundInDB = false
+              fetchZipFile(Boolean(zipFileFromUrlState.errorMsg))
+            }"
           />
           <BaseButton
             label="Cancel"

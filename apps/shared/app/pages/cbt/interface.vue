@@ -460,6 +460,7 @@
     >
       <UiDialogContent
         non-closable
+        class="data-[state=closed]:animate-none! data-[state=closed]:transition-none! data-[state=closed]:zoom-out-100"
         :class="testState.currentProcess === 'test-is-ready'
           ? 'sm:w-fit'
           : 'sm:w-lg'
