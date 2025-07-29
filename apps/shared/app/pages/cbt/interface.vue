@@ -68,9 +68,9 @@
                   :data-id="'data-id_' + sectionItem.name"
                   @click="changeCurrentQuestion('sectionBtn', null, sectionItem.name)"
                 >
-                  <h4 class="pl-3 py-0.5">
+                  <span class="pl-3 py-0.5">
                     {{ sectionItem.name }}
-                  </h4>
+                  </span>
                   <CbtInterfaceSectionSummaryTooltip
                     :section-name="sectionItem.name"
                     :question-status-list="questionStatusList"
@@ -451,6 +451,8 @@
         />
       </div>
     </div>
+
+    <!-- Dialogs -->
     <UiDialog
       :open="testState.currentProcess === 'preparing-data'
         || testState.currentProcess === 'preparing-imgs'
@@ -458,6 +460,7 @@
     >
       <UiDialogContent
         non-closable
+        class="data-[state=closed]:animate-none! data-[state=closed]:transition-none! data-[state=closed]:zoom-out-100"
         :class="testState.currentProcess === 'test-is-ready'
           ? 'sm:w-fit'
           : 'sm:w-lg'
@@ -476,7 +479,7 @@
           v-if="testState.currentProcess !== 'test-is-ready'"
           class="flex flex-col gap-3"
         >
-          <h3 class="text-center text-lg font-semibold">
+          <span class="text-center text-lg font-semibold">
             <template v-if="testState.currentProcess === 'preparing-data'">
               processing {{ testSettings.saveTestData ? 'and storing' : '' }} data
             </template>
@@ -487,31 +490,31 @@
               processing question&nbsp;
               {{ testState.preparingTestCurrentQuestion }}/{{ testState.totalQuestions }}
             </template>
-          </h3>
+          </span>
           <span
             v-if="currentTestState.saveTestData === null"
             class="flex flex-col text-amber-300 text-center"
           >
             <span class="text-lg">Warning!</span>
             Failed to save the test in local storage (IndexedDB).<br>
-            The save feature is now disabled.<br>
+            The auto-save feature is now disabled for current test.<br>
           </span>
           <UiProgress
             :model-value="preparingTestProgressBar"
             class="h-7"
           />
-          <h3 class="text-sm">
+          <span class="text-sm">
             This may take some time, depending on the number of questions and your device's capacity.<br>
             In the meantime, buckle up for the test!
-          </h3>
+          </span>
         </div>
         <div
           v-else-if="testState.currentProcess === 'test-is-ready'"
           class="flex flex-col gap-8"
         >
-          <h3 class="text-center">
+          <span class="text-center">
             You can now start your mock test
-          </h3>
+          </span>
           <span
             v-if="currentTestState.saveTestData === null"
             class="flex flex-col text-amber-300 text-center"
@@ -533,13 +536,13 @@
       </UiDialogContent>
     </UiDialog>
     <UiDialog :open="isTestPaused">
-      <UiDialogContent>
+      <UiDialogContent non-closable>
         <UiDialogHeader>
           <UiDialogTitle>Test is Paused</UiDialogTitle>
         </UiDialogHeader>
-        <h4 class="font-semibold">
+        <span class="font-semibold mx-auto">
           You have paused the test.
-        </h4>
+        </span>
         <UiDialogFooter>
           <BaseButton
             class="mx-auto"

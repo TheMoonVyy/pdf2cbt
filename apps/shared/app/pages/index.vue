@@ -48,9 +48,9 @@
       </p>
       <!-- Step 1 -->
       <div class="w-full border border-green-500 rounded-2xl p-4">
-        <h2 class="text-xl font-semibold text-green-500">
+        <span class="text-xl font-semibold text-green-500">
           1. Crop Questions from PDF
-        </h2>
+        </span>
         <p class="mt-2 text-left">
           Use the
           <NuxtLink
@@ -95,9 +95,9 @@
 
       <!-- Step 2 -->
       <div class="w-full border border-green-500 rounded-2xl p-4">
-        <h2 class="text-xl font-semibold text-green-500">
+        <span class="text-xl font-semibold text-green-500">
           2. Generate Answer Key Data and then take the Test or vice versa
-        </h2>
+        </span>
         <p class="mt-2 text-left">
           Now, thanks to the flexibility of pdf2cbt, you've got two paths you can choose:
         </p>
@@ -178,9 +178,9 @@
 
       <!-- Step 3 -->
       <div class="w-full border border-green-500 rounded-2xl p-4">
-        <h2 class="text-xl font-semibold text-green-500">
+        <span class="text-xl font-semibold text-green-500">
           3. Take the Test
-        </h2>
+        </span>
         <p class="mt-2 text-left">
           Now here comes the real star of the project,
           <NuxtLink
@@ -300,9 +300,9 @@
 
       <!-- Step 4 -->
       <div class="w-full border border-green-500 rounded-2xl p-4">
-        <h2 class="text-xl font-semibold text-green-500">
+        <span class="text-xl font-semibold text-green-500">
           4. See Results
-        </h2>
+        </span>
         <p class="mt-2 text-left">
           Just straight up take a look at
           <NuxtLink

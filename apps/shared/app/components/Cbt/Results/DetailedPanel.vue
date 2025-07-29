@@ -1205,12 +1205,12 @@ const subjectChangeHandler = (subject: string) => {
                 </UiDropdownMenuGroup>
               </UiDropdownMenuContent>
             </UiDropdownMenu>
-            <h3
+            <span
               v-if="tableItem.heading"
               class="text-lg font-semibold text-center"
             >
               {{ tableItem.heading }}
-            </h3>
+            </span>
             <BaseButton
               v-if="tableItem.id === 'questions'"
               class="ml-4"
@@ -1324,10 +1324,10 @@ const subjectChangeHandler = (subject: string) => {
                           class="w-fit"
                         >
                           <div class="flex flex-col">
-                            <h4 class="text-base text-center">
+                            <span class="text-base text-center">
                               Filter by Time Spent Range<br>
                               (values are in seconds)
-                            </h4>
+                            </span>
                             <BaseFloatLabel
                               class="w-full mt-6"
                               label="Minimum"

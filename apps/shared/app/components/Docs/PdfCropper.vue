@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="border border-green-500 rounded-2xl p-4 text-center text-foreground bg-background">
-      <h2 class="text-xl font-semibold text-green-500">
+      <h1 class="text-xl font-semibold text-green-500">
         This page/tool is used to define test questions and their locations in the PDF.
-      </h2>
-      <h3 class="text-lg font-semibold my-4">
+      </h1>
+      <h2 class="text-lg font-semibold my-4">
         You can watch
         <NuxtLink
           :to="pdfCropperVideoLink"
@@ -12,7 +12,7 @@
           target="_blank"
         >this video</NuxtLink>
         to learn how to use this page/tool.
-      </h3>
+      </h2>
       <UiAccordion
         type="multiple"
         :default-value="expandedValues"

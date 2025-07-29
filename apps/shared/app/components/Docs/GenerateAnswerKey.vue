@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="border border-green-500 rounded-2xl p-4 text-center max-w-9/10 xl:max-w-5xl mx-auto">
-      <h2 class="text-xl font-semibold text-green-500">
+      <h1 class="text-xl font-semibold text-green-500">
         This page/tool is used to generate the answer key of the test for results to be evaluated.
-      </h2>
-      <h3 class="text-lg font-semibold my-4">
+      </h1>
+      <h2 class="text-lg font-semibold my-4">
         Though this is pretty easy to use, but here's a
         <NuxtLink
           to="https://www.youtube.com/watch?v=L0EWtvrZNYE"
@@ -12,7 +12,7 @@
           target="_blank"
         >video</NuxtLink>
         on using this tool just in case.
-      </h3>
+      </h2>
       <UiAccordion
         type="multiple"
         :default-value="expandedValues"

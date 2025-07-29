@@ -4,13 +4,13 @@
       v-if="testResultOverviews.length === 0"
       class="text-center w-full my-10"
     >
-      <h2
+      <span
         v-if="!isDataNotFoundInDB"
         class="text-xl sm:text-2xl"
       >
         Please wait, loading your tests from the local database...
-      </h2>
-      <h2
+      </span>
+      <p
         v-else
         class="text-xl sm:text-2xl"
       >
@@ -27,7 +27,7 @@
         </span>
         <br>you can import it here.<br><br>
         Otherwise, take a test first!
-      </h2>
+      </p>
     </div>
     <div
       v-for="testResultOverview in testResultOverviews"

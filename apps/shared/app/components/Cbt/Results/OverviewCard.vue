@@ -13,16 +13,16 @@
           class="col-span-5 overflow-auto w-full"
           :class="{ 'col-span-5': readOnly }"
         >
-          <div class="min-w-max">
-            <h4 class="text-lg font-bold">
+          <div class="min-w-max [&>span]:block">
+            <p class="text-lg font-bold">
               {{ testResultOverview.testName }}
-            </h4>
-            <h5 class="text-sm text-left">
+            </p>
+            <p class="text-sm text-left">
               {{ utilFormatUnixMsToReadableTime(testResultOverview.testStartTime) }}
-            </h5>
-            <h5 class="text-sm text-left">
+            </p>
+            <p class="text-sm text-left">
               {{ utilFormatUnixMsToReadableTime(testResultOverview.testEndTime) }}
-            </h5>
+            </p>
           </div>
         </div>
         <template v-if="!readOnly">
