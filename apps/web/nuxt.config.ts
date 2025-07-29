@@ -8,6 +8,9 @@ export default defineNuxtConfig({
     name: 'web',
   },
   css: ['./app/assets/css/main.css'],
+  site: {
+    url: 'https://pdf2cbt.vercel.app',
+  },
   runtimeConfig: {
     public: {
       websiteUrl: 'https://pdf2cbt.vercel.app',
