@@ -12,7 +12,10 @@
     id="app-root"
     class="max-h-dvh min-h-dvh w-full flex flex-col overflow-hidden"
   >
-    <NuxtLoadingIndicator :throttle="100" color="#32cd32" />
+    <NuxtLoadingIndicator
+      :throttle="100"
+      color="#32cd32"
+    />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

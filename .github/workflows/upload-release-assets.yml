@@ -36,6 +36,8 @@ jobs:
         run: pnpm i --frozen-lockfile
 
       - name: Build static site
+        env:
+          DISABLE_SEO_MODULES: true
         run: pnpm generate:web
 
       - name: Zip generated static site

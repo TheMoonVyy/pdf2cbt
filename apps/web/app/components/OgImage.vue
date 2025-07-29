@@ -1,6 +1,4 @@
 <script setup lang="ts">
-const siteUrl = useRuntimeConfig().public.websiteUrl
-
 const title = 'PDF2CBT'
 const description = 'Turn PDF of questions into CBT (Computer Based Test).'
 </script>
@@ -33,12 +31,6 @@ const description = 'Turn PDF of questions into CBT (Computer Based Test).'
             {{ description }}
           </p>
         </div>
-      </div>
-      <div
-        v-if="siteUrl && typeof siteUrl === 'string'"
-        class="flex flex-row justify-center items-center text-[35px] w-full"
-      >
-        {{ siteUrl }}
       </div>
     </div>
   </div>

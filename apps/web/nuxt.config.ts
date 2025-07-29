@@ -1,6 +1,8 @@
 import tailwindVitePlugin from '@tailwindcss/vite'
 import packageJson from './package.json'
 
+const enableSeoModules = import.meta.env.DISABLE_SEO_MODULES === 'true' ? false : true
+
 export default defineNuxtConfig({
   extends: ['../shared'],
   modules: ['@nuxtjs/robots', '@nuxtjs/sitemap', 'nuxt-og-image'],
@@ -13,7 +15,6 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      websiteUrl: 'https://pdf2cbt.vercel.app',
       isBackupWebsite: '',
       isBuildForWebsite: '',
       projectVersion: packageJson.version,
@@ -37,5 +38,14 @@ export default defineNuxtConfig({
         globExclude: ['../*/node_modules/**', '../*/dist*/**'],
       },
     },
+  },
+  ogImage: {
+    enabled: enableSeoModules,
+  },
+  robots: {
+    enabled: enableSeoModules,
+  },
+  sitemap: {
+    enabled: enableSeoModules,
   },
 })
