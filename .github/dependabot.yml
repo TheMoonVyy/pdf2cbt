@@ -17,8 +17,10 @@ updates:
           - "nuxt"
           - "@nuxt/*"
           - "@nuxtjs/*"
+          - "nuxt-*"
         exclude-patterns:
           - "@nuxt/eslint"
+          - "@nuxtjs/tailwindcss"
       tailwind:
         patterns:
           - "tailwindcss"
@@ -31,13 +33,13 @@ updates:
           - "vue"
           - "vue-router"
           - "@vueuse/*"
-          - "@tanstack/vue-table"
-          - "lucide-vue-next"
       ui:
         patterns:
           - "shadcn-nuxt"
           - "class-variance-authority"
           - "reka-ui"
+          - "vue-sonner"
+          - "lucide-vue-next"
       dev:
         patterns:
           - "@iconify-json/*"
