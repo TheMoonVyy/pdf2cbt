@@ -5,7 +5,7 @@
   >
     <nav>
       <div class="flex w-full h-14 items-center @container">
-        <h1 class="font-bold text-[1.7rem] sm:text-[2rem] py-1.5 pl-4 md:pl-6">
+        <span class="font-bold text-[1.7rem] sm:text-[2rem] py-1.5 pl-4 md:pl-6">
           <NuxtLink
             to="/"
             class="text-green-500"
@@ -13,7 +13,7 @@
             pdf2cbt
             <span class="text-cyan-500 text-base md:text-lg">v{{ projectVersion }}</span>
           </NuxtLink>
-        </h1>
+        </span>
         <div class="hidden gap-1 min-[74rem]:flex items-center mx-auto">
           <template
             v-for="item in [pdfCropperItem, ...cbtItems]"

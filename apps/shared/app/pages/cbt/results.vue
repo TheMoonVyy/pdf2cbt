@@ -16,7 +16,7 @@
             class="py-4 px-2"
           >
             <!-- Title for Test Results PagePanel -->
-            <h4
+            <h1
               v-show="currentPanelName !== ResultsPagePanels.MyTests"
               class="text-xl text-center flex flex-col sm:flex-row justify-center items-center"
             >
@@ -26,15 +26,15 @@
                   {{ computedTestName }}
                 </span>
               </ClientOnly>
-            </h4>
+            </h1>
             <!-- Title for My Tests PagePanel -->
             <div
               v-show="currentPanelName === ResultsPagePanels.MyTests"
               class="grid grid-cols-2 gap-4"
             >
-              <h4 class="text-2xl w-full font-bold text-center mx-auto col-span-2 sm:col-span-1 sm:text-end">
+              <h2 class="text-2xl w-full font-bold text-center mx-auto col-span-2 sm:col-span-1 sm:text-end">
                 My Tests
-              </h4>
+              </h2>
               <div class="flex flex-row gap-5 sm:gap-8 text-nowrap mx-auto sm:ml-auto sm:mr-8 col-span-2 sm:col-span-1">
                 <!-- Import Button -->
                 <BaseSimpleFileUpload
@@ -97,14 +97,14 @@
     </UiSidebarProvider>
     <CbtResultsImportExportDialog
       v-if="importExportDialogState.isVisible && importExportDialogState.data"
-      v-model:visibility="importExportDialogState.isVisible"
+      v-model="importExportDialogState.isVisible"
       :type="importExportDialogState.type"
       :data="importExportDialogState.data"
       @processed="processImportExport"
     />
     <CbtResultsAnswerKeyDialog
       v-if="showAnswerKeyMissingDialog && testOutputData?.testResultOverview"
-      v-model:visibility="showAnswerKeyMissingDialog"
+      v-model="showAnswerKeyMissingDialog"
       :test-result-overview="testOutputData.testResultOverview"
       @upload="(data) => loadAnswerKeyToData(data.testAnswerKey)"
     />

@@ -6,7 +6,7 @@
       v-if="dbTestOutputDataState.isDataFound"
       class="flex flex-col gap-5 py-15 items-center"
     >
-      <h3 class="w-full text-lg mx-auto px-6 text-center max-w-240">
+      <p class="w-full text-lg mx-auto px-6 text-center max-w-240">
         These test data entries were found in your local database<br>
         that may not contain answer key data
         (and therefore do not have results yet).
@@ -14,7 +14,7 @@
         Select the one you want to generate answer key for,<br>
         or you can load a ZIP/JSON file from PDF Cropper
         or a JSON file from the CBT Interface/Results.
-      </h3>
+      </p>
       <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
         <div
           v-for="(testResultOverview, index) in dbTestOutputDataState.testResultOverviews"
@@ -53,9 +53,9 @@
       v-else-if="!fileUploaderState.isFileLoaded"
       class="flex flex-col gap-5 py-15 items-center"
     >
-      <h3 class="text-xl text-center">
+      <h1 class="text-xl text-center">
         You can load either zip/json file of PDF Cropper or json file of CBT Interface/Results
-      </h3>
+      </h1>
       <BaseSimpleFileUpload
         accept="application/json,application/zip,.json,.zip"
         :label="'Select ZIP/JSON File'"
@@ -302,12 +302,12 @@
             />
           </div>
           <div class="flex justify-center pb-3">
-            <h3 v-show="generateOutputState.preparingDownload">
+            <span v-show="generateOutputState.preparingDownload">
               Please wait, preparing download...
-            </h3>
-            <h3 v-show="generateOutputState.downloaded">
+            </span>
+            <span v-show="generateOutputState.downloaded">
               Downloaded!
-            </h3>
+            </span>
           </div>
         </UiScrollArea>
       </UiDialogContent>

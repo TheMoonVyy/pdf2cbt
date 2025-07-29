@@ -423,14 +423,14 @@
         <UiDialogHeader>
           <UiDialogTitle>Upload PDF/ZIP for Question Preview</UiDialogTitle>
         </UiDialogHeader>
-        <h4 class="font-bold text-base text-yellow-300">
+        <p class="font-bold text-base text-yellow-300">
           To view question preview, you need to upload this test's PDF or ZIP file
           (the same one you had uploaded on test interface).
-        </h4>
-        <h4 class="m-4 text-base">
+        </p>
+        <p class="m-4 text-base">
           Once loaded, question images will be in RAM and hence active as long as this website is opened.<br>
           Refreshing the page, closing window, or changing to another test (via My Tests) will clear all imgs thus requiring you to upload the file again if you want to see the question preview.
-        </h4>
+        </p>
         <UiDialogFooter>
           <BaseSimpleFileUpload
             accept="application/pdf,application/zip,.pdf,.zip"
@@ -451,7 +451,7 @@
           <UiDialogTitle>PDF hash is not matching with the one in your test data!</UiDialogTitle>
         </UiDialogHeader>
         <div class="flex mb-6 items-center">
-          <h3
+          <p
             class="text-lg text-center"
           >
             PDF file's hash is different to the one that is in your test data.<br><br>
@@ -459,7 +459,7 @@
             If you are sure that pdf/zip file is correct, then you can continue anyway.<br>
             OR<br>
             You can go back and re-upload the correct one.<br>
-          </h3>
+          </p>
         </div>
         <UiDialogFooter>
           <BaseButton
@@ -487,14 +487,14 @@
         <UiDialogHeader>
           <UiDialogTitle>PDF Cropper's data is not in your test data!</UiDialogTitle>
         </UiDialogHeader>
-        <h4 class="font-bold text-red-400">
+        <p class="font-bold text-red-400">
           PDF Cropper's Data is not found in your test data.<br>
           This may happen if you gave this test before April 16, as versions before that didn't have cropper data in test data
-        </h4>
-        <h4 class="my-6">
+        </p>
+        <p class="my-6">
           No worries!<br>
           You just need to upload the PDF Cropper data now (either the Zip or json file)
-        </h4>
+        </p>
         <div class="flex my-5 mx-auto justify-center">
           <BaseSimpleFileUpload
             accept="application/json,application/zip,.json,.zip"

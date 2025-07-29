@@ -53,7 +53,7 @@
                   label-class="text-xs start-1/2! -translate-x-1/2"
                 >
                   <BaseSelect
-                    id="pre_generate_images"
+                    id="cropperModeDD"
                     v-model="settings.general.cropperMode"
                     :options="selectOptions.cropperMode"
                     :disabled="currentMode !== 'crop'"
@@ -341,19 +341,19 @@
             />
           </div>
           <div class="flex flex-col items-center mb-2 text-center">
-            <h3
+            <span
               v-show="generateOutputState.generatingImages"
               class="font-semibold"
             >
               Please wait, generating images...<br>
-            </h3>
-            <h3
+            </span>
+            <span
               v-if="generateOutputState.generatingImages && generateOutputState.generationProgress > 0"
               class="my-4 text-lg font-semibold text-cyan-400"
             >
               Currently generating {{ generateOutputState.generationProgress }} of {{ generateOutputState.totalQuestions }} questions...<br>
-            </h3>
-            <h3
+            </span>
+            <p
               v-show="generateOutputState.generatingImages"
               class="mt-2"
             >
@@ -362,13 +362,13 @@
               If even with a lower scale value,
               it is stuck then cancel again and just download without pre generated images
               (i.e. select "No" above)<br><br>
-            </h3>
-            <h3 v-show="generateOutputState.preparingDownload">
+            </p>
+            <span v-show="generateOutputState.preparingDownload">
               preparing download...
-            </h3>
-            <h3 v-show="generateOutputState.downloaded">
+            </span>
+            <span v-show="generateOutputState.downloaded">
               Downloaded!
-            </h3>
+            </span>
           </div>
           <div
             v-show="generateOutputState.generatingImages"
@@ -394,10 +394,10 @@
                 Multiple Downloads
               </UiAccordionTrigger>
               <UiAccordionContent>
-                <h5 class="text-center text-wrap text-gray-500 dark:text-gray-300 mt-4">
+                <span class="text-center text-wrap text-gray-500 dark:text-gray-300 mt-4">
                   After downloading once,
                   you can always change the options above to generate &amp; download again with those options
-                </h5>
+                </span>
               </UiAccordionContent>
             </UiAccordionItem>
             <UiAccordionItem value="2">
@@ -405,14 +405,14 @@
                 Important NOTE
               </UiAccordionTrigger>
               <UiAccordionContent>
-                <h5 class="text-center text-wrap text-gray-500 dark:text-gray-300 my-5">
+                <p class="text-center text-wrap text-gray-500 dark:text-gray-300 my-5">
                   If you want to later on use the zip file via <strong>"zip from url"</strong> feature
                   and you are keeping the <strong>zip files</strong> in your <strong>github public repository</strong>
                   then your <strong>zip file size should not exceed 20MB</strong> for "zip from url" to work.<br>
                   (This is a limitation imposed by jsDelivr,
                   which is the provider from where your zip file will be loaded after the website internally
                   converts github url to jsDelivr url).
-                </h5>
+                </p>
               </UiAccordionContent>
             </UiAccordionItem>
           </UiAccordion>

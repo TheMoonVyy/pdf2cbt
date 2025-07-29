@@ -208,6 +208,7 @@
                       </div>
                       <div class="flex justify-center gap-3 w-full mt-1.5">
                         <BaseInputNumber
+                          id="test_img_quality"
                           v-model="testSettings.questionImgScale"
                           :min="1"
                           :max="10"
@@ -405,9 +406,9 @@
                             class="hidden group-hover:flex! group-focus:flex! absolute flex-col
                               z-50 w-max text-black bg-white top-full right-0"
                           >
-                            <h3 class="text-center">
+                            <span class="text-center">
                               PREVIEW:
-                            </h3>
+                            </span>
                             <div class="py-2 px-4">
                               <CbtInterfaceAnswerOptionsDiv
                                 v-model="dummyValue"
@@ -881,13 +882,13 @@
     <UiDialog
       v-model:open="prepareTestState.dialogVisibility"
     >
-      <UiDialogContent class="sm:w-fit">
+      <UiDialogContent class="sm:w-fit z-51">
         <UiDialogHeader>
           <UiDialogTitle>Confirm Preparing Test</UiDialogTitle>
         </UiDialogHeader>
-        <h3 class="text-base text-center pt-2 pb-4">
+        <span class="text-base text-center pt-2 pb-4">
           Are you sure you want to start preparing the test?
-        </h3>
+        </span>
         <UiDialogFooter>
           <BaseButton
             label="Prepare Test"
@@ -907,20 +908,20 @@
       v-model:open="prepareTestState.isOngoingTestFoundInDB"
     >
       <UiDialogContent
-        class="sm:w-fit"
+        class="sm:w-fit z-51"
         non-closable
       >
         <UiDialogHeader>
           <UiDialogTitle>Unfinished Test is Found!</UiDialogTitle>
         </UiDialogHeader>
         <div class="flex">
-          <h3 class="text-lg text-center">
+          <p class="text-lg text-center">
             An unfinished test was found!<br>
             You can continue the test or discard it.<br><br>
             The steps to continue remain the same as for a fresh test<br>
             (upload the .zip file or .pdf &amp; .json files).<br><br>
             Some settings from this test will be locked, while others can be modified as needed.
-          </h3>
+          </p>
         </div>
         <UiDialogFooter>
           <BaseButton
@@ -945,18 +946,18 @@
       default-open
     >
       <UiDialogContent
-        class="sm:w-fit"
+        class="sm:w-fit z-51"
         non-closable
       >
         <UiDialogHeader>
           <UiDialogTitle>Oops Test Data is not Found!</UiDialogTitle>
         </UiDialogHeader>
         <div class="flex mt-3">
-          <h3 class="text-lg text-center">
+          <p class="text-lg text-center">
             Test Data was not found in storage.<br>
             Either the data is corrupted, deleted, or the browser is blocking access to it.<br>
             You can try refreshing the page or discard this test.<br>
-          </h3>
+          </p>
         </div>
         <UiDialogFooter>
           <BaseButton
@@ -977,14 +978,14 @@
       v-model:open="hashMismatchDialogState.showDialog"
     >
       <UiDialogContent
-        class="sm:w-xl"
+        class="sm:w-xl z-51"
         non-closable
       >
         <UiDialogHeader>
           <UiDialogTitle>PDF hash is not matching with the one in cropper data!</UiDialogTitle>
         </UiDialogHeader>
         <div class="flex items-center">
-          <h3
+          <p
             v-if="fileUploaderFileType === 'zip'"
             class="text-lg text-center"
           >
@@ -993,8 +994,8 @@
             If you sure that both questions.pdf and data.json in zip file are correct, then you can continue.<br>
             OR<br>
             You can re-upload the correct one.<br><br>
-          </h3>
-          <h3
+          </p>
+          <p
             v-else
             class="text-lg text-center"
           >
@@ -1003,7 +1004,7 @@
             If you sure that both pdf and json files are correct, then you can continue.<br>
             OR<br>
             You can re-upload the correct ones.<br><br>
-          </h3>
+          </p>
         </div>
         <UiDialogFooter>
           <BaseButton
@@ -1030,14 +1031,9 @@
     </UiDialog>
     <UiDialog
       v-model:open="zipFileFromUrlState.isDialogOpen"
-      header="Load Test Data from URL"
-      :modal="true"
-      :block-scroll="true"
-      :draggable="false"
-      pt:content:class="flex flex-col px-4 pt-2 pb-6 "
     >
       <UiDialogContent
-        class="sm:w-xl items-center text-center md:min-w-lg sm:max-w-xl"
+        class="sm:w-xl z-51 items-center text-center md:min-w-lg sm:max-w-xl"
         non-closable
       >
         <UiDialogHeader>

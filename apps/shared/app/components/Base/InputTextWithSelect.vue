@@ -45,6 +45,7 @@ const input = defineModel<string>({ required: true })
       <UiSelectTrigger
         class="shrink-0 rounded-l-none border-l-0 focus-visible:ring-0 focus-visible:border-input"
         :class="[commonClass, selectClass]"
+        :aria-label="label"
         :disabled
       />
       <UiSelectContent>

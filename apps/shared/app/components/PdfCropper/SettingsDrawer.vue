@@ -21,9 +21,9 @@
         >
           <UiCardHeader>
             <UiCardTitle class="flex items-center mx-auto gap-5">
-              <h3 class="text-lg font-bold mx-auto">
+              <span class="text-lg font-bold mx-auto">
                 {{ panelName }}
-              </h3>
+              </span>
               <IconWithTooltip
                 v-if="panelHeaderTooltipContent[panelName]"
                 :content="panelHeaderTooltipContent[panelName]"

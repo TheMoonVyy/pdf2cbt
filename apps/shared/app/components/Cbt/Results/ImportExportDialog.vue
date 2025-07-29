@@ -20,9 +20,9 @@
             @click="processData()"
           />
         </div>
-        <h4 class="m-4 text-center font-bold">
+        <p class="m-4 text-center font-bold">
           Select the test(s) you want to {{ type.toLowerCase() }}
-        </h4>
+        </p>
         <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
           <div
             v-for="(testOutputData, index) in data"
@@ -45,9 +45,7 @@
 <script lang="ts" setup>
 const selectedKeys = ref(new Set<number>())
 
-const visibility = defineModel<boolean>('visibility', {
-  default: true,
-})
+const visibility = defineModel<boolean>({ required: true })
 
 const emit = defineEmits<{
   processed: [type: 'Import' | 'Export', data: TestInterfaceOrResultJsonOutput[]]
