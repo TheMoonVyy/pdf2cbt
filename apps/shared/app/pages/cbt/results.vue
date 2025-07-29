@@ -958,8 +958,6 @@ async function myTestsPanelViewOrGenerateHandler(id: number, btnType: 'generate'
       await db.replaceTestOutputDataAndResultOverview(id, utilCloneJson(data))
     }
   }
-
-  testOutputData.value = null // not needed anymore
 }
 
 async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
