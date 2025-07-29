@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.22.0...v1.22.1) (2025-07-29)
+
+
+### Bug Fixes
+
+* on test interface prevent dialog overlap, disable animation on start-test dialog and on results page fix answer key dialog not showing when clicked on generate results ([c61a159](https://github.com/TheMoonVyy/pdf2cbt/commit/c61a159a5368692dac772d1a73c78d574061c9db))
+
 ## [1.22.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.21.0...v1.22.0) (2025-07-27)
 
 
