@@ -35,9 +35,9 @@ export default {
   background: var(--bg-color, rgba(0, 0, 0, 0.1));
   transition: background 0.25s;
 }
-.not-found-visual svg {
-  width: 1800px;
-  height: 180px;
+.not-found-visual svg {  
+  max-width: 100%;  
+  height: auto;  
 }
 .glitch {
   font-family: 'Fira Code', 'monospace';
