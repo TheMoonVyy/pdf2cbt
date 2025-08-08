@@ -337,3 +337,9 @@
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+useSeoMeta({
+  title: 'PDF2CBT - Turn PDF of Questions into CBT (Computer Based Test)',
+})
+</script>
