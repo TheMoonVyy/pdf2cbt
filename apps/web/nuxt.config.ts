@@ -18,7 +18,6 @@ export default defineNuxtConfig({
       isBackupWebsite: '',
       isBuildForWebsite: '',
       projectVersion: packageJson.version,
-      mupdfVersion: packageJson.dependencies.mupdf,
     },
   },
   future: {

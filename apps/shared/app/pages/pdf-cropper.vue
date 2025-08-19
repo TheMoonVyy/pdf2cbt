@@ -576,7 +576,7 @@ const dialogsState = shallowReactive({
   showEditExistingFiles: false,
 })
 
-const mupdfScripturls = useGetMupdfScriptUrls()
+const preferLoadingLocalMupdfScript = useRuntimeConfig().public.isBuildForWebsite !== 'true'
 
 const pageImgData = reactive<PageImgData>({})
 
@@ -909,7 +909,7 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
     closeMupdfWorker()
     mupdfWorker = Comlink.wrap<MuPdfProcessor>(new mupdfWorkerFile())
 
-    const pagesCount = await mupdfWorker.loadPdf(pdfState.fileUint8Array, mupdfScripturls, isFirstLoad)
+    const pagesCount = await mupdfWorker.loadPdf(pdfState.fileUint8Array, preferLoadingLocalMupdfScript, isFirstLoad)
     if (pagesCount && isFirstLoad) {
       pdfState.totalPages = pagesCount
       pdfState.currentPageNum = 1
@@ -1064,7 +1064,6 @@ async function generatePdfCropperOutput() {
     generateOutputState.preparingDownload = false
     generateOutputState.totalQuestions = 0
     generateOutputState.generationProgress = 0
-    closeMupdfWorker()
     await nextTick()
   }
   else {
@@ -1275,11 +1274,11 @@ onMounted(() => {
 const closeMupdfWorker = () => {
   try {
     mupdfWorker?.close()
-    mupdfWorker = null
   }
   catch {
     // maybe worker is not active
   }
+  mupdfWorker = null
 }
 
 // clean up
@@ -1287,10 +1286,9 @@ onBeforeUnmount(() => {
   closeMupdfWorker()
 
   for (const pageData of Object.values(pageImgData)) {
-    const { url } = pageData
-    if (url) {
+    const url = pageData.url
+    if (url)
       URL.revokeObjectURL(url)
-    }
   }
 
   stopUseDPR()

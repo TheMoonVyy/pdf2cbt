@@ -35,7 +35,6 @@ export default defineNuxtConfig({
       isBackupWebsite: '',
       isBuildForWebsite: '',
       projectVersion: '',
-      mupdfVersion: '',
     },
   },
   routeRules: {

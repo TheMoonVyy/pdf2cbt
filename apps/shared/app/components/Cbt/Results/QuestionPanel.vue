@@ -620,7 +620,7 @@ const sheetElemState = shallowReactive({
   },
 })
 
-const mupdfScripturls = useGetMupdfScriptUrls()
+const preferLoadingLocalMupdfScript = useRuntimeConfig().public.isBuildForWebsite !== 'true'
 
 // the urls of questions which will be used for question preview
 const testQuestionsImgUrls = useCbtResultsTestQuestionsImgUrls()
@@ -1050,7 +1050,7 @@ async function renderPdftoImgs(questionsPdfData: QuestionsPdfData) {
 
     if (!mupdfOgWorker || !mupdfWorker) throw new Error('mupdf worker is undefined')
 
-    await mupdfWorker.loadPdf(fileUploaderState.pdfUint8Array, mupdfScripturls)
+    await mupdfWorker.loadPdf(fileUploaderState.pdfUint8Array, preferLoadingLocalMupdfScript)
 
     questionsPdfData = utilCloneJson(questionsPdfData)
 

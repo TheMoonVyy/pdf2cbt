@@ -23,12 +23,21 @@ type ProcessedCropperData = {
   }[]
 }
 
+const SCRIPT_URLS = [
+  `https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt@prod/apps/shared/public/assets/_mupdf/mupdf.min.js`,
+  `/assets/_mupdf/mupdf.js`,
+] as const
+
 export class MuPdfProcessor {
   private mupdf: any = null
   private doc: Document | null = null
 
-  async loadMuPdf(scriptUrls: string[]) {
+  async loadMuPdf(preferLocalScript: boolean) {
     if (!this.mupdf) {
+      const scriptUrls = preferLocalScript
+        ? SCRIPT_URLS.toReversed()
+        : SCRIPT_URLS
+
       for (let i = 0; i < scriptUrls.length; i++) {
         try {
           this.mupdf = await import(/* @vite-ignore */ scriptUrls[i]!)
@@ -43,10 +52,10 @@ export class MuPdfProcessor {
 
   async loadPdf(
     pdfFile: Uint8Array | ArrayBuffer,
-    scriptUrls: string[],
+    preferLocalScript: boolean,
     getPageCount: boolean = false,
   ) {
-    await this.loadMuPdf(scriptUrls)
+    await this.loadMuPdf(preferLocalScript)
     this.doc = this.mupdf.Document.openDocument(pdfFile, 'application/pdf')
 
     if (getPageCount)

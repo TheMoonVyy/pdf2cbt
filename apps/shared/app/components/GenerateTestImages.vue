@@ -84,8 +84,8 @@ function processCropperData(
 async function loadPdfFile() {
   try {
     if (!props.pdfUint8Array) return
-
-    await mupdfWorker.loadPdf(props.pdfUint8Array, useGetMupdfScriptUrls())
+    const preferLoadingLocalMupdfScript = useRuntimeConfig().public.isBuildForWebsite !== 'true'
+    await mupdfWorker.loadPdf(props.pdfUint8Array, preferLoadingLocalMupdfScript)
 
     generateQuestionImages()
   }
