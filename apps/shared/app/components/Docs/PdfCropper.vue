@@ -676,7 +676,7 @@ const image2Urls = [
   Image2,
 ]
 
-if (!useRuntimeConfig().public.isBuildForWebsite) {
+if (useRuntimeConfig().public.isBuildForWebsite !== 'true') {
   image1Urls.reverse()
   image2Urls.reverse()
 }

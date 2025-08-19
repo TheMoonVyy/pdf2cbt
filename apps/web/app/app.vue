@@ -32,7 +32,7 @@ import { Toaster } from '#layers/shared/app/components/ui/sonner'
 
 if (import.meta.server) {
   defineOgImageComponent('OgImage')
- }
+}
 
 const toastPosition = useToastPosition()
 
@@ -98,8 +98,8 @@ function checkAndMigrateCbtResultsSettings() {
 }
 
 onMounted(() => {
-  const config = useRuntimeConfig()
-  if (config.public.isBackupWebsite) {
+  const isBackupWebsite = useRuntimeConfig().public.isBackupWebsite === 'true'
+  if (isBackupWebsite) {
     if (!localStorage.getItem(MiscConsts.BackupNoticeDismissedKey)) {
       showBackupWebsiteNotice.value = true
     }
