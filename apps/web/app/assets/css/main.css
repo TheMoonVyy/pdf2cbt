@@ -157,8 +157,7 @@
 }
 
 :root {
-  --font-mono: 'Noto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
-    Consolas, 'Courier New', 'Liberation Mono', monospace;
+  --font-mono: 'Noto Mono';
 }
 
 :root {
