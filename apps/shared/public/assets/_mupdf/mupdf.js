@@ -145,6 +145,12 @@ export function disableICC() {
 export function setUserCSS(text) {
 	libmupdf._wasm_set_user_css(STRING(text));
 }
+export function emptyStore() {
+	libmupdf._wasm_empty_store();
+}
+export function shrinkStore(percent) {
+	return libmupdf._wasm_shrink_store(percent);
+}
 export function installLoadFontFunction(f) {
 	$libmupdf_load_font_file_js = f;
 }
@@ -395,6 +401,15 @@ function fromBuffer(ptr) {
 	let data = libmupdf._wasm_buffer_get_data(ptr);
 	let size = libmupdf._wasm_buffer_get_len(ptr);
 	return libmupdf.HEAPU8.slice(data, data + size);
+}
+function fromLayerConfigUIInfo(ptr) {
+	return {
+		text: libmupdf._wasm_pdf_layer_config_ui_get_text(ptr),
+		depth: libmupdf._wasm_pdf_layer_config_ui_get_depth(ptr),
+		type: libmupdf._wasm_pdf_layer_config_ui_get_type(ptr),
+		selected: libmupdf._wasm_pdf_layer_config_ui_get_selected(ptr),
+		locked: libmupdf._wasm_pdf_layer_config_ui_get_locked(ptr),
+	};
 }
 /* unused for now
 function rgbFromColor(c?: Color): [number, number, number] {
@@ -666,6 +681,9 @@ Font.SIMPLE_ENCODING = [
 	"Greek",
 	"Cyrillic"
 ];
+Font.SIMPLE_ENCODING_LATIN = "Latin";
+Font.SIMPLE_ENCODING_GREEK = "Greek";
+Font.SIMPLE_ENCODING_CYRILLIC = "Cyrillic";
 Font.ADOBE_CNS = 0;
 Font.ADOBE_GB = 1;
 Font.ADOBE_JAPAN = 2;
@@ -1091,14 +1109,7 @@ export class StructuredText extends Userdata {
 		while (block) {
 			let block_type = libmupdf._wasm_stext_block_get_type(block);
 			let block_bbox = fromRect(libmupdf._wasm_stext_block_get_bbox(block));
-			if (block_type === 1) {
-				if (walker.onImageBlock) {
-					let matrix = fromMatrix(libmupdf._wasm_stext_block_get_transform(block));
-					let image = new Image(libmupdf._wasm_stext_block_get_image(block));
-					walker.onImageBlock(block_bbox, matrix, image);
-				}
-			}
-			else {
+			if (block_type === 0) {
 				if (walker.beginTextBlock)
 					walker.beginTextBlock(block_bbox);
 				let line = libmupdf._wasm_stext_block_get_first_line(block);
@@ -1127,6 +1138,32 @@ export class StructuredText extends Userdata {
 				}
 				if (walker.endTextBlock)
 					walker.endTextBlock();
+			}
+			else if (block_type === 1) {
+				/* image */
+				if (walker.onImageBlock) {
+					let matrix = fromMatrix(libmupdf._wasm_stext_block_get_transform(block));
+					let image = new Image(libmupdf._wasm_stext_block_get_image(block));
+					walker.onImageBlock(block_bbox, matrix, image);
+				}
+			}
+			else if (block_type === 2) {
+				/* struct */
+			}
+			else if (block_type === 3) {
+				/* vector */
+				if (walker.onVector) {
+					let v_flags_word = libmupdf._wasm_stext_block_get_v_flags(block);
+					let v_flags = {
+						isStroked: !!(v_flags_word & 1),
+						isRectangle: !!(v_flags_word & 2),
+					};
+					let v_color = colorFromNumber(libmupdf._wasm_stext_block_get_v_argb(block));
+					walker.onVector(block_bbox, v_flags, v_color);
+				}
+			}
+			else if (block_type === 4) {
+				/* grid */
 			}
 			block = libmupdf._wasm_stext_block_get_next(block);
 		}
@@ -1284,11 +1321,11 @@ export class Device extends Userdata {
 	endGroup() {
 		libmupdf._wasm_end_group(this.pointer);
 	}
-	beginTile(area, view, xstep, ystep, ctm, id) {
+	beginTile(area, view, xstep, ystep, ctm, id, doc_id) {
 		checkRect(area);
 		checkRect(view);
 		checkMatrix(ctm);
-		return libmupdf._wasm_begin_tile(this.pointer, RECT(area), RECT2(view), xstep, ystep, MATRIX(ctm), id);
+		return libmupdf._wasm_begin_tile(this.pointer, RECT(area), RECT2(view), xstep, ystep, MATRIX(ctm), id, doc_id);
 	}
 	endTile() {
 		libmupdf._wasm_end_tile(this.pointer);
@@ -1322,6 +1359,22 @@ Device.BLEND_MODES = [
 	"Color",
 	"Luminosity",
 ];
+Device.BLEND_NORMAL = "Normal";
+Device.BLEND_MULTIPLY = "Multiply";
+Device.BLEND_SCREEN = "Screen";
+Device.BLEND_OVERLAY = "Overlay";
+Device.BLEND_DARKEN = "Darken";
+Device.BLEND_LIGHTEN = "Lighten";
+Device.BLEND_COLOR_DODGE = "ColorDodge";
+Device.BLEND_COLOR_BURN = "ColorBurn";
+Device.BLEND_HARD_LIGHT = "HardLight";
+Device.BLEND_SOFT_LIGHT = "SoftLight";
+Device.BLEND_DIFFERENCE = "Difference";
+Device.BLEND_EXCLUSION = "Exclusion";
+Device.BLEND_HUE = "Hue";
+Device.BLEND_SATURATION = "Saturation";
+Device.BLEND_COLOR = "Color";
+Device.BLEND_LUMINOSITY = "Luminosity";
 export class DrawDevice extends Device {
 	constructor(matrix, pixmap) {
 		checkMatrix(matrix);
@@ -1351,6 +1404,36 @@ export class DocumentWriter extends Userdata {
 	}
 }
 DocumentWriter._drop = libmupdf._wasm_drop_document_writer;
+export class LinkDestination {
+	constructor(chapter = 0, page = 0, type = "Fit", x = NaN, y = NaN, width = NaN, height = NaN, zoom = NaN) {
+		this.chapter = chapter;
+		this.page = page;
+		this.type = type;
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.zoom = zoom;
+	}
+}
+LinkDestination.LINK_DEST = [
+	"Fit",
+	"FitB",
+	"FitH",
+	"FitBH",
+	"FitV",
+	"FitBV",
+	"FitR",
+	"XYZ",
+];
+LinkDestination.FIT = "Fit";
+LinkDestination.FIT_B = "FitB";
+LinkDestination.FIT_H = "FitH";
+LinkDestination.FIT_BH = "FitBH";
+LinkDestination.FIT_V = "FitV";
+LinkDestination.FIT_BV = "FitBV";
+LinkDestination.FIT_R = "FitR";
+LinkDestination.XYZ = "XYZ";
 export class Document extends Userdata {
 	static openDocument(from, magic) {
 		let pointer = 0;
@@ -1389,7 +1472,7 @@ export class Document extends Userdata {
 		return new Document(pointer);
 	}
 	formatLinkURI(dest) {
-		return fromStringFree(libmupdf._wasm_format_link_uri(this.pointer, dest.chapter | 0, dest.page | 0, ENUM(dest.type, Document.LINK_DEST), +dest.x, +dest.y, +dest.width, +dest.height, +dest.zoom));
+		return fromStringFree(libmupdf._wasm_format_link_uri(this.pointer, dest.chapter | 0, dest.page | 0, ENUM(dest.type, LinkDestination.LINK_DEST), +dest.x, +dest.y, +dest.width, +dest.height, +dest.zoom));
 	}
 	asPDF() {
 		if (this instanceof PDFDocument)
@@ -1406,7 +1489,7 @@ export class Document extends Userdata {
 		return libmupdf._wasm_authenticate_password(this.pointer, STRING(password));
 	}
 	hasPermission(perm) {
-		let perm_ix = Document.PERMISSION[perm];
+		let perm_ix = (typeof perm === "number") ? perm : Document.PERMISSION[perm];
 		return !!libmupdf._wasm_has_permission(this.pointer, perm_ix);
 	}
 	getMetaData(key) {
@@ -1477,7 +1560,7 @@ export class Document extends Userdata {
 		else
 			dest = libmupdf._wasm_resolve_link_dest(this.pointer, STRING(link));
 		return {
-			type: Document.LINK_DEST[libmupdf._wasm_link_dest_get_type(dest)],
+			type: LinkDestination.LINK_DEST[libmupdf._wasm_link_dest_get_type(dest)],
 			chapter: libmupdf._wasm_link_dest_get_chapter(dest),
 			page: libmupdf._wasm_link_dest_get_page(dest),
 			x: libmupdf._wasm_link_dest_get_x(dest),
@@ -1502,6 +1585,14 @@ Document.META_INFO_CREATOR = "info:Creator";
 Document.META_INFO_PRODUCER = "info:Producer";
 Document.META_INFO_CREATIONDATE = "info:CreationDate";
 Document.META_INFO_MODIFICATIONDATE = "info:ModDate";
+Document.PERMISSION_PRINT = "print";
+Document.PERMISSION_COPY = "copy";
+Document.PERMISSION_EDIT = "eedit";
+Document.PERMISSION_ANNOTATE = "annotate";
+Document.PERMISSION_FORM = "form";
+Document.PERMISSION_ACCESSIBILITY = "accessibility";
+Document.PERMISSION_ASSEMBLE = "assemble";
+Document.PERMISSION_PRINT_HQ = "print-hq";
 Document.PERMISSION = {
 	"print": "p".charCodeAt(0),
 	"copy": "c".charCodeAt(0),
@@ -1512,16 +1603,6 @@ Document.PERMISSION = {
 	"assemble": "a".charCodeAt(0),
 	"print-hq": "h".charCodeAt(0),
 };
-Document.LINK_DEST = [
-	"Fit",
-	"FitB",
-	"FitH",
-	"FitBH",
-	"FitV",
-	"FitBV",
-	"FitR",
-	"XYZ",
-];
 export class OutlineIterator extends Userdata {
 	item() {
 		let item = libmupdf._wasm_outline_iterator_item(this.pointer);
@@ -1560,9 +1641,11 @@ export class OutlineIterator extends Userdata {
 	}
 }
 OutlineIterator._drop = libmupdf._wasm_drop_outline_iterator;
-OutlineIterator.RESULT_DID_NOT_MOVE = -1;
-OutlineIterator.RESULT_AT_ITEM = 0;
-OutlineIterator.RESULT_AT_EMPTY = 1;
+OutlineIterator.ITERATOR_DID_NOT_MOVE = -1;
+OutlineIterator.ITERATOR_AT_ITEM = 0;
+OutlineIterator.ITERATOR_AT_EMPTY = 1;
+OutlineIterator.FLAG_BOLD = 1;
+OutlineIterator.FLAG_ITALIC = 2;
 export class Link extends Userdata {
 	getBounds() {
 		return fromRect(libmupdf._wasm_link_get_rect(this.pointer));
@@ -1665,6 +1748,11 @@ Page.BOXES = [
 	"TrimBox",
 	"ArtBox"
 ];
+Page.MEDIA_BOX = "MediaBox";
+Page.CROP_BOX = "CropBox";
+Page.BLEED_BOX = "BleedBox";
+Page.TRIM_BOX = "TrimBox";
+Page.ART_BOX = "ArtBox";
 /* -------------------------------------------------------------------------- */
 export class PDFDocument extends Document {
 	constructor(arg1) {
@@ -2048,6 +2136,24 @@ export class PDFDocument extends Document {
 	}
 	bake(bakeAnnots = true, bakeWidgets = true) {
 		libmupdf._wasm_pdf_bake_document(this.pointer, bakeAnnots, bakeWidgets);
+	}
+	countLayerConfigs() {
+		return libmupdf._wasm_pdf_count_layer_configs(this.pointer);
+	}
+	getLayerConfigCreator(config) {
+		return fromString(libmupdf._wasm_pdf_layer_config_creator(this.pointer, config));
+	}
+	getLayerConfigName(config) {
+		return fromString(libmupdf._wasm_pdf_layer_config_name(this.pointer, config));
+	}
+	selectLayerConfig(config) {
+		libmupdf._wasm_pdf_select_layer_config(this.pointer, config);
+	}
+	countLayerConfigUIs() {
+		return libmupdf._wasm_pdf_count_layer_config_uis(this.pointer);
+	}
+	getLayerConfigUIInfo(configui) {
+		return fromLayerConfigUIInfo(libmupdf._wasm_pdf_layer_config_ui_info(this.pointer, configui));
 	}
 	countLayers() {
 		return libmupdf._wasm_pdf_count_layers(this.pointer);
@@ -3103,8 +3209,8 @@ globalThis.$libmupdf_device = {
 	begin_group(id, bbox, colorspace, isolated, knockout, blendmode, alpha) {
 		$libmupdf_device_table.get(id)?.beginGroup?.(fromRect(bbox), new ColorSpace(libmupdf._wasm_keep_colorspace(colorspace)), !!isolated, !!knockout, Device.BLEND_MODES[blendmode], alpha);
 	},
-	begin_tile(id, area, view, xstep, ystep, ctm, tile_id) {
-		return $libmupdf_device_table.get(id)?.beginTile?.(fromRect(area), fromRect(view), xstep, ystep, fromMatrix(ctm), tile_id) || 0;
+	begin_tile(id, area, view, xstep, ystep, ctm, tile_id, doc_id) {
+		return $libmupdf_device_table.get(id)?.beginTile?.(fromRect(area), fromRect(view), xstep, ystep, fromMatrix(ctm), tile_id, doc_id) || 0;
 	},
 	begin_layer(id, name) {
 		$libmupdf_device_table.get(id)?.beginLayer?.(fromString(name));
