@@ -19,11 +19,11 @@
         >
           <div class="flex flex-col items-center">
             <div class="flex flex-col items-center p-4 pb-0 gap-5 w-full">
-              <div class="flex flex-wrap gap-8">
+              <div class="flex flex-wrap gap-6">
                 <div class="flex items-center justify-center">
                   <BaseButton
                     variant="help"
-                    label="Settings"
+                    title="Settings"
                     icon-name="line-md:cog-filled"
                     icon-size="1.2rem"
                     @click="dialogsState.showSettings = true"
@@ -32,13 +32,13 @@
                 <UiTabs
                   v-model="currentMode"
                 >
-                  <UiTabsList class="grid w-full grid-cols-2 h-10 px-1 gap-0.5">
+                  <UiTabsList class="grid w-full grid-cols-3 h-10 px-1 gap-0.5">
                     <UiTabsTrigger
                       v-for="option in currentModeSelectOptions"
                       :key="option.value"
                       class="cursor-pointer py-1.5"
                       :value="option.value"
-                      :disabled="option.disable || !isPdfLoaded"
+                      :disabled="option.disable"
                     >
                       {{ option.name }}
                     </UiTabsTrigger>
@@ -131,6 +131,7 @@
         :collapsible="false"
       >
         <UiScrollArea
+          v-show="!isPdfLoaded || currentMode !== 'pattern'"
           ref="pdfPageScrollAreaElem"
           class="w-full h-full rounded border"
           type="auto"
@@ -156,68 +157,83 @@
               </div>
               <DocsPdfCropper class="mx-4 sm:mx-10 select-text" />
             </div>
-            <div
-              ref="mainImgPanelElem"
-              class="flex select-none"
-              tabindex="-1"
-              :class="{ hidden: !isPdfLoaded }"
-            >
+            <template v-else>
+              <!-- Pdf Page Container -->
               <div
-                class="relative mx-auto cursor-cell mt-4"
-                :class="{
-                  'blur-cropped': settings.general.blurCroppedRegion,
-                }"
-                :style="{
-                  '--pdf-page-width': currentPageDetails.width,
-                  '--pdf-page-height': currentPageDetails.height,
-                  '--pdf-page-scale': zoomScaleDebounced,
-                  '--pdf-cropped-blur-intensity': settings.general.blurIntensity,
-                  '--crop-selection-guide-color': settings.general.cropSelectionGuideColor,
-                  '--crop-selected-region-color': settings.general.cropSelectedRegionColor,
-                  '--crop-selection-skip-color': settings.general.cropSelectionSkipColor,
-                  '--crop-selection-bg-opacity': settings.general.cropSelectionBgOpacity,
-                  '--crop-selected-region-bg-opacity': settings.general.cropSelectedRegionBgOpacity,
-                }"
+                v-show="(currentMode === 'crop' || currentMode === 'edit')"
+                ref="mainImgPanelElem"
+                class="flex select-none"
+                tabindex="-1"
               >
-                <div class="inline-block">
-                  <img
-                    :src="currentPageDetails.url"
-                    class="border border-gray-500 pdf-cropper-img"
-                    draggable="false"
-                    :style="{
-                      backgroundColor: settings.general.pageBGColor,
-                    }"
-                  >
+                <div
+                  class="relative mx-auto cursor-cell mt-4"
+                  :class="{
+                    'blur-cropped': settings.general.blurCroppedRegion,
+                  }"
+                  :style="{
+                    '--pdf-page-width': currentPageDetails.width,
+                    '--pdf-page-height': currentPageDetails.height,
+                    '--pdf-page-scale': zoomScaleDebounced,
+                    '--pdf-cropped-blur-intensity': settings.general.blurIntensity,
+                    '--crop-selection-guide-color': settings.general.cropSelectionGuideColor,
+                    '--crop-selected-region-color': settings.general.cropSelectedRegionColor,
+                    '--crop-selection-skip-color': settings.general.cropSelectionSkipColor,
+                    '--crop-selection-bg-opacity': settings.general.cropSelectionBgOpacity,
+                    '--crop-selected-region-bg-opacity': settings.general.cropSelectedRegionBgOpacity,
+                  }"
+                >
+                  <div class="inline-block">
+                    <img
+                      :src="currentPageDetails.url"
+                      class="border border-gray-500 pdf-cropper-img"
+                      draggable="false"
+                      :style="{
+                        backgroundColor: settings.general.pageBGColor,
+                      }"
+                    >
+                  </div>
+                  <PdfCropperEditCroppedOverlay
+                    v-if="isPdfLoaded"
+                    v-model="cropperOverlayDatas"
+                    v-model:overlays-per-question-data="overlaysPerQuestionData"
+                    v-model:active-overlay-id="activeCropperOverlayId"
+                    :main-img-panel-elem="mainImgPanelElem"
+                    :current-mode="currentMode"
+                    :current-page-num="pdfState.currentThrottledPageNum"
+                    :page-scale="zoomScaleDebounced"
+                    :page-width="currentPageDetails.width"
+                    :page-height="currentPageDetails.height"
+                    @set-pdf-data="storeCurrentQuestionData"
+                  />
+                  <PdfCropperCropOverlay
+                    v-if="isPdfLoaded"
+                    v-model:current-overlay-data="mainOverlayData"
+                    :main-img-panel-elem="mainImgPanelElem"
+                    :cropper-mode="cropperMode"
+                    :current-mode="currentMode"
+                    :current-page-num="pdfState.currentThrottledPageNum"
+                    :page-scale="zoomScaleDebounced"
+                    :page-width="currentPageDetails.width"
+                    :page-height="currentPageDetails.height"
+                    @set-pdf-data="storeCurrentQuestionData"
+                  />
                 </div>
-                <PdfCropperEditCroppedOverlay
-                  v-if="isPdfLoaded"
-                  v-model="cropperOverlayDatas"
-                  v-model:overlays-per-question-data="overlaysPerQuestionData"
-                  v-model:active-overlay-id="activeCropperOverlayId"
-                  :main-img-panel-elem="mainImgPanelElem"
-                  :current-mode="currentMode"
-                  :current-page-num="pdfState.currentThrottledPageNum"
-                  :page-scale="zoomScaleDebounced"
-                  :page-width="currentPageDetails.width"
-                  :page-height="currentPageDetails.height"
-                  @set-pdf-data="storeCurrentQuestionData"
-                />
-                <PdfCropperCropOverlay
-                  v-if="isPdfLoaded"
-                  v-model:current-overlay-data="mainOverlayData"
-                  :main-img-panel-elem="mainImgPanelElem"
-                  :cropper-mode="cropperMode"
-                  :current-mode="currentMode"
-                  :current-page-num="pdfState.currentThrottledPageNum"
-                  :page-scale="zoomScaleDebounced"
-                  :page-width="currentPageDetails.width"
-                  :page-height="currentPageDetails.height"
-                  @set-pdf-data="storeCurrentQuestionData"
-                />
               </div>
-            </div>
+            </template>
           </div>
         </UiScrollArea>
+        <!-- pattern mode main panel -->
+        <PdfCropperPatternModeMainPanel
+          v-if="isPdfLoaded"
+          v-show="currentMode === 'pattern'"
+          v-model="cropperOverlayDatas"
+          v-model:overlays-per-question-data="overlaysPerQuestionData"
+          v-model:optional-questions="testConfig.optionalQuestions!"
+          :pdf-text-data="patternModeState.pdfTextData"
+          :page-img-data="pageImgData"
+          :total-pages="pdfState.totalPages"
+          @load-pdf-text-data="loadPdfTextData"
+        />
       </UiResizablePanel>
     </UiResizablePanelGroup>
     <UiDialog
@@ -264,7 +280,6 @@
                 v-model.trim="generateOutputState.filename"
                 class="md:text-base h-10"
                 type="text"
-                :maxlength="50"
               />
             </div>
             <div class="flex flex-col gap-1 col-span-3">
@@ -444,7 +459,7 @@
 
 <script setup lang="ts">
 import '#layers/shared/app/assets/css/pdf-cropper.css'
-import * as Comlink from 'comlink'
+import { wrap as comlinkWrap } from 'comlink'
 import { zip, strToU8 } from 'fflate'
 import type { AsyncZippable } from 'fflate'
 import mupdfWorkerFile from '#layers/shared/app/src/worker/mupdf.worker?worker'
@@ -545,7 +560,7 @@ const cropperSectionsDataForPreGenerateImages = shallowRef<CropperSectionsData>(
 
 const { pixelRatio: devicePixelRatio, stop: stopUseDPR } = useDevicePixelRatio()
 
-let mupdfWorker: Comlink.Remote<MuPdfProcessor> | null = null
+let mupdfWorker: ReturnType<typeof comlinkWrap<MuPdfProcessor>> | null = null
 
 const mainImgPanelElem = useTemplateRef('mainImgPanelElem')
 
@@ -561,7 +576,7 @@ const testConfig = reactive<PdfCropperJsonOutput['testConfig']>({
   optionalQuestions: [],
 })
 
-const currentMode = shallowRef<'crop' | 'edit'>('crop')
+const currentMode = shallowRef<PdfCropperCurrentMode>('pattern')
 
 const isPdfLoaded = shallowRef(false)
 
@@ -578,13 +593,18 @@ const dialogsState = shallowReactive({
 
 const mupdfScripturls = useGetMupdfScriptUrls()
 
+const patternModeState = shallowReactive({
+  pdfTextData: null as null | PdfTextData,
+})
+
 const pageImgData = reactive<PageImgData>({})
 
-// reactive Map of overlay datas keyed by id
+// reactive Map of overlay datas keyed by id ((section || subject) + SEPARATOR + queNum + SEPARATOR + imgNum)
 const cropperOverlayDatas = reactive(new Map<string, PdfCroppedOverlayData>())
 
 const currentModeSelectOptions = reactive([
-  { name: 'Crop', value: 'crop', disable: false },
+  { name: 'Pattern', value: 'pattern', disable: false },
+  { name: 'Crop', value: 'crop', disable: computed(() => !isPdfLoaded.value) },
   { name: 'Edit', value: 'edit', disable: computed(() => cropperOverlayDatas.size === 0) },
 ])
 
@@ -608,6 +628,8 @@ const mainOverlayData = reactive<PdfCroppedOverlayData>({
   answerOptionsCounterTypePrimary: 'default',
   answerOptionsCounterTypeSecondary: 'default',
 })
+
+const answerOptionsRegex = /^\d+(x\d+)?$/i
 
 // count of overlays per question using queId as key
 const overlaysPerQuestionData = reactive<PdfCropperOverlaysPerQuestion>(new Map())
@@ -638,7 +660,7 @@ watch(
 
     cachedData[oldQuestionType] = {
       markingScheme: { cm, pm, im },
-      answerOptions: /^\d+(x\d+)?$/i.test(answerOptions) ? answerOptions : '',
+      answerOptions: answerOptionsRegex.test(answerOptions) ? answerOptions : '',
       answerOptionsCounterTypePrimary,
       answerOptionsCounterTypeSecondary,
     }
@@ -866,7 +888,7 @@ function storeCurrentQuestionData(
   incrementQuestion: boolean = true,
 ) {
   const { subject, section, que, answerOptions } = mainOverlayData
-  if (!subject || !(/^\d+(x\d+)?$/i.test(answerOptions))) {
+  if (!subject || !(answerOptionsRegex.test(answerOptions))) {
     dialogsState.showQuestionDetails = true
     return
   }
@@ -886,15 +908,33 @@ function storeCurrentQuestionData(
   if (incrementQuestion) mainOverlayData.que++
 }
 
+async function loadPdfTextData(
+  pageNums: number[],
+  options: OptionsForGetPdfTextDataMupdfWorkerFn,
+) {
+  if (!mupdfWorker) await loadPdfFile(false, true)
+  if (!mupdfWorker) return
+
+  patternModeState.pdfTextData = await mupdfWorker.getPdfTextData(pageNums, options)
+}
+
 async function handlePdfFileUpload(file: File | Uint8Array) {
   dialogsState.isLoadingPdf = true
   testConfig.pdfFileHash = ''
   testConfig.optionalQuestions = []
 
   try {
-    pdfState.fileUint8Array = file instanceof File
-      ? new Uint8Array(await file.arrayBuffer())
-      : file
+    if (file instanceof File) {
+      const filenameParts = file.name.split('.')
+      filenameParts.pop()
+      const filename = filenameParts.join('.')
+      generateOutputState.filename = filename
+
+      pdfState.fileUint8Array = new Uint8Array(await file.arrayBuffer())
+    }
+    else {
+      pdfState.fileUint8Array = file
+    }
 
     loadPdfFile()
   }
@@ -903,11 +943,11 @@ async function handlePdfFileUpload(file: File | Uint8Array) {
   }
 }
 
-async function loadPdfFile(isFirstLoad: boolean = true) {
+async function loadPdfFile(isFirstLoad: boolean = true, onlyLoadPdf = false) {
   try {
     if (!pdfState.fileUint8Array) return
     closeMupdfWorker()
-    mupdfWorker = Comlink.wrap<MuPdfProcessor>(new mupdfWorkerFile())
+    mupdfWorker = comlinkWrap<MuPdfProcessor>(new mupdfWorkerFile())
 
     const pagesCount = await mupdfWorker.loadPdf(pdfState.fileUint8Array, mupdfScripturls, isFirstLoad)
     if (pagesCount && isFirstLoad) {
@@ -917,9 +957,11 @@ async function loadPdfFile(isFirstLoad: boolean = true) {
       const _pageImgData = await mupdfWorker.getAllPagesDimensionsData()
       Object.assign(pageImgData, _pageImgData)
     }
-    await renderPage(pdfState.currentPageNum)
-    dialogsState.isLoadingPdf = false
-    isPdfLoaded.value = true
+    if (!onlyLoadPdf) {
+      await renderPage(pdfState.currentPageNum)
+      dialogsState.isLoadingPdf = false
+      isPdfLoaded.value = true
+    }
   }
   catch (err) {
     useErrorToast('Error loading PDF:', err)
@@ -1118,6 +1160,7 @@ async function loadExistingData(
   data: {
     pdfBuffer: Uint8Array
     jsonData: PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper
+    filename: string
   },
 ) {
   try {
@@ -1185,6 +1228,8 @@ async function loadExistingData(
         }
       }
     }
+
+    generateOutputState.filename = data.filename
   }
   catch (err) {
     useErrorToast('Error loading JSON Data of Existing files', err)

@@ -68,3 +68,9 @@ counterTypesWithDefault.unshift({ name: 'Default', value: 'default' })
 export const ANSWER_OPTIONS_COUNTER_TYPES_WITH_DEFAULT = counterTypesWithDefault
 
 export const RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE = 80
+
+export const QUESTIONS_NUMBERING_ORDER_OPTIONS = [
+  { name: 'Original', value: 'original' },
+  { name: 'Cumulative', value: 'cumulative' },
+  { name: 'Section-wise', value: 'section-wise' },
+]

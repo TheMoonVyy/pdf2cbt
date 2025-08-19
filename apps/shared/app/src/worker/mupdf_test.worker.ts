@@ -1,6 +1,5 @@
 import { expose as comlinkExpose } from 'comlink'
 import type * as Mupdf from 'mupdf'
-import utilRange from '#layers/shared/app/utils/utilRange'
 
 type PdfData = {
   page: number
@@ -62,35 +61,40 @@ export class MuPdfProcessor {
       lineYGroupingRange,
     } = options
 
+    const getCoordsFromQuad = (quad: Mupdf.Quad, w: number, h: number) => {
+      const l = quad[0]
+      const t = quad[1]
+      const r = quad[6]
+      const b = quad[7]
+
+      if (ignoreElementsGoingOutsidePage
+        && (l < 0 || t < 0 || r > w || b > h)
+      ) return null
+
+      return {
+        l: Math.floor(l * 100) / 100,
+        t: Math.floor(t * 100) / 100,
+        r: Math.floor(r * 100) / 100,
+        b: Math.floor(b * 100) / 100,
+      }
+    }
+
     const getCoordsFromRect = (rect: Mupdf.Rect, w: number, h: number) => {
-      if (!this.mupdf?.Rect.isValid(rect))
-        return null
+      if (!this.mupdf!.Rect.isValid(rect)) return null
 
       const [l, t, r, b] = rect
 
-      if (ignoreElementsGoingOutsidePage && (l < 0 || t < 0 || r > w || b > h))
-        return null
+      if (ignoreElementsGoingOutsidePage
+        && (l < 0 || t < 0 || r > w || b > h)
+      ) return null
 
       return {
-        // upto to 2 decimal places
+        // floor/ceil to 2 decimal places
         l: Math.floor(l * 100) / 100,
         t: Math.floor(t * 100) / 100,
         r: Math.ceil(r * 100) / 100,
         b: Math.ceil(b * 100) / 100,
       }
-    }
-
-    const getCoordsFromQuad = (quad: Mupdf.Quad, w: number, h: number) => {
-      const xs = [quad[0], quad[2], quad[4], quad[6]]
-      const ys = [quad[1], quad[3], quad[5], quad[7]]
-
-      const rect: Mupdf.Rect = [
-        Math.min(...xs), // l
-        Math.min(...ys), // t
-        Math.max(...xs), // r
-        Math.max(...ys), // b
-      ]
-      return getCoordsFromRect(rect, w, h)
     }
 
     const lineYGroupingRangeValues: number[] = [0]
@@ -104,44 +108,63 @@ export class MuPdfProcessor {
     for (const pageNum of pageNums) {
       const page = this.doc.loadPage(pageNum - 1)
       const [pageMinX, pageMinY, pageMaxX, pageMaxY] = page.getBounds()
-      const pageWidth = Math.abs(pageMaxX - pageMinX)
-      const pageHeight = Math.abs(pageMaxY - pageMinY)
-
-      const sTextOptions = [
-        'preserve-images',
-        'vectors',
-        `clip-rect=${pageMinX}:${pageMinY}:${pageMaxX}:${pageMaxY}`,
-        'clip',
-      ]
-
-      const sText = page.toStructuredText(sTextOptions.join(','))
+      const pageWidth = pageMaxX - pageMinX
+      const pageHeight = pageMaxY - pageMinY
 
       const pageChars: PageTextChar[] = []
       const pageImagesAreaCoords: PdfTextData[number]['images'] = []
-      const pageVectorsAreaCoords: PdfTextData[number]['vectors'] = []
+      const pageVectors: { type: string, coords: PdfTextData[number]['images'][number] }[] = []
 
-      sText.walk({
-        onChar: (char, _origin, _font, _size, quad) => {
-          const coords = getCoordsFromQuad(quad, pageWidth, pageHeight)
-          if (coords)
-            pageChars.push({ c: char, ...coords })
-        },
-        onImageBlock: (bbox) => {
-          const coords = getCoordsFromRect(bbox, pageWidth, pageHeight)
-          if (coords)
-            pageImagesAreaCoords.push(coords)
-        },
-        onVector: (bbox) => {
-          const coords = getCoordsFromRect(bbox, pageWidth, pageHeight)
-          if (coords)
-            pageVectorsAreaCoords.push(coords)
-        },
-      })
       page.destroy()
+
+      // path.getBounds() can accept null for strokeState but it is not typed as such in mupdf Path type
+      // hence using "as unknown as StrokeState" as workaround
+      const deviceImpl: Mupdf.Device = {
+        fillPath: (path, evenOdd, ctm, _cs, _color, alpha) => {
+          if (alpha === 0) return
+          const rect = path.getBounds(null as unknown as Mupdf.StrokeState, ctm)
+          const coords = getCoordsFromRect(rect, pageWidth, pageHeight)
+          if (coords)
+            pageVectors.push({ type: 'fill', coords })
+        },
+        strokePath: (path, stroke, ctm, _cs, _color, alpha) => {
+          if (alpha === 0) return
+          const rect = path.getBounds(stroke, ctm)
+          const coords = getCoordsFromRect(rect, pageWidth, pageHeight)
+          if (coords)
+            pageVectors.push({ type: 'stroke', coords })
+        },
+        clipPath: (path, _evenOdd, ctm) => {
+          const rect = path.getBounds(null as unknown as Mupdf.StrokeState, ctm)
+          const coords = getCoordsFromRect(rect, pageWidth, pageHeight)
+          if (coords)
+            pageVectors.push({ type: 'clip', coords })
+        },
+        clipStrokePath: (path, stroke, ctm) => {
+          const rect = path.getBounds(stroke, ctm)
+          const coords = getCoordsFromRect(rect, pageWidth, pageHeight)
+          if (coords)
+            pageVectors.push({ type: 'clipStroke', coords })
+        },
+        fillImage: (image, ctm, alpha) => {
+          if (alpha === 0) return
+          const bounds = getImageData(image, ctm)
+          collected.push({ kind: 'fillImage', bounds, ctm })
+        },
+        fillImageMask: (image, ctm, _colorspace, _color, alpha) => {
+          if (alpha === 0) return
+          const bounds = getImageData(image, ctm)
+          collected.push({ kind: 'fillImageMask', bounds, ctm })
+        },
+        clipImageMask: (image, ctm) => {
+          const bounds = getImageData(image, ctm)
+          collected.push({ kind: 'clipImageMask', bounds, ctm })
+        },
+      }
 
       const linesGroupedByY = pageChars.reduce(
         (acc, point) => {
-          const yMidPoint = Math.round((point.t + point.b) / 2) // use y mid point for grouping
+          const yMidPoint = Math.round((point.t + point.b) / 2)
 
           for (const dy of lineYGroupingRangeValues) {
             const line = acc[yMidPoint + dy]
@@ -170,13 +193,11 @@ export class MuPdfProcessor {
         }
       }
 
-      pageImagesAreaCoords.sort((a, b) => a.b - b.b)
-      pageVectorsAreaCoords.sort((a, b) => a.b - b.b)
+      pageImagesAreaCoords.sort((a, b) => a.t - b.t)
 
       pdfTextData[pageNum] = {
         lines: pageTextLineData,
         images: pageImagesAreaCoords,
-        vectors: pageVectorsAreaCoords,
       }
     }
 
@@ -197,6 +218,7 @@ export class MuPdfProcessor {
       transparent,
       true,
     )
+    page.destroy()
     return pixmap
   }
 
@@ -208,11 +230,10 @@ export class MuPdfProcessor {
     const pageImgData: PageImgData = {}
 
     for (let i = 0; i < totalPagesCount; i++) {
-      const page = this.doc.loadPage(i)
-      const [pageMinX, pageMinY, pageMaxX, pageMaxY] = page.getBounds()
+      const [ulx, uly, lrx, lry] = this.doc.loadPage(i).getBounds()
       pageImgData[i + 1] = {
-        width: Math.abs(pageMaxX - pageMinX),
-        height: Math.abs(pageMaxY - pageMinY),
+        width: Math.abs(lrx - ulx),
+        height: Math.abs(lry - uly),
         url: '',
         pageScale: 1,
       }

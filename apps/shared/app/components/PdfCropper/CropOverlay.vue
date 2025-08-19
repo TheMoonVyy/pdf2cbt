@@ -110,7 +110,7 @@ const props = defineProps<{
   pageWidth: number
   pageHeight: number
   pageScale: number
-  currentMode: 'crop' | 'edit'
+  currentMode: PdfCropperCurrentMode
   cropperMode: { isLine: boolean, isBox: boolean }
 }>()
 

@@ -32,7 +32,7 @@ import { Toaster } from '#layers/shared/app/components/ui/sonner'
 
 if (import.meta.server) {
   defineOgImageComponent('OgImage')
- }
+}
 
 const toastPosition = useToastPosition()
 
