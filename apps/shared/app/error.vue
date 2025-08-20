@@ -8,6 +8,8 @@ const props = defineProps({
   },
 })
 
+console.error(props.error)
+
 useSeoMeta({
   title: () => `${props.error.statusCode} - ${props.error.statusMessage} | PDF2CBT`,
 })
@@ -45,20 +47,17 @@ useSeoMeta({
           {{ error.statusMessage }}
         </h1>
         <p v-if="error.statusCode === 404">
-          The page you're looking for doesn't exist or was moved.
+          The page you're looking for does not exist.
         </p>
         <p v-else>
-          Something went wrong loading this page!
+          {{ error.message }}
         </p>
         <div class="flex justify-center">
           <NuxtLink
             to="/"
             @click.prevent="clearError({ redirect: '/' })"
           >
-            <BaseButton
-              label="Go to Homepage"
-              title="Go to Homepage"
-            />
+            <BaseButton label="Go to Homepage" />
           </NuxtLink>
         </div>
       </div>
