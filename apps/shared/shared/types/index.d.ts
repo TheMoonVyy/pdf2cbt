@@ -89,3 +89,17 @@ export type AnswerKeyJsonOutput = AnswerKeyJsonOutputBasedOnPdfCropper
 export type QuestionsImageUrls = {
   [queId: number | string]: string[]
 }
+
+export type AppSettings = {
+  theme: 'blue' | 'slate' | 'neutral'
+  notify: {
+    releases: {
+      indicator: boolean
+      popup: boolean
+    }
+    dev: {
+      indicator: boolean
+      popup: boolean
+    }
+  }
+}
