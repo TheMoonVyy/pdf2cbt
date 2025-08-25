@@ -102,7 +102,7 @@
               id="questions_numbering_type"
               v-model="settingsState.questionsOrder"
               size="lg"
-              :options="selectOptions.questionsNumberingOrder"
+              :options="QUESTIONS_NUMBERING_ORDER_OPTIONS"
               class="w-4/5"
             />
             <BaseButton
@@ -319,6 +319,7 @@
 import { zip, strToU8 } from 'fflate'
 import type { AsyncZippable } from 'fflate'
 import { DataFileNames } from '#layers/shared/shared/enums'
+import { QUESTIONS_NUMBERING_ORDER_OPTIONS } from '#layers/shared/shared/constants'
 
 type SectionListItem = TestSectionListItem & { totalQuestions: number }
 
@@ -412,14 +413,6 @@ const fileUploaderState = shallowReactive<{
 })
 
 const db = useDB()
-
-const selectOptions = {
-  questionsNumberingOrder: [
-    { name: 'Original', value: 'original' },
-    { name: 'Cumulative', value: 'cumulative' },
-    { name: 'Section-wise', value: 'section-wise' },
-  ],
-}
 
 const settingsState = shallowReactive({
   questionsOrder: 'original',

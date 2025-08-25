@@ -1,0 +1,1134 @@
+{
+    "$schema": "/mnt/sdb4/pdf2cbt/rg_v8.json",
+    "patternModeConfig": {
+        "settings": {
+            "ignoreElementsGoingOutsidePage": true,
+            "yCoordinateGroupingRangeForLine": 8,
+            "linesToIgnore": [
+                {
+                    "type": "regex",
+                    "value": "(?:for ?more ?material ?join|www.fiitjee.com|aits-ft|26513942)",
+                    "isCaseSensitive": false
+                }
+            ]
+        },
+        "subjects": {
+            "Physics": {
+                "start": {
+                    "pattern": {
+                        "type": "regex",
+                        "value": "physics\\s*part\\s*[-‐‒–—―﹣－]\\s*(?:III|II|I|3|2|1)",
+                        "isCaseSensitive": false
+                    },
+                    "searchIn": {
+                        "pages": "2-L",
+                        "area": {
+                            "l": "0",
+                            "r": "100%",
+                            "t": "0",
+                            "b": "100%"
+                        }
+                    }
+                },
+                "sections": {
+                    "Physics Section 1": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "mcq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 3,
+                                    "im": -1
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Physics Section 2": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "msq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 4,
+                                    "pm": 1,
+                                    "im": -2
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Physics Section 3": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "mcq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 3,
+                                    "im": -1
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Physics Section 4": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "nat",
+                                "marks": {
+                                    "cm": 4,
+                                    "im": 0
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "Chemistry": {
+                "start": {
+                    "pattern": {
+                        "type": "regex",
+                        "value": "chemistry\\s*part\\s*[-‐‒–—―﹣－]\\s*(?:III|II|I|3|2|1)",
+                        "isCaseSensitive": false
+                    },
+                    "searchIn": {
+                        "pages": "2-L",
+                        "area": {
+                            "l": "0",
+                            "r": "100%",
+                            "t": "0",
+                            "b": "100%"
+                        }
+                    }
+                },
+                "sections": {
+                    "Chemistry Section 1": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "mcq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 3,
+                                    "im": -1
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": false
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Chemistry Section 2": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "msq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 4,
+                                    "pm": 1,
+                                    "im": -2
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Chemistry Section 3": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "mcq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 3,
+                                    "im": -1
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Chemistry Section 4": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "nat",
+                                "marks": {
+                                    "cm": 4,
+                                    "im": 0
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "Mathematics": {
+                "start": {
+                    "pattern": {
+                        "type": "regex",
+                        "value": "math(?:s|ematics)\\s*part\\s*[-‐‒–—―﹣－]\\s*(?:III|II|I|3|2|1)",
+                        "isCaseSensitive": false
+                    },
+                    "searchIn": {
+                        "pages": "2-L",
+                        "area": {
+                            "l": "0",
+                            "r": "100%",
+                            "t": "0",
+                            "b": "100%"
+                        }
+                    }
+                },
+                "sections": {
+                    "Mathematics Section 1": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "mcq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 3,
+                                    "im": -1
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Mathematics Section 2": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "msq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 4,
+                                    "pm": 1,
+                                    "im": -2
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Mathematics Section 3": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "mcq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 3,
+                                    "im": -1
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "Mathematics Section 4": {
+                        "pattern": {
+                            "type": "regex",
+                            "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*(?:\\(\\s*(?:IV|III|II|I|4|3|2|1|A|B|C|D)\\s*\\))?",
+                            "isCaseSensitive": false
+                        },
+                        "searchIn": {
+                            "pages": "2-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "2-L",
+                            "details": {
+                                "type": "nat",
+                                "marks": {
+                                    "cm": 4,
+                                    "im": 0
+                                }
+                            },
+                            "mergeQuestions": {
+                                "splitBy": [
+                                    "pages"
+                                ],
+                                "mergeOnlyIfContainsAny": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "line",
+                                "vector",
+                                "image"
+                            ],
+                            "forTopCoordinateLookUp": {
+                                "by": 5,
+                                "chainBy": 5,
+                                "for": [
+                                    "line",
+                                    "vector",
+                                    "image"
+                                ]
+                            },
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "regex",
+                                            "value": "^\\s*(5[0-4]|[1-4][0-9]|[1-9])\\.(?!\\d)",
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "17%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "760"
+                                        },
+                                        "offsetBy": {
+                                            "l": 23,
+                                            "r": -3,
+                                            "t": -3,
+                                            "b": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

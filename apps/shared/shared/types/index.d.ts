@@ -89,3 +89,5 @@ export type AnswerKeyJsonOutput = AnswerKeyJsonOutputBasedOnPdfCropper
 export type QuestionsImageUrls = {
   [queId: number | string]: string[]
 }
+
+export type MakePropertyOptional<T extends object, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>

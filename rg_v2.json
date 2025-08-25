@@ -1,0 +1,1710 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "settings": {
+      "type": "object",
+      "properties": {
+        "yCoordinateGroupingRangeForLine": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ignoreElementsGoingOutsidePage": {
+          "type": "boolean"
+        },
+        "linesToIgnore": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "regex"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "text"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "isCaseSensitive": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value",
+                  "isCaseSensitive"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "yCoordinateGroupingRangeForLine",
+        "ignoreElementsGoingOutsidePage"
+      ],
+      "additionalProperties": false
+    },
+    "subjects": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "regex"
+                          },
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "text"
+                          },
+                          "value": {
+                            "type": "string"
+                          },
+                          "isCaseSensitive": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value",
+                          "isCaseSensitive"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "searchIn": {
+                    "type": "object",
+                    "properties": {
+                      "pages": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "area": {
+                        "type": "object",
+                        "properties": {
+                          "l": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "r": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "t": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "b": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "l",
+                          "r",
+                          "t",
+                          "b"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "pages",
+                      "area"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "pattern",
+                  "searchIn"
+                ],
+                "additionalProperties": false
+              },
+              "end": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "regex"
+                          },
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "text"
+                          },
+                          "value": {
+                            "type": "string"
+                          },
+                          "isCaseSensitive": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value",
+                          "isCaseSensitive"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "searchIn": {
+                    "type": "object",
+                    "properties": {
+                      "pages": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "area": {
+                        "type": "object",
+                        "properties": {
+                          "l": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "r": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "t": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "b": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "l",
+                          "r",
+                          "t",
+                          "b"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "pages",
+                      "area"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "pattern",
+                  "searchIn"
+                ],
+                "additionalProperties": false
+              },
+              "columnDividers": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "start"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "sections": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "pattern": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "regex"
+                                },
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "value"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "text"
+                                },
+                                "value": {
+                                  "type": "string"
+                                },
+                                "isCaseSensitive": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "value",
+                                "isCaseSensitive"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "searchIn": {
+                          "type": "object",
+                          "properties": {
+                            "pages": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "area": {
+                              "type": "object",
+                              "properties": {
+                                "l": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "r": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "t": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "b": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "l",
+                                "r",
+                                "t",
+                                "b"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "pages",
+                            "area"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "questions": {
+                          "type": "object",
+                          "properties": {
+                            "pages": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "details": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "const": "nat"
+                                    },
+                                    "marks": {
+                                      "type": "object",
+                                      "properties": {
+                                        "cm": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "im": {
+                                          "type": "number",
+                                          "maximum": 0
+                                        }
+                                      },
+                                      "required": [
+                                        "cm",
+                                        "im"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "type",
+                                    "marks"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "enum": [
+                                        "mcq",
+                                        "msm"
+                                      ]
+                                    },
+                                    "marks": {
+                                      "type": "object",
+                                      "properties": {
+                                        "cm": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "im": {
+                                          "type": "number",
+                                          "maximum": 0
+                                        }
+                                      },
+                                      "required": [
+                                        "cm",
+                                        "im"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "answerOptions": {
+                                      "type": "string"
+                                    },
+                                    "answerOptionsCounterType": {
+                                      "type": "object",
+                                      "properties": {
+                                        "primary": {
+                                          "type": "string",
+                                          "enum": [
+                                            "upper-latin",
+                                            "lower-latin",
+                                            "upper-pqrs",
+                                            "lower-pqrs",
+                                            "decimal",
+                                            "upper-roman",
+                                            "lower-roman"
+                                          ]
+                                        },
+                                        "secondary": {
+                                          "type": "string",
+                                          "enum": [
+                                            "upper-latin",
+                                            "lower-latin",
+                                            "upper-pqrs",
+                                            "lower-pqrs",
+                                            "decimal",
+                                            "upper-roman",
+                                            "lower-roman"
+                                          ]
+                                        }
+                                      },
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "type",
+                                    "marks",
+                                    "answerOptions"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "const": "msq"
+                                    },
+                                    "marks": {
+                                      "type": "object",
+                                      "properties": {
+                                        "cm": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "im": {
+                                          "type": "number",
+                                          "maximum": 0
+                                        },
+                                        "pm": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      },
+                                      "required": [
+                                        "cm",
+                                        "im",
+                                        "pm"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "answerOptions": {
+                                      "type": "string"
+                                    },
+                                    "answerOptionsCounterType": {
+                                      "type": "object",
+                                      "properties": {
+                                        "primary": {
+                                          "type": "string",
+                                          "enum": [
+                                            "upper-latin",
+                                            "lower-latin",
+                                            "upper-pqrs",
+                                            "lower-pqrs",
+                                            "decimal",
+                                            "upper-roman",
+                                            "lower-roman"
+                                          ]
+                                        },
+                                        "secondary": {
+                                          "type": "string",
+                                          "enum": [
+                                            "upper-latin",
+                                            "lower-latin",
+                                            "upper-pqrs",
+                                            "lower-pqrs",
+                                            "decimal",
+                                            "upper-roman",
+                                            "lower-roman"
+                                          ]
+                                        }
+                                      },
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "type",
+                                    "marks",
+                                    "answerOptions"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            },
+                            "forBottomCoordinate": {
+                              "type": "object",
+                              "properties": {
+                                "useBottomLine": {
+                                  "type": "boolean"
+                                },
+                                "useBottomImage": {
+                                  "type": "boolean"
+                                },
+                                "useBottomVector": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "useBottomLine",
+                                "useBottomImage",
+                                "useBottomVector"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "forTopCoordinateLookUp": {
+                              "type": "object",
+                              "properties": {
+                                "by": {
+                                  "type": "number",
+                                  "exclusiveMinimum": 0
+                                },
+                                "chainBy": {
+                                  "type": "number",
+                                  "exclusiveMinimum": 0
+                                },
+                                "for": {
+                                  "minItems": 1,
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "oneOf": [
+                                      {
+                                        "type": "string",
+                                        "const": "lines"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": "vectors"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": "images"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "required": [
+                                "by",
+                                "for"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "questionNum": {
+                              "type": "object",
+                              "properties": {
+                                "whenDuplicate": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ignore",
+                                    "replace",
+                                    "merge"
+                                  ]
+                                },
+                                "nextQShouldBeOneGreater": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "whenDuplicate",
+                                "nextQShouldBeOneGreater"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "mergeQuestions": {
+                              "type": "object",
+                              "properties": {
+                                "byPages": {
+                                  "type": "boolean"
+                                },
+                                "byColumns": {
+                                  "type": "boolean"
+                                },
+                                "onlyMergeIfContainsAny": {
+                                  "type": "object",
+                                  "properties": {
+                                    "line": {
+                                      "type": "boolean"
+                                    },
+                                    "image": {
+                                      "type": "boolean"
+                                    },
+                                    "vector": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "line",
+                                    "image",
+                                    "vector"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "byPages",
+                                "byColumns",
+                                "onlyMergeIfContainsAny"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "paragraphQuestionsCommonPart": {
+                              "type": "object",
+                              "properties": {
+                                "pattern": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "type": "string",
+                                          "const": "regex"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "type",
+                                        "value"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "type": "string",
+                                          "const": "text"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        },
+                                        "isCaseSensitive": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "type",
+                                        "value",
+                                        "isCaseSensitive"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                },
+                                "searchIn": {
+                                  "type": "object",
+                                  "properties": {
+                                    "l": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "r": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "t": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "b": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "l",
+                                    "r",
+                                    "t",
+                                    "b"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "pattern",
+                                "searchIn"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "optionalQuestionsCount": {
+                              "type": "number",
+                              "minimum": 1
+                            },
+                            "columns": {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "start": {
+                                    "type": "object",
+                                    "properties": {
+                                      "pattern": {
+                                        "oneOf": [
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "type": {
+                                                "type": "string",
+                                                "const": "regex"
+                                              },
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "type",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "type": {
+                                                "type": "string",
+                                                "const": "text"
+                                              },
+                                              "prefix": {
+                                                "type": "string"
+                                              },
+                                              "suffix": {
+                                                "type": "string"
+                                              },
+                                              "questionRange": {
+                                                "type": "string",
+                                                "minLength": 3,
+                                                "pattern": "^(?<start>\\d+) {0,3}- {0,3}(?<end>\\d+)$"
+                                              },
+                                              "relaxPaddedZeros": {
+                                                "type": "boolean"
+                                              },
+                                              "isCaseSensitive": {
+                                                "type": "boolean"
+                                              }
+                                            },
+                                            "required": [
+                                              "type",
+                                              "prefix",
+                                              "suffix",
+                                              "questionRange",
+                                              "relaxPaddedZeros",
+                                              "isCaseSensitive"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      },
+                                      "searchIn": {
+                                        "type": "object",
+                                        "properties": {
+                                          "l": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "r": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "t": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "b": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          }
+                                        },
+                                        "required": [
+                                          "l",
+                                          "r",
+                                          "t",
+                                          "b"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "pattern",
+                                      "searchIn"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "end": {
+                                    "type": "object",
+                                    "properties": {
+                                      "pattern": {
+                                        "oneOf": [
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "type": {
+                                                "type": "string",
+                                                "const": "regex"
+                                              },
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "type",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "type": {
+                                                "type": "string",
+                                                "const": "text"
+                                              },
+                                              "value": {
+                                                "type": "string"
+                                              },
+                                              "isCaseSensitive": {
+                                                "type": "boolean"
+                                              }
+                                            },
+                                            "required": [
+                                              "type",
+                                              "value",
+                                              "isCaseSensitive"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      },
+                                      "searchIn": {
+                                        "type": "object",
+                                        "properties": {
+                                          "l": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "r": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "t": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "b": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          }
+                                        },
+                                        "required": [
+                                          "l",
+                                          "r",
+                                          "t",
+                                          "b"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "pattern",
+                                      "searchIn"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "crop": {
+                                    "type": "object",
+                                    "properties": {
+                                      "within": {
+                                        "type": "object",
+                                        "properties": {
+                                          "t": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "b": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          }
+                                        },
+                                        "required": [
+                                          "t",
+                                          "b"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "exactlyTo": {
+                                        "type": "object",
+                                        "properties": {
+                                          "l": {
+                                            "oneOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "r": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          }
+                                        },
+                                        "required": [
+                                          "r"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "offsetBy": {
+                                        "type": "object",
+                                        "properties": {
+                                          "l": {
+                                            "type": "number"
+                                          },
+                                          "r": {
+                                            "type": "number"
+                                          },
+                                          "t": {
+                                            "type": "number"
+                                          },
+                                          "b": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "within",
+                                      "exactlyTo"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "start",
+                                  "crop"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "pages",
+                            "details",
+                            "forBottomCoordinate",
+                            "questionNum",
+                            "columns"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "pattern",
+                        "searchIn",
+                        "questions"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "sections"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "questions": {
+                    "type": "object",
+                    "properties": {
+                      "pages": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "details": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "nat"
+                              },
+                              "marks": {
+                                "type": "object",
+                                "properties": {
+                                  "cm": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "im": {
+                                    "type": "number",
+                                    "maximum": 0
+                                  }
+                                },
+                                "required": [
+                                  "cm",
+                                  "im"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "marks"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "mcq",
+                                  "msm"
+                                ]
+                              },
+                              "marks": {
+                                "type": "object",
+                                "properties": {
+                                  "cm": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "im": {
+                                    "type": "number",
+                                    "maximum": 0
+                                  }
+                                },
+                                "required": [
+                                  "cm",
+                                  "im"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "answerOptions": {
+                                "type": "string"
+                              },
+                              "answerOptionsCounterType": {
+                                "type": "object",
+                                "properties": {
+                                  "primary": {
+                                    "type": "string",
+                                    "enum": [
+                                      "upper-latin",
+                                      "lower-latin",
+                                      "upper-pqrs",
+                                      "lower-pqrs",
+                                      "decimal",
+                                      "upper-roman",
+                                      "lower-roman"
+                                    ]
+                                  },
+                                  "secondary": {
+                                    "type": "string",
+                                    "enum": [
+                                      "upper-latin",
+                                      "lower-latin",
+                                      "upper-pqrs",
+                                      "lower-pqrs",
+                                      "decimal",
+                                      "upper-roman",
+                                      "lower-roman"
+                                    ]
+                                  }
+                                },
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "marks",
+                              "answerOptions"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "msq"
+                              },
+                              "marks": {
+                                "type": "object",
+                                "properties": {
+                                  "cm": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "im": {
+                                    "type": "number",
+                                    "maximum": 0
+                                  },
+                                  "pm": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "cm",
+                                  "im",
+                                  "pm"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "answerOptions": {
+                                "type": "string"
+                              },
+                              "answerOptionsCounterType": {
+                                "type": "object",
+                                "properties": {
+                                  "primary": {
+                                    "type": "string",
+                                    "enum": [
+                                      "upper-latin",
+                                      "lower-latin",
+                                      "upper-pqrs",
+                                      "lower-pqrs",
+                                      "decimal",
+                                      "upper-roman",
+                                      "lower-roman"
+                                    ]
+                                  },
+                                  "secondary": {
+                                    "type": "string",
+                                    "enum": [
+                                      "upper-latin",
+                                      "lower-latin",
+                                      "upper-pqrs",
+                                      "lower-pqrs",
+                                      "decimal",
+                                      "upper-roman",
+                                      "lower-roman"
+                                    ]
+                                  }
+                                },
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "marks",
+                              "answerOptions"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "forBottomCoordinate": {
+                        "type": "object",
+                        "properties": {
+                          "useBottomLine": {
+                            "type": "boolean"
+                          },
+                          "useBottomImage": {
+                            "type": "boolean"
+                          },
+                          "useBottomVector": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "useBottomLine",
+                          "useBottomImage",
+                          "useBottomVector"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "forTopCoordinateLookUp": {
+                        "type": "object",
+                        "properties": {
+                          "by": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "chainBy": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "for": {
+                            "minItems": 1,
+                            "maxItems": 3,
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "string",
+                                  "const": "lines"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "vectors"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "images"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "by",
+                          "for"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "questionNum": {
+                        "type": "object",
+                        "properties": {
+                          "whenDuplicate": {
+                            "type": "string",
+                            "enum": [
+                              "ignore",
+                              "replace",
+                              "merge"
+                            ]
+                          },
+                          "nextQShouldBeOneGreater": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "whenDuplicate",
+                          "nextQShouldBeOneGreater"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "mergeQuestions": {
+                        "type": "object",
+                        "properties": {
+                          "byPages": {
+                            "type": "boolean"
+                          },
+                          "byColumns": {
+                            "type": "boolean"
+                          },
+                          "onlyMergeIfContainsAny": {
+                            "type": "object",
+                            "properties": {
+                              "line": {
+                                "type": "boolean"
+                              },
+                              "image": {
+                                "type": "boolean"
+                              },
+                              "vector": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "line",
+                              "image",
+                              "vector"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "byPages",
+                          "byColumns",
+                          "onlyMergeIfContainsAny"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "paragraphQuestionsCommonPart": {
+                        "type": "object",
+                        "properties": {
+                          "pattern": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "regex"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "text"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  },
+                                  "isCaseSensitive": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "value",
+                                  "isCaseSensitive"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          },
+                          "searchIn": {
+                            "type": "object",
+                            "properties": {
+                              "l": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "r": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "t": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "b": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "l",
+                              "r",
+                              "t",
+                              "b"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "pattern",
+                          "searchIn"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "optionalQuestionsCount": {
+                        "type": "number",
+                        "minimum": 1
+                      },
+                      "columns": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "start": {
+                              "type": "object",
+                              "properties": {
+                                "pattern": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "type": "string",
+                                          "const": "regex"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "type",
+                                        "value"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "type": "string",
+                                          "const": "text"
+                                        },
+                                        "prefix": {
+                                          "type": "string"
+                                        },
+                                        "suffix": {
+                                          "type": "string"
+                                        },
+                                        "questionRange": {
+                                          "type": "string",
+                                          "minLength": 3,
+                                          "pattern": "^(?<start>\\d+) {0,3}- {0,3}(?<end>\\d+)$"
+                                        },
+                                        "relaxPaddedZeros": {
+                                          "type": "boolean"
+                                        },
+                                        "isCaseSensitive": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "type",
+                                        "prefix",
+                                        "suffix",
+                                        "questionRange",
+                                        "relaxPaddedZeros",
+                                        "isCaseSensitive"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                },
+                                "searchIn": {
+                                  "type": "object",
+                                  "properties": {
+                                    "l": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "r": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "t": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "b": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "l",
+                                    "r",
+                                    "t",
+                                    "b"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "pattern",
+                                "searchIn"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "end": {
+                              "type": "object",
+                              "properties": {
+                                "pattern": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "type": "string",
+                                          "const": "regex"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "type",
+                                        "value"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "type": "string",
+                                          "const": "text"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        },
+                                        "isCaseSensitive": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "type",
+                                        "value",
+                                        "isCaseSensitive"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                },
+                                "searchIn": {
+                                  "type": "object",
+                                  "properties": {
+                                    "l": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "r": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "t": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "b": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "l",
+                                    "r",
+                                    "t",
+                                    "b"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "pattern",
+                                "searchIn"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "crop": {
+                              "type": "object",
+                              "properties": {
+                                "within": {
+                                  "type": "object",
+                                  "properties": {
+                                    "t": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "b": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "t",
+                                    "b"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "exactlyTo": {
+                                  "type": "object",
+                                  "properties": {
+                                    "l": {
+                                      "oneOf": [
+                                        {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "r": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "r"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "offsetBy": {
+                                  "type": "object",
+                                  "properties": {
+                                    "l": {
+                                      "type": "number"
+                                    },
+                                    "r": {
+                                      "type": "number"
+                                    },
+                                    "t": {
+                                      "type": "number"
+                                    },
+                                    "b": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "within",
+                                "exactlyTo"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "start",
+                            "crop"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "pages",
+                      "details",
+                      "forBottomCoordinate",
+                      "questionNum",
+                      "columns"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "questions"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "settings",
+    "subjects"
+  ]
+}

@@ -5,7 +5,7 @@ const enableSeoModules = import.meta.env.DISABLE_SEO_MODULES === 'true' ? false 
 
 export default defineNuxtConfig({
   extends: ['../shared'],
-  modules: ['@nuxtjs/robots', '@nuxtjs/sitemap', 'nuxt-og-image'],
+  modules: ['@nuxtjs/robots', '@nuxtjs/sitemap', 'nuxt-og-image', '@pinia/nuxt'],
   $meta: {
     name: 'web',
   },

@@ -1,0 +1,655 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "settings": {
+      "type": "object",
+      "properties": {
+        "yCoordinateGroupingRangeForLine": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ignoreElementsGoingOutsidePage": {
+          "type": "boolean"
+        },
+        "linesToIgnore": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "required": [
+        "yCoordinateGroupingRangeForLine",
+        "ignoreElementsGoingOutsidePage"
+      ]
+    },
+    "subjects": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "start": {
+                "$ref": "#/$defs/__schema2"
+              },
+              "end": {
+                "$ref": "#/$defs/__schema2"
+              },
+              "columnDividers": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "start"
+            ]
+          },
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "sections": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "pattern": {
+                          "$ref": "#/$defs/__schema0"
+                        },
+                        "searchIn": {
+                          "$ref": "#/$defs/__schema3"
+                        },
+                        "questions": {
+                          "$ref": "#/$defs/__schema7"
+                        }
+                      },
+                      "required": [
+                        "pattern",
+                        "searchIn",
+                        "questions"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "sections"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "questions": {
+                    "$ref": "#/$defs/__schema7"
+                  }
+                },
+                "required": [
+                  "questions"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "settings",
+    "subjects"
+  ],
+  "$defs": {
+    "__schema0": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema1"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "text"
+            },
+            "value": {
+              "type": "string"
+            },
+            "isCaseSensitive": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "value",
+            "isCaseSensitive"
+          ]
+        }
+      ]
+    },
+    "__schema1": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "regex"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ]
+    },
+    "__schema2": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "searchIn": {
+          "$ref": "#/$defs/__schema3"
+        }
+      },
+      "required": [
+        "pattern",
+        "searchIn"
+      ]
+    },
+    "__schema3": {
+      "type": "object",
+      "properties": {
+        "pages": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "area": {
+          "$ref": "#/$defs/__schema5"
+        }
+      },
+      "required": [
+        "pages",
+        "area"
+      ]
+    },
+    "__schema4": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema5": {
+      "type": "object",
+      "properties": {
+        "l": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "r": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "t": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "b": {
+          "$ref": "#/$defs/__schema6"
+        }
+      },
+      "required": [
+        "l",
+        "r",
+        "t",
+        "b"
+      ]
+    },
+    "__schema6": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema7": {
+      "type": "object",
+      "properties": {
+        "pages": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "nat"
+                },
+                "marks": {
+                  "$ref": "#/$defs/__schema8"
+                }
+              },
+              "required": [
+                "type",
+                "marks"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "mcq",
+                    "msm"
+                  ]
+                },
+                "marks": {
+                  "$ref": "#/$defs/__schema8"
+                },
+                "answerOptions": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "answerOptionsCounterType": {
+                  "$ref": "#/$defs/__schema12"
+                }
+              },
+              "required": [
+                "type",
+                "marks",
+                "answerOptions"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "msq"
+                },
+                "marks": {
+                  "type": "object",
+                  "properties": {
+                    "cm": {
+                      "$ref": "#/$defs/__schema9"
+                    },
+                    "im": {
+                      "$ref": "#/$defs/__schema10"
+                    },
+                    "pm": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "cm",
+                    "im",
+                    "pm"
+                  ]
+                },
+                "answerOptions": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "answerOptionsCounterType": {
+                  "$ref": "#/$defs/__schema12"
+                }
+              },
+              "required": [
+                "type",
+                "marks",
+                "answerOptions"
+              ]
+            }
+          ]
+        },
+        "forBottomCoordinate": {
+          "type": "object",
+          "properties": {
+            "useBottomLine": {
+              "type": "boolean"
+            },
+            "useBottomImage": {
+              "type": "boolean"
+            },
+            "useBottomVector": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "useBottomLine",
+            "useBottomImage",
+            "useBottomVector"
+          ]
+        },
+        "forTopCoordinateLookUp": {
+          "type": "object",
+          "properties": {
+            "line": {
+              "type": "object",
+              "properties": {
+                "by": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "chainBy": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "by"
+              ]
+            },
+            "image": {
+              "type": "object",
+              "properties": {
+                "by": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "chainBy": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "by"
+              ]
+            },
+            "vector": {
+              "type": "object",
+              "properties": {
+                "by": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "chainBy": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "by"
+              ]
+            }
+          }
+        },
+        "questionNum": {
+          "type": "object",
+          "properties": {
+            "whenDuplicate": {
+              "type": "string",
+              "enum": [
+                "ignore",
+                "replace",
+                "merge"
+              ]
+            },
+            "nextQShouldBeOneGreater": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "whenDuplicate",
+            "nextQShouldBeOneGreater"
+          ]
+        },
+        "mergeQuestions": {
+          "type": "object",
+          "properties": {
+            "byPages": {
+              "type": "boolean"
+            },
+            "byColumns": {
+              "type": "boolean"
+            },
+            "ignoreAreaNotContainingAny": {
+              "type": "object",
+              "properties": {
+                "line": {
+                  "type": "boolean"
+                },
+                "image": {
+                  "type": "boolean"
+                },
+                "vector": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "line",
+                "image",
+                "vector"
+              ]
+            }
+          },
+          "required": [
+            "byPages",
+            "byColumns",
+            "ignoreAreaNotContainingAny"
+          ]
+        },
+        "paragraphQuestionsCommonPart": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "searchIn": {
+              "$ref": "#/$defs/__schema5"
+            }
+          },
+          "required": [
+            "pattern",
+            "searchIn"
+          ]
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/__schema1"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "text"
+                          },
+                          "prefix": {
+                            "type": "string"
+                          },
+                          "suffix": {
+                            "type": "string"
+                          },
+                          "questionRange": {
+                            "type": "string",
+                            "minLength": 3,
+                            "pattern": "^(?<start>\\d+) {0,3}- {0,3}(?<end>\\d+)$"
+                          },
+                          "relaxPaddedZeros": {
+                            "type": "boolean"
+                          },
+                          "isCaseSensitive": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "prefix",
+                          "suffix",
+                          "questionRange",
+                          "relaxPaddedZeros",
+                          "isCaseSensitive"
+                        ]
+                      }
+                    ]
+                  },
+                  "searchIn": {
+                    "$ref": "#/$defs/__schema5"
+                  }
+                },
+                "required": [
+                  "pattern",
+                  "searchIn"
+                ]
+              },
+              "end": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "$ref": "#/$defs/__schema0"
+                  },
+                  "searchIn": {
+                    "$ref": "#/$defs/__schema5"
+                  }
+                },
+                "required": [
+                  "pattern",
+                  "searchIn"
+                ]
+              },
+              "crop": {
+                "type": "object",
+                "properties": {
+                  "within": {
+                    "type": "object",
+                    "properties": {
+                      "t": {
+                        "$ref": "#/$defs/__schema6"
+                      },
+                      "b": {
+                        "$ref": "#/$defs/__schema6"
+                      }
+                    },
+                    "required": [
+                      "t",
+                      "b"
+                    ]
+                  },
+                  "exactlyTo": {
+                    "type": "object",
+                    "properties": {
+                      "l": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/$defs/__schema6"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "r": {
+                        "$ref": "#/$defs/__schema6"
+                      }
+                    },
+                    "required": [
+                      "r"
+                    ]
+                  },
+                  "offsetBy": {
+                    "type": "object",
+                    "properties": {
+                      "l": {
+                        "type": "number"
+                      },
+                      "r": {
+                        "type": "number"
+                      },
+                      "t": {
+                        "type": "number"
+                      },
+                      "b": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "within",
+                  "exactlyTo"
+                ]
+              }
+            },
+            "required": [
+              "start",
+              "crop"
+            ]
+          }
+        }
+      },
+      "required": [
+        "pages",
+        "details",
+        "forBottomCoordinate",
+        "forTopCoordinateLookUp",
+        "questionNum",
+        "mergeQuestions",
+        "columns"
+      ]
+    },
+    "__schema8": {
+      "type": "object",
+      "properties": {
+        "cm": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "im": {
+          "$ref": "#/$defs/__schema10"
+        }
+      },
+      "required": [
+        "cm",
+        "im"
+      ]
+    },
+    "__schema9": {
+      "type": "number",
+      "minimum": 0
+    },
+    "__schema10": {
+      "type": "number",
+      "maximum": 0
+    },
+    "__schema11": {
+      "type": "string"
+    },
+    "__schema12": {
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": "string",
+          "enum": [
+            "upper-latin",
+            "lower-latin",
+            "upper-pqrs",
+            "lower-pqrs",
+            "decimal",
+            "upper-roman",
+            "lower-roman"
+          ]
+        },
+        "secondary": {
+          "type": "string",
+          "enum": [
+            "upper-latin",
+            "lower-latin",
+            "upper-pqrs",
+            "lower-pqrs",
+            "decimal",
+            "upper-roman",
+            "lower-roman"
+          ]
+        }
+      }
+    }
+  }
+}
