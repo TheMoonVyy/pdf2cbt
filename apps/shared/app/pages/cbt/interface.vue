@@ -42,10 +42,26 @@
                 icon-class="cursor-pointer text-xl!"
               />
             </div>
+            <div
+              class="flex gap-2 items-center ml-auto"
+              data-id="test_total_summary"
+            >
+            <BaseButton
+                label="Question Paper"
+                variant="info"
+                size="sm"
+                class="mr-1"
+                icon-name="prime:file"
+                v-if="testSettings.showQuestionPaper"
+                :disabled="isTestPaused || testState.currentProcess !== 'test-started'"
+                @click="() => { showQuestionPaper = true }"
+              />
+          </div> 
           </div>
           <div class="flex justify-between px-3 py-0.5 shrink-0">
             <span class="flex ml-auto items-center">Time Left:&nbsp;&nbsp;{{ testTimeLeftString }}</span>
           </div>
+          <QuestionPaperDialog v-if="showQuestionPaper" @close="showQuestionPaper = false" />
           <UiScrollArea
             class="w-full border-slate-400"
             viewport-class="[&>div]:mb-3"
@@ -565,6 +581,7 @@ import markedIcon from '#layers/shared/app/assets/icons/ques-marked.svg?no-inlin
 import markedAnsweredIcon from '#layers/shared/app/assets/icons/ques-markedAnswered.svg?no-inline'
 import profileIcon from '#layers/shared/app/assets/icons/profile.svg?no-inline'
 import { CbtUseState } from '#layers/shared/shared/enums'
+import QuestionPaperDialog from '~/components/Cbt/Interface/QuestionPaperDialog.vue'
 
 definePageMeta({
   layout: false,
@@ -590,6 +607,8 @@ const questionStatusList: {
   { key: 'marked', label: 'Marked for Review' },
   { key: 'markedAnswered', label: 'Answered & Marked for Review', colSpan2: true },
 ]
+
+const showQuestionPaper = ref(false)
 
 const db = useDB()
 
