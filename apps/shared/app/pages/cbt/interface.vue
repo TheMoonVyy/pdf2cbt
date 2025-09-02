@@ -1112,6 +1112,9 @@ async function submitTest(isAuto: boolean) {
     console.error('Error while saving currentTestState when testFinished', err)
   }
 
+  window.removeEventListener('wheel', preventScroll)
+  window.removeEventListener('touchmove', preventScroll)
+
   generateTestOutputData()
   try {
     const id = await db.addTestOutputData(utilCloneJson(testOutputData!))
@@ -1246,6 +1249,21 @@ const downloadTestData = () => {
   const blob = new Blob([JSON.stringify(testOutputData, null, 2)], { type: 'application/json' })
   utilSaveFile('pdf2cbt_test_data.json', blob)
 }
+
+watch(() => testSettings.value.disableScrolling, (newVal) => {
+  if (newVal) {
+    window.addEventListener('wheel', preventScroll, { passive: false })
+    window.addEventListener('touchmove', preventScroll, { passive: false })
+  } else {
+    window.removeEventListener('wheel', preventScroll)
+    window.removeEventListener('touchmove', preventScroll)
+  }
+})
+
+function preventScroll(e: Event) {
+  e.preventDefault()
+}
+
 
 onBeforeUnmount(pageCleanUpCallback)
 

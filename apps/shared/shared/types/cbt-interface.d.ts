@@ -207,6 +207,7 @@ export interface CbtTestSettings {
   durationInSeconds: number
   submitBtn: 'enabled' | 'disabled' | 'hidden'
   showPauseBtn: boolean
+  disableScrolling: boolean
   questionImgScale: number
   saveTestData: boolean
 }

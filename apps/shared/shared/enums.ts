@@ -50,5 +50,6 @@ export enum CBTInterfaceQueryParams {
   TimeFormat = 'timeformat',
   ZipUrl = 'zipurl',
   AllowPause = 'allowpause',
+  DisableScrolling = 'disableScrolling',
   ImageScale = 'imagescale',
 }
