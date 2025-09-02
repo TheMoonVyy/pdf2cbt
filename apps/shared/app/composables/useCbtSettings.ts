@@ -124,6 +124,7 @@ const defaultTestSettings: CbtTestSettings = {
   timeFormat: 'mmm:ss',
   submitBtn: 'enabled',
   showPauseBtn: false,
+  disableScrolling: false,
   durationInSeconds: 3 * 60 * 60,
   questionImgScale: 2,
   saveTestData: true,

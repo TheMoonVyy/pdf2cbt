@@ -195,6 +195,25 @@
                         class="col-span-6"
                       />
                     </div>
+                    <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
+                      <div class="flex gap-2 w-full justify-center mb-0.5">
+                        <UiLabel
+                          for="disable_scrolling_dropdown"
+                        >
+                          Disable Scrolling
+                        </UiLabel>
+                        <IconWithTooltip
+                          :content="tooltipContent.disableScrolling"
+                        />
+                      </div>
+                      <BaseSelect
+                        id="disable_scrolling_dropdown"
+                        v-model="testSettings.disableScrolling"
+                        size="sm"
+                        :options="selectOptions.disableScrolling"
+                        class="col-span-6"
+                      />
+                    </div>
                     <template v-if="!testState.testImageBlobs">
                       <div class="flex justify-center gap-3 mt-3 w-full">
                         <UiLabel
@@ -1255,6 +1274,24 @@ const tooltipContent = {
       h('strong', 'You can access hidden settings any time, be it before or during the test.'),
     ]),
 
+  disableScrolling: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Allow scrolling in the test?'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'Yes'),
+          ': Mouse wheel / touchpad scrolling will be disabled inside the test. ',
+          'You will need to use the navigation panel or buttons to move between questions.',
+        ]),
+        h('li', [
+          h('strong', 'No'),
+          ': Scrolling will work normally, and you can freely scroll through questions with your mouse or touchpad.',
+        ]),
+      ]),
+      h('strong', 'You can change this setting any time in the hidden settings (long-press the profile icon in the top-right corner).'),
+    ]),
+
+
   questionImgScale: () =>
     h('div', { class: 'space-y-2' }, [
       h('p', '(This is ignored for ZIP files with pre-generated images)'),
@@ -1306,6 +1343,11 @@ const selectOptions = {
     { name: 'No', value: false },
   ],
 
+  disableScrolling: [
+    { name: 'Yes', value: true },
+    { name: 'No', value: false },
+  ],
+  
   answerOptionsFormat: ANSWER_OPTIONS_COUNTER_TYPES,
 
   showHide: [
@@ -1889,6 +1931,7 @@ onMounted(() => {
       const zipurlValue = getFirstQuery(route.query[CBTInterfaceQueryParams.ZipUrl])
       const submitmodeValue = getFirstQuery(route.query[CBTInterfaceQueryParams.SubmitMode])
       const allowpauseValue = getFirstQuery(route.query[CBTInterfaceQueryParams.AllowPause])
+      const disableScrollingValue = getFirstQuery(route.query[CBTInterfaceQueryParams.DisableScrolling])
       const imgScaleValue = getFirstQuery(route.query[CBTInterfaceQueryParams.ImageScale])
 
       if (nameValue && typeof nameValue === 'string') {
@@ -1930,6 +1973,9 @@ onMounted(() => {
       }
       if (allowpauseValue && ['yes', 'no'].includes(allowpauseValue)) {
         testSettings.value.showPauseBtn = allowpauseValue === 'yes'
+      }
+      if (disableScrollingValue && ['yes', 'no'].includes(disableScrollingValue)) {
+        testSettings.value.disableScrolling = disableScrollingValue === 'yes'
       }
       if (imgScaleValue && !isNaN(Number(imgScaleValue))) {
         testSettings.value.questionImgScale = Number(imgScaleValue)
