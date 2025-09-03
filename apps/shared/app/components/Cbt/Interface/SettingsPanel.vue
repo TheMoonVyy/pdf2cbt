@@ -195,44 +195,6 @@
                         class="col-span-6"
                       />
                     </div>
-                    <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
-                      <div class="flex gap-2 w-full justify-center mb-0.5">
-                        <UiLabel
-                          for="show_question_paper_dropdown"
-                        >
-                          Show Question Paper
-                        </UiLabel>
-                        <IconWithTooltip
-                          :content="tooltipContent.showQuestionPaper"
-                        />
-                      </div>
-                      <BaseSelect
-                        id="show_question_paper_dropdown"
-                        v-model="testSettings.showQuestionPaper"
-                        size="sm"
-                        :options="selectOptions.showQuestionPaper"
-                        class="col-span-6"
-                      />
-                    </div>
-                    <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
-                      <div class="flex gap-2 w-full justify-center mb-0.5">
-                        <UiLabel
-                          for="disable_scrolling_dropdown"
-                        >
-                          Disable Scrolling
-                        </UiLabel>
-                        <IconWithTooltip
-                          :content="tooltipContent.disableScrolling"
-                        />
-                      </div>
-                      <BaseSelect
-                        id="disable_scrolling_dropdown"
-                        v-model="testSettings.disableScrolling"
-                        size="sm"
-                        :options="selectOptions.disableScrolling"
-                        class="col-span-6"
-                      />
-                    </div>
                     <template v-if="!testState.testImageBlobs">
                       <div class="flex justify-center gap-3 mt-3 w-full">
                         <UiLabel
@@ -347,17 +309,23 @@
                       :key="item.key"
                       class="flex flex-col w-full items-center justify-end"
                     >
-                      <UiLabel
-                        class="text-sm text-center"
-                        :for="item.id"
-                      >
-                        {{ item.label }}
-                      </UiLabel>
+                      <div class="flex gap-2 items-center justify-center">
+                        <UiLabel
+                          class="text-sm text-center"
+                          :for="item.id"
+                        >
+                          {{ item.label }}
+                        </UiLabel>
+                        <IconWithTooltip
+                          v-if="item.tooltip"
+                          :content="item.tooltip"
+                        />
+                      </div>
                       <BaseSelect
                         v-if="item.type === 'select'"
                         :id="item.id"
                         v-model="(settings.mainLayout[item.key as keyof CbtUiSettings['mainLayout']] as boolean)"
-                        :options="selectOptions.showHide"
+                        :options="item.options || selectOptions.showHide"
                         trigger-class="w-3/4"
                       />
                       <BaseInputNumber
@@ -1165,57 +1133,6 @@ interface ImportExportDialogState {
   data: Record<string, unknown>
 }
 
-const addIds = <T extends Record<string, unknown>>(items: T[]): (T & { id: string })[] => {
-  return items.map(item => ({
-    ...item,
-    id: useId(),
-  }))
-}
-
-const htmlContent = {
-  customizeUi: {
-    mainLayout: addIds([
-      { key: 'size', label: 'Main Layout Size (px)', min: 5, max: 25 },
-      { key: 'testTotalHeaderHeight', label: '"Test Total" Header Height', min: 0, max: 30, step: 0.1 },
-      { key: 'sectionHeaderHeight', label: 'Sections Height', min: 1, max: 20, step: 0.1 },
-      { key: 'questionTypeFontSize', label: 'Ques. Type Font Size', min: 0.25, max: 5, step: 0.1 },
-      { key: 'markingSchemeFontSize', label: 'Marking Scheme Font Size', min: 0.25, max: 5, step: 0.1 },
-      { key: 'questionTimeSpentFontSize', label: 'Ques. Time Spent Font Size', min: 0.25, max: 5, step: 0.1 },
-      { key: 'questionNumFontSize', label: 'Ques. No. Font Size', min: 0.25, max: 5, step: 0.1 },
-      { key: 'sectionHeaderAndQuesPanelDividerHeight',
-        label: 'Sections & Question-panel Divider Height', min: 0, max: 30, step: 0.1,
-      },
-      { type: 'select', key: 'showQuestionType', label: 'Question Type' },
-      { type: 'select', key: 'showMarkingScheme', label: 'Marking Scheme' },
-      { type: 'select', key: 'showQuestionTimeSpent', label: 'Time Spent Per Ques.' },
-    ]),
-    questionPanel: {
-      answerOptionsFormat: {
-        mcqAndMsq: addIds([
-          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
-          { key: 'zoomSize', label: 'Checkbox Size', min: 0.5, max: 5, step: 0.1 },
-          { key: 'rowGap', label: 'Row Gap', min: 0, max: 10, step: 0.1 },
-        ]),
-        msm: addIds([
-          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
-          { key: 'gap', label: 'Gap', min: 0, max: 10, step: 0.1 },
-        ]),
-      },
-    },
-    questionPalette: addIds([
-      { key: 'width', label: 'Palette Width (%)', min: 10, max: 40 },
-      { key: 'sectionTextFontSize', label: 'Section Text Font Size', min: 0, max: 5, step: 0.1 },
-      { key: 'columnsGap', label: 'Palette Columns Gap', min: 0, max: 10, step: 0.1 },
-      { key: 'rowsGap', label: 'Palette Rows Gap', min: 0, max: 10, step: 0.1 },
-    ]),
-  },
-  miscSettings: addIds([
-    { key: 'fontSize', label: 'Font Size', min: 0.5, max: 5, step: 0.1 },
-    { key: 'imgWidth', label: 'Img Width (%)', min: 0, max: 100 },
-    { key: 'imgHeight', label: 'Img Height (%)', min: 0, max: 100 },
-  ]),
-}
-
 const tooltipContent = {
   testDataFileUpload: () =>
     h('div', { class: 'space-y-2' }, [
@@ -1292,42 +1209,20 @@ const tooltipContent = {
       ]),
       h('strong', 'You can access hidden settings any time, be it before or during the test.'),
     ]),
-    
-    showQuestionPaper: () =>
-      h('div', { class: 'space-y-2' }, [
-        h('p', 'Previewing the Question Paper'),
-        h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
-          h('li', [
-            h('strong', 'Timer Active'),
-            ': The test timer will continue running while you are viewing the question paper.',
-          ]),
-          h('li', [
-            h('strong', 'Read Only'),
-            ': This view is for reading only — you cannot answer questions here.',
-          ]),
-          h('li', [
-            h('strong', 'Close to Resume'),
-            ': Close the question paper popup to return to answering the test.',
-          ]),
-        ]),
-        h('strong', 'You can open the question paper again anytime using the Question Paper button.'),
-      ]),
 
-  disableScrolling: () =>
+  disableMouseWheel: () =>
     h('div', { class: 'space-y-2' }, [
-      h('p', 'Allow scrolling in the test?'),
       h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
         h('li', [
           h('strong', 'Yes'),
-          ': Mouse wheel / touchpad scrolling will be disabled inside the test. ',
-          'You will need to use the navigation panel or buttons to move between questions.',
+          ': You won\'t be able to use the mouse wheel for scrolling, ',
+          'you will have to use the scrollbar to scroll.',
         ]),
         h('li', [
           h('strong', 'No'),
-          ': Scrolling will work normally, and you can freely scroll through questions with your mouse or touchpad.',
+          ': Mouse wheel will work normally for scrolling.',
         ]),
       ]),
-      h('strong', 'You can change this setting any time in the hidden settings (long-press the profile icon in the top-right corner).'),
     ]),
 
   questionImgScale: () =>
@@ -1381,16 +1276,6 @@ const selectOptions = {
     { name: 'No', value: false },
   ],
 
-  showQuestionPaper: [
-    { name: 'Yes', value: true },
-    { name: 'No', value: false },
-  ],
-
-  disableScrolling: [
-    { name: 'Yes', value: true },
-    { name: 'No', value: false },
-  ],
-  
   answerOptionsFormat: ANSWER_OPTIONS_COUNTER_TYPES,
 
   showHide: [
@@ -1398,11 +1283,76 @@ const selectOptions = {
     { name: 'Hide', value: false },
   ],
 
+  yesNo: [
+    { name: 'Yes', value: true },
+    { name: 'No', value: false },
+  ],
+
   questionsNumberingOrderType: [
     { name: 'Original', value: 'original' },
     { name: 'Cumulative', value: 'cumulative' },
     { name: 'Section-wise', value: 'section-wise' },
   ],
+}
+
+const addIds = <T extends Record<string, unknown>>(items: T[]): (T & { id: string })[] => {
+  return items.map(item => ({
+    ...item,
+    id: useId(),
+  }))
+}
+
+const htmlContent = {
+  customizeUi: {
+    mainLayout: addIds([
+      { key: 'size', label: 'Main Layout Size (px)', min: 5, max: 25 },
+      { key: 'testTotalHeaderHeight', label: '"Test Total" Header Height', min: 0, max: 30, step: 0.1 },
+      { key: 'sectionHeaderHeight', label: 'Sections Height', min: 1, max: 20, step: 0.1 },
+      { key: 'questionTypeFontSize', label: 'Ques. Type Font Size', min: 0.25, max: 5, step: 0.1 },
+      { key: 'markingSchemeFontSize', label: 'Marking Scheme Font Size', min: 0.25, max: 5, step: 0.1 },
+      { key: 'questionTimeSpentFontSize', label: 'Ques. Time Spent Font Size', min: 0.25, max: 5, step: 0.1 },
+      { key: 'questionNumFontSize', label: 'Ques. No. Font Size', min: 0.25, max: 5, step: 0.1 },
+      {
+        key: 'sectionHeaderAndQuesPanelDividerHeight',
+        label: 'Sections & Question-panel Divider Height', min: 0, max: 30, step: 0.1,
+      },
+      { type: 'select', key: 'showQuestionType', label: 'Question Type' },
+      { type: 'select', key: 'showMarkingScheme', label: 'Marking Scheme' },
+      { type: 'select', key: 'showQuestionTimeSpent', label: 'Time Spent Per Question' },
+      { type: 'select', key: 'showQuestionPaperBtn', label: 'Question Paper Btn' },
+      {
+        type: 'select',
+        key: 'disableMouseWheel',
+        label: 'Disable Mouse Wheel',
+        options: selectOptions.yesNo,
+        tooltip: tooltipContent.disableMouseWheel,
+      },
+    ]),
+    questionPanel: {
+      answerOptionsFormat: {
+        mcqAndMsq: addIds([
+          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'zoomSize', label: 'Checkbox Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'rowGap', label: 'Row Gap', min: 0, max: 10, step: 0.1 },
+        ]),
+        msm: addIds([
+          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'gap', label: 'Gap', min: 0, max: 10, step: 0.1 },
+        ]),
+      },
+    },
+    questionPalette: addIds([
+      { key: 'width', label: 'Palette Width (%)', min: 10, max: 40 },
+      { key: 'sectionTextFontSize', label: 'Section Text Font Size', min: 0, max: 5, step: 0.1 },
+      { key: 'columnsGap', label: 'Palette Columns Gap', min: 0, max: 10, step: 0.1 },
+      { key: 'rowsGap', label: 'Palette Rows Gap', min: 0, max: 10, step: 0.1 },
+    ]),
+  },
+  miscSettings: addIds([
+    { key: 'fontSize', label: 'Font Size', min: 0.5, max: 5, step: 0.1 },
+    { key: 'imgWidth', label: 'Img Width (%)', min: 0, max: 100 },
+    { key: 'imgHeight', label: 'Img Height (%)', min: 0, max: 100 },
+  ]),
 }
 
 const statusKeyNames = {
@@ -1974,8 +1924,6 @@ onMounted(() => {
       const zipurlValue = getFirstQuery(route.query[CBTInterfaceQueryParams.ZipUrl])
       const submitmodeValue = getFirstQuery(route.query[CBTInterfaceQueryParams.SubmitMode])
       const allowpauseValue = getFirstQuery(route.query[CBTInterfaceQueryParams.AllowPause])
-      const showQuestionPaper = getFirstQuery(route.query[CBTInterfaceQueryParams.ShowQuestionPaper])
-      const disableScrollingValue = getFirstQuery(route.query[CBTInterfaceQueryParams.DisableScrolling])
       const imgScaleValue = getFirstQuery(route.query[CBTInterfaceQueryParams.ImageScale])
 
       if (nameValue && typeof nameValue === 'string') {
@@ -2017,12 +1965,6 @@ onMounted(() => {
       }
       if (allowpauseValue && ['yes', 'no'].includes(allowpauseValue)) {
         testSettings.value.showPauseBtn = allowpauseValue === 'yes'
-      }
-      if (showQuestionPaper && ['yes', 'no'].includes(showQuestionPaper)) {
-        testSettings.value.showQuestionPaper = showQuestionPaper === 'yes'
-      }
-      if (disableScrollingValue && ['yes', 'no'].includes(disableScrollingValue)) {
-        testSettings.value.disableScrolling = disableScrollingValue === 'yes'
       }
       if (imgScaleValue && !isNaN(Number(imgScaleValue))) {
         testSettings.value.questionImgScale = Number(imgScaleValue)

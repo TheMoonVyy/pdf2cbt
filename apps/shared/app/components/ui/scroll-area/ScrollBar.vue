@@ -32,7 +32,7 @@ const delegatedProps = reactiveOmit(props, 'class', 'thumbAreaClass')
     data-slot="scroll-area-scrollbar"
     v-bind="delegatedProps"
     :class="
-      cn('flex touch-none bg-foreground/20 p-px transition-colors select-none',
+      cn('flex touch-none bg-gray-500 dark:bg-foreground/20 p-px transition-colors select-none',
          orientation === 'vertical'
            && 'h-full w-2.5 border-l border-l-transparent',
          orientation === 'horizontal'
@@ -43,7 +43,7 @@ const delegatedProps = reactiveOmit(props, 'class', 'thumbAreaClass')
     <ScrollAreaThumb
       data-slot="scroll-area-thumb"
       :class="cn(
-        'bg-foreground/70 relative flex-1 rounded-full',
+        'bg-gray-900 dark:bg-foreground/70 relative flex-1 rounded-full',
         props.thumbAreaClass,
       )"
     />

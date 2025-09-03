@@ -44,24 +44,28 @@
             </div>
             <div
               class="flex gap-2 items-center ml-auto"
-              data-id="test_total_summary"
             >
-            <BaseButton
+              <BaseButton
+                v-if="uiSettings.mainLayout.showQuestionPaperBtn"
                 label="Question Paper"
-                variant="info"
+                variant="link"
                 size="sm"
-                class="mr-1"
+                class="mr-1 text-black!"
                 icon-name="prime:file"
-                v-if="testSettings.showQuestionPaper"
                 :disabled="isTestPaused || testState.currentProcess !== 'test-started'"
-                @click="() => { showQuestionPaper = true }"
+                @click="questionPaperDialogState.openDialog = true"
               />
-          </div> 
+            </div>
           </div>
           <div class="flex justify-between px-3 py-0.5 shrink-0">
             <span class="flex ml-auto items-center">Time Left:&nbsp;&nbsp;{{ testTimeLeftString }}</span>
           </div>
-          <QuestionPaperDialog v-if="showQuestionPaper" @close="showQuestionPaper = false" />
+          <CbtInterfaceQuestionPaperDialog
+            v-if="questionPaperDialogState.openDialog"
+            v-model="questionPaperDialogState.openDialog"
+            v-model:img-width-size="questionPaperDialogState.imgWidthSize"
+            :questions-numbering-order-type="currentTestState.questionsNumberingOrderType"
+          />
           <UiScrollArea
             class="w-full border-slate-400"
             viewport-class="[&>div]:mb-3"
@@ -581,7 +585,6 @@ import markedIcon from '#layers/shared/app/assets/icons/ques-marked.svg?no-inlin
 import markedAnsweredIcon from '#layers/shared/app/assets/icons/ques-markedAnswered.svg?no-inline'
 import profileIcon from '#layers/shared/app/assets/icons/profile.svg?no-inline'
 import { CbtUseState } from '#layers/shared/shared/enums'
-import QuestionPaperDialog from '~/components/Cbt/Interface/QuestionPaperDialog.vue'
 
 definePageMeta({
   layout: false,
@@ -608,7 +611,10 @@ const questionStatusList: {
   { key: 'markedAnswered', label: 'Answered & Marked for Review', colSpan2: true },
 ]
 
-const showQuestionPaper = ref(false)
+const questionPaperDialogState = shallowReactive({
+  openDialog: false,
+  imgWidthSize: 100,
+})
 
 const db = useDB()
 
@@ -787,6 +793,12 @@ const scrollSectionIntoView = (section: string) => {
   }
 }
 
+const preventDefaultCallback = (e: Event) => e.preventDefault()
+
+const cleanUpDisableScrollEventListeners = () => {
+  window.removeEventListener('wheel', preventDefaultCallback)
+}
+
 function changeCurrentQuestion(
   via: 'save&next' | 'mfr' | 'previous' | 'palette' | 'sectionBtn',
   newQueId: number | null = null,
@@ -947,8 +959,8 @@ function saveCurrentAnswer(via: 'save&next' | 'mfr' | 'clear') {
 function startTest() {
   const testDuration = currentTestState.value.remainingSeconds ?? testSettings.value.durationInSeconds
 
+  currentTestState.value.testStatus = 'ongoing'
   if (testState.continueLastTest) {
-    currentTestState.value.testStatus = 'ongoing'
     testLogger.logTestState('testResumed')
   }
   else {
@@ -956,9 +968,11 @@ function startTest() {
     const currentQuestion = currentTestState.value.question!
     testSectionsData.value[currentSection]![currentQuestion]!.status = 'notAnswered'
 
-    currentTestState.value.testStatus = 'ongoing'
     testLogger.logTestState('testStarted')
   }
+
+  if (uiSettings.value.mainLayout.disableMouseWheel)
+    window.addEventListener('wheel', preventDefaultCallback, { passive: false })
 
   testState.currentProcess = 'test-started'
   startCountdown(testDuration)
@@ -1095,6 +1109,7 @@ watch(
 
 const pageCleanUpCallback = () => {
   window.removeEventListener('beforeunload', onBeforeUnloadCallback)
+  cleanUpDisableScrollEventListeners()
   document.documentElement.style.removeProperty('--main-layout-size')
 
   removeNagivationGuard()
@@ -1131,8 +1146,7 @@ async function submitTest(isAuto: boolean) {
     console.error('Error while saving currentTestState when testFinished', err)
   }
 
-  window.removeEventListener('wheel', preventScroll)
-  window.removeEventListener('touchmove', preventScroll)
+  cleanUpDisableScrollEventListeners()
 
   generateTestOutputData()
   try {
@@ -1268,21 +1282,6 @@ const downloadTestData = () => {
   const blob = new Blob([JSON.stringify(testOutputData, null, 2)], { type: 'application/json' })
   utilSaveFile('pdf2cbt_test_data.json', blob)
 }
-
-watch(() => testSettings.value.disableScrolling, (newVal) => {
-  if (newVal) {
-    window.addEventListener('wheel', preventScroll, { passive: false })
-    window.addEventListener('touchmove', preventScroll, { passive: false })
-  } else {
-    window.removeEventListener('wheel', preventScroll)
-    window.removeEventListener('touchmove', preventScroll)
-  }
-})
-
-function preventScroll(e: Event) {
-  e.preventDefault()
-}
-
 
 onBeforeUnmount(pageCleanUpCallback)
 
