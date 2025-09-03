@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.22.1...v1.23.0) (2025-09-03)
+
+
+### Features
+
+* **cbt-interface:** add feature to show preview of whole question paper and add setting to allow disabling mouse wheel to prevent scrolling using it ([a52e0bd](https://github.com/TheMoonVyy/pdf2cbt/commit/a52e0bd5d2ab7b2b735f81167f532e95f6db2854))
+
 ## [1.22.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.22.0...v1.22.1) (2025-07-29)
 
 
