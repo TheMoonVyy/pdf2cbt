@@ -42,10 +42,30 @@
                 icon-class="cursor-pointer text-xl!"
               />
             </div>
+            <div
+              class="flex gap-2 items-center ml-auto"
+            >
+              <BaseButton
+                v-if="uiSettings.mainLayout.showQuestionPaperBtn"
+                label="Question Paper"
+                variant="link"
+                size="sm"
+                class="mr-1 text-black!"
+                icon-name="prime:file"
+                :disabled="isTestPaused || testState.currentProcess !== 'test-started'"
+                @click="questionPaperDialogState.openDialog = true"
+              />
+            </div>
           </div>
           <div class="flex justify-between px-3 py-0.5 shrink-0">
             <span class="flex ml-auto items-center">Time Left:&nbsp;&nbsp;{{ testTimeLeftString }}</span>
           </div>
+          <CbtInterfaceQuestionPaperDialog
+            v-if="questionPaperDialogState.openDialog"
+            v-model="questionPaperDialogState.openDialog"
+            v-model:img-width-size="questionPaperDialogState.imgWidthSize"
+            :questions-numbering-order-type="currentTestState.questionsNumberingOrderType"
+          />
           <UiScrollArea
             class="w-full border-slate-400"
             viewport-class="[&>div]:mb-3"
@@ -591,6 +611,11 @@ const questionStatusList: {
   { key: 'markedAnswered', label: 'Answered & Marked for Review', colSpan2: true },
 ]
 
+const questionPaperDialogState = shallowReactive({
+  openDialog: false,
+  imgWidthSize: 100,
+})
+
 const db = useDB()
 
 // styles and css variables being used on page
@@ -768,6 +793,12 @@ const scrollSectionIntoView = (section: string) => {
   }
 }
 
+const preventDefaultCallback = (e: Event) => e.preventDefault()
+
+const cleanUpDisableScrollEventListeners = () => {
+  window.removeEventListener('wheel', preventDefaultCallback)
+}
+
 function changeCurrentQuestion(
   via: 'save&next' | 'mfr' | 'previous' | 'palette' | 'sectionBtn',
   newQueId: number | null = null,
@@ -928,8 +959,8 @@ function saveCurrentAnswer(via: 'save&next' | 'mfr' | 'clear') {
 function startTest() {
   const testDuration = currentTestState.value.remainingSeconds ?? testSettings.value.durationInSeconds
 
+  currentTestState.value.testStatus = 'ongoing'
   if (testState.continueLastTest) {
-    currentTestState.value.testStatus = 'ongoing'
     testLogger.logTestState('testResumed')
   }
   else {
@@ -937,9 +968,11 @@ function startTest() {
     const currentQuestion = currentTestState.value.question!
     testSectionsData.value[currentSection]![currentQuestion]!.status = 'notAnswered'
 
-    currentTestState.value.testStatus = 'ongoing'
     testLogger.logTestState('testStarted')
   }
+
+  if (uiSettings.value.mainLayout.disableMouseWheel)
+    window.addEventListener('wheel', preventDefaultCallback, { passive: false })
 
   testState.currentProcess = 'test-started'
   startCountdown(testDuration)
@@ -1076,6 +1109,7 @@ watch(
 
 const pageCleanUpCallback = () => {
   window.removeEventListener('beforeunload', onBeforeUnloadCallback)
+  cleanUpDisableScrollEventListeners()
   document.documentElement.style.removeProperty('--main-layout-size')
 
   removeNagivationGuard()
@@ -1111,6 +1145,8 @@ async function submitTest(isAuto: boolean) {
   catch (err) {
     console.error('Error while saving currentTestState when testFinished', err)
   }
+
+  cleanUpDisableScrollEventListeners()
 
   generateTestOutputData()
   try {

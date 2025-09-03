@@ -10,9 +10,13 @@ import {
 import ScrollBar from './ScrollBar.vue'
 import { cn } from '#layers/shared/app/lib/utils'
 
-const props = defineProps<ScrollAreaRootProps & { class?: HTMLAttributes['class'], viewportClass?: HTMLAttributes['class'] }>()
+const props = defineProps<ScrollAreaRootProps & {
+  class?: HTMLAttributes['class']
+  viewportClass?: HTMLAttributes['class']
+  scrollBarClass?: HTMLAttributes['class']
+}>()
 
-const delegatedProps = reactiveOmit(props, 'class', 'viewportClass')
+const delegatedProps = reactiveOmit(props, 'class', 'viewportClass', 'scrollBarClass')
 
 const scrollAreaRootRef = useTemplateRef<InstanceType<typeof ScrollAreaRoot>>('scrollArea')
 
@@ -39,7 +43,7 @@ defineExpose({
     >
       <slot />
     </ScrollAreaViewport>
-    <ScrollBar />
+    <ScrollBar :class="props.scrollBarClass" />
     <ScrollAreaCorner />
   </ScrollAreaRoot>
 </template>

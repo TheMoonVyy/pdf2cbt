@@ -19,8 +19,10 @@ export type CbtUiSettings = {
     sectionHeaderHeight: number
     sectionHeaderAndQuesPanelDividerHeight: number
     showQuestionType: boolean
-    questionTypeFontSize: number
     showMarkingScheme: boolean
+    showQuestionPaperBtn: boolean
+    disableMouseWheel: boolean
+    questionTypeFontSize: number
     markingSchemeFontSize: number
     showQuestionTimeSpent: boolean
     questionTimeSpentFontSize: number

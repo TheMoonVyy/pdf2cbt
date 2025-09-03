@@ -6,13 +6,15 @@ const defaultUiSettings: CbtUiSettings = {
     testTotalHeaderHeight: 2.2,
     sectionHeaderHeight: 2.7,
     sectionHeaderAndQuesPanelDividerHeight: 1.7,
-    showQuestionType: true,
     questionTypeFontSize: 1,
-    showMarkingScheme: true,
     markingSchemeFontSize: 0.875,
-    showQuestionTimeSpent: false,
     questionTimeSpentFontSize: 1,
     questionNumFontSize: 1,
+    showQuestionType: true,
+    showMarkingScheme: true,
+    showQuestionTimeSpent: false,
+    showQuestionPaperBtn: true,
+    disableMouseWheel: false,
   },
 
   themes: {

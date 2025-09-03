@@ -309,17 +309,23 @@
                       :key="item.key"
                       class="flex flex-col w-full items-center justify-end"
                     >
-                      <UiLabel
-                        class="text-sm text-center"
-                        :for="item.id"
-                      >
-                        {{ item.label }}
-                      </UiLabel>
+                      <div class="flex gap-2 items-center justify-center">
+                        <UiLabel
+                          class="text-sm text-center"
+                          :for="item.id"
+                        >
+                          {{ item.label }}
+                        </UiLabel>
+                        <IconWithTooltip
+                          v-if="item.tooltip"
+                          :content="item.tooltip"
+                        />
+                      </div>
                       <BaseSelect
                         v-if="item.type === 'select'"
                         :id="item.id"
                         v-model="(settings.mainLayout[item.key as keyof CbtUiSettings['mainLayout']] as boolean)"
-                        :options="selectOptions.showHide"
+                        :options="item.options || selectOptions.showHide"
                         trigger-class="w-3/4"
                       />
                       <BaseInputNumber
@@ -1127,57 +1133,6 @@ interface ImportExportDialogState {
   data: Record<string, unknown>
 }
 
-const addIds = <T extends Record<string, unknown>>(items: T[]): (T & { id: string })[] => {
-  return items.map(item => ({
-    ...item,
-    id: useId(),
-  }))
-}
-
-const htmlContent = {
-  customizeUi: {
-    mainLayout: addIds([
-      { key: 'size', label: 'Main Layout Size (px)', min: 5, max: 25 },
-      { key: 'testTotalHeaderHeight', label: '"Test Total" Header Height', min: 0, max: 30, step: 0.1 },
-      { key: 'sectionHeaderHeight', label: 'Sections Height', min: 1, max: 20, step: 0.1 },
-      { key: 'questionTypeFontSize', label: 'Ques. Type Font Size', min: 0.25, max: 5, step: 0.1 },
-      { key: 'markingSchemeFontSize', label: 'Marking Scheme Font Size', min: 0.25, max: 5, step: 0.1 },
-      { key: 'questionTimeSpentFontSize', label: 'Ques. Time Spent Font Size', min: 0.25, max: 5, step: 0.1 },
-      { key: 'questionNumFontSize', label: 'Ques. No. Font Size', min: 0.25, max: 5, step: 0.1 },
-      { key: 'sectionHeaderAndQuesPanelDividerHeight',
-        label: 'Sections & Question-panel Divider Height', min: 0, max: 30, step: 0.1,
-      },
-      { type: 'select', key: 'showQuestionType', label: 'Question Type' },
-      { type: 'select', key: 'showMarkingScheme', label: 'Marking Scheme' },
-      { type: 'select', key: 'showQuestionTimeSpent', label: 'Time Spent Per Ques.' },
-    ]),
-    questionPanel: {
-      answerOptionsFormat: {
-        mcqAndMsq: addIds([
-          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
-          { key: 'zoomSize', label: 'Checkbox Size', min: 0.5, max: 5, step: 0.1 },
-          { key: 'rowGap', label: 'Row Gap', min: 0, max: 10, step: 0.1 },
-        ]),
-        msm: addIds([
-          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
-          { key: 'gap', label: 'Gap', min: 0, max: 10, step: 0.1 },
-        ]),
-      },
-    },
-    questionPalette: addIds([
-      { key: 'width', label: 'Palette Width (%)', min: 10, max: 40 },
-      { key: 'sectionTextFontSize', label: 'Section Text Font Size', min: 0, max: 5, step: 0.1 },
-      { key: 'columnsGap', label: 'Palette Columns Gap', min: 0, max: 10, step: 0.1 },
-      { key: 'rowsGap', label: 'Palette Rows Gap', min: 0, max: 10, step: 0.1 },
-    ]),
-  },
-  miscSettings: addIds([
-    { key: 'fontSize', label: 'Font Size', min: 0.5, max: 5, step: 0.1 },
-    { key: 'imgWidth', label: 'Img Width (%)', min: 0, max: 100 },
-    { key: 'imgHeight', label: 'Img Height (%)', min: 0, max: 100 },
-  ]),
-}
-
 const tooltipContent = {
   testDataFileUpload: () =>
     h('div', { class: 'space-y-2' }, [
@@ -1255,6 +1210,21 @@ const tooltipContent = {
       h('strong', 'You can access hidden settings any time, be it before or during the test.'),
     ]),
 
+  disableMouseWheel: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'Yes'),
+          ': You won\'t be able to use the mouse wheel for scrolling, ',
+          'you will have to use the scrollbar to scroll.',
+        ]),
+        h('li', [
+          h('strong', 'No'),
+          ': Mouse wheel will work normally for scrolling.',
+        ]),
+      ]),
+    ]),
+
   questionImgScale: () =>
     h('div', { class: 'space-y-2' }, [
       h('p', '(This is ignored for ZIP files with pre-generated images)'),
@@ -1313,11 +1283,76 @@ const selectOptions = {
     { name: 'Hide', value: false },
   ],
 
+  yesNo: [
+    { name: 'Yes', value: true },
+    { name: 'No', value: false },
+  ],
+
   questionsNumberingOrderType: [
     { name: 'Original', value: 'original' },
     { name: 'Cumulative', value: 'cumulative' },
     { name: 'Section-wise', value: 'section-wise' },
   ],
+}
+
+const addIds = <T extends Record<string, unknown>>(items: T[]): (T & { id: string })[] => {
+  return items.map(item => ({
+    ...item,
+    id: useId(),
+  }))
+}
+
+const htmlContent = {
+  customizeUi: {
+    mainLayout: addIds([
+      { key: 'size', label: 'Main Layout Size (px)', min: 5, max: 25 },
+      { key: 'testTotalHeaderHeight', label: '"Test Total" Header Height', min: 0, max: 30, step: 0.1 },
+      { key: 'sectionHeaderHeight', label: 'Sections Height', min: 1, max: 20, step: 0.1 },
+      { key: 'questionTypeFontSize', label: 'Ques. Type Font Size', min: 0.25, max: 5, step: 0.1 },
+      { key: 'markingSchemeFontSize', label: 'Marking Scheme Font Size', min: 0.25, max: 5, step: 0.1 },
+      { key: 'questionTimeSpentFontSize', label: 'Ques. Time Spent Font Size', min: 0.25, max: 5, step: 0.1 },
+      { key: 'questionNumFontSize', label: 'Ques. No. Font Size', min: 0.25, max: 5, step: 0.1 },
+      {
+        key: 'sectionHeaderAndQuesPanelDividerHeight',
+        label: 'Sections & Question-panel Divider Height', min: 0, max: 30, step: 0.1,
+      },
+      { type: 'select', key: 'showQuestionType', label: 'Question Type' },
+      { type: 'select', key: 'showMarkingScheme', label: 'Marking Scheme' },
+      { type: 'select', key: 'showQuestionTimeSpent', label: 'Time Spent Per Question' },
+      { type: 'select', key: 'showQuestionPaperBtn', label: 'Question Paper Btn' },
+      {
+        type: 'select',
+        key: 'disableMouseWheel',
+        label: 'Disable Mouse Wheel',
+        options: selectOptions.yesNo,
+        tooltip: tooltipContent.disableMouseWheel,
+      },
+    ]),
+    questionPanel: {
+      answerOptionsFormat: {
+        mcqAndMsq: addIds([
+          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'zoomSize', label: 'Checkbox Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'rowGap', label: 'Row Gap', min: 0, max: 10, step: 0.1 },
+        ]),
+        msm: addIds([
+          { key: 'fontSize', label: 'Text Font Size', min: 0.5, max: 5, step: 0.1 },
+          { key: 'gap', label: 'Gap', min: 0, max: 10, step: 0.1 },
+        ]),
+      },
+    },
+    questionPalette: addIds([
+      { key: 'width', label: 'Palette Width (%)', min: 10, max: 40 },
+      { key: 'sectionTextFontSize', label: 'Section Text Font Size', min: 0, max: 5, step: 0.1 },
+      { key: 'columnsGap', label: 'Palette Columns Gap', min: 0, max: 10, step: 0.1 },
+      { key: 'rowsGap', label: 'Palette Rows Gap', min: 0, max: 10, step: 0.1 },
+    ]),
+  },
+  miscSettings: addIds([
+    { key: 'fontSize', label: 'Font Size', min: 0.5, max: 5, step: 0.1 },
+    { key: 'imgWidth', label: 'Img Width (%)', min: 0, max: 100 },
+    { key: 'imgHeight', label: 'Img Height (%)', min: 0, max: 100 },
+  ]),
 }
 
 const statusKeyNames = {
