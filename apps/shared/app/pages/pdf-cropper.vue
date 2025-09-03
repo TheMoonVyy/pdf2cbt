@@ -576,7 +576,8 @@ const dialogsState = shallowReactive({
   showEditExistingFiles: false,
 })
 
-const preferLoadingLocalMupdfScript = useRuntimeConfig().public.isBuildForWebsite !== 'true'
+const _isBuildForWebsite = useRuntimeConfig().public.isBuildForWebsite as string | boolean
+const preferLoadingLocalMupdfScript = _isBuildForWebsite !== 'true' && _isBuildForWebsite !== true
 
 const pageImgData = reactive<PageImgData>({})
 

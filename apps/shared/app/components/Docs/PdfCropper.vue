@@ -676,7 +676,10 @@ const image2Urls = [
   Image2,
 ]
 
-if (useRuntimeConfig().public.isBuildForWebsite !== 'true') {
+const _isBuildForWebsite = useRuntimeConfig().public.isBuildForWebsite as string | boolean
+const isBuildForWebsite = _isBuildForWebsite !== 'true' && _isBuildForWebsite !== true
+
+if (isBuildForWebsite) {
   image1Urls.reverse()
   image2Urls.reverse()
 }

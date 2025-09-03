@@ -98,7 +98,8 @@ function checkAndMigrateCbtResultsSettings() {
 }
 
 onMounted(() => {
-  const isBackupWebsite = useRuntimeConfig().public.isBackupWebsite === 'true'
+  const _isBackupWebsite = useRuntimeConfig().public.isBackupWebsite as string | boolean
+  const isBackupWebsite = _isBackupWebsite === 'true' || _isBackupWebsite === true
   if (isBackupWebsite) {
     if (!localStorage.getItem(MiscConsts.BackupNoticeDismissedKey)) {
       showBackupWebsiteNotice.value = true
