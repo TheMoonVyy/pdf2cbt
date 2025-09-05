@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.24.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.23.0...v1.24.0) (2025-09-05)
+
+
+### Features
+
+* **cbt-interface:** add scroll to top and scroll to bottom icon buttons to question panel ([6c92e70](https://github.com/TheMoonVyy/pdf2cbt/commit/6c92e7078eeb060caf5bdf527f4ac452023bdc92))
+
+
+### Bug Fixes
+
+* **cbt-interface:** properly center header of question paper dialog ([f1b5592](https://github.com/TheMoonVyy/pdf2cbt/commit/f1b55927b4875d4db5536e3b6398e95072177c37))
+
 ## [1.23.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.22.1...v1.23.0) (2025-09-03)
 
 
