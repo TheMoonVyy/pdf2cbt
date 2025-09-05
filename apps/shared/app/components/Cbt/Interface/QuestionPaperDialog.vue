@@ -70,36 +70,38 @@ function resizeImage(type: 'increase' | 'decrease') {
   >
     <div class="flex flex-col bg-white rounded-xl w-[90dvw] h-[90dvh]">
       <!-- Header -->
-      <div class="sticky top-0 z-10 py-2 px-6 flex items-center justify-center gap-4 border-b border-gray-400">
-        <h2 class="text-2xl font-bold ml-auto">
+      <div class="sticky top-0 z-10 py-2 px-6 grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-gray-400">
+        <div></div> <!-- Empty placeholder for left spacing -->
+        <h2 class="text-2xl font-bold text-center">
           Question Paper
         </h2>
-        <BaseButton
-          variant="help"
-          class="ml-auto"
-          size="iconMd"
-          title="Increase Image Size"
-          icon-name="mdi:file-image-plus"
-          icon-class="text-black"
-          :disabled="imgWidthSize >= 100"
-          @click="resizeImage('increase')"
-        />
-        <BaseButton
-          variant="help"
-          size="iconMd"
-          title="Decrease Image Size"
-          icon-name="mdi:file-image-minus"
-          icon-class="text-black"
-          :disabled="imgWidthSize <= 20"
-          @click="resizeImage('decrease')"
-        />
-        <BaseButton
-          variant="destructive"
-          title="Close"
-          icon-name="prime:times-circle"
-          size="iconMd"
-          @click="showDialog = false"
-        />
+        <div class="flex justify-end gap-2">
+          <BaseButton
+            variant="help"
+            size="iconMd"
+            title="Increase Image Size"
+            icon-name="mdi:file-image-plus"
+            icon-class="text-black"
+            :disabled="imgWidthSize >= 100"
+            @click="resizeImage('increase')"
+          />
+          <BaseButton
+            variant="help"
+            size="iconMd"
+            title="Decrease Image Size"
+            icon-name="mdi:file-image-minus"
+            icon-class="text-black"
+            :disabled="imgWidthSize <= 20"
+            @click="resizeImage('decrease')"
+          />
+          <BaseButton
+            variant="destructive"
+            size="iconMd"
+            title="Close"
+            icon-name="prime:times-circle"
+            @click="showDialog = false"
+          />
+        </div>
       </div>
 
       <!-- Content -->
