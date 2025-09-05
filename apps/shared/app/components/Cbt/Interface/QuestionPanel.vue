@@ -1,52 +1,75 @@
 <template>
-  <div
-    ref="imageContainerElem"
-    class="flex flex-col grow h-full overflow-auto pl-3 pt-1.5 pb-12"
+  <UiScrollArea
+    ref="scrollAreaRef"
+    class="grow h-full group"
+    type="auto"
+    viewport-class="grow h-full w-full [&>div]:flex [&>div]:w-full [&>div]:pl-3 [&>div]:pt-1.5"
+    scroll-bar-class="w-3"
   >
-    <template
-      v-for="(urls, queId) in currentQuestionImgUrls"
+    <div
+      ref="imageContainerElem"
+      class="flex flex-col pb-12 grow"
     >
       <img
-        v-for="(url, index) in urls"
+        v-for="(url, index) in currentQuestionImgUrls"
         :key="index"
         :src="url"
         draggable="false"
         :style="{
-          width: currentQuestionImgWidths?.[queId]?.[index] + 'px',
+          width: currentQuestionImgWidths?.[index] + 'px',
           objectFit: 'contain',
         }"
-        @load="(e) => handleImageLoad(e, queId, index)"
+        @load="(e) => handleImageLoad(e, currentQueId, index)"
       >
-    </template>
-    <CbtInterfaceAnswerOptionsDiv
-      v-show="currentQuestionDetails.questionType === 'mcq' || currentQuestionDetails.questionType === 'msq'"
-      v-model="currentQuestionMcqOrMsqAnswer"
-      :question-type="currentQuestionDetails.questionType"
-      :total-options="currentQuestionDetails.answerOptions"
-      :answer-options-counter-type="currentQuestionDetails.answerOptionsCounterType"
-      class="ml-5 mt-1"
-      @update:model-value="logCurrentAnswer"
-    />
-    <CbtInterfaceMsmAnswerOptionsDiv
-      v-show="currentQuestionDetails.questionType === 'msm'"
-      v-model="currentQuestionMsmAnswer"
-      :question-type="currentQuestionDetails.questionType"
-      :total-options="currentQuestionDetails.answerOptions"
-      :answer-options-counter-type="currentQuestionDetails.answerOptionsCounterType"
-      class="ml-5 mt-1"
-      @log-current-answer="logCurrentAnswer"
-      @answer-changed="currentQuestionMsmAnswer = $event"
-    />
-    <CbtInterfaceAnswerNumericDiv
-      v-show="currentQuestionDetails.questionType === 'nat'"
-      v-model="currentQuestionNatAnswer"
-      :current-que-id="currentQuestionDetails.currentQueId"
-      :question-type="currentQuestionDetails.questionType"
-      :last-logged-answer="lastLoggedAnswer"
-      class="ml-5 mt-2"
-      @log-current-answer="logCurrentAnswer"
-    />
-  </div>
+      <CbtInterfaceAnswerOptionsDiv
+        v-show="currentQuestionDetails.questionType === 'mcq' || currentQuestionDetails.questionType === 'msq'"
+        v-model="currentQuestionMcqOrMsqAnswer"
+        :question-type="currentQuestionDetails.questionType"
+        :total-options="currentQuestionDetails.answerOptions"
+        :answer-options-counter-type="currentQuestionDetails.answerOptionsCounterType"
+        class="ml-5 mt-1"
+        @update:model-value="logCurrentAnswer"
+      />
+      <CbtInterfaceMsmAnswerOptionsDiv
+        v-show="currentQuestionDetails.questionType === 'msm'"
+        v-model="currentQuestionMsmAnswer"
+        :question-type="currentQuestionDetails.questionType"
+        :total-options="currentQuestionDetails.answerOptions"
+        :answer-options-counter-type="currentQuestionDetails.answerOptionsCounterType"
+        class="ml-5 mt-1"
+        @log-current-answer="logCurrentAnswer"
+        @answer-changed="currentQuestionMsmAnswer = $event"
+      />
+      <CbtInterfaceAnswerNumericDiv
+        v-show="currentQuestionDetails.questionType === 'nat'"
+        v-model="currentQuestionNatAnswer"
+        :current-que-id="currentQuestionDetails.currentQueId"
+        :question-type="currentQuestionDetails.questionType"
+        :last-logged-answer="lastLoggedAnswer"
+        class="ml-5 mt-2"
+        @log-current-answer="logCurrentAnswer"
+      />
+    </div>
+    <div
+      v-if="uiSettings.mainLayout.showScrollToTopAndBottomBtns"
+      class="flex flex-col justify-between shrink-0 w-[2.2rem] mr-3 pb-7"
+    >
+      <Icon
+        name="mdi:arrow-down-circle"
+        class="text-blue-600 bg-white hover:cursor-pointer
+          hidden! group-has-data-[slot=scroll-area-scrollbar]:block!"
+        size="2.2rem"
+        @click="handleScrollToBtns('bottom')"
+      />
+      <Icon
+        name="mdi:arrow-up-circle"
+        class="text-blue-600 bg-white hover:cursor-pointer
+          hidden! group-has-data-[slot=scroll-area-scrollbar]:block!"
+        size="2.2rem"
+        @click="handleScrollToBtns('top')"
+      />
+    </div>
+  </UiScrollArea>
 </template>
 
 <script lang="ts" setup>
@@ -60,6 +83,8 @@ const props = defineProps<{
   isQuestionPalleteCollapsed: boolean
   cropperSectionsData: CropperSectionsData
 }>()
+
+const scrollAreaRef = useTemplateRef('scrollAreaRef')
 
 const imageContainerElem = useTemplateRef('imageContainerElem')
 const { width: containerWidth } = useElementSize(imageContainerElem)
@@ -79,44 +104,30 @@ const questionImgMaxSize = computed(() => {
   }
 })
 
-const currentQuestionImgUrls = computed(() => {
-  const queId = currentTestState.value.queId
+const currentQueId = computed(() => currentTestState.value.queId)
 
-  const questionImgs = testQuestionsUrls.value?.[queId]
-  if (questionImgs) {
-    return { [queId]: questionImgs }
-  }
-  else {
-    return { [queId]: [] }
-  }
+const currentQuestionImgUrls = computed(() => {
+  const questionImgs = testQuestionsUrls.value?.[currentQueId.value]
+  return questionImgs || []
 })
 
 const currentQuestionImgWidths = computed(() => {
-  const queId = currentTestState.value.queId
-  const queImgsWidths = questionsImgWidths[queId]
-  const queImgsUrls = currentQuestionImgUrls.value[queId]
+  const queId = currentQueId.value
+  const containerW = containerWidth.value
   const maxPercent = questionImgMaxSize.value
+  const queImgsWidths = questionsImgWidths[queId]
 
-  if (
-    !queImgsWidths
-    || !queImgsUrls
-    || queImgsUrls.length === 0
-    || Object.keys(queImgsWidths).length !== queImgsUrls.length
-    || containerWidth.value === 0
-  ) {
+  if (!queImgsWidths || containerW === 0) {
     return {}
   }
-
   const maxOriginalWidth = Math.max(...Object.values(queImgsWidths))
-  const maxAllowedWidth = (containerWidth.value * maxPercent) / 100
+  const maxAllowedWidth = (containerW * maxPercent) / 100
   const globalScale = maxAllowedWidth / maxOriginalWidth
 
-  const scaled: QuestionsImgWidths = {
-    [queId]: {},
-  }
+  const scaled: QuestionsImgWidths[string] = {}
 
   for (const [index, w] of Object.entries(queImgsWidths)) {
-    scaled[queId]![index] = Math.floor(w * globalScale)
+    scaled[index] = Math.floor(w * globalScale)
   }
 
   return scaled
@@ -228,4 +239,19 @@ function getNewMsmAnswerObject(answerOption: string) {
 
   return answerObj
 }
+
+const handleScrollToBtns = (dir: 'top' | 'bottom') => {
+  scrollAreaRef.value?.viewport?.scrollTo({
+    top: dir === 'bottom'
+      ? scrollAreaRef.value.viewport.scrollHeight
+      : 0,
+    behavior: 'smooth',
+  })
+}
+
+// Reset scroll position to top when question changes
+watch(
+  () => currentTestState.value.queId,
+  () => scrollAreaRef.value?.viewport?.scrollTo({ top: 0, behavior: 'instant' }),
+)
 </script>

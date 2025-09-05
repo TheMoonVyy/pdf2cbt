@@ -18,10 +18,12 @@ const props = defineProps<ScrollAreaRootProps & {
 
 const delegatedProps = reactiveOmit(props, 'class', 'viewportClass', 'scrollBarClass')
 
-const scrollAreaRootRef = useTemplateRef<InstanceType<typeof ScrollAreaRoot>>('scrollArea')
+const scrollAreaRootRef = useTemplateRef('scrollArea')
 
+const viewport = computed(() => scrollAreaRootRef.value?.viewport)
 // Expose ScrollAreaRoot's methods to parent
 defineExpose({
+  viewport,
   scrollTopLeft: () => { scrollAreaRootRef.value?.scrollTopLeft() },
   scrollTop: () => { scrollAreaRootRef.value?.scrollTop() },
 })

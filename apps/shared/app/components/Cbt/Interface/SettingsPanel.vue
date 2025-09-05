@@ -1327,6 +1327,7 @@ const htmlContent = {
         options: selectOptions.yesNo,
         tooltip: tooltipContent.disableMouseWheel,
       },
+      { type: 'select', key: 'showScrollToTopAndBottomBtns', label: 'Scroll To Top/Bottom Btns' },
     ]),
     questionPanel: {
       answerOptionsFormat: {

@@ -14,6 +14,7 @@ const defaultUiSettings: CbtUiSettings = {
     showMarkingScheme: true,
     showQuestionTimeSpent: false,
     showQuestionPaperBtn: true,
+    showScrollToTopAndBottomBtns: true,
     disableMouseWheel: false,
   },
 
