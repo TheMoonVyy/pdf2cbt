@@ -55,8 +55,8 @@ importers:
         specifier: 4.4.2
         version: 4.4.2
       dexie:
-        specifier: 4.0.11
-        version: 4.0.11
+        specifier: 4.2.0
+        version: 4.2.0
       fflate:
         specifier: 0.8.2
         version: 0.8.2
@@ -2871,8 +2871,8 @@ packages:
   devalue@5.1.1:
     resolution: {integrity: sha512-maua5KUiapvEwiEAe+XnlZ3Rh0GD+qI1J/nb9vrJc3muPXvcF/8gXYTWF76+5DAqHyDUtOIImEuo0YKE9mshVw==}
 
-  dexie@4.0.11:
-    resolution: {integrity: sha512-SOKO002EqlvBYYKQSew3iymBoN2EQ4BDw/3yprjh7kAfFzjBYkaMNa/pZvcA7HSWlcKSQb9XhPe3wKyQ0x4A8A==}
+  dexie@4.2.0:
+    resolution: {integrity: sha512-OSeyyWOUetDy9oFWeddJgi83OnRA3hSFh3RrbltmPgqHszE9f24eUCVLI4mPg0ifsWk0lQTdnS+jyGNrPMvhDA==}
 
   dfa@1.2.0:
     resolution: {integrity: sha512-ED3jP8saaweFTjeGX8HQPjeC1YYyZs98jGNZx6IiBvxW7JG5v492kamAQB3m2wop07CvU/RQmzcKr6bgcC5D/Q==}
@@ -8713,7 +8713,7 @@ snapshots:
 
   devalue@5.1.1: {}
 
-  dexie@4.0.11: {}
+  dexie@4.2.0: {}
 
   dfa@1.2.0: {}
 
