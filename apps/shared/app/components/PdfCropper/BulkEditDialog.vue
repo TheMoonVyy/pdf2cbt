@@ -32,7 +32,7 @@
           </UiScrollArea>
         </UiResizablePanel>
 
-        <UiResizableHandle />
+        <UiResizableHandle :disabled="!allowResizingPanels" />
 
         <UiResizablePanel
           :default-size="60"
@@ -441,10 +441,11 @@ const showDialog = defineModel<boolean>({ required: true })
 
 const optionalQuestions = defineModel<OptionalQuestions>('optionalQuestions', { required: true })
 const overlayDatas = defineModel<Map<string, PdfCroppedOverlayData>>('overlayDatas', { required: true })
-const { pagesDimensions } = defineProps<{
+const { pagesDimensions, allowResizingPanels } = defineProps<{
   pagesDimensions: {
     [pageNum: number]: { width: number, height: number }
   }
+  allowResizingPanels: boolean
 }>()
 
 const messagesState = shallowReactive({

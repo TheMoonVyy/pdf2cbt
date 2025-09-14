@@ -70,18 +70,18 @@
                 v-else-if="item.type === 'switch'"
                 class="grid grid-cols-4 gap-5"
               >
-                <div class="flex flex-row-reverse items-center gap-3 col-span-3">
+                <div class="flex items-center gap-3 text-nowrap justify-center col-span-4">
+                  <UiLabel
+                    :for="item.labelId"
+                    class="text-base font-semibold cursor-pointer"
+                  >
+                    {{ item.label }}
+                  </UiLabel>
                   <UiSwitch
                     :id="item.labelId"
                     v-model="(settings.general[item.model] as boolean)"
                     class="cursor-pointer"
                   />
-                  <UiLabel
-                    :for="item.labelId"
-                    class="text-[1.05rem] font-semibold cursor-pointer"
-                  >
-                    {{ item.label }}
-                  </UiLabel>
                 </div>
                 <IconWithTooltip
                   v-if="tooltipContent[item.model]"
@@ -201,6 +201,12 @@ const settingsContent: SettingsContent = {
       step: 1,
       labelId: useId(),
       label: 'Key Press Move Distance',
+    },
+    {
+      type: 'switch',
+      model: 'allowResizingPanels',
+      label: 'Allow Resizing Panels',
+      labelId: useId(),
     },
   ],
   'Crop Selection': [

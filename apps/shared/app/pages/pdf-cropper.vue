@@ -124,7 +124,7 @@
           </div>
         </UiScrollArea>
       </UiResizablePanel>
-      <UiResizableHandle />
+      <UiResizableHandle :disabled="!settings.general.allowResizingPanels" />
       <UiResizablePanel
         :default-size="74"
         :min-size="40"
@@ -425,6 +425,7 @@
       v-model:optional-questions="testConfig.optionalQuestions!"
       v-model:overlay-datas="cropperOverlayDatas"
       :pages-dimensions="pageImgData"
+      :allow-resizing-panels="settings.general.allowResizingPanels"
     />
     <LazyGenerateTestImages
       v-if="generateOutputState.generatingImages && (generateOutputState.totalQuestions > 0)"
@@ -1201,7 +1202,12 @@ async function zipAndDownloadOutput() {
         generateOutputState.preparingDownload = false
         return
       }
-      const outputBlob = new Blob([compressedZip], { type: 'application/zip' })
+
+      const outputBlob = new Blob(
+        [compressedZip as unknown as Uint8Array<ArrayBuffer>],
+        { type: 'application/zip' },
+      )
+
       const { filename, fileType } = generateOutputState
       utilSaveFile(filename + fileType, outputBlob)
       generateOutputState.preparingDownload = false

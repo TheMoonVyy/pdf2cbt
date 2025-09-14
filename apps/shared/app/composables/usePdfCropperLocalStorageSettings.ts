@@ -17,6 +17,7 @@ export default () => {
           pageBGColor: '#ffffff',
           minCropDimension: 10, // units of coords
           moveOnKeyPressDistance: 10, // units of coords
+          allowResizingPanels: true,
           // Crop Selection
           cropSelectionGuideColor: '#0000ff', // blue
           cropSelectionBgOpacity: 15, // in %

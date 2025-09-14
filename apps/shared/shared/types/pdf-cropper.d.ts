@@ -16,6 +16,7 @@ export type PdfCropperSettings = {
     blurCroppedRegion: boolean
     blurIntensity: number
     showQuestionDetailsOnOverlay: boolean
+    allowResizingPanels: boolean
   }
 }
 
