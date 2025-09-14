@@ -89,8 +89,6 @@
           </BaseFloatLabel>
         </div>
         <UiAccordion
-          default-value="1"
-          :unmount-on-hide="false"
           class="w-full"
           type="multiple"
         >
