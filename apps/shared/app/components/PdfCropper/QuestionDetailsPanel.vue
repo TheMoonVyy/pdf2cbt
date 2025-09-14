@@ -114,6 +114,7 @@
                       :min="1"
                       :max="99"
                       :format-options="{ signDisplay: 'exceptZero' }"
+                      :step-snapping="false"
                       size="small"
                     />
                   </BaseFloatLabel>
@@ -129,6 +130,7 @@
                       :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
                       :min="-99"
                       :max="0"
+                      :step-snapping="false"
                       size="small"
                     />
                   </BaseFloatLabel>
@@ -149,6 +151,7 @@
                       :disabled="!props.isPdfLoaded || questionState.disableQueDataInput"
                       :min="0"
                       :max="99"
+                      :step-snapping="false"
                       :format-options="{ signDisplay: 'exceptZero' }"
                       size="small"
                     />

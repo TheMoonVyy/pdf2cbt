@@ -166,6 +166,7 @@
                         v-model="currentFormData.marks.cm"
                         :min="1"
                         :max="99"
+                        :step-snapping="false"
                         :format-options="{ signDisplay: 'exceptZero' }"
                         :input-class="{
                           'border-green-500': formChangesState.marks.cm,
@@ -184,6 +185,7 @@
                         v-model="currentFormData.marks.pm"
                         :min="0"
                         :max="99"
+                        :step-snapping="false"
                         :input-class="{
                           'border-green-500': formChangesState.marks.pm,
                         }"
@@ -204,6 +206,7 @@
                         v-model="currentFormData.marks.im"
                         :min="-99"
                         :max="0"
+                        :step-snapping="false"
                         :input-class="{
                           'border-green-500': formChangesState.marks.im,
                         }"
