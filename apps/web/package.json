@@ -34,14 +34,14 @@
     "comlink": "4.4.2",
     "dexie": "4.2.0",
     "fflate": "0.8.2",
-    "lucide-vue-next": "0.526.0",
+    "lucide-vue-next": "0.544.0",
     "markdown-it": "14.1.0",
     "mupdf": "1.26.4",
     "nuxt": "4.0.1",
     "nuxt-color-picker": "1.2.8",
     "nuxt-echarts": "0.4.0",
     "nuxt-og-image": "5.1.9",
-    "reka-ui": "2.4.0",
+    "reka-ui": "2.5.0",
     "shadcn-nuxt": "2.2.0",
     "tailwind-merge": "3.3.1",
     "tailwindcss": "4.1.11",
@@ -50,7 +50,7 @@
     "unstorage": "1.16.1",
     "vue": "3.5.18",
     "vue-router": "4.5.1",
-    "vue-sonner": "2.0.2"
+    "vue-sonner": "2.0.8"
   },
   "devDependencies": {
     "@iconify-json/line-md": "1.2.8",
