@@ -54,11 +54,11 @@
   },
   "devDependencies": {
     "@iconify-json/line-md": "1.2.11",
-    "@iconify-json/material-symbols": "1.2.34",
+    "@iconify-json/material-symbols": "1.2.39",
     "@iconify-json/mdi": "1.2.3",
     "@iconify-json/prime": "1.2.4",
     "@nuxt/eslint": "1.9.0",
     "@types/markdown-it": "14.1.2",
-    "eslint": "9.35.0"
+    "eslint": "9.36.0"
   }
 }
