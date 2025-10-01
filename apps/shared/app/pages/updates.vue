@@ -87,7 +87,7 @@
 <script lang="ts" setup>
 import markdownIt from 'markdown-it'
 import markdownItLinkAttr from 'markdown-it-link-attributes'
-import markdownItSpan from 'markdown-it-span'
+import markdownItSpan from '#layers/shared/app/assets/external/markdown-it-span'
 import markdownItTaskLists from 'markdown-it-task-lists'
 import markdownItBlockEmbed from 'markdown-it-block-embed'
 import { UpdatesPage } from '#layers/shared/shared/enums'
