@@ -139,78 +139,95 @@
               icon-size="1.6rem"
             />
           </NuxtLink>
-          <div class="relative">
-            <NuxtLink
-              :to="updatesIndicatorColorClass.includes('text-yellow')
-                ? '/updates?dev'
-                : '/updates'"
-              class="flex items-center justify-center"
-              tabindex="-1"
-            >
-              <BaseButton
-                variant="outline"
-                size="icon"
-                title="Releases and upcoming features updates"
-                icon-name="material-symbols:breaking-news-outline-rounded"
-                :class="updatesIndicatorColorClass"
-                icon-size="1.5rem"
-              />
-            </NuxtLink>
-            <div
-              v-if="showReleasesPopup || showDevPopup"
-              class="absolute top-full mt-3 left-1/2 -translate-x-1/2 z-[1000] w-max"
-            >
-              <div
-                class="absolute -top-1.5 left-1/2 -translate-x-1/2 size-4 rotate-45 border-t border-l
-                  bg-[color-mix(in_hsl,var(--background),cyan_20%)]"
-              />
-              <div
-                class="border rounded-md shadow-lg p-2 flex flex-col gap-2
-                  bg-[color-mix(in_hsl,var(--background),cyan_20%)]"
+          <UiPopover :open="showReleasesPopup || showDevPopup">
+            <PopoverAnchor as-child>
+              <NuxtLink
+                :to="updatesIndicatorColorClass.includes('text-yellow')
+                  ? '/updates?dev'
+                  : '/updates'"
+                class="flex items-center justify-center"
+                tabindex="-1"
               >
-                <div
-                  v-if="showReleasesPopup"
-                  class="flex items-center gap-2"
-                >
-                  <span class="text-sm sm:text-lg">
-                    <template v-if="isBuildForWebsite === 'true'">
-                      See what's new in <span class="text-green-400">v{{ updatesLSState.releases.version }}</span>
-                    </template>
-                    <template v-else>
-                      <span class="text-green-400">v{{ updatesLSState.releases.version }}</span> is out!
-                    </template>
-                  </span>
-                  <BaseButton
-                    variant="ghost"
-                    size="iconXs"
-                    icon-name="mdi:close"
-                    @click="() => {
-                      updatesLSState.releases.showPopup = false
-                      updatesLSState.releases.showIndicator = false
-                    }"
-                  />
-                </div>
-                <div
-                  v-else
-                  class="flex items-center gap-2"
-                >
-                  <span class="text-sm sm:text-lg">
-                    See what's new in<br>
-                    development updates.
-                  </span>
-                  <BaseButton
-                    variant="ghost"
-                    size="iconXs"
-                    icon-name="mdi:close"
-                    @click="() => {
-                      updatesLSState.dev.showPopup = false
-                      updatesLSState.dev.showIndicator = false
-                    }"
-                  />
-                </div>
+                <BaseButton
+                  variant="outline"
+                  size="icon"
+                  title="Releases and upcoming features updates"
+                  icon-name="material-symbols:breaking-news-outline-rounded"
+                  :class="updatesIndicatorColorClass"
+                  icon-size="1.5rem"
+                />
+              </NuxtLink>
+            </PopoverAnchor>
+            <UiPopoverContent
+              class="bg-[color-mix(in_srgb,_theme(colors.gray.900),_black_10%)] max-w-[96dvw]
+              sm:max-w-sm min-w-fit w-auto lg:max-w-md text-white text-base px-2 py-1.5"
+              avoid-collisions
+              :collision-padding="16"
+              side="bottom"
+              @open-auto-focus.prevent
+            >
+              <div
+                v-if="showReleasesPopup"
+                class="flex items-center gap-2"
+              >
+                <span class="text-sm sm:text-lg">
+                  <template v-if="isBuildForWebsite === 'true'">
+                    See what's new in
+                    <span class="text-green-400">
+                      v{{ updatesLSState.releases.version }}
+                    </span>
+                  </template>
+                  <template v-else>
+                    <span class="text-green-400">
+                      v{{ updatesLSState.releases.version }}
+                    </span> is out!
+                  </template>
+                </span>
+                <BaseButton
+                  variant="ghost"
+                  size="iconXs"
+                  icon-name="mdi:close"
+                  @click="() => {
+                    updatesLSState.releases.showPopup = false
+                    updatesLSState.releases.showIndicator = false
+                  }"
+                />
               </div>
-            </div>
-          </div>
+              <div
+                v-else-if="showDevPopup"
+                class="flex items-center gap-2"
+              >
+                <span class="text-sm sm:text-lg">
+                  See what's new in<br>
+                  development updates.
+                </span>
+                <BaseButton
+                  variant="ghost"
+                  size="iconXs"
+                  icon-name="mdi:close"
+                  @click="() => {
+                    updatesLSState.dev.showPopup = false
+                    updatesLSState.dev.showIndicator = false
+                  }"
+                />
+              </div>
+              <PopoverArrow as-child>
+                <svg
+                  width="14"
+                  height="7"
+                  viewBox="0 0 12 6"
+                  class="text-[color-mix(in_srgb,_theme(colors.gray.800),_black_10%)]"
+                  preserveAspectRatio="none"
+                  style="display: block;"
+                >
+                  <path
+                    d="M0 0L6 6L12 0Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </PopoverArrow>
+            </UiPopoverContent>
+          </UiPopover>
           <BaseButton
             variant="outline"
             size="icon"
@@ -398,6 +415,7 @@
 <script lang="ts" setup>
 import { navigationMenuTriggerStyle } from '#layers/shared/app/components/ui/navigation-menu'
 import { UpdatesPage } from '#layers/shared/shared/enums'
+import { PopoverArrow, PopoverAnchor } from 'reka-ui'
 
 const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
 
