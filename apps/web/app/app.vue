@@ -27,7 +27,10 @@
 </template>
 
 <script setup lang="ts">
-import { MiscConsts, DeprecatedLocalStorageKeys } from '#layers/shared/shared/enums'
+import {
+  MiscConsts,
+  DeprecatedLocalStorageKeys,
+} from '#layers/shared/shared/enums'
 import { Toaster } from '#layers/shared/app/components/ui/sonner'
 
 if (import.meta.server) {
@@ -38,7 +41,18 @@ const toastPosition = useToastPosition()
 
 const showBackupWebsiteNotice = shallowRef(false)
 
+const appSettings = useAppSettings()
+
 // migrate old settings in localStorage
+
+function checkAndMigrateThemeSettings() {
+  const oldSetting = localStorage.getItem(DeprecatedLocalStorageKeys.AppThemeVariant)
+  if (oldSetting) {
+    appSettings.value.theme = oldSetting as 'blue'
+    localStorage.removeItem(DeprecatedLocalStorageKeys.AppThemeVariant)
+  }
+}
+
 function checkAndMigratePdfCropperSettings() {
   const oldSettingsString = localStorage.getItem(DeprecatedLocalStorageKeys.PDfCropperOldSettings)
   if (!oldSettingsString) return
@@ -100,12 +114,10 @@ function checkAndMigrateCbtResultsSettings() {
 onMounted(() => {
   const _isBackupWebsite = useRuntimeConfig().public.isBackupWebsite as string | boolean
   const isBackupWebsite = _isBackupWebsite === 'true' || _isBackupWebsite === true
-  if (isBackupWebsite) {
-    if (!localStorage.getItem(MiscConsts.BackupNoticeDismissedKey)) {
-      showBackupWebsiteNotice.value = true
-    }
-  }
+  if (isBackupWebsite && !localStorage.getItem(MiscConsts.BackupNoticeDismissedKey))
+    showBackupWebsiteNotice.value = true
 
+  checkAndMigrateThemeSettings()
   checkAndMigratePdfCropperSettings()
   checkAndMigrateCbtResultsSettings()
 })

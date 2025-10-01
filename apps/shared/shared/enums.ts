@@ -32,7 +32,8 @@ export enum ResultsPagePanels {
 }
 
 export enum LocalStorageKeys {
-  AppThemeVariant = 'pdf2cbt-theme-variant',
+  AppSettings = 'pdf2cbt-app-settings',
+  UpdatesState = 'pdf2cbt-updates-state',
   ResultsPageSettings = 'CBT-ResultsPageSettings',
   PdfCropperPageSettings = 'PDFCropperSettings',
 }
@@ -41,6 +42,7 @@ export enum DeprecatedLocalStorageKeys {
   ResultsQuestionPanelWidth = 'CBT-ResultsQuestionPanelWidth',
   ResultsQuestionPanelImgBgColor = 'CBT-ResultsQuestionPanelImgBgColor',
   PDfCropperOldSettings = 'pdf-cropper-settings',
+  AppThemeVariant = 'pdf2cbt-theme-variant',
 }
 
 export enum CBTInterfaceQueryParams {
@@ -51,4 +53,9 @@ export enum CBTInterfaceQueryParams {
   ZipUrl = 'zipurl',
   AllowPause = 'allowpause',
   ImageScale = 'imagescale',
+}
+
+export enum UpdatesPage {
+  ReleasesContentBaseUrl = 'https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt@prod/updates-content',
+  DevContentBaseUrl = 'https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt-dev-updates@main',
 }

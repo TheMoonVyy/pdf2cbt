@@ -17,35 +17,6 @@
   }
 }
 
-:root {
-  --p-primary-50: var(--color-emerald-50);
-  --p-primary-100: var(--color-emerald-100);
-  --p-primary-200: var(--color-emerald-200);
-  --p-primary-300: var(--color-emerald-300);
-  --p-primary-400: var(--color-emerald-400);
-  --p-primary-500: var(--color-emerald-500);
-  --p-primary-600: var(--color-emerald-600);
-  --p-primary-700: var(--color-emerald-700);
-  --p-primary-800: var(--color-emerald-800);
-  --p-primary-900: var(--color-emerald-900);
-  --p-primary-950: var(--color-emerald-950);
-
-  --p-surface-0: var(--color-white);
-  --p-surface-50: var(--color-zinc-50);
-  --p-surface-100: var(--color-zinc-100);
-  --p-surface-200: var(--color-zinc-200);
-  --p-surface-300: var(--color-zinc-300);
-  --p-surface-400: var(--color-zinc-400);
-  --p-surface-500: var(--color-zinc-500);
-  --p-surface-600: var(--color-zinc-600);
-  --p-surface-700: var(--color-zinc-700);
-  --p-surface-800: var(--color-zinc-800);
-  --p-surface-900: var(--color-zinc-900);
-  --p-surface-950: var(--color-zinc-950);
-
-  --p-content-border-radius: 6px;
-}
-
 @layer base {
   :root.dark, :root.dark[data-theme-variant="blue"] {
     --background: hsl(222.2 84% 4.9%);
