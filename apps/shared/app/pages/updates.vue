@@ -231,15 +231,23 @@ async function selectMenu(menu: 'releases' | 'dev') {
   }
 }
 
-async function selectReleasesSubMenu(version: string = releasesVersions[0]!) {
-  releasesState.currentRelease = releasesData.get(version) ?? null
+async function selectReleasesSubMenu(version?: string) {
+  const resolvedVersion = version ?? releasesVersions[0]
 
-  const existingData = cache[version]
+  if (!resolvedVersion) {
+    releasesState.currentRelease = null
+    isLoading.value = false
+    renderedMarkdown.value = md.render('## No release notes available right now.')
+    return
+  }
+
+  releasesState.currentRelease = releasesData.get(resolvedVersion) ?? null
+  const existingData = cache[resolvedVersion]
   if (existingData) {
     renderedMarkdown.value = existingData
   }
   else {
-    const match = version.match(versionRegex)
+    const match = resolvedVersion.match(versionRegex)
     const [, major, minor, patch] = match ?? []
     if (major === undefined || minor === undefined || patch === undefined) return
 
@@ -251,7 +259,7 @@ async function selectReleasesSubMenu(version: string = releasesVersions[0]!) {
     const renderedMd = md.render(title + data.mdRawString)
     renderedMarkdown.value = renderedMd
     if (data.success)
-      cache[version] = renderedMd
+      cache[resolvedVersion] = renderedMd
   }
 }
 
