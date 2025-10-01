@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.25.0...v1.26.0) (2025-10-01)
+
+
+### Features
+
+* **updates-page:** add updates page to show release notes and development updates, and to check for updates on local versions of website ([4dc04d1](https://github.com/TheMoonVyy/pdf2cbt/commit/4dc04d1f31f81c7c50d4edfdb64c314efc8a7ced))
+
 ## [1.25.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.24.0...v1.25.0) (2025-09-19)
 
 
