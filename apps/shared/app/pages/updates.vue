@@ -60,7 +60,7 @@
         </main>
         <div class="grow flex flex-col items-center">
           <UiScrollArea class="h-[calc(100dvh-2.5rem)] w-full">
-            <h1 class="text-center text-lg font-bold mt-2">
+            <h1 class="text-center text-xl font-bold mt-2">
               {{ selectedMenu === 'releases' ? 'Release Updates' : 'Development Updates' }}
             </h1>
             <!-- eslint-disable vue/no-v-html -->
