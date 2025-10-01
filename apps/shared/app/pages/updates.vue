@@ -211,19 +211,16 @@ async function selectMenu(menu: 'releases' | 'dev') {
     updatesLSState.value.dev.showPopup = false
 
     releasesState.currentRelease = null
-    const version = releasesVersions[0]
-    if (version) {
-      const existingData = cache['dev']
-      if (existingData) {
-        renderedMarkdown.value = existingData
-      }
-      else {
-        const data = await fetchMarkdownFile(UpdatesPage.DevContentBaseUrl + '/content.md')
-        const renderedMd = md.render(data.mdRawString)
-        renderedMarkdown.value = renderedMd
-        if (data.success)
-          cache['dev'] = renderedMd
-      }
+    const existingData = cache['dev']
+    if (existingData) {
+      renderedMarkdown.value = existingData
+    }
+    else {
+      const data = await fetchMarkdownFile(UpdatesPage.DevContentBaseUrl + '/content.md')
+      const renderedMd = md.render(data.mdRawString)
+      renderedMarkdown.value = renderedMd
+      if (data.success)
+        cache['dev'] = renderedMd
     }
   }
   else {
