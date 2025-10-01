@@ -8,7 +8,7 @@ const versionNumEquivalent = (versionStr: string) => {
     const [_, major, minor, patch] = match
     return (Number(major) * 1000000)
       + (Number(minor) * 1000)
-      + Number (patch)
+      + Number(patch)
   }
 
   return 0
