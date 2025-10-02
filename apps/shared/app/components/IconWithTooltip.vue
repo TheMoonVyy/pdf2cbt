@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { PopoverArrow } from 'reka-ui'
+
 interface Props {
   contentClass?: ClassValue
   iconClass?: ClassValue
-  content: string | VNode | (() => VNode)
+  content?: string | VNode | (() => VNode)
   iconName?: string
   iconSize?: string
+  side?: 'top' | 'right' | 'bottom' | 'left'
 }
 
 const {
@@ -13,11 +16,13 @@ const {
   iconClass,
   iconSize = '1.125rem',
   iconName = 'my-icon:info',
+  side = 'top',
+
 } = defineProps<Props>()
 
 const toRenderFn = (val?: string | VNode | (() => VNode)) => {
   if (typeof val === 'string') {
-    return () => h('div', val)
+    return () => h('div', val.split('\n').map(line => h('p', line)))
   }
   else if (typeof val === 'function') {
     return val
@@ -28,35 +33,82 @@ const toRenderFn = (val?: string | VNode | (() => VNode)) => {
   return null
 }
 
+// small timer so it doesn't flicker when moving between trigger <--> content
+let hideTimer: ReturnType<typeof setTimeout> | null = null
+
+function openTooltip() {
+  if (hideTimer) {
+    clearTimeout(hideTimer)
+    hideTimer = null
+  }
+  showTooltip.value = true
+}
+
+function delayedClose() {
+  hideTimer = setTimeout(
+    () => {
+      showTooltip.value = false
+      hideTimer = null
+    },
+    100,
+  )
+}
+
 const renderContent = computed(() => toRenderFn(content))
+const showTooltip = shallowRef(false)
 </script>
 
 <template>
-  <div class="flex items-center">
-    <UiHoverCard>
-      <UiHoverCardTrigger as-child>
-        <Icon
-          tabindex="-1"
-          class="focus-visible:outline-hidden"
-          :name="iconName"
-          :size="iconSize"
-          :class="iconClass"
-        />
-      </UiHoverCardTrigger>
+  <UiPopover v-model:open="showTooltip">
+    <UiPopoverTrigger as-child>
+      <Icon
+        tabindex="-1"
+        class="focus-visible:outline-hidden"
+        :name="iconName"
+        :size="iconSize"
+        :class="iconClass"
+        @mouseenter="openTooltip"
+        @mouseleave="delayedClose"
+      />
+    </UiPopoverTrigger>
 
-      <UiHoverCardContent
-        class="bg-[color-mix(in_srgb,_theme(colors.gray.900),_black_10%)] text-white text-base
-          sm:min-w-sm sm:max-w-max"
-        :class="contentClass"
-        avoid-collisions
-        :collision-padding="16"
+    <UiPopoverContent
+      class="bg-[color-mix(in_srgb,_theme(colors.gray.900),_black_10%)] max-w-[96dvw] sm:max-w-sm min-w-fit w-auto lg:max-w-md text-white text-base px-2 py-1.5"
+      :class="contentClass"
+      avoid-collisions
+      :collision-padding="16"
+      :side="side"
+      @mouseenter="openTooltip"
+      @open-auto-focus.prevent
+    >
+      <UiScrollArea
+        type="auto"
+        class="max-h-84 min-h-0"
+        viewport-class="pr-0.5 [&>div]:max-h-84 [&>div]:pl-2 [&>div]:pr-4"
       >
-        <template v-if="renderContent">
-          <component :is="renderContent" />
-        </template>
-      </UiHoverCardContent>
-    </UiHoverCard>
-  </div>
+        <slot>
+          <template v-if="renderContent">
+            <component :is="renderContent" />
+          </template>
+        </slot>
+      </UiScrollArea>
+      <PopoverArrow as-child>
+        <svg
+          width="14"
+          height="7"
+          viewBox="0 0 12 6"
+          class="text-[color-mix(in_srgb,_theme(colors.gray.800),_black_10%)]"
+          preserveAspectRatio="none"
+          style="display: block;"
+        >
+          <path
+            d="M0 0L6 6L12 0Z"
+            fill="currentColor"
+          />
+        </svg>
+      </PopoverArrow>
+    </UiPopoverContent>
+  </UiPopover>
 </template>
 
 <style scoped>
