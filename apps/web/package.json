@@ -54,7 +54,7 @@
     "unstorage": "1.17.1",
     "vue": "3.5.22",
     "vue-router": "4.5.1",
-    "vue-sonner": "2.0.8"
+    "vue-sonner": "2.0.9"
   },
   "devDependencies": {
     "@iconify-json/line-md": "1.2.11",
