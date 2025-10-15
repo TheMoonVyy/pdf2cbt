@@ -1,4 +1,4 @@
-import url1 from '#layers/shared/app/assets/json/pattern-cropper-configs/default.json?url'
+import url1 from '#layers/shared/app/assets/json/pattern-cropper-configs/new.json?url'
 
 export const builtInConfigs: PatternModeBuiltInConfig[] = [
   {

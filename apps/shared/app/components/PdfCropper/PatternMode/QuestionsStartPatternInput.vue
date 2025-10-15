@@ -236,7 +236,7 @@ import {
   getQuestionStartRegexRangePattern,
 } from '#layers/shared/app/src/pdf-cropper-pattern-mode/parsed-config-for-cropper'
 import type { FieldProp } from '#layers/shared/app/src/form-validation/regle.global.config'
-import { questionRangeRegex } from './rules'
+import { questionRangeRegex } from '#layers/shared/shared/regexes'
 
 const pattern = defineModel<PatternModeFormQuestionsData['columns'][number]['start']['pattern']>({
   required: true,
