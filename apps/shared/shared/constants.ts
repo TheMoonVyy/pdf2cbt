@@ -47,15 +47,25 @@ export const QUESTION_TYPES_OPTIONS = [
   { name: 'MSM (Multiple Select Matrix)', value: 'msm' },
 ]
 
+export const ANSWER_OPTIONS_COUNTERS = [
+  'upper-latin',
+  'lower-latin',
+  'upper-pqrs',
+  'lower-pqrs',
+  'decimal',
+  'upper-roman',
+  'lower-roman',
+] as const
+
 export const ANSWER_OPTIONS_COUNTER_TYPES = [
-  { name: 'A, B, C, D...', value: 'upper-latin' },
-  { name: 'a, b, c, d...', value: 'lower-latin' },
-  { name: 'P, Q, R, S...', value: 'upper-pqrs' },
-  { name: 'p, q, r, s...', value: 'lower-pqrs' },
-  { name: '1, 2, 3, 4...', value: 'decimal' },
-  { name: 'I, II, III, IV...', value: 'upper-roman' },
-  { name: 'i, ii, iii, iv...', value: 'lower-roman' },
-]
+  { name: 'A, B, C, D...', value: ANSWER_OPTIONS_COUNTERS[0] },
+  { name: 'a, b, c, d...', value: ANSWER_OPTIONS_COUNTERS[1] },
+  { name: 'P, Q, R, S...', value: ANSWER_OPTIONS_COUNTERS[2] },
+  { name: 'p, q, r, s...', value: ANSWER_OPTIONS_COUNTERS[3] },
+  { name: '1, 2, 3, 4...', value: ANSWER_OPTIONS_COUNTERS[4] },
+  { name: 'I, II, III, IV...', value: ANSWER_OPTIONS_COUNTERS[5] },
+  { name: 'i, ii, iii, iv...', value: ANSWER_OPTIONS_COUNTERS[6] },
+] as { name: string, value: string }[]
 
 export const SUBJECTS = [
   'Physics', 'Chemistry', 'Mathematics',
@@ -68,3 +78,22 @@ counterTypesWithDefault.unshift({ name: 'Default', value: 'default' })
 export const ANSWER_OPTIONS_COUNTER_TYPES_WITH_DEFAULT = counterTypesWithDefault
 
 export const RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE = 80
+
+export const QUESTIONS_NUMBERING_ORDER_OPTIONS = [
+  { name: 'Original', value: 'original' },
+  { name: 'Cumulative', value: 'cumulative' },
+  { name: 'Section-wise', value: 'section-wise' },
+]
+
+export const PATTERN_MODE = {
+  pdfElems: ['text', 'image', 'vector'],
+  obtainedQNum: ['replace', 'merge', 'ignore'],
+  splitBy: ['pages', 'columns'],
+} as const
+
+export const AREA_BOUNDARY_NAMES = {
+  l: 'Left',
+  r: 'Right',
+  t: 'Top',
+  b: 'Bottom',
+} as const
