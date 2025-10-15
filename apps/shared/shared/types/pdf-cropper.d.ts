@@ -1,6 +1,14 @@
+export type PdfCropperCurrentMode = 'crop' | 'edit'
+
+export type CropperMode = {
+  isBox: boolean
+  isLine: boolean
+  isPattern: boolean
+}
+
 export type PdfCropperSettings = {
   general: {
-    cropperMode: 'line' | 'box'
+    cropperMode: 'line' | 'box' | 'pattern'
     scale: number
     splitterPanelSize: number
     pageBGColor: string
@@ -17,6 +25,7 @@ export type PdfCropperSettings = {
     blurIntensity: number
     showQuestionDetailsOnOverlay: boolean
     allowResizingPanels: boolean
+    showInfoTooltipsForPatternMode: boolean
   }
 }
 
@@ -46,6 +55,15 @@ export type CropperOutputData = {
   [subject: string]: CropperSectionsData
 }
 
+export type GenericCroppedOverlayCoords<T> = {
+  l: T // left
+  r: T // right
+  t: T // top
+  b: T // bottom
+}
+
+export type PdfCroppedOverlayCoords = GenericCroppedOverlayCoords<number>
+
 export type PdfCroppedOverlayData = {
   id: string
   queId: string
@@ -56,12 +74,8 @@ export type PdfCroppedOverlayData = {
   type: QuestionType
   answerOptions: string
   marks: Required<Omit<QuestionMarks, 'max'>>
-  pdfData: {
-    l: number // left
-    r: number // right
-    t: number // top
-    b: number // bottom
-    page: number // page number
+  pdfData: PdfCroppedOverlayCoords & {
+    page: number // page number, starting from 1
   }
   answerOptionsCounterTypePrimary: string
   answerOptionsCounterTypeSecondary: string
@@ -81,4 +95,53 @@ export type PageImgData = {
     url: string
     pageScale: number
   }
+}
+
+export type AbsOrRelativeOverlayCoords = GenericCroppedOverlayCoords<string>
+
+export type PageTextChar = {
+  c: string
+  l: number
+  r: number
+  t: number
+  b: number
+}
+
+export type PageTextLineData = {
+  text: string
+  minY: number
+  maxY: number
+  chars: PageTextChar[]
+  columns?: string[]
+}
+
+export type PagePatternModeData = {
+  lines: PageTextLineData[]
+  images: PdfCroppedOverlayCoords[]
+  vectors: PdfCroppedOverlayCoords[]
+}
+
+export type PdfPagesPatternModeData = {
+  [pageNum: string | number]: PagePatternModeData
+}
+
+export type PatternModeFormStatus = Record<number | string, {
+  isReady: boolean
+  sections: Record<number | string, ComputedRef<boolean>>
+}>
+
+export type PatternModeBuiltInConfig = {
+  name: string
+  // key being subject name, values beings string[] for section names,
+  // null if subject has no sections
+  subjects: Record<string, null | string[]>
+  id: number
+  url: string
+}
+
+export type PatternModeUserConfig = Omit<PatternModeBuiltInConfig, 'url'>
+
+export type PatternModeImportExportConfigData = Omit<PatternModeUserConfig, 'id'> & {
+  configVersion?: number
+  data: PatternModeConfigDB['data']
 }

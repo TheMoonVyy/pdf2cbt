@@ -1,3 +1,7 @@
+import type {
+  PatternModeConfigJson,
+} from '#layers/shared/app/src/pdf-cropper-pattern-mode/config-schema'
+
 export type SettingsData = {
   testSettings: CbtTestSettings
   uiSettings: CbtUiSettings
@@ -11,6 +15,13 @@ export type TestNotesDB = {
 export type TestOutputDataDB = {
   id: number
   testOutputData: TestInterfaceOrResultJsonOutput
+}
+
+export type PatternModeConfigDB = {
+  id: number
+  data: {
+    patternModeConfig: PatternModeConfigJson
+  }
 }
 
 export interface IPdf2CbtDB {
@@ -72,4 +83,23 @@ export interface IPdf2CbtDB {
     queId: number | string,
     notesText?: string,
   ): Promise<number>
+  getAllPatternModeConfigNames(
+    order?: 'inc' | 'dec'
+  ): Promise<(PatternModeUserConfig | undefined)[]>
+  bulkGetPatternModeConfigs(
+    ids: number[]
+  ): Promise<PatternModeImportExportConfigData[]>
+  addPatternModeConfig(configData: PatternModeImportExportConfigData): Promise<PatternModeUserConfig>
+  bulkAddPatternModeConfigs(
+    configs: { name: string, data: PatternModeConfigDB['data'] }[]
+  ): Promise<{
+    ids: number[]
+    configNames: PatternModeUserConfig[]
+  }>
+  removePatternModeConfig(id: number): Promise<boolean>
+  removePatternModeConfigs(ids: number[]): Promise<boolean>
+  renamePatternModeConfig(id: number, newName: string): Promise<number>
+  replacePatternModeConfig(
+    newData: Omit<PatternModeImportExportConfigData, 'name'> & { id: number }
+  ): Promise<boolean>
 }
