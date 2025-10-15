@@ -44,6 +44,7 @@
 type EmitedData = {
   pdfBuffer: Uint8Array
   jsonData: PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper
+  filename: string
 }
 const showDialog = defineModel<boolean>({ required: true })
 
@@ -114,7 +115,10 @@ async function loadFiles() {
       : migrateJsonData.pdfCropperData(jsonData)
 
     if (Object.keys(jsonData.pdfCropperData).length > 0) {
-      emit('uploadedData', { pdfBuffer, jsonData })
+      const filenameParts = zipOrJsonFile.name.split('.')
+      filenameParts.pop()
+      const filename = filenameParts.join('.')
+      emit('uploadedData', { pdfBuffer, jsonData, filename })
       showDialog.value = false
     }
   }

@@ -110,8 +110,8 @@ const props = defineProps<{
   pageWidth: number
   pageHeight: number
   pageScale: number
-  currentMode: 'crop' | 'edit'
-  cropperMode: { isLine: boolean, isBox: boolean }
+  currentMode: PdfCropperCurrentMode
+  cropperMode: CropperMode
 }>()
 
 const currentOverlayData = defineModel<PdfCroppedOverlayData>('currentOverlayData', { required: true })

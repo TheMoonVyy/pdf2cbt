@@ -181,7 +181,7 @@ const props = defineProps<{
   pageWidth: number
   pageHeight: number
   pageScale: number
-  currentMode: 'crop' | 'edit'
+  currentMode: PdfCropperCurrentMode
 }>()
 
 const overlays = defineModel<Map<string, PdfCroppedOverlayData>>({ required: true })
