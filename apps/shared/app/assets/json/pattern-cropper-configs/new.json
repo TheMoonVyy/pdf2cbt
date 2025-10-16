@@ -1,0 +1,98 @@
+{
+    "$schema": "https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt@prod/schema/pattern-cropper-config/v1.json",
+    "patternModeConfig": {
+        "settings": {
+            "ignoreElementsGoingOutsidePage": true,
+            "yCoordinateGroupingRangeForLine": 8,
+            "linesToIgnore": []
+        },
+        "subjects": {
+            "Physics": {
+                "start": {
+                    "pattern": {
+                        "type": "text",
+                        "value": "physics",
+                        "isCaseSensitive": true
+                    },
+                    "searchIn": {
+                        "pages": "1-L",
+                        "area": {
+                            "l": "0",
+                            "r": "100%",
+                            "t": "0",
+                            "b": "100%"
+                        }
+                    }
+                },
+                "sections": {
+                    "Physics Section 1": {
+                        "pattern": {
+                            "type": "text",
+                            "value": "physics section 1",
+                            "isCaseSensitive": true
+                        },
+                        "searchIn": {
+                            "pages": "1-L",
+                            "area": {
+                                "l": "0",
+                                "r": "100%",
+                                "t": "0",
+                                "b": "100%"
+                            }
+                        },
+                        "questions": {
+                            "pages": "1-L",
+                            "details": {
+                                "type": "mcq",
+                                "answerOptions": "4",
+                                "marks": {
+                                    "cm": 3,
+                                    "im": -1
+                                }
+                            },
+                            "forBottomCoordinateUseBottom": [
+                                "text",
+                                "vector",
+                                "image"
+                            ],
+                            "obtainedQuestionNum": {
+                                "nextQNumMustBeOneNumGreater": true,
+                                "whenDuplicate": "ignore"
+                            },
+                            "columns": [
+                                {
+                                    "start": {
+                                        "pattern": {
+                                            "type": "text",
+                                            "prefix": "",
+                                            "suffix": ".",
+                                            "questionRange": "01-90",
+                                            "isLeadingZeroesOptional": true,
+                                            "isCaseSensitive": true
+                                        },
+                                        "searchIn": {
+                                            "l": "0",
+                                            "r": "50%",
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    },
+                                    "crop": {
+                                        "exactlyTo": {
+                                            "l": null,
+                                            "r": "100%"
+                                        },
+                                        "within": {
+                                            "t": "0",
+                                            "b": "100%"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

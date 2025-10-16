@@ -14,6 +14,10 @@ import type {
   TestResultOverviewsDBSortByOption,
   TestNotes,
 } from '#layers/shared/shared/types/cbt-results'
+import type {
+  PatternModeUserConfig,
+  PatternModeImportExportConfigData,
+} from '#layers/shared/shared/types/pdf-cropper'
 
 import type {
   TestInterfaceOrResultJsonOutput,
@@ -25,6 +29,7 @@ import type {
   TestOutputDataDB,
   TestNotesDB,
   IPdf2CbtDB,
+  PatternModeConfigDB,
 } from '#layers/shared/shared/types/db'
 import { MigrateJsonData } from '#layers/shared/app/src/scripts/migrate-json-data'
 
@@ -49,6 +54,8 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
   testResultOverviews!: EntityTable<TestResultOverviewDB, 'id'>
   testOutputDatas!: EntityTable<TestOutputDataDB, 'id'>
   testNotes!: EntityTable<TestNotesDB, 'id'>
+  patternModeConfigs!: EntityTable<PatternModeConfigDB, 'id'>
+  patternModeConfigNames!: EntityTable<PatternModeUserConfig, 'id'>
 
   constructor() {
     super('CBT-Interface')
@@ -62,6 +69,8 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
       testResultOverviews: 'id,testName,testStartTime,testEndTime,[testName+testStartTime+testEndTime]',
       testOutputDatas: 'id++',
       testNotes: 'id',
+      patternModeConfigs: 'id++',
+      patternModeConfigNames: 'id',
     }
 
     this.version(4).stores(dbScheme).upgrade(async (tx) => {
@@ -301,8 +310,8 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
   async getTestResultOverview(id: number | null, getAll: true): Promise<TestResultOverviewDB[]>
   async getTestResultOverview(id?: number | null, getAll?: false): Promise<TestResultOverviewDB | undefined>
   async getTestResultOverview(
-  id: number | null = null,
-  getAll: boolean = false,
+    id: number | null = null,
+    getAll: boolean = false,
   ): Promise<TestResultOverviewDB[] | TestResultOverviewDB | undefined> {
     if (getAll) {
       return this.testResultOverviews.toArray()
@@ -525,5 +534,126 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
     return this.testNotes.update(testId, {
       [`notes.${queId}`]: notesText,
     })
+  }
+
+  async bulkGetPatternModeConfigs(ids: number[]) {
+    return this.transaction(
+      'rw',
+      [this.patternModeConfigs, this.patternModeConfigNames],
+      async () => {
+        const configs = await this.patternModeConfigs.bulkGet(ids)
+        const configNames = await this.patternModeConfigNames.bulkGet(ids)
+
+        const dataToReturn: PatternModeImportExportConfigData[] = []
+
+        ids.forEach((_id, idx) => {
+          const data = configs[idx]?.data
+          const configNameData = configNames[idx]
+
+          if (data && configNameData) {
+            dataToReturn.push({
+              name: configNameData.name,
+              subjects: configNameData.subjects,
+              data,
+            })
+          }
+        })
+
+        return dataToReturn
+      })
+  }
+
+  async bulkAddPatternModeConfigs(
+    configDatas: PatternModeImportExportConfigData[],
+  ) {
+    return this.transaction(
+      'rw',
+      [this.patternModeConfigs, this.patternModeConfigNames],
+      async () => {
+        const ids = await this.patternModeConfigs.bulkAdd(
+          configDatas.map(conf => ({ data: conf.data })),
+          { allKeys: true },
+        )
+
+        const configNames: PatternModeUserConfig[] = []
+        ids.forEach((id, idx) => {
+          const conf = configDatas[idx] as unknown as PatternModeUserConfig & {
+            data?: PatternModeConfigDB['data']
+          }
+
+          delete conf.data
+          conf.id = id
+          configNames.push(conf)
+        })
+
+        return {
+          ids: await this.patternModeConfigNames
+            .bulkPut(configNames, { allKeys: true }),
+          configNames,
+        }
+      })
+  }
+
+  async addPatternModeConfig(
+    configData: PatternModeImportExportConfigData,
+  ) {
+    const { name, subjects, data } = configData
+    return this.transaction(
+      'rw',
+      [this.patternModeConfigs, this.patternModeConfigNames],
+      async () => {
+        const id = await this.patternModeConfigs.add({ data })
+        const dataToSave = { id, name, subjects }
+        await this.patternModeConfigNames.put(dataToSave)
+        return dataToSave
+      })
+  }
+
+  async getPatternModeConfig(id: number) {
+    return this.patternModeConfigs.get(id)
+  }
+
+  async getAllPatternModeConfigNames() {
+    return this.patternModeConfigNames.toArray()
+  }
+
+  async removePatternModeConfig(id: number) {
+    return this.transaction(
+      'rw',
+      [this.patternModeConfigs, this.patternModeConfigNames],
+      async () => {
+        await this.patternModeConfigNames.delete(id)
+        await this.patternModeConfigs.delete(id)
+        return true
+      })
+  }
+
+  async removePatternModeConfigs(ids: number[]) {
+    return this.transaction(
+      'rw',
+      [this.patternModeConfigs, this.patternModeConfigNames],
+      async () => {
+        await this.patternModeConfigNames.bulkDelete(ids)
+        await this.patternModeConfigs.bulkDelete(ids)
+        return true
+      })
+  }
+
+  async renamePatternModeConfig(id: number, newName: string) {
+    return this.patternModeConfigNames.update(id, { name: newName })
+  }
+
+  async replacePatternModeConfig(
+    newData: Omit<PatternModeImportExportConfigData, 'name'> & { id: number },
+  ) {
+    const { id, subjects, data } = newData
+    return this.transaction(
+      'rw',
+      [this.patternModeConfigs, this.patternModeConfigNames],
+      async () => {
+        await this.patternModeConfigs.update(id, { data })
+        await this.patternModeConfigNames.update(id, { subjects })
+        return true
+      })
   }
 }

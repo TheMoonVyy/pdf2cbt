@@ -155,7 +155,7 @@
                     />
                   </BaseFloatLabel>
                   <IconWithTooltip
-                    :content="tooltipContent.partialMarking"
+                    :content="partialMarkingTooltipContent"
                     icon-size="1.25rem"
                   />
                 </div>
@@ -171,7 +171,7 @@
                 <div class="flex gap-4 px-4 items-center justify-center">
                   <span>Answer Options Counter Type</span>
                   <IconWithTooltip
-                    :content="tooltipContent.answerOptionsCounterType"
+                    :content="answerOptionsCounterTypeTooltipContent"
                     icon-size="1.25rem"
                   />
                 </div>
@@ -290,6 +290,10 @@ import {
   ANSWER_OPTIONS_COUNTER_TYPES_WITH_DEFAULT,
   SUBJECTS,
 } from '#layers/shared/shared/constants'
+import {
+  partialMarkingTooltipContent,
+  answerOptionsCounterTypeTooltipContent,
+} from './tooltipContents'
 
 const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
 
@@ -365,25 +369,4 @@ const sections = computed(() => {
 
   return sectionsList
 })
-
-const tooltipContent = {
-  partialMarking: () =>
-    h('div', { class: 'space-y-2' }, [
-      h('p',
-        h('strong', 'If you want JEE Advanced format then use +1 as partial marking.'),
-      ),
-      h('p', 'While JEE Advanced format looks complex, the logic for partial marking in a nutshell is:'),
-      h('p', 'marks awarded = no. of partically correct answer * 1.'),
-      h('p', { class: 'mt-3' }, [
-        'Look at their format properly, you will notice you get +1 for each option you answer correctly',
-        ' (when the case is of "partially correct").',
-      ]),
-    ]),
-
-  answerOptionsCounterType: () =>
-    h('div', { class: 'space-y-2' }, [
-      h('p', 'Counter type to use while showing options in test interface and question preview (of results page).'),
-      h('p', 'If "Default" is selected then uses the counter type as it is in test interface\'s UI Settings & Customization.'),
-    ]),
-}
 </script>
