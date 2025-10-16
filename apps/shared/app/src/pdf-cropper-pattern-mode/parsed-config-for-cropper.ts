@@ -64,7 +64,7 @@ function getParsedQuestionsStartPattern(
 
   const { prefix, suffix, questionRange, isCaseSensitive, isLeadingZeroesOptional } = pattern
 
-  const escapedPrefix = prefix && regexpEscape(prefix)
+  const escapedPrefix = '^\\s*' + (prefix && regexpEscape(prefix))
   const escapedSuffix = suffix && regexpEscape(suffix)
   const questionRangePattern = getQuestionStartRegexRangePattern({
     range: questionRange,

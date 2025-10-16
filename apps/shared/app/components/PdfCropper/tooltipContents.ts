@@ -437,6 +437,10 @@ export const questionsStartPatternTooltipContent = () => h('div', { class: 'spac
       h('br'),
       h('br'),
       'Internally "Text Pattern" is converted to "Regex Pattern".',
+      h('br'),
+      'Note that a condition that start pattern has ',
+      'to be the first thing in line of search area is applied',
+      '(i.e. ^\\s* prefix is added which converting text pattern to regex pattern).',
     ]),
     h('li', [
       h('strong', 'Regex Pattern'),
