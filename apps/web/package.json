@@ -28,7 +28,7 @@
     "@tailwindcss/typography": "0.5.19",
     "@tailwindcss/vite": "4.1.14",
     "@tanstack/vue-table": "8.21.3",
-    "@unhead/vue": "2.0.17",
+    "@unhead/vue": "2.0.19",
     "@vueuse/core": "13.9.0",
     "@vueuse/nuxt": "13.9.0",
     "class-variance-authority": "0.7.1",
