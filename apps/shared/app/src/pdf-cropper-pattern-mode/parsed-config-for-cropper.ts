@@ -33,8 +33,8 @@ export function getQuestionStartRegexRangePattern(patternData: {
   isLeadingZeroesOptional: boolean | undefined
 }) {
   const match = patternData.range.trim().match(questionRangeRegex)
-  const minText = match?.groups?.min ?? '1'
-  const maxText = match?.groups?.max ?? '200'
+  const minText = match?.groups?.start ?? '1'
+  const maxText = match?.groups?.end ?? '200'
 
   let range = toRegexRange(minText, maxText, { capture: true, relaxZeros: false })
     .replace(/^\(/, '')
@@ -285,6 +285,7 @@ function getParsedSubject(
   const columnDividersRaw = (subject.columnDividers || '')
     .split(',')
     .map(s => s.trim())
+    .filter(s => !!s)
 
   const columnDividers = {
     raw: columnDividersRaw,
