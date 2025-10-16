@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.26.0...v1.27.0) (2025-10-16)
+
+
+### Features
+
+* **pdf-cropper:** add text pattern based crop mode ([564ce09](https://github.com/TheMoonVyy/pdf2cbt/commit/564ce093a886924c2ba5cfdc6eaf6304870f058f))
+
 ## [1.26.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.25.0...v1.26.0) (2025-10-01)
 
 
