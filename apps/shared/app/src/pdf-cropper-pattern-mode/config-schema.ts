@@ -80,7 +80,7 @@ export const searchAreaSchema = z.strictObject({
   b: AbsOrRelativeCoordinateSchema,
 }).superRefine((coords, ctx) => {
   const parseCoord = (c: string) => c.endsWith('%')
-    ? { isRel: true, value: parseFloat(c) }
+    ? { isRelative: true, value: parseFloat(c) }
     : { isRelative: false, value: parseFloat(c) }
 
   if (absOrRelativeCoordinateRegex.test(coords.l) && absOrRelativeCoordinateRegex.test(coords.r)) {

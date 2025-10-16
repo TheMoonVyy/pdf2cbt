@@ -60,6 +60,7 @@ export class MuPdfProcessor {
     await this.loadMuPdf(preferLocalScript)
     if (!this.mupdf) throw new Error('mupdf not loaded')
 
+    this.doc?.destroy()
     this.doc = this.mupdf.Document.openDocument(pdfFile, 'application/pdf')
 
     if (getPageCount)

@@ -68,7 +68,7 @@ export const partialMarkingTooltipContent = () => h('div', { class: 'space-y-2' 
   h('p',
     'While JEE Advanced format looks complex, the logic for partial marking in a nutshell is:',
   ),
-  h('p', 'marks awarded = no. of partically correct answer * 1.'),
+  h('p', 'marks awarded = no. of partially correct answer * 1.'),
   h('p', { class: 'mt-3' }, [
     'Look at their format properly,',
     'you will notice you get +1 for each option you answer correctly',
@@ -149,7 +149,7 @@ export const columnsTooltipContent = () => h('div', { class: 'space-y-2' }, [
     'Q3... | Q6...',
   ]),
   h('p', [
-    'Note that the tool transverses from top to bottom and then next column (left to right).',
+    'Note that the tool traverses from top to bottom and then next column (left to right).',
     h('br'),
     'So if the questions are arranged in zig-zag manner like this:',
     h('br'),
@@ -166,7 +166,7 @@ export const columnsTooltipContent = () => h('div', { class: 'space-y-2' }, [
     'Next Q.Num must be one num greater..." is turned off.',
   ]),
   h('p', [
-    'Note that when 2 column are same question but in different language ',
+    'Note that when 2 column are same question but in different languages ',
     'then this should be treated as 1 column instead of 2.',
     h('br'),
     'As the tool needs to go from top to bottom of page only once. ',
@@ -247,7 +247,7 @@ export const forTopCoordinateLookupTooltipContent = () => h('div', { class: 'spa
     h('strong', 'With lookup'),
     ', tool will look up for text/image/vector (as specified by you) ',
     'by given coordinates (relative to current top value),',
-    ' if atleast one element is found then it will use ',
+    ' if at least one element is found then it will use ',
     'the topmost element as top coordinate of question.',
     h('br'),
     'You can chain multiple lookups by given coordinates to refine the top coordinate further, ',

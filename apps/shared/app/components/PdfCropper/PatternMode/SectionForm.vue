@@ -202,19 +202,19 @@ const { r$ } = useCustomRegle(sectionFormData, () => {
               searchIn: {
                 l: {
                   required: requiredIf(isColumnEndRequired),
-                  absOrRelativeCoordRule: applyIf(isColumnRequired, absOrRelativeCoordRule),
+                  absOrRelativeCoordRule: applyIf(isColumnEndRequired, absOrRelativeCoordRule),
                 },
                 r: {
                   required: requiredIf(isColumnEndRequired),
-                  absOrRelativeCoordRule: applyIf(isColumnRequired, absOrRelativeCoordRule),
+                  absOrRelativeCoordRule: applyIf(isColumnEndRequired, absOrRelativeCoordRule),
                 },
                 t: {
                   required: requiredIf(isColumnEndRequired),
-                  absOrRelativeCoordRule: applyIf(isColumnRequired, absOrRelativeCoordRule),
+                  absOrRelativeCoordRule: applyIf(isColumnEndRequired, absOrRelativeCoordRule),
                 },
                 b: {
                   required: requiredIf(isColumnEndRequired),
-                  absOrRelativeCoordRule: applyIf(isColumnRequired, absOrRelativeCoordRule),
+                  absOrRelativeCoordRule: applyIf(isColumnEndRequired, absOrRelativeCoordRule),
                 },
               },
             },

@@ -218,7 +218,7 @@ export function getSubjectsData(subjectsConfig: PatternModeConfigJson['subjects'
 
 export function getConfigFormDataFromJson(patternModeConfig: PatternModeConfigJson) {
   const { settings, subjects } = patternModeConfig
-  const linesToIgnore = settings.linesToIgnore || []
+  const linesToIgnore = structuredClone(settings.linesToIgnore || [])
   linesToIgnore.push({
     type: 'text',
     value: '',

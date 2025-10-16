@@ -77,7 +77,6 @@
             icon-name="my-icon:fx"
             title="Helpers for Regex Format"
             icon-size="1.7rem"
-            @click="pattern.isLeadingZeroesOptional = !pattern.isLeadingZeroesOptional"
           />
         </UiPopoverTrigger>
         <UiPopoverContent class="flex flex-col w-full sm:w-84 p-0.5">

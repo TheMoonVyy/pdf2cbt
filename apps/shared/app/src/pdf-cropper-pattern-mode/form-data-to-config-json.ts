@@ -118,9 +118,9 @@ function getQuestionsData(
       answerOptionsCounterTypeSecondary,
     } = qDetails
 
+    const answerOptionsCounterType = details.answerOptionsCounterType!
     type AnswerOptionsCounterType = typeof answerOptionsCounterType.primary
 
-    const answerOptionsCounterType = details.answerOptionsCounterType!
     if (answerOptionsCounterTypePrimary !== 'default') {
       answerOptionsCounterType.primary = answerOptionsCounterTypePrimary as AnswerOptionsCounterType
     }

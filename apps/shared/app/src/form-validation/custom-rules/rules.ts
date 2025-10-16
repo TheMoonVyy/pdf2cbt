@@ -38,7 +38,7 @@ export const columnDividersRule = createRule({
       return value
         .split(',')
         .map(s => s.trim())
-        .every(absOrRelativeCoordinateRegex.test)
+        .every(s => absOrRelativeCoordinateRegex.test(s))
     }
     return true
   },

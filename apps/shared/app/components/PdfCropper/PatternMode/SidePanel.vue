@@ -149,6 +149,7 @@
           <BaseButton
             label="Save"
             variant="success"
+            :disabled="!saveAsState.name.trim()"
             @click="saveConfig(true)"
           />
           <BaseButton
@@ -357,7 +358,7 @@ async function saveConfig(isSaveAs: boolean = false) {
     )
 
     if (isSaveAs) {
-      const name = saveAsState.name
+      const name = saveAsState.name.trim()
       const newConfig = await db.addPatternModeConfig({
         name,
         subjects,

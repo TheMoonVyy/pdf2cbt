@@ -86,6 +86,7 @@ export interface IPdf2CbtDB {
   getAllPatternModeConfigNames(
     order?: 'inc' | 'dec'
   ): Promise<(PatternModeUserConfig | undefined)[]>
+  getPatternModeConfig(id: number): Promise<PatternModeConfigDB | undefined>
   bulkGetPatternModeConfigs(
     ids: number[]
   ): Promise<PatternModeImportExportConfigData[]>
