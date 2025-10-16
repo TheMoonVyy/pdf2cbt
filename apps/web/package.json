@@ -37,7 +37,7 @@
     "dexie": "4.2.0",
     "echarts": "6.0.0",
     "fflate": "0.8.2",
-    "lucide-vue-next": "0.544.0",
+    "lucide-vue-next": "0.545.0",
     "markdown-it": "14.1.0",
     "markdown-it-block-embed": "0.0.3",
     "markdown-it-link-attributes": "4.0.1",
@@ -50,7 +50,7 @@
     "regex-parser": "2.3.1",
     "regexp.escape": "2.0.1",
     "reka-ui": "2.5.1",
-    "shadcn-nuxt": "2.2.0",
+    "shadcn-nuxt": "2.3.1",
     "tailwind-merge": "3.3.1",
     "tailwindcss": "4.1.13",
     "to-regex-range": "5.0.1",
@@ -59,7 +59,7 @@
     "unstorage": "1.17.1",
     "vue": "3.5.22",
     "vue-router": "4.5.1",
-    "vue-sonner": "2.0.8"
+    "vue-sonner": "2.0.9"
   },
   "devDependencies": {
     "@iconify-json/line-md": "1.2.11",
