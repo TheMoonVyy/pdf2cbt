@@ -60,7 +60,7 @@
         variant="outline"
         size="icon"
         icon-name="my-icon:optionalzero"
-        title="Optionally match leading zeroes"
+        title="Make leading zeroes optional in range"
         :icon-class="pattern.isLeadingZeroesOptional
           ? 'text-green-400'
           : ''"
@@ -107,7 +107,7 @@
                   variant="outline"
                   size="icon"
                   icon-name="my-icon:optionalzero"
-                  title="Optionally match leading zeroes"
+                  title="Make leading zeroes optional in range"
                   :icon-class="regexHelpersState.isLeadingZeroesOptional
                     ? 'text-green-400'
                     : ''"

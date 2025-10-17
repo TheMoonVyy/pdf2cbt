@@ -36,17 +36,14 @@ export function getQuestionStartRegexRangePattern(patternData: {
   const minText = match?.groups?.start ?? '1'
   const maxText = match?.groups?.end ?? '200'
 
-  let range = toRegexRange(minText, maxText, { capture: true, relaxZeros: false })
+  const regexRangeOptions = {
+    capture: true,
+    relaxZeros: !!patternData.isLeadingZeroesOptional,
+  }
+
+  const range = toRegexRange(minText, maxText, regexRangeOptions)
     .replace(/^\(/, '')
     .replace(/\)$/, '')
-
-  if (patternData.isLeadingZeroesOptional) {
-    const zerosMatch = range.match(/^(0+)/)
-    if (zerosMatch) {
-      const zeros = zerosMatch[1]!
-      range = `(0{0,${zeros.length}}${range.slice(zeros.length)})`
-    }
-  }
 
   const regexRange = range
     .split('|')
