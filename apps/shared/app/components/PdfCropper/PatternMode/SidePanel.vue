@@ -114,7 +114,7 @@
                 label="Save As"
                 variant="success"
                 :disabled="isConfigInvalid"
-                @click="saveAsState.showDialog = true"
+                @click="showSaveAsDialog"
               />
             </div>
             <span
@@ -341,6 +341,14 @@ function editConfigHandler() {
 function discardEdits() {
   form.value = null
   showPatternModeEditConfigPanel.value = false
+}
+
+function showSaveAsDialog() {
+  const name = selectedPatternModeConfig.value?.name
+  if (name)
+    saveAsState.name = name?.trim()
+
+  saveAsState.showDialog = true
 }
 
 async function saveConfig(isSaveAs: boolean = false) {
