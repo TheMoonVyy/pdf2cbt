@@ -28,8 +28,8 @@ importers:
         specifier: 6.14.0
         version: 6.14.0(magicast@0.3.5)
       '@regle/core':
-        specifier: 1.9.1
-        version: 1.9.1(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+        specifier: 1.9.6
+        version: 1.9.6(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       '@regle/rules':
         specifier: 1.9.1
         version: 1.9.1(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
@@ -1471,6 +1471,15 @@ packages:
 
   '@regle/core@1.9.1':
     resolution: {integrity: sha512-fnoePh4YkPFL5XtSHvWdwSfyuICr2ptyT7gGRamcDPuxoXfvT/rueHDfSmIOhU/TET5+9kUZmeYmJzjQReIatw==}
+    peerDependencies:
+      pinia: '>=2.2.5'
+      vue: '>=3.3.0'
+    peerDependenciesMeta:
+      pinia:
+        optional: true
+
+  '@regle/core@1.9.6':
+    resolution: {integrity: sha512-3fyQp8vpAL6mGfrOqsfzoT85DxXxEU31hEemARja1U613aCp45ovfgRuNDLkNAPOTfNunkOQlDlet0N685Mo8g==}
     peerDependencies:
       pinia: '>=2.2.5'
       vue: '>=3.3.0'
@@ -7544,6 +7553,13 @@ snapshots:
   '@poppinss/exception@1.2.2': {}
 
   '@regle/core@1.9.1(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))':
+    dependencies:
+      '@standard-schema/spec': 1.0.0
+      vue: 3.5.22(typescript@5.9.3)
+    optionalDependencies:
+      pinia: 3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))
+
+  '@regle/core@1.9.6(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       '@standard-schema/spec': 1.0.0
       vue: 3.5.22(typescript@5.9.3)
