@@ -1,0 +1,633 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt@prod/schema/pattern-cropper-config/v1.json",
+  "patternModeConfig": {
+    "settings": {
+      "ignoreElementsGoingOutsidePage": true,
+      "yCoordinateGroupingRangeForLine": 8,
+      "linesToIgnore": []
+    },
+    "subjects": {
+      "Physics": {
+        "start": {
+          "pattern": {
+            "type": "regex",
+            "value": "part\\s*[-‐‒–—―﹣－]\\s*[ai1]\\s*:\\s*physics",
+            "isCaseSensitive": false
+          },
+          "searchIn": {
+            "pages": "1-L",
+            "area": {
+              "l": "0",
+              "r": "100%",
+              "t": "0",
+              "b": "100%"
+            }
+          }
+        },
+        "sections": {
+          "Physics Section 1": {
+            "pattern": {
+              "type": "regex",
+              "value": "section\\s*[-‐‒–—―﹣－]\\s*[ia1]",
+              "isCaseSensitive": false
+            },
+            "searchIn": {
+              "pages": "1-L",
+              "area": {
+                "l": "0",
+                "r": "100%",
+                "t": "0",
+                "b": "100%"
+              }
+            },
+            "numOfOptionalQuestions": 0,
+            "questions": {
+              "pages": "1-L",
+              "details": {
+                "type": "mcq",
+                "answerOptions": "4",
+                "marks": {
+                  "cm": 4,
+                  "im": -1
+                }
+              },
+              "forBottomCoordinateUseBottom": [
+                "text",
+                "vector",
+                "image"
+              ],
+              "forTopCoordinateLookUp": {
+                "by": 1,
+                "chainBy": 1,
+                "for": [
+                  "image",
+                  "vector",
+                  "text"
+                ]
+              },
+              "obtainedQuestionNum": {
+                "nextQNumMustBeOneNumGreater": true,
+                "whenDuplicate": "ignore"
+              },
+              "columns": [
+                {
+                  "start": {
+                    "pattern": {
+                      "type": "text",
+                      "prefix": "",
+                      "questionRange": "1-90",
+                      "suffix": ".",
+                      "isCaseSensitive": true,
+                      "isLeadingZeroesOptional": false
+                    },
+                    "searchIn": {
+                      "l": "50%",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "end": {
+                    "pattern": {
+                      "type": "text",
+                      "value": "JOINT PACKAGE COURSE",
+                      "isCaseSensitive": true
+                    },
+                    "searchIn": {
+                      "l": "0",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "crop": {
+                    "within": {
+                      "t": "0",
+                      "b": "100%"
+                    },
+                    "exactlyTo": {
+                      "r": "100%"
+                    },
+                    "offsetBy": {
+                      "l": -3,
+                      "r": -4,
+                      "t": -2,
+                      "b": 2
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "Physics Section 2": {
+            "pattern": {
+              "type": "regex",
+              "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:(?:ii)|[b2])",
+              "isCaseSensitive": false
+            },
+            "searchIn": {
+              "pages": "1-L",
+              "area": {
+                "l": "0",
+                "r": "100%",
+                "t": "0",
+                "b": "100%"
+              }
+            },
+            "numOfOptionalQuestions": 5,
+            "questions": {
+              "pages": "1-L",
+              "details": {
+                "type": "nat",
+                "marks": {
+                  "cm": 4,
+                  "im": -1
+                }
+              },
+              "forBottomCoordinateUseBottom": [
+                "text",
+                "vector",
+                "image"
+              ],
+              "forTopCoordinateLookUp": {
+                "by": 1,
+                "chainBy": 1,
+                "for": [
+                  "image",
+                  "vector",
+                  "text"
+                ]
+              },
+              "obtainedQuestionNum": {
+                "nextQNumMustBeOneNumGreater": true,
+                "whenDuplicate": "ignore"
+              },
+              "columns": [
+                {
+                  "start": {
+                    "pattern": {
+                      "type": "text",
+                      "prefix": "",
+                      "questionRange": "1-90",
+                      "suffix": ".",
+                      "isCaseSensitive": true,
+                      "isLeadingZeroesOptional": false
+                    },
+                    "searchIn": {
+                      "l": "50%",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "end": {
+                    "pattern": {
+                      "type": "text",
+                      "value": "JOINT PACKAGE COURSE",
+                      "isCaseSensitive": true
+                    },
+                    "searchIn": {
+                      "l": "0",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "crop": {
+                    "within": {
+                      "t": "0",
+                      "b": "100%"
+                    },
+                    "exactlyTo": {
+                      "r": "100%"
+                    },
+                    "offsetBy": {
+                      "l": -3,
+                      "r": -4,
+                      "t": -2,
+                      "b": 2
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Chemistry": {
+        "start": {
+          "pattern": {
+            "type": "regex",
+            "value": "part\\s*[-‐‒–—―﹣－]\\s*(?:(?:ii)|[b2])\\s*:\\s*chem",
+            "isCaseSensitive": false
+          },
+          "searchIn": {
+            "pages": "1-L",
+            "area": {
+              "l": "0",
+              "r": "100%",
+              "t": "0",
+              "b": "100%"
+            }
+          }
+        },
+        "sections": {
+          "Chemistry Section 1": {
+            "pattern": {
+              "type": "regex",
+              "value": "section\\s*[-‐‒–—―﹣－]\\s*[ia1]",
+              "isCaseSensitive": false
+            },
+            "searchIn": {
+              "pages": "1-L",
+              "area": {
+                "l": "0",
+                "r": "100%",
+                "t": "0",
+                "b": "100%"
+              }
+            },
+            "numOfOptionalQuestions": 0,
+            "questions": {
+              "pages": "1-L",
+              "details": {
+                "type": "mcq",
+                "answerOptions": "4",
+                "marks": {
+                  "cm": 4,
+                  "im": -1
+                }
+              },
+              "forBottomCoordinateUseBottom": [
+                "text",
+                "vector",
+                "image"
+              ],
+              "forTopCoordinateLookUp": {
+                "by": 1,
+                "chainBy": 1,
+                "for": [
+                  "image",
+                  "vector",
+                  "text"
+                ]
+              },
+              "obtainedQuestionNum": {
+                "nextQNumMustBeOneNumGreater": true,
+                "whenDuplicate": "ignore"
+              },
+              "columns": [
+                {
+                  "start": {
+                    "pattern": {
+                      "type": "text",
+                      "prefix": "",
+                      "questionRange": "1-90",
+                      "suffix": ".",
+                      "isCaseSensitive": true,
+                      "isLeadingZeroesOptional": false
+                    },
+                    "searchIn": {
+                      "l": "50%",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "end": {
+                    "pattern": {
+                      "type": "text",
+                      "value": "JOINT PACKAGE COURSE",
+                      "isCaseSensitive": true
+                    },
+                    "searchIn": {
+                      "l": "0",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "crop": {
+                    "within": {
+                      "t": "0",
+                      "b": "100%"
+                    },
+                    "exactlyTo": {
+                      "r": "100%"
+                    },
+                    "offsetBy": {
+                      "l": -3,
+                      "r": -4,
+                      "t": -2,
+                      "b": 2
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "Chemistry Section 2": {
+            "pattern": {
+              "type": "regex",
+              "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:(?:ii)|[b2])",
+              "isCaseSensitive": false
+            },
+            "searchIn": {
+              "pages": "1-L",
+              "area": {
+                "l": "0",
+                "r": "100%",
+                "t": "0",
+                "b": "100%"
+              }
+            },
+            "numOfOptionalQuestions": 5,
+            "questions": {
+              "pages": "1-L",
+              "details": {
+                "type": "nat",
+                "marks": {
+                  "cm": 4,
+                  "im": -1
+                }
+              },
+              "forBottomCoordinateUseBottom": [
+                "text",
+                "vector",
+                "image"
+              ],
+              "forTopCoordinateLookUp": {
+                "by": 1,
+                "chainBy": 1,
+                "for": [
+                  "image",
+                  "vector",
+                  "text"
+                ]
+              },
+              "obtainedQuestionNum": {
+                "nextQNumMustBeOneNumGreater": true,
+                "whenDuplicate": "ignore"
+              },
+              "columns": [
+                {
+                  "start": {
+                    "pattern": {
+                      "type": "text",
+                      "prefix": "",
+                      "questionRange": "1-90",
+                      "suffix": ".",
+                      "isCaseSensitive": true,
+                      "isLeadingZeroesOptional": false
+                    },
+                    "searchIn": {
+                      "l": "50%",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "end": {
+                    "pattern": {
+                      "type": "text",
+                      "value": "JOINT PACKAGE COURSE",
+                      "isCaseSensitive": true
+                    },
+                    "searchIn": {
+                      "l": "0",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "crop": {
+                    "within": {
+                      "t": "0",
+                      "b": "100%"
+                    },
+                    "exactlyTo": {
+                      "r": "100%"
+                    },
+                    "offsetBy": {
+                      "l": -3,
+                      "r": -4,
+                      "t": -2,
+                      "b": 2
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Mathematics": {
+        "start": {
+          "pattern": {
+            "type": "regex",
+            "value": "part\\s*[-‐‒–—―﹣－]\\s*(?:(?:iii)|[c3])\\s*:\\s*math",
+            "isCaseSensitive": false
+          },
+          "searchIn": {
+            "pages": "1-L",
+            "area": {
+              "l": "0",
+              "r": "100%",
+              "t": "0",
+              "b": "100%"
+            }
+          }
+        },
+        "sections": {
+          "Mathematics Section 1": {
+            "pattern": {
+              "type": "regex",
+              "value": "section\\s*[-‐‒–—―﹣－]\\s*[ia1]",
+              "isCaseSensitive": false
+            },
+            "searchIn": {
+              "pages": "1-L",
+              "area": {
+                "l": "0",
+                "r": "100%",
+                "t": "0",
+                "b": "100%"
+              }
+            },
+            "numOfOptionalQuestions": 0,
+            "questions": {
+              "pages": "1-L",
+              "details": {
+                "type": "mcq",
+                "answerOptions": "4",
+                "marks": {
+                  "cm": 4,
+                  "im": -1
+                }
+              },
+              "forBottomCoordinateUseBottom": [
+                "text",
+                "vector",
+                "image"
+              ],
+              "forTopCoordinateLookUp": {
+                "by": 1,
+                "chainBy": 1,
+                "for": [
+                  "image",
+                  "vector",
+                  "text"
+                ]
+              },
+              "obtainedQuestionNum": {
+                "nextQNumMustBeOneNumGreater": true,
+                "whenDuplicate": "ignore"
+              },
+              "columns": [
+                {
+                  "start": {
+                    "pattern": {
+                      "type": "text",
+                      "prefix": "",
+                      "questionRange": "1-90",
+                      "suffix": ".",
+                      "isCaseSensitive": true,
+                      "isLeadingZeroesOptional": false
+                    },
+                    "searchIn": {
+                      "l": "50%",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "end": {
+                    "pattern": {
+                      "type": "text",
+                      "value": "JOINT PACKAGE COURSE",
+                      "isCaseSensitive": true
+                    },
+                    "searchIn": {
+                      "l": "0",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "crop": {
+                    "within": {
+                      "t": "0",
+                      "b": "100%"
+                    },
+                    "exactlyTo": {
+                      "r": "100%"
+                    },
+                    "offsetBy": {
+                      "l": -3,
+                      "r": -4,
+                      "t": -2,
+                      "b": 2
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "Mathematics Section 2": {
+            "pattern": {
+              "type": "regex",
+              "value": "section\\s*[-‐‒–—―﹣－]\\s*(?:(?:ii)|[b2])",
+              "isCaseSensitive": false
+            },
+            "searchIn": {
+              "pages": "1-L",
+              "area": {
+                "l": "0",
+                "r": "100%",
+                "t": "0",
+                "b": "100%"
+              }
+            },
+            "numOfOptionalQuestions": 5,
+            "questions": {
+              "pages": "1-L",
+              "details": {
+                "type": "nat",
+                "marks": {
+                  "cm": 4,
+                  "im": -1
+                }
+              },
+              "forBottomCoordinateUseBottom": [
+                "text",
+                "vector",
+                "image"
+              ],
+              "forTopCoordinateLookUp": {
+                "by": 1,
+                "chainBy": 1,
+                "for": [
+                  "image",
+                  "vector",
+                  "text"
+                ]
+              },
+              "obtainedQuestionNum": {
+                "nextQNumMustBeOneNumGreater": true,
+                "whenDuplicate": "ignore"
+              },
+              "columns": [
+                {
+                  "start": {
+                    "pattern": {
+                      "type": "text",
+                      "prefix": "",
+                      "questionRange": "1-90",
+                      "suffix": ".",
+                      "isCaseSensitive": true,
+                      "isLeadingZeroesOptional": false
+                    },
+                    "searchIn": {
+                      "l": "50%",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "end": {
+                    "pattern": {
+                      "type": "text",
+                      "value": "JOINT PACKAGE COURSE",
+                      "isCaseSensitive": true
+                    },
+                    "searchIn": {
+                      "l": "0",
+                      "r": "100%",
+                      "t": "0",
+                      "b": "100%"
+                    }
+                  },
+                  "crop": {
+                    "within": {
+                      "t": "0",
+                      "b": "100%"
+                    },
+                    "exactlyTo": {
+                      "r": "100%"
+                    },
+                    "offsetBy": {
+                      "l": -3,
+                      "r": -4,
+                      "t": -2,
+                      "b": 2
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
