@@ -16,7 +16,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: {
-        'class': 'dark',
+        'class': 'dark overflow-hidden',
         'data-theme-variant': 'blue',
         'lang': 'en',
       },
