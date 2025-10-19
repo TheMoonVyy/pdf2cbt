@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.28.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.27.0...v1.28.0) (2025-10-19)
+
+
+### Features
+
+* **pattern-cropper-configs:** add configs for allen dlp format for jee mains old and new format ([a5a5e0b](https://github.com/TheMoonVyy/pdf2cbt/commit/a5a5e0ba31f96aba5493fda6e8f673ab9ef6f2e1))
+
+
+### Bug Fixes
+
+* **pdf-cropper:** fix saveas dialog of pattern mode not loading existing name to name input box ([48ddaee](https://github.com/TheMoonVyy/pdf2cbt/commit/48ddaee6f78094065cefd9fcd19a07d74837cb27))
+
 ## [1.27.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.26.0...v1.27.0) (2025-10-16)
 
 
