@@ -8,7 +8,7 @@
           Manage Pattern Configs
         </UiDialogTitle>
         <UiDialogDescription class="text-center">
-          Select pattern config(s) to export/delete.<br>
+          Select pattern config(s) to export/delete.
           Select only 1 to rename it.
         </UiDialogDescription>
       </UiDialogHeader>
@@ -18,7 +18,7 @@
           <BaseSimpleFileUpload
             class="flex flex-col"
             accept="application/json,.json"
-            label="Import Config(s)"
+            label="Import"
             invalid-file-type-message="Please select a valid JSON file containing Configs."
             :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:download'"
             @upload="importConfigs"
@@ -26,27 +26,25 @@
           <!-- Export Button -->
           <BaseButton
             class="col-span-2 sm:col-span-1"
-            label="Export Config(s)"
+            label="Export"
             variant="help"
             icon-name="prime:upload"
             :disabled="selectedIds.size === 0"
             @click="exportConfigs"
           />
-        </div>
-        <div class="flex gap-5 items-center">
           <BaseButton
-            label="Rename Config"
-            variant="warn"
-            icon-name="material-symbols:edit-square-outline"
-            :disabled="selectedIds.size !== 1"
-            @click="showRenameInput"
-          />
-          <BaseButton
-            label="Delete Config(s)"
+            label="Delete"
             variant="destructive"
             icon-name="material-symbols:edit-square-outline"
             :disabled="!selectedIds.size"
             @click="showDeleteConfirm = true"
+          />
+          <BaseButton
+            label="Rename"
+            variant="warn"
+            icon-name="material-symbols:edit-square-outline"
+            :disabled="selectedIds.size !== 1"
+            @click="showRenameInput"
           />
         </div>
       </div>
@@ -75,7 +73,7 @@
         />
       </div>
 
-      <!-- Confirm Delete Config(s) -->
+      <!-- Confirm Delete -->
       <div
         v-if="showDeleteConfirm"
         class="flex flex-col gap-2 items-center my-3"
@@ -103,10 +101,10 @@
       </div>
 
       <UiScrollArea
-        class="max-h-[80dvh] px-6"
+        class="max-h-[50dvh] px-6"
         type="auto"
       >
-        <div class="flex flex-col w-full my-2">
+        <div class="flex flex-col w-full my-2 gap-1.5">
           <p class="hidden last:block text-center text-lg w-full my-2">
             No pattern configs found in your database.
           </p>
@@ -114,7 +112,7 @@
             v-for="config in [...configs.values()].reverse()"
             :key="config.id"
             class="p-1.5 border border-border rounded-sm
-              hover:bg-green-500/10 cursor-pointer select-none text-lg text-center"
+              hover:bg-green-500/10 cursor-pointer select-none text-base text-center"
             :class="selectedIds.has(config.id)
               ? 'bg-green-500/30 hover:bg-green-500/30 shadow-lg'
               : ''"

@@ -9,7 +9,7 @@
       <UiCardContent class="flex flex-col gap-5 justify-center grow px-2">
         <UiCombobox
           v-model="selectedPatternModeConfig"
-          class="w-full"
+          class="max-w-full"
           by="id"
           :disabled="isConfigLoaded"
         >
@@ -25,44 +25,50 @@
               />
             </UiComboboxTrigger>
           </UiComboboxAnchor>
+          <ComboboxContent>
+            <UiComboboxList class="w-full max-w-lg">
+              <div class="flex items-center w-full [&>div]:data-[slot=command-input-wrapper]:w-full">
+                <UiComboboxInput
+                  class="pl-2 grow focus-visible:ring-0 border-0 border-b rounded-none h-10"
+                  placeholder="Search for pattern config..."
+                />
+              </div>
 
-          <UiComboboxList class="w-full max-w-md">
-            <div class="flex items-center w-full">
-              <UiComboboxInput
-                class="pl-2 focus-visible:ring-0 border-0 border-b rounded-none h-10"
-                placeholder="Search for config..."
-              />
-            </div>
+              <UiComboboxEmpty>
+                No config found with that name.
+              </UiComboboxEmpty>
 
-            <UiComboboxEmpty>
-              No config found with that name.
-            </UiComboboxEmpty>
-
-            <UiComboboxGroup>
-              <UiComboboxItem
-                v-for="config in configsList"
-                :key="config.id"
-                :value="config"
-                class="cursor-pointer"
+              <UiScrollArea
+                viewport-class="[&>div]:max-h-64"
+                type="auto"
               >
-                <span
-                  :class="{
-                    'text-yellow-400': config.id <= 0,
-                  }"
-                >
-                  {{ config.name }}
-                </span>
+                <UiComboboxGroup>
+                  <UiComboboxItem
+                    v-for="config in configsList"
+                    :key="config.id"
+                    :value="config"
+                    class="cursor-pointer"
+                  >
+                    <span
+                      :class="{
+                        'text-yellow-400': config.id <= 0,
+                      }"
+                    >
+                      {{ config.name }}
+                    </span>
 
-                <UiComboboxItemIndicator class="flex items-center justify-center">
-                  <Icon
-                    name="material-symbols:check-rounded"
-                    class="ml-auto h-4 w-4"
-                    size="1rem"
-                  />
-                </UiComboboxItemIndicator>
-              </UiComboboxItem>
-            </UiComboboxGroup>
-          </UiComboboxList>
+                    <UiComboboxItemIndicator class="flex items-center justify-center">
+                      <Icon
+                        name="material-symbols:check-rounded"
+                        class="ml-auto h-4 w-4"
+                        size="1rem"
+                      />
+                    </UiComboboxItemIndicator>
+                  </UiComboboxItem>
+                </UiComboboxGroup>
+              </UiScrollArea>
+            </UiComboboxList>
+          </ComboboxContent>
         </UiCombobox>
         <div class="flex gap-3 items-center justify-center">
           <BaseButton
@@ -209,6 +215,7 @@ import type { PatternBasedCropFn } from '#layers/shared/app/src/worker/text-patt
 import { wrap as comlinkWrap } from 'comlink'
 import patternBasedCropperWorker from '#layers/shared/app/src/worker/text-pattern-based-crop.worker?worker'
 import ManageConfigs from './ManageConfigs.client.vue'
+import { ComboboxContent } from 'reka-ui'
 
 type ConfigsListItem = MakePropertyOptional<PatternModeBuiltInConfig, 'url'>
 type OptionalQuestions = NonNullable<PdfCropperJsonOutput['testConfig']['optionalQuestions']>
