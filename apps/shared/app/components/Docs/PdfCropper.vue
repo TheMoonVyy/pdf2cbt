@@ -336,8 +336,24 @@
           </UiAccordionContent>
         </UiAccordionItem>
 
-        <!-- Bulk Edit -->
+        <!-- Text Pattern Based Cropper -->
         <UiAccordionItem value="5">
+          <UiAccordionTrigger>
+            Text Pattern Based Cropper
+          </UiAccordionTrigger>
+          <UiAccordionContent>
+            <div class="text-center mx-auto leading-[2rem] text-lg">
+              Please refer to <NuxtLink
+                to="/updates?v=1.27.0"
+                class="underline text-green-400"
+                target="_blank"
+              >release notes</NuxtLink> of text pattern based cropper.
+            </div>
+          </UiAccordionContent>
+        </UiAccordionItem>
+
+        <!-- Bulk Edit -->
+        <UiAccordionItem value="6">
           <UiAccordionTrigger>
             Bulk Edit (Includes Optional Questions)
           </UiAccordionTrigger>
@@ -417,7 +433,7 @@
         </UiAccordionItem>
 
         <!-- Context menus and keyboard shortcuts -->
-        <UiAccordionItem value="6">
+        <UiAccordionItem value="7">
           <UiAccordionTrigger>
             Context menus and keyboard shortcuts
           </UiAccordionTrigger>
@@ -509,7 +525,7 @@
           </UiAccordionContent>
         </UiAccordionItem>
 
-        <UiAccordionItem value="7">
+        <UiAccordionItem value="8">
           <UiAccordionTrigger>
             Dealing with some special/weird question formats
           </UiAccordionTrigger>
@@ -655,7 +671,7 @@
 import Image1 from '#layers/shared/app/assets/images/pdf-cropper/docs-image-1.svg?no-inline'
 import Image2 from '#layers/shared/app/assets/images/pdf-cropper/docs-image-2.svg?no-inline'
 
-const { expandedValues = ['3'] } = defineProps<{
+const { expandedValues = ['3', '5'] } = defineProps<{
   expandedValues?: string[]
 }>()
 
