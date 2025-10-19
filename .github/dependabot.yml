@@ -1,53 +1,57 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: /
-    schedule:
-      interval: "weekly"
-      day: sunday
-      time: "00:00"
+- package-ecosystem: "npm"
+  directory: /
+  schedule:
+    interval: "weekly"
+    day: sunday
+    time: "00:00"
 
-    versioning-strategy: increase
-    rebase-strategy: disabled
-    open-pull-requests-limit: 20
+  versioning-strategy: increase
+  rebase-strategy: disabled
+  open-pull-requests-limit: 20
 
-    groups:
-      nuxt:
-        patterns:
-          - "nuxt"
-          - "@nuxt/*"
-          - "@nuxtjs/*"
-          - "nuxt-*"
-        exclude-patterns:
-          - "@nuxt/eslint"
-          - "@nuxtjs/tailwindcss"
-      tailwind:
-        patterns:
-          - "tailwindcss"
-          - "@tailwindcss/*"
-          - "@nuxtjs/tailwindcss"
-          - "tw-animate-css"
-          - "tailwind-merge"
-      vue:
-        patterns:
-          - "vue"
-          - "vue-router"
-          - "@vueuse/*"
-      ui:
-        patterns:
-          - "shadcn-nuxt"
-          - "class-variance-authority"
-          - "reka-ui"
-          - "vue-sonner"
-          - "lucide-vue-next"
-      dev:
-        patterns:
-          - "@iconify-json/*"
-          - "@types/*"
-          - "@nuxt/eslint"
-          - "eslint"
+  groups:
+    nuxt:
+      patterns:
+      - "nuxt"
+      - "@nuxt/*"
+      - "@nuxtjs/*"
+      - "nuxt-*"
+      exclude-patterns:
+      - "@nuxt/eslint"
+      - "@nuxtjs/tailwindcss"
+    tailwind:
+      patterns:
+      - "tailwindcss"
+      - "@tailwindcss/*"
+      - "@nuxtjs/tailwindcss"
+      - "tw-animate-css"
+      - "tailwind-merge"
+    vue:
+      patterns:
+      - "vue"
+      - "vue-router"
+      - "@vueuse/*"
+    regle:
+      patterns:
+      - "@regle/*"
+    ui:
+      patterns:
+      - "shadcn-nuxt"
+      - "class-variance-authority"
+      - "reka-ui"
+      - "vue-sonner"
+      - "lucide-vue-next"
+    dev:
+      patterns:
+      - "@iconify-json/*"
+      - "@types/*"
+      - "@nuxt/eslint"
+      - "eslint"
+      - "zod"
 
-    ignore:
-      - dependency-name: "@types/node"
-        update-types:
-          - version-update:semver-major
+  ignore:
+  - dependency-name: "@types/node"
+    update-types:
+    - version-update:semver-major
