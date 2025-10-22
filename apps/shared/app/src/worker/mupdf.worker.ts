@@ -46,7 +46,7 @@ export class MuPdfProcessor {
           break
         }
         catch (err) {
-          console.error(`Error importing mupdf from url No. ${i + 1}:`, err)
+          console.error(`Error importing mupdf from url no. ${i + 1}:`, err)
         }
       }
     }
@@ -114,6 +114,18 @@ export class MuPdfProcessor {
       }
     }
 
+    const sTextBaseOptions = [
+      'preserve-images',
+      'vectors',
+      'ignore-actualtext',
+      'clip',
+      'accurate-bbox',
+    ]
+    if (!settings.calculateCharacterBoundariesPrecisely)
+      sTextBaseOptions.pop()
+
+    const sTextBaseOptionsStr = sTextBaseOptions.join(',')
+
     const pdfPagesPatternModeData: PdfPagesPatternModeData = {}
     for (const pageNum of pageNums) {
       const page = this.doc.loadPage(pageNum - 1)
@@ -121,15 +133,10 @@ export class MuPdfProcessor {
       const pageWidth = Math.abs(pageMaxX - pageMinX)
       const pageHeight = Math.abs(pageMaxY - pageMinY)
 
-      const sTextOptions = [
-        'preserve-images',
-        'vectors',
-        'ignore-actualtext',
-        `clip-rect=${pageMinX}:${pageMinY}:${pageMaxX}:${pageMaxY}`,
-        'clip',
-      ] as const
+      const sTextOptionsStr = sTextBaseOptionsStr
+        + `,clip-rect=${pageMinX}:${pageMinY}:${pageMaxX}:${pageMaxY}`
 
-      const sText = page.toStructuredText(sTextOptions.join(','))
+      const sText = page.toStructuredText(sTextOptionsStr)
 
       const pageChars: PageTextChar[] = []
       const pageImagesAreaCoords: PdfPagesPatternModeData[number]['images'] = []

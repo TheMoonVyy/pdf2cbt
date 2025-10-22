@@ -494,3 +494,45 @@ export const questionsCropWithinTooltipContent = () => h('div', { class: 'space-
     'the header and footer are excluded from being considered in crop related calculations.',
   ]),
 ])
+
+export const yCoordinateGroupingRangeForLineTooltipContent = () => h('div', { class: 'space-y-2' }, [
+  h('p', [
+    'This is the ',
+    h('strong', 'maximum vertical range'),
+    ' (in PDF units) for line grouping.',
+  ]),
+  h('p', [
+    'It specifies how far apart two characters\' Y-midpoints ',
+    '(the average of its top and bottom Y coordinates) can be ',
+    'and still be grouped into the same visual line of text.',
+  ]),
+])
+
+export const calculateCharacterBoundariesPreciselyTooltipContent = () => h('div', { class: 'space-y-2' }, [
+  h('p', [
+    'This option affects how accurately the tool determines the ',
+    h('strong', 'size and position'),
+    ' of every characters.',
+  ]),
+
+  h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+    h('li', [
+      h('strong', 'When Enabled (Precise)'),
+      ': The boundaries for each character are calculated ',
+      'very precisely (by analyzing outline of their shape).',
+      h('br'),
+      'High precision can introduce tiny vertical offsets that may ',
+      'cause characters to be incorrectly separated into different lines ',
+      'if your Y-coordinate grouping range is set too low.',
+      h('br'),
+      'Use this only when lines are too close to each other.',
+    ]),
+    h('li', [
+      h('strong', 'When Disabled (Faster)'),
+      ': The boundaries are calculated using a faster, simpler method ',
+      'and usually provides better line grouping.',
+      h('br'),
+      'This is recommended unless lines in your pdf are too close to each other.',
+    ]),
+  ]),
+])

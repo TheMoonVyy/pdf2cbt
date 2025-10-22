@@ -227,6 +227,7 @@ export function getConfigFormDataFromJson(patternModeConfig: PatternModeConfigJs
   return {
     settings: {
       ...settings,
+      calculateCharacterBoundariesPrecisely: !!settings.calculateCharacterBoundariesPrecisely,
       linesToIgnore,
     },
     subjects: getSubjectsData(subjects),
