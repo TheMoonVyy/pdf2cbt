@@ -8,6 +8,10 @@ import type {
 import {
   getSubjectData,
 } from '#layers/shared/app/src/pdf-cropper-pattern-mode/json-config-to-form-data'
+import {
+  yCoordinateGroupingRangeForLineTooltipContent,
+  calculateCharacterBoundariesPreciselyTooltipContent,
+} from '../tooltipContents'
 
 const { form } = usePatternModeFormData()
 
@@ -212,6 +216,20 @@ function addNewSubjectFromCurrentConfig(subjectIdx: number) {
                 />
               </div>
               <div class="flex items-center gap-3">
+                <IconWithTooltip :content="calculateCharacterBoundariesPreciselyTooltipContent" />
+                <UiLabel
+                  class="text-lg cursor-pointer"
+                  for="accurate-bbox"
+                >
+                  Calculate Character Boundaries Precisely:
+                </UiLabel>
+                <UiSwitch
+                  id="accurate-bbox"
+                  v-model="form!.settings.calculateCharacterBoundariesPrecisely"
+                />
+              </div>
+              <div class="flex items-center gap-3">
+                <IconWithTooltip :content="yCoordinateGroupingRangeForLineTooltipContent" />
                 <UiLabel
                   class="text-lg"
                   for="y-coordinate-grouping-range-switch"

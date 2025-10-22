@@ -277,6 +277,7 @@ const subjectSchema = z.union([
 const settingsSchema = z.strictObject({
   yCoordinateGroupingRangeForLine: z.number().nonnegative(),
   ignoreElementsGoingOutsidePage: z.boolean(),
+  calculateCharacterBoundariesPrecisely: z.boolean().optional(),
   linesToIgnore: z.array(regexOrTextPatternSchema).optional(),
 })
 

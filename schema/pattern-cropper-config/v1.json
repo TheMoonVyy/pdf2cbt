@@ -15,6 +15,9 @@
             "ignoreElementsGoingOutsidePage": {
               "type": "boolean"
             },
+            "calculateCharacterBoundariesPrecisely": {
+              "type": "boolean"
+            },
             "linesToIgnore": {
               "type": "array",
               "items": {
@@ -533,7 +536,7 @@
                           "questionRange": {
                             "type": "string",
                             "minLength": 3,
-                            "pattern": "^(?<min>\\d+)\\s{0,3}-\\s{0,3}(?<max>\\d+)$"
+                            "pattern": "^(?<start>\\d+)\\s{0,3}-\\s{0,3}(?<end>\\d+)$"
                           },
                           "suffix": {
                             "type": "string"
