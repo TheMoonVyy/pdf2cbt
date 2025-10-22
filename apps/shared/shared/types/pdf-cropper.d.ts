@@ -25,7 +25,6 @@ export type PdfCropperSettings = {
     blurIntensity: number
     showQuestionDetailsOnOverlay: boolean
     allowResizingPanels: boolean
-    showInfoTooltipsForPatternMode: boolean
   }
 }
 

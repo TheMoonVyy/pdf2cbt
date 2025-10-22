@@ -2,34 +2,51 @@
   <UiDialog
     v-model:open="visibility"
   >
-    <UiDialogContent class="max-w-md">
+    <UiDialogContent class="max-w-md gap-3">
       <UiDialogHeader>
         <UiDialogTitle class="mx-auto">
-          Test Answer Key Data is Not Found!
+          {{
+            isForReevaluation
+              ? 'Re-evaluate Test Results'
+              : 'Test Answer Key Data is Not Found!'
+          }}
         </UiDialogTitle>
       </UiDialogHeader>
 
       <span class="text-center">
-        Test Answer Key Data was not found for this test:
+        {{ isForReevaluation
+          ? 'The test you want to re-evaluate is:'
+          : 'Test Answer Key Data was not found for this test:'
+        }}
       </span>
-      <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
+      <div class="flex flex-row justify-center flex-wrap gap-6 p-2 sm:px-4 md:px-8">
         <CbtResultsOverviewCard
           :test-result-overview="testResultOverview!"
           read-only
         />
       </div>
       <span class="m-2">
-        You can load it now or if you don't have it then go to
+        You can load the answer key data below or if you don't have it then click on
         <span class="text-green-500 font-bold underline">
-          <NuxtLink to="/cbt/generate-answer-key">Generate Answer Key</NuxtLink>
+          <NuxtLink
+            :to="{
+              path: '/cbt/generate-answer-key',
+              query: testId ? { test_id: testId } : undefined,
+            }"
+            target="_blank"
+          >Generate Answer Key</NuxtLink>
         </span>
-        page to generate one.
+        to create one (this will open generate answer key page and load this test).
       </span>
-      <span class="mt-2">
+
+      <span
+        v-if="!isForReevaluation"
+        class="mt-2 mb-2"
+      >
         After that you can come back here just to be greeted by this same message again and
         then load the file to check results for your test!
       </span>
-      <div class="flex my-5 mx-auto justify-center">
+      <div class="flex mb-3 mx-auto justify-center">
         <BaseSimpleFileUpload
           accept="application/json,application/zip,.json,.zip"
           :label="'Select Answer Key Data'"
@@ -55,6 +72,8 @@ const emit = defineEmits<{
 
 defineProps<{
   testResultOverview: TestResultOverview
+  isForReevaluation?: boolean
+  testId?: number
 }>()
 
 const emitData = (data: TestAnswerKeyJsonData) => {
@@ -63,18 +82,29 @@ const emitData = (data: TestAnswerKeyJsonData) => {
 }
 
 async function handleFileUpload(file: File) {
-  const zipCheckStatus = await utilIsZipFile(file)
-  if (zipCheckStatus > 0) {
-    const data = await utilUnzipTestDataFile(file, 'json-only')
-    if ('testAnswerKey' in (data.jsonData || {})) {
-      emitData(data.jsonData as TestAnswerKeyJsonData)
+  try {
+    const zipCheckStatus = await utilIsZipFile(file)
+    if (zipCheckStatus > 0) {
+      const data = await utilUnzipTestDataFile(file, 'json-only')
+      if ('testAnswerKey' in (data.jsonData || {})) {
+        emitData(data.jsonData as TestAnswerKeyJsonData)
+      }
+      else {
+        useErrorToast('Selected ZIP file does not contain Answer Key data (testAnswerKey).')
+      }
+    }
+    else {
+      const data = await utilParseJsonFile(file)
+      if (data?.testAnswerKey) {
+        emitData(data)
+      }
+      else {
+        useErrorToast('Selected JSON file does not contain Answer Key data (testAnswerKey).')
+      }
     }
   }
-  else {
-    const data = await utilParseJsonFile(file)
-    if (data.testAnswerKey) {
-      emitData(data)
-    }
+  catch (err) {
+    useErrorToast('Failed to load Answer Key Data file:', err)
   }
 }
 </script>

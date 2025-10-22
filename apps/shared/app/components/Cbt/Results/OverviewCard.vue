@@ -110,7 +110,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  menuBtnClick: [buttonEvent: MouseEvent]
+  menuBtnClick: [buttonEvent: MouseEvent, isResultsGenerated: boolean]
   viewResultsBtnClick: [isResultsGenerated: boolean]
 }>()
 
@@ -125,7 +125,7 @@ const isResultsGenerated = computed(() => {
 })
 
 const menuBtnClickHandler = (e: MouseEvent) => {
-  emit('menuBtnClick', e)
+  emit('menuBtnClick', e, isResultsGenerated.value)
 }
 
 const viewResultsBtnClickHandler = () => {

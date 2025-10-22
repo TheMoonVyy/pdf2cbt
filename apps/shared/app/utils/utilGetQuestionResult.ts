@@ -3,7 +3,7 @@ type ValidQuestionResult = Omit<QuestionResult, 'status'> & { status: ValidQuest
 // function to evaluate a question and return QuestionResult
 export default (
   questionData: TestInterfaceQuestionData,
-  questionCorrectAnswer: TestAnswerKeyData[string][string][string],
+  questionCorrectAnswer: QuestionAnswer,
 ): ValidQuestionResult => {
   const { type, status, answer } = questionData
   const marks = {

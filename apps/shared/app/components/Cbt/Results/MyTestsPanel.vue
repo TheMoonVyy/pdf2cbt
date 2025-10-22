@@ -37,7 +37,8 @@
         :is-current-results-id="testResultOverview.id === currentResultsID"
         :test-result-overview="testResultOverview"
         class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-60"
-        @menu-btn-click="(e: MouseEvent) => cardMenuBarClickHandler(testResultOverview, e)"
+        @menu-btn-click="(e: MouseEvent, isResultsGenerated: boolean) =>
+          cardMenuBarClickHandler(testResultOverview, e, isResultsGenerated)"
         @view-results-btn-click="(bool) => viewResultsBtnHandler(bool, testResultOverview.id)"
       />
     </div>
@@ -64,7 +65,19 @@
             size="1.4rem"
             class="text-green-400"
           />
-          Rename test
+          Rename Test
+        </UiContextMenuItem>
+        <UiContextMenuSeparator />
+        <UiContextMenuItem
+          :disabled="!cardMenuState.isResultsGenerated"
+          @click="showReevaluateResultsDialog = true"
+        >
+          <Icon
+            name="mdi:file-document-refresh-outline"
+            size="1.3rem"
+            class="text-green-400"
+          />
+          Re-evaluate Results
         </UiContextMenuItem>
         <UiContextMenuSeparator />
         <UiContextMenuItem
@@ -138,10 +151,19 @@
         </UiDialogFooter>
       </UiDialogContent>
     </UiDialog>
+    <AnswerKeyDialog
+      v-if="cardMenuState.testResultOverview"
+      v-model="showReevaluateResultsDialog"
+      :test-result-overview="cardMenuState.testResultOverview"
+      :test-id="cardMenuState.currentID"
+      is-for-reevaluation
+      @upload="emit('reevaluateTestResults', cardMenuState.currentID, $event.testAnswerKey)"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
+import AnswerKeyDialog from './AnswerKeyDialog.vue'
 import { liveQuery } from 'dexie'
 
 const props = defineProps<{
@@ -151,6 +173,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   viewOrGenerateResultsClicked: [id: number, btnType: 'generate' | 'view']
   currentTestRenamed: [newName: string]
+  reevaluateTestResults: [id: number, answerKeyData: TestAnswerKeyData]
 }>()
 
 const currentResultsID = useCbtResultsCurrentID()
@@ -169,6 +192,7 @@ const showRenameTestDialogState = shallowReactive({
 })
 
 const showDeleteTestDialog = shallowRef(false)
+const showReevaluateResultsDialog = shallowRef(false)
 
 const db = useDB()
 
@@ -186,7 +210,6 @@ watchEffect((onCleanup) => {
       testResultOverviews.value = val
       isDataNotFoundInDB.value = val.length === 0
     },
-    error: undefined,
   })
 
   onCleanup(() => subscription.unsubscribe())
@@ -195,12 +218,20 @@ watchEffect((onCleanup) => {
 const cardMenuState = shallowReactive({
   currentID: 0,
   testName: '',
+  testResultOverview: null as TestResultOverviewDB | null,
+  isResultsGenerated: false,
 })
 
-const cardMenuBarClickHandler = (testResultOverview: TestResultOverviewDB, e: MouseEvent) => {
+const cardMenuBarClickHandler = (
+  testResultOverview: TestResultOverviewDB,
+  e: MouseEvent,
+  isResultsGenerated: boolean,
+) => {
   if (!contextMenuElem.value) return
   cardMenuState.currentID = testResultOverview.id
   cardMenuState.testName = testResultOverview.testName
+  cardMenuState.testResultOverview = testResultOverview
+  cardMenuState.isResultsGenerated = isResultsGenerated
 
   const event = new MouseEvent('contextmenu', {
     bubbles: true,
