@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.29.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.28.0...v1.29.0) (2025-10-22)
+
+
+### Features
+
+* **pdf-cropper:** add ability to enable calculating text character boundaries precisely for pattern cropper in config settings ([be569f5](https://github.com/TheMoonVyy/pdf2cbt/commit/be569f5cd4b4b1114751b57f6580d4d0bc4da4c3))
+* **results-page:** add ability to reevaluate results of a test with different answer key data ([6c07489](https://github.com/TheMoonVyy/pdf2cbt/commit/6c0748996b5c1f98bffab0862cfdd42932d83eec))
+
 ## [1.28.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.27.0...v1.28.0) (2025-10-19)
 
 
