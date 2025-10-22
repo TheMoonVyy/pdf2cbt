@@ -25,7 +25,11 @@ export type QuestionMsmAnswerType = {
 
 export type QuestionAnswer = number | number[] | string | null | QuestionMsmAnswerType | 'BONUS' | 'DROPPED'
 
-export type TestAnswerKeyData = GenericSubjectsTree<QuestionAnswer>
+export type TestAnswerKeyData = GenericSubjectsTree<{
+  type: QuestionType
+  answerOptions?: string
+  correctAnswer: QuestionAnswer
+}>
 
 export interface JsonOutput {
   appVersion: string
@@ -72,19 +76,25 @@ export interface PdfCropperJsonOutput extends JsonOutput {
 export interface AnswerKeyJsonOutputBasedOnPdfCropper
   extends Omit<PdfCropperJsonOutput, 'generatedBy'> {
   generatedBy: 'answerKeyPage'
-  generatedBasedOn: 'pdfCropperPage'
   testAnswerKey: TestAnswerKeyData
 }
 
 export interface AnswerKeyJsonOutputBasedOnTestInterface
   extends Omit<TestInterfaceJsonOutput, 'generatedBy'> {
   generatedBy: 'answerKeyPage'
-  generatedBasedOn: 'testInterfacePage'
+  testAnswerKey: TestAnswerKeyData
+}
+
+export interface AnswerKeyJsonOutputBasedOnTestResult
+  extends Omit<TestResultJsonOutput, 'generatedBy'> {
+  generatedBy: 'answerKeyPage'
   testAnswerKey: TestAnswerKeyData
 }
 
 export type AnswerKeyJsonOutput = AnswerKeyJsonOutputBasedOnPdfCropper
   | AnswerKeyJsonOutputBasedOnTestInterface
+  | AnswerKeyJsonOutputBasedOnTestResult
+  | { generatedBy: 'answerKeyPage', testAnswerKey: TestAnswerKeyData, appVersion: string }
 
 export type QuestionsImageUrls = {
   [queId: number | string]: string[]

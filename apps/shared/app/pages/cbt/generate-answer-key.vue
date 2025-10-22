@@ -35,7 +35,7 @@
           :disabled="dbTestOutputDataState.selectedTestResultOverviewIndex === null"
           icon-name="mdi:rocket-launch"
           icon-size="1.5rem"
-          @click="loadDataFromDB()"
+          @click="loadSelectedTestFromDB"
         />
         <BaseButton
           label="Upload file instead"
@@ -85,40 +85,20 @@
             />
           </div>
         </div>
-        <div class="flex flex-col">
-          <div class="flex mb-2 gap-3">
-            <label
-              class="font-bold"
-              for="questions_numbering_type"
-            >
-              Questions Numbering Order
-            </label>
-            <IconWithTooltip
-              :content="tooltipContent.questionsNumberingOrderType"
-            />
-          </div>
-          <div class="flex flex-col grow items-center gap-5">
-            <BaseSelect
-              id="questions_numbering_type"
-              v-model="settingsState.questionsOrder"
-              size="lg"
-              :options="QUESTIONS_NUMBERING_ORDER_OPTIONS"
-              class="w-4/5"
-            />
-            <BaseButton
-              label="Start"
-              label-class="text-lg"
-              class="my-auto"
-              size="lg"
-              icon-name="mdi:script-text-key-outline"
-              icon-size="1.6rem"
-              @click="showAnswerKeyMainBlock()"
-            />
-          </div>
+        <div class="flex flex-col grow items-center gap-5">
+          <BaseButton
+            label="Start"
+            label-class="text-lg"
+            class="my-auto"
+            size="lg"
+            icon-name="mdi:script-text-key-outline"
+            icon-size="1.6rem"
+            @click="showAnswerKeyMainBlock()"
+          />
         </div>
       </div>
       <div
-        v-else-if="subjectsData && currentPageData"
+        v-else-if="subjectsAnswerKeysData && currentPageData"
         class="flex flex-col gap-4 mt-3"
       >
         <h2 class="text-3xl font-bold text-center">
@@ -146,16 +126,12 @@
           </thead>
           <tbody class="divide-y divide-gray-300 text-center">
             <tr
-              v-for="(questionData, quesNum, index) in subjectsData[currentPageData.subject]?.[currentPageData.section]"
+              v-for="(questionData, quesNum, index) in subjectsAnswerKeysData[currentPageData.subject]?.[currentPageData.section]"
               :key="quesNum"
               class="divide-x divide-gray-300 sm:text-lg md:text-xl"
             >
               <td class="p-2 sm:p-3 md:px-4">
-                {{
-                  currentPageData.firstQuestionNum === null
-                    ? quesNum
-                    : currentPageData.firstQuestionNum + index + 1
-                }}
+                {{ quesNum }}
               </td>
               <td class="p-2 sm:p-3 md:px-4">
                 {{ formatQuestionTypeText(questionData) }}
@@ -164,8 +140,6 @@
                 <UiInput
                   :id="INPUT_ID_PREFIX + index"
                   v-model.trim="subjectsAnswerKeysData![currentPageData.subject]![currentPageData.section]![quesNum]!.inputAnswer"
-                  type="text"
-                  size="large"
                   :max-length="100"
                   class="text-center sm:text-base md:text-lg h-10
                     focus-visible:ring-1 focus-visible:border-green-500! focus-visible:ring-green-500!"
@@ -319,24 +293,24 @@
 import { zip, strToU8 } from 'fflate'
 import type { AsyncZippable } from 'fflate'
 import { DataFileNames } from '#layers/shared/shared/enums'
-import { QUESTIONS_NUMBERING_ORDER_OPTIONS } from '#layers/shared/shared/constants'
 
 type SectionListItem = TestSectionListItem & { totalQuestions: number }
 
 type QuestionAnswerKeyData = {
+  type: QuestionType
+  answerOptions: string
   inputAnswer: string
   savedAnswer: QuestionAnswer
 }
 
 type SubjectsAnswerKeysData = GenericSubjectsTree<QuestionAnswerKeyData>
 
-type SubjectsData = GenericSubjectsTree<CropperQuestionData | TestInterfaceQuestionData>
+type SubjectsData = GenericSubjectsTree<CropperQuestionData | TestInterfaceQuestionData | TestResultQuestionData>
 
 interface DBTestOutputDataState {
   isDataFound: boolean
   testResultOverviews: TestResultOverviewDB[]
   selectedTestResultOverviewIndex: number | null
-  isDataFromDB: boolean
 }
 
 useSeoMeta({
@@ -374,15 +348,11 @@ const tooltipContent = {
           h('strong', 'ZIP'),
           ': Merges Answer Key data into data.json file of loaded ZIP file. ',
           'The ZIP file will contain all existing data as it was in the loaded ZIP file. ',
-          'So you safely replace the input ZIP file with this new ZIP file.',
+          'So you can safely replace the input ZIP file with this new ZIP file.',
         ]),
         h('li', [
-          h('strong', 'JSON (merged)'),
-          ': Merges Answer Key data into the uploaded json file, preserving existing data.',
-        ]),
-        h('li', [
-          h('strong', 'JSON (separate)'),
-          ': JSON file will contain only the Answer Key Data.',
+          h('strong', 'JSON'),
+          ': JSON file containing the Answer Key data.',
         ]),
       ]),
     ]),
@@ -397,7 +367,6 @@ const dbTestOutputDataState = shallowReactive<DBTestOutputDataState>({
   isDataFound: false, // boolean to indicate if testResultOverviews without results generated is found or not
   testResultOverviews: [], // list of testResultOverviews without results generated
   selectedTestResultOverviewIndex: null,
-  isDataFromDB: false, // is data that is loaded (or being used) from db?
 })
 
 // if data to generate from is not found in db then
@@ -426,16 +395,11 @@ const sectionsState = reactive({
   currentPageSectionName: '',
 })
 
-let subjectsData: SubjectsData | null = null
-
-const subjectsAnswerKeysData = ref<SubjectsAnswerKeysData>({})
-
-// final output data that will be generated for json file
-const testAnswerKeyData: TestAnswerKeyData = {}
+const subjectsAnswerKeysData = ref<SubjectsAnswerKeysData | null>(null)
 
 const generateOutputState = shallowReactive({
   showDialog: false,
-  selectedFileType: 'json-merged',
+  selectedFileType: 'json' as 'zip' | 'json',
   filename: 'pdf2cbt_answer_key',
   preparingDownload: false,
   downloaded: false,
@@ -444,63 +408,36 @@ const generateOutputState = shallowReactive({
 const outputFileTypeOptions = computed(() => {
   const options = [
     { name: '.zip', value: 'zip' },
-    { name: '.json (merged)', value: 'json-merged' },
-    { name: '.json (separate)', value: 'json-separate' },
+    { name: '.json', value: 'json' },
   ]
 
-  if (fileUploaderState.unzippedFiles) {
-    return options
+  if (!fileUploaderState.unzippedFiles) {
+    options.shift()
   }
 
-  if (dbTestOutputDataState.isDataFromDB) {
-    return [options.at(-1)!]
-  }
-  else {
-    options.shift()
-    return options
-  }
+  return options
 })
 
 const currentPageData = computed(() => {
   let subjectName = ''
   const currentSectionName = currentPageSectionName.value
-  // zero based as x+1 is being done in template
-  // null to imply to use original numbering
-  let firstQuestionNum: number | null = 0
 
-  const questionsOrder = settingsState.questionsOrder
+  if (!subjectsAnswerKeysData.value) return
 
-  if (!subjectsData) return
-
-  if (questionsOrder === 'cumulative') {
-    for (const sectionItem of sectionsState.sectionsList) {
-      if (sectionItem.name === currentSectionName) {
-        subjectName = sectionItem.subject
-        break
-      }
-      else {
-        firstQuestionNum += sectionItem.totalQuestions
-      }
-    }
-  }
-  else {
-    for (const sectionItem of sectionsState.sectionsList) {
-      if (sectionItem.name === currentSectionName) {
-        subjectName = sectionItem.subject
-        break
-      }
-    }
-
-    if (questionsOrder === 'original') {
-      firstQuestionNum = null
+  for (const sectionItem of sectionsState.sectionsList) {
+    if (sectionItem.name === currentSectionName) {
+      subjectName = sectionItem.subject
+      break
     }
   }
 
-  const sectionTotalQuestions = Object.keys(subjectsData[subjectName]?.[currentSectionName] ?? {}).length
+  const sectionTotalQuestions = Object.keys(
+    subjectsAnswerKeysData.value[subjectName]?.[currentSectionName] ?? {},
+  ).length
+
   return {
     subject: subjectName,
     section: currentSectionName,
-    firstQuestionNum,
     sectionTotalQuestions,
   }
 })
@@ -556,7 +493,9 @@ const changeCurrentPage = (changeTo: 'prev' | 'next') => {
 }
 
 // for "Q. Type" column
-const formatQuestionTypeText = (questionData: CropperQuestionData | TestInterfaceQuestionData) => {
+const formatQuestionTypeText = (
+  questionData: Pick<CropperQuestionData, 'type' | 'answerOptions'>,
+) => {
   const questionType = questionData.type
   const questionTypeUpperCase = questionType.toUpperCase()
 
@@ -722,27 +661,6 @@ function parseInputAnswer(
   }
 }
 
-function loadFileData() {
-  const jsonData = fileUploaderState.jsonData
-  if (jsonData?.generatedBasedOn === 'testInterfacePage') {
-    subjectsData = jsonData?.testData ?? null
-  }
-  else if (jsonData?.generatedBasedOn === 'pdfCropperPage') {
-    subjectsData = jsonData?.pdfCropperData ?? null
-  }
-
-  if (subjectsData === null) {
-    useErrorToast('Error: Uploaded file is not in valid format')
-    return
-  }
-
-  if (fileUploaderState.unzippedFiles) {
-    generateOutputState.selectedFileType = 'zip'
-  }
-
-  loadDataState()
-}
-
 async function handleFileUpload(files: File | File[]) {
   try {
     const file = Array.isArray(files) ? files[0] : files
@@ -757,17 +675,38 @@ async function handleFileUpload(files: File | File[]) {
       fileUploaderState.jsonData = migrateJsonData.answerKeyData(await utilParseJsonFile(file))
     }
 
-    loadFileData()
+    const jsonData = fileUploaderState.jsonData
+    let subjectsData: SubjectsData | null = null
+    if ('testData' in jsonData) {
+      subjectsData = jsonData?.testData ?? null
+    }
+    else if ('pdfCropperData' in jsonData) {
+      subjectsData = jsonData?.pdfCropperData ?? null
+    }
+    else if ('testResultData' in jsonData) {
+      subjectsData = jsonData?.testResultData ?? null
+    }
+
+    if (subjectsData === null) {
+      useErrorToast('Error: Uploaded file is not in valid format')
+      return
+    }
+
+    if (fileUploaderState.unzippedFiles) {
+      generateOutputState.selectedFileType = 'zip'
+    }
+
+    loadDataState(subjectsData)
   }
   catch (err) {
     useErrorToast('Error while handling file upload', err)
   }
 }
 
-function loadDataState() {
+function loadDataState(subjectsData: SubjectsData) {
   if (!subjectsData) return
 
-  const existingTestAnswerKey = fileUploaderState.jsonData?.testAnswerKey || {}
+  const existingTestAnswerKey = fileUploaderState.jsonData?.testAnswerKey
 
   const stringifyAnswerSeparators = {
     mcq: ', ',
@@ -780,32 +719,78 @@ function loadDataState() {
     },
   }
 
-  for (const [subject, sectionData] of Object.entries(subjectsData)) {
-    subjectsAnswerKeysData.value[subject] ??= {}
+  const entries = existingTestAnswerKey
+    ? Object.entries(existingTestAnswerKey)
+    : Object.entries(subjectsData)
 
-    for (const [sectionName, questionsData] of Object.entries(sectionData)) {
+  type SubjectEntries = Array<[
+    string,
+    CropperSectionsData[string]
+    | TestInterfaceSectionData
+    | TestResultSectionData
+    | TestAnswerKeyData[string][string],
+  ]>
+
+  type SectionEntries = Array<[
+    string,
+    CropperQuestionData
+    | TestInterfaceQuestionData
+    | TestResultQuestionData
+    | TestAnswerKeyData[string][string][string],
+  ]>
+
+  const newSubjectsAnswerKeyData: SubjectsAnswerKeysData = {}
+  for (const [subject, subjectData] of entries) {
+    newSubjectsAnswerKeyData[subject] ??= {}
+
+    for (const [section, sectionData] of Object.entries(subjectData) as SubjectEntries) {
       const sectionListItem: SectionListItem = {
         subject,
-        name: sectionName,
-        totalQuestions: Object.keys(questionsData).length,
+        name: section,
+        totalQuestions: Object.keys(sectionData).length,
         id: 0, // initial, proper id is being set below
       }
       sectionsState.sectionsList.push(sectionListItem)
 
-      subjectsAnswerKeysData.value[subject][sectionName] ??= {}
+      newSubjectsAnswerKeyData[subject][section] ??= {}
 
-      for (const [question, questionData] of Object.entries(questionsData)) {
-        // load existing testAnswerKey if present in loaded json data
-        const savedAnswer = existingTestAnswerKey?.[subject]?.[sectionName]?.[question] ?? null
+      for (const [question, questionData] of Object.entries(sectionData) as SectionEntries) {
+        const { type, answerOptions } = questionData
 
-        const answerText = utilStringifyAnswer(savedAnswer, questionData.type, true, stringifyAnswerSeparators)
+        const savedAnswer = 'correctAnswer' in questionData
+          ? (questionData.correctAnswer ?? null)
+          : 'result' in questionData
+            ? (questionData.result.correctAnswer ?? null)
+            : null
 
-        const inputAnswer = answerText === 'null' ? '' : answerText
-        subjectsAnswerKeysData.value[subject][sectionName][question] = { inputAnswer, savedAnswer }
+        let answerText = ''
+        if (savedAnswer !== null) {
+          const stringifiedAnswer = utilStringifyAnswer(
+            savedAnswer,
+            questionData.type,
+            true,
+            stringifyAnswerSeparators,
+          )
+
+          if (stringifiedAnswer !== 'null')
+            answerText = stringifiedAnswer
+        }
+
+        newSubjectsAnswerKeyData[subject][section][question] = {
+          type,
+          answerOptions: answerOptions || '4',
+          inputAnswer: answerText,
+          savedAnswer,
+        }
       }
     }
   }
 
+  if (Object.keys(newSubjectsAnswerKeyData).length === 0) {
+    useErrorToast('Error: No valid data found in the uploaded file')
+    return
+  }
+  subjectsAnswerKeysData.value = newSubjectsAnswerKeyData
   sectionsState.sectionsList.forEach((item, idx) => item.id = idx + 1) // set id
 
   currentPageSectionName.value = sectionsState.sectionsList[0]!.name
@@ -813,6 +798,10 @@ function loadDataState() {
 }
 
 function generateAnswerKey() {
+  if (!subjectsAnswerKeysData.value) return
+
+  const testAnswerKeyData: TestAnswerKeyData = {}
+
   const rawData = utilCloneJson(subjectsAnswerKeysData.value)
   for (const [subjectName, sectionsData] of Object.entries(rawData)) {
     testAnswerKeyData[subjectName] ??= {}
@@ -821,28 +810,44 @@ function generateAnswerKey() {
       testAnswerKeyData[subjectName][sectionName] ??= {}
 
       for (const [quesNum, questionData] of Object.entries(questionsData)) {
-        const savedAnswer = questionData.savedAnswer
-        testAnswerKeyData[subjectName][sectionName][quesNum] = utilCloneJson(savedAnswer)
+        const correctAnswer = utilCloneJson(questionData.savedAnswer)
+
+        testAnswerKeyData[subjectName][sectionName][quesNum] = {
+          type: questionData.type,
+          answerOptions: questionData.type !== 'nat'
+            ? questionData.answerOptions
+            : undefined,
+          correctAnswer,
+        }
       }
     }
+  }
+
+  if (Object.keys(testAnswerKeyData).length > 0) {
+    return testAnswerKeyData
   }
 }
 
 async function downloadOutput() {
   const selectedFileType = generateOutputState.selectedFileType
-  if (selectedFileType != 'json-separate' && !fileUploaderState.jsonData) return
-
   generateOutputState.preparingDownload = true
-  if (Object.keys(testAnswerKeyData).length === 0) {
-    generateAnswerKey()
+
+  const testAnswerKeyData = generateAnswerKey()
+  if (!testAnswerKeyData) {
+    generateOutputState.preparingDownload = false
+    return
   }
 
   const filename = generateOutputState.filename
   let fileExtension: '.zip' | '.json' = '.json'
   let outputJsonString = ''
 
-  if (selectedFileType === 'json-separate') {
-    const jsonData = migrateJsonData.answerKeyData({ testAnswerKey: testAnswerKeyData })
+  if (selectedFileType === 'json') {
+    const jsonData: AnswerKeyJsonOutput = {
+      testAnswerKey: testAnswerKeyData,
+      generatedBy: 'answerKeyPage',
+      appVersion: migrateJsonData.getAppVersion(),
+    }
     outputJsonString = JSON.stringify(jsonData, null, 2)
   }
   else {
@@ -850,10 +855,7 @@ async function downloadOutput() {
     jsonData.testAnswerKey = testAnswerKeyData
 
     outputJsonString = JSON.stringify(jsonData, null, 2)
-
-    if (selectedFileType === 'zip' && fileUploaderState.unzippedFiles) {
-      fileExtension = '.zip'
-    }
+    fileExtension = '.zip'
   }
 
   if (fileExtension === '.json') {
@@ -884,35 +886,40 @@ async function downloadOutput() {
   }
 }
 
-async function loadDataFromDB() {
+async function loadDataFromDB(id: number) {
+  try {
+    const data = await db.getTestOutputData(id)
+    const testOutputData = data?.testOutputData
+    if (!testOutputData)
+      throw new Error(`No test data found in db for the test with id = ${id}.`)
+
+    let subjectsData: SubjectsData | null = null
+    if ('testData' in testOutputData) {
+      subjectsData = testOutputData.testData
+    }
+    else if ('testResultData' in testOutputData) {
+      subjectsData = testOutputData.testResultData
+    }
+
+    if (subjectsData) {
+      dbTestOutputDataState.isDataFound = false
+      dbTestOutputDataState.testResultOverviews = []
+      generateOutputState.selectedFileType = 'json'
+      loadDataState(subjectsData)
+    }
+    return true
+  }
+  catch (err) {
+    useErrorToast('Error while loading selected Test Data from db', err)
+  }
+}
+
+function loadSelectedTestFromDB() {
   const index = dbTestOutputDataState.selectedTestResultOverviewIndex
   if (typeof index === 'number') {
     const id = dbTestOutputDataState.testResultOverviews[index]?.id
     if (id) {
-      try {
-        const data = await db.getTestOutputData(id)
-        const testOutputData = data?.testOutputData
-        if (testOutputData) {
-          const generatedBy = testOutputData.generatedBy
-          if (generatedBy === 'testInterfacePage') {
-            subjectsData = testOutputData.testData
-          }
-          else if (generatedBy === 'testResultsPage') {
-            subjectsData = testOutputData.testResultData
-          }
-        }
-
-        if (subjectsData) {
-          dbTestOutputDataState.isDataFound = false
-          dbTestOutputDataState.testResultOverviews = []
-          loadDataState()
-          dbTestOutputDataState.isDataFromDB = true
-          generateOutputState.selectedFileType = 'json-separate'
-        }
-      }
-      catch (err) {
-        useErrorToast('Error while loading selected Test Data from db', err)
-      }
+      loadDataFromDB(id)
     }
   }
 }
@@ -963,5 +970,22 @@ function showAnswerKeyMainBlock() {
   settingsState.isStarted = true
 }
 
-onBeforeMount(checkForTestOutputDataInDB)
+onBeforeMount(() => {
+  const route = useRoute()
+
+  const rawTestId = route.query.test_id
+
+  const testId = typeof rawTestId === 'string' ? parseInt(rawTestId, 10) : null
+
+  if (testId && !isNaN(testId)) {
+    loadDataFromDB(testId)
+      .then((status) => {
+        if (!status)
+          checkForTestOutputDataInDB()
+      })
+  }
+  else {
+    checkForTestOutputDataInDB()
+  }
+})
 </script>

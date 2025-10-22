@@ -60,20 +60,10 @@
                         Usable on the <strong>Test Interface</strong> and <strong>Test Results</strong> pages.
                       </li>
                       <li>
-                        <strong>JSON file (merged):</strong> A JSON file with answer key data embedded alongside existing data.<br>
-                        Usable on the <strong>Test Interface</strong> and <strong>Test Results</strong> pages.
-                      </li>
-                      <li>
-                        <strong>JSON file (separate):</strong> A JSON file containing only the answer key data.<br>
+                        <strong>JSON file:</strong> A JSON file containing only the answer key data.<br>
                         Usable only on the <strong>Test Results</strong> page.
                       </li>
                     </ul>
-                  </li>
-                  <li>
-                    If you're using a <strong>JSON file</strong> as input, you can choose output as either a <strong>merged JSON</strong> or a <strong>separate JSON</strong> file.
-                  </li>
-                  <li>
-                    If you're <strong>loading input from your local database</strong>, the only available output is a <strong>separate JSON</strong> file.
                   </li>
                 </ul>
               </div>

@@ -89,11 +89,17 @@ async function handleFileUpload(file: File) {
       if ('testAnswerKey' in (data.jsonData || {})) {
         emitData(data.jsonData as TestAnswerKeyJsonData)
       }
+      else {
+        useErrorToast('Selected ZIP file does not contain Answer Key data (testAnswerKey).')
+      }
     }
     else {
       const data = await utilParseJsonFile(file)
       if (data?.testAnswerKey) {
         emitData(data)
+      }
+      else {
+        useErrorToast('Selected JSON file does not contain Answer Key data (testAnswerKey).')
       }
     }
   }

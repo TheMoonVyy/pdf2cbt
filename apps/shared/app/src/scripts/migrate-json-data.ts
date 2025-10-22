@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+type OldAnswerKeyJsonOutput = Omit<AnswerKeyJsonOutput, 'testAnswerKey'> & {
+  testAnswerKey: GenericSubjectsTree<QuestionAnswer>
+}
+
 export class MigrateJsonData {
   currentAppVersion: string
   constructor(currentAppVersion: string = import.meta.env.PROJECT_VERSION) {
@@ -16,6 +20,10 @@ export class MigrateJsonData {
         }
       }
     }
+  }
+
+  getAppVersion() {
+    return this.currentAppVersion
   }
 
   questionData(data: any, isDataOfTestResults: boolean) {
@@ -231,39 +239,75 @@ export class MigrateJsonData {
     return this.testInterfaceData(data)
   }
 
-  answerKeyData<T extends AnswerKeyJsonOutput = AnswerKeyJsonOutput>(data: any): T {
+  answerKeyData<T extends AnswerKeyJsonOutput = AnswerKeyJsonOutput>(
+    data: any,
+    migrateOnlyAnswerKey: boolean = false,
+  ): T {
     let output: T
 
-    if (!('appVersion' in data)) {
+    if (!('appVersion' in data) && !migrateOnlyAnswerKey) {
       if (data?.testOutputDatas) {
         data = data.testOutputDatas[0]
       }
 
       if ('testData' in data) {
         output = this.testInterfaceData(data) as unknown as T
-        output.generatedBasedOn = 'testInterfacePage'
       }
       else if ('pdfCropperData' in data) {
         output = this.pdfCropperData(data) as unknown as T
         if (data?.testAnswerKey)
           output.testAnswerKey = data.testAnswerKey
-        output.generatedBasedOn = 'pdfCropperPage'
       }
       else {
         output = data
       }
       output.generatedBy = 'answerKeyPage'
-      output.appVersion = this.currentAppVersion
     }
-    else if (data.generatedBy && data.generatedBy !== 'answerKeyPage') {
+    else if (!migrateOnlyAnswerKey && data.generatedBy && data.generatedBy !== 'answerKeyPage') {
       output = data
-      output.generatedBasedOn = data.generatedBy
       output.generatedBy = 'answerKeyPage'
-      output.appVersion = this.currentAppVersion
     }
     else {
       output = data
     }
+
+    if (
+      output.testAnswerKey
+      && ('testData' in output || 'pdfCropperData' in output)
+      && utilCompareVersion(output.appVersion || '', '<', '1.29.0')
+    ) {
+      const oldAnswerKeyData = output as unknown as OldAnswerKeyJsonOutput
+      const subjects = 'testData' in output
+        ? output.testData
+        : output.pdfCropperData
+      const newTestAnswerKey: TestAnswerKeyData = {}
+
+      for (const [subject, subjectData] of Object.entries(oldAnswerKeyData.testAnswerKey)) {
+        newTestAnswerKey[subject] = {}
+        for (const [section, sectionData] of Object.entries(subjectData)) {
+          newTestAnswerKey[subject][section] = {}
+          for (const [qNum, correctAnswer] of Object.entries(sectionData)) {
+            const qData = subjects[subject]?.[section]?.[qNum]
+            if (!qData) continue
+
+            const answerData: TestAnswerKeyData[string][string][string] = {
+              type: qData.type,
+              correctAnswer,
+            }
+            if (qData.type === 'mcq' || qData.type === 'msq' || qData.type === 'msm')
+              answerData.answerOptions = qData.answerOptions || '4'
+
+            newTestAnswerKey[subject][section][qNum] = answerData
+          }
+        }
+      }
+
+      output.testAnswerKey = newTestAnswerKey
+      if (!migrateOnlyAnswerKey)
+        output.generatedBy = 'answerKeyPage'
+    }
+
+    output.appVersion = this.currentAppVersion
     return output
   }
 }

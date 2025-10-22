@@ -91,6 +91,7 @@
             :load-or-refresh-data-when="currentPanelName === ResultsPagePanels.MyTests"
             @view-or-generate-results-clicked="myTestsPanelViewOrGenerateHandler"
             @current-test-renamed="renameCurrentTest"
+            @reevaluate-test-results="reevaluateTestResults"
           />
         </div>
       </div>
@@ -106,7 +107,8 @@
       v-if="showAnswerKeyMissingDialog && testOutputData?.testResultOverview"
       v-model="showAnswerKeyMissingDialog"
       :test-result-overview="testOutputData.testResultOverview"
-      @upload="(data) => loadAnswerKeyToData(data.testAnswerKey)"
+      :test-id="currentResultsID"
+      @upload="loadAnswerKeyToTest($event.testAnswerKey)"
     />
   </div>
 </template>
@@ -740,10 +742,21 @@ function getTestStartedCountdownTime(testLogs: TestLog[]) {
   return testTime
 }
 
-function generateTestResults(loadToTestResultsOutputData?: true): boolean | null
-function generateTestResults(loadToTestResultsOutputData: false): TestResultJsonOutput | null | false
-function generateTestResults(loadToTestResultsOutputData: boolean = true) {
-  if (!testOutputData.value) return false
+function generateTestResults(
+  loadToTestResultsOutputData?: true,
+  testDataToUse?: TestInterfaceOrResultJsonOutput | null
+): boolean | null
+
+function generateTestResults(
+  loadToTestResultsOutputData: false,
+  testDataToUse?: TestInterfaceOrResultJsonOutput | null
+): TestResultJsonOutput | null | false
+
+function generateTestResults(
+  loadToTestResultsOutputData: boolean = true,
+  testDataToUse: TestInterfaceOrResultJsonOutput | null = testOutputData.value,
+) {
+  if (!testDataToUse) return false
 
   const {
     testConfig,
@@ -751,12 +764,12 @@ function generateTestResults(loadToTestResultsOutputData: boolean = true) {
     testSummary,
     testLogs,
     testAnswerKey,
-  } = testOutputData.value as TestInterfaceJsonOutput
+  } = testDataToUse as TestInterfaceJsonOutput
 
   if (!testConfig || !testData || !testSummary || !testLogs) return false
 
-  if (!testOutputData.value.testResultOverview) {
-    testOutputData.value.testResultOverview = utilGetTestResultOverview(testOutputData.value)
+  if (!testDataToUse.testResultOverview) {
+    testDataToUse.testResultOverview = utilGetTestResultOverview(testDataToUse)
   }
 
   if (!testAnswerKey) {
@@ -782,7 +795,12 @@ function generateTestResults(loadToTestResultsOutputData: boolean = true) {
           const testResultSectionData = testResultData[subject][section]
 
           for (const [question, questionData] of Object.entries(sectionData)) {
-            const correctAnswer = testAnswerKey[subject]?.[section]?.[question] ?? null
+            const answerData = testAnswerKey[subject]?.[section]?.[question]
+            const correctAnswer = (
+              answerData?.type
+                ? answerData.correctAnswer
+                : answerData as unknown as QuestionAnswer // answer key data format uptil v1.29.0
+            ) ?? null
 
             if (correctAnswer === null) {
               throw new Error(
@@ -854,12 +872,12 @@ function generateTestResults(loadToTestResultsOutputData: boolean = true) {
         }
       }
 
-      const testResultOverview = testOutputData.value.testResultOverview
+      const testResultOverview = testDataToUse.testResultOverview
       testResultOverview.overview = {
         maxMarks,
         marksObtained,
         timeSpent: Math.abs(getTestStartedCountdownTime(testLogs) - getTestFinishedCountdownTime(testLogs)),
-        testDuration: testOutputData.value.testConfig.testDurationInSeconds,
+        testDuration: testDataToUse.testConfig.testDurationInSeconds,
         totalQuestions,
         questionsAttempted,
         accuracy: Math.round((totalCorrect / (totalAnswered || 1)) * 10000) / 100,
@@ -960,29 +978,71 @@ async function myTestsPanelViewOrGenerateHandler(id: number, btnType: 'generate'
   }
 }
 
-async function loadAnswerKeyToData(answerKeyData: TestAnswerKeyData) {
-  if (answerKeyData && testOutputData.value) {
-    (testOutputData.value as TestInterfaceJsonOutput).testAnswerKey = answerKeyData
-    const testResultOverview = utilCloneJson(utilGetTestResultOverview(testOutputData.value))
-    testOutputData.value.testResultOverview = testResultOverview
-    const testResultOverviewDB = await db.getTestResultOverviewByCompoundIndex(testResultOverview)
+async function reevaluateTestResults(id: number, testAnswerKey: TestAnswerKeyData) {
+  try {
+    const testData = await db.getTestOutputData(id)
+    if (!(testData?.testOutputData && 'testResultData' in testData.testOutputData))
+      return
 
-    if (testResultOverviewDB && testResultOverviewDB.id) {
-      const status = generateTestResults()
-      if (status) {
-        let id = 0
-        try {
-          await db.replaceTestOutputDataAndResultOverview(
-            testResultOverviewDB.id,
-            utilCloneJson(testResultJsonData.value!),
-          )
-          id = testResultOverviewDB.id
-        }
-        catch (err) {
-          useErrorToast('Error updating test data after loading answer key', err)
-        }
-        loadDataToChartDataState(id)
+    const testWithResultData = testData.testOutputData as TestResultJsonOutput
+    const testDataToUse: TestInterfaceJsonOutput = {
+      ...testWithResultData,
+      testData: testWithResultData.testResultData,
+      testAnswerKey,
+      generatedBy: 'testInterfacePage',
+    }
+    if ('testResultData' in testDataToUse)
+      delete testDataToUse.testResultData
+
+    const data = generateTestResults(false, testDataToUse)
+    if (!data) return
+
+    await db.replaceTestOutputDataAndResultOverview(id, utilCloneJson(data))
+
+    if (currentResultsID.value === id) {
+      testResultJsonData.value = null
+      await nextTick()
+      testResultJsonData.value = data
+      testOutputData.value = null
+      loadDataToChartDataState(id)
+    }
+  }
+  catch (err) {
+    useErrorToast('Error re-evaluating test results with new answer key', err)
+  }
+}
+
+async function loadAnswerKeyToTest(testAnswerKey: TestAnswerKeyData) {
+  if (!testAnswerKey || !testOutputData.value) return;
+
+  (testOutputData.value as TestInterfaceJsonOutput).testAnswerKey = testAnswerKey
+
+  const testData = migrateJsonData.answerKeyData(
+    testOutputData.value,
+    true,
+  ) as unknown as TestInterfaceOrResultJsonOutput
+
+  testOutputData.value = testData
+
+  const testResultOverview = utilCloneJson(utilGetTestResultOverview(testData))
+  testData.testResultOverview = testResultOverview
+  const testResultOverviewDB = await db.getTestResultOverviewByCompoundIndex(testResultOverview)
+
+  if (testResultOverviewDB && testResultOverviewDB.id) {
+    const status = generateTestResults()
+    if (status) {
+      let id = 0
+      try {
+        await db.replaceTestOutputDataAndResultOverview(
+          testResultOverviewDB.id,
+          utilCloneJson(testResultJsonData.value!),
+        )
+        id = testResultOverviewDB.id
       }
+      catch (err) {
+        useErrorToast('Error updating test data after loading answer key', err)
+      }
+      loadDataToChartDataState(id)
     }
   }
 }
