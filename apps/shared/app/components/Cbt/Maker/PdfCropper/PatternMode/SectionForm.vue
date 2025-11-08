@@ -20,6 +20,7 @@ import {
 import SearchArea from './SearchArea.vue'
 import SimplePatternInput from './SimplePatternInput.vue'
 import QuestionsStartPatternInput from './QuestionsStartPatternInput.vue'
+import QuestionDetailsPanel from './QuestionDetails.vue'
 import {
   PATTERN_MODE,
   AREA_BOUNDARY_NAMES,
@@ -404,7 +405,7 @@ onBeforeUnmount(() => {
 
         <div class="flex items-end justify-center gap-4">
           <!-- Question Details -->
-          <PdfCropperPatternModeQuestionDetails
+          <QuestionDetailsPanel
             v-model="r$.questions.details.$value"
             :fields="r$.questions.details"
           />
