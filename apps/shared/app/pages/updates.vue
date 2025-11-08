@@ -70,7 +70,6 @@
                 dark:prose-invert dark:text-white prose-a:text-sky-400
                 max-w-none pr-2 pt-6 pb-15 sm:px-8 lg:px-14
                 data-[selected-menu=releases]:[&>h2]:sm:text-3xl!
-                data-[selected-menu=releases]:[&>h2_span]:sm:text-lg!
                 data-[selected-menu=releases]:[&>h2]:lg:w-[calc(((100%-12rem)*0.7))]!
                 [&>h2]:mx-auto
                 data-[selected-menu=releases]:[&>h2]:text-xl"
@@ -85,11 +84,6 @@
 </template>
 
 <script lang="ts" setup>
-import markdownIt from 'markdown-it'
-import markdownItLinkAttr from 'markdown-it-link-attributes'
-import markdownItSpan from '#layers/shared/app/assets/external/markdown-it-span'
-import markdownItTaskLists from 'markdown-it-task-lists'
-import markdownItBlockEmbed from 'markdown-it-block-embed'
 import { UpdatesPage } from '#layers/shared/shared/enums'
 
 type ReleasesDataItem = {
@@ -115,21 +109,7 @@ const releasesState = shallowReactive({
   currentRelease: null as ReleasesDataItem | null,
 })
 
-const md = markdownIt({
-  breaks: true,
-  linkify: true,
-  typographer: true,
-})
-
-md.use(markdownItSpan)
-md.use(markdownItLinkAttr, {
-  attrs: {
-    target: '_blank',
-    rel: 'noopener',
-  },
-})
-md.use(markdownItTaskLists, { label: true, labelAfter: true })
-md.use(markdownItBlockEmbed)
+const md = utilMd()
 
 const updatesLSState = useUpdatesLocalStorageState()
 
@@ -139,7 +119,7 @@ const releaseTitle = computed(() => {
   const { version, date, prevVersion } = currentRelease
 
   const releaseLink = `https://github.com/TheMoonVyy/pdf2cbt/releases/tag/v${version}`
-  const prefix = `## ::${date}::  [v${version}](${releaseLink})`
+  const prefix = `## ::${date}::{.sm:text-lg!}  ::[v${version}](${releaseLink})::{.version-span}`
   const compare = prevVersion
     ? `  ::[${prevVersion}...${version}](https://github.com/TheMoonVyy/pdf2cbt/compare/v${prevVersion}...v${version})::`
     : ''
@@ -315,7 +295,7 @@ onMounted(() => {
   text-wrap: nowrap;
 }
 
-[data-selected-menu="releases"] h2 > a {
-  color: lightgreen;
+[data-selected-menu="releases"] .version-span > a {
+  color: var(--color-green-400);
 }
 </style>
