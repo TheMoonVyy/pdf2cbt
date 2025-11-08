@@ -144,3 +144,5 @@ export type PatternModeImportExportConfigData = Omit<PatternModeUserConfig, 'id'
   configVersion?: number
   data: PatternModeConfigDB['data']
 }
+
+export type CbtMakerCurrentPanel = 'cropper' | 'post-cropper'

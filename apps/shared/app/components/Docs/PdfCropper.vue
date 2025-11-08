@@ -24,7 +24,7 @@
             About This Page/Tool
           </UiAccordionTrigger>
           <UiAccordionContent>
-            <div class="flex flex-col gap-4 text-left leading-[2rem]">
+            <div class="flex flex-col gap-4 text-left leading-8">
               <div>
                 <strong>Purpose:</strong>
                 <ul class="list-disc ml-6">
@@ -174,7 +174,7 @@
             Question Details
           </UiAccordionTrigger>
           <UiAccordionContent>
-            <div class="flex flex-col gap-4 text-left leading-[2rem]">
+            <div class="flex flex-col gap-4 text-left leading-8">
               <div>
                 <strong>Question Details Header Format Info:</strong><br>
                 The format <strong>Question Details [ #q (r) ]</strong> means:<br>
@@ -301,7 +301,7 @@
             Steps for Using the PDF Cropper
           </UiAccordionTrigger>
           <UiAccordionContent>
-            <div class="text-left leading-[2rem]">
+            <div class="text-left leading-8">
               <ul class="list-decimal ml-6 [&>li]:mb-3">
                 <li>
                   <strong>Upload the PDF:</strong><br>
@@ -342,7 +342,7 @@
             Text Pattern Based Cropper
           </UiAccordionTrigger>
           <UiAccordionContent>
-            <div class="text-center mx-auto leading-[2rem] text-lg">
+            <div class="text-center mx-auto leading-8 text-lg">
               Please refer to <NuxtLink
                 to="/updates?v=1.27.0"
                 class="underline text-green-400"
@@ -358,7 +358,7 @@
             Bulk Edit (Includes Optional Questions)
           </UiAccordionTrigger>
           <UiAccordionContent>
-            <div class="text-left leading-[2rem]">
+            <div class="text-left leading-8">
               <p>
                 Bulk Edit allows you to set or change data on a group of questions, sections, or subjects.
               </p>
@@ -438,7 +438,7 @@
             Context menus and keyboard shortcuts
           </UiAccordionTrigger>
           <UiAccordionContent>
-            <div class="text-left leading-[2rem]">
+            <div class="text-left leading-8">
               <strong>Context Menu is the menu that pops up when you right-click (or long-press on touch screens).</strong><br>
               When you open the context menu on the PDF page here,
               it will show custom menu options you can use.<br>
@@ -584,7 +584,7 @@
                   >
                 </UiAccordionContent>
               </UiAccordionItem>
-              <div class="text-left leading-[2rem] pt-5">
+              <div class="text-left leading-8 pt-5">
                 <span class="text-xl font-semibold text-center mx-auto">
                   Edge cases and how to deal with them:
                 </span>
@@ -668,8 +668,8 @@
 </template>
 
 <script lang="ts" setup>
-import Image1 from '#layers/shared/app/assets/images/pdf-cropper/docs-image-1.svg?no-inline'
-import Image2 from '#layers/shared/app/assets/images/pdf-cropper/docs-image-2.svg?no-inline'
+import Image1 from '#layers/shared/app/assets/images/cbt-maker/docs-image-1.svg?no-inline'
+import Image2 from '#layers/shared/app/assets/images/cbt-maker/docs-image-2.svg?no-inline'
 
 const { expandedValues = ['3', '5'] } = defineProps<{
   expandedValues?: string[]
@@ -683,12 +683,12 @@ const imageLoadingState = shallowReactive({
 const pdfCropperVideoLink = 'https://www.youtube.com/watch?v=YTzJHUIb8Xs'
 
 const image1Urls = [
-  'https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt/app/assets/images/pdf-cropper/docs-image-1.svg',
+  'https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt/app/assets/images/cbt-maker/docs-image-1.svg',
   Image1,
 ]
 
 const image2Urls = [
-  'https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt/app/assets/images/pdf-cropper/docs-image-2.svg',
+  'https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt/app/assets/images/cbt-maker/docs-image-2.svg',
   Image2,
 ]
 

@@ -42,6 +42,7 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/cbt': { redirect: { to: '/cbt/interface', statusCode: 301 } },
+    '/pdf-cropper': { redirect: { to: '/cbt/maker', statusCode: 301 } },
   },
   future: {
     compatibilityVersion: 4,

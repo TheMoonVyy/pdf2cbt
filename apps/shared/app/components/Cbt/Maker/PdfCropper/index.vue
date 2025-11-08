@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col grow min-h-0">
-    <PdfCropperSettingsDrawer
+    <CbtMakerPdfCropperSettingsDrawer
       v-model:advance-settings-visible="dialogsState.showSettings"
     />
     <UiResizablePanelGroup
@@ -108,7 +108,7 @@
                   />
                 </BaseFloatLabel>
               </div>
-              <PdfCropperPatternModeSidePanel
+              <CbtMakerPdfCropperPatternModeSidePanel
                 v-show="cropperMode.isPattern"
                 ref="patternModeSidePanelElem"
                 v-model="patternModeState.showEditConfigPanel"
@@ -133,7 +133,7 @@
                 dialogsState.showGenerateOutput = true
               }"
             />
-            <PdfCropperQuestionDetailsPanel
+            <CbtMakerPdfCropperQuestionDetailsPanel
               v-show="!cropperMode.isPattern"
               v-model="currentQuestionData"
               :overlays-per-question-data="overlaysPerQuestionData"
@@ -221,7 +221,7 @@
                       }"
                     >
                   </div>
-                  <PdfCropperEditCroppedOverlay
+                  <CbtMakerPdfCropperEditCroppedOverlay
                     v-if="isPdfLoaded"
                     v-model="cropperOverlayDatas"
                     v-model:overlays-per-question-data="overlaysPerQuestionData"
@@ -234,7 +234,7 @@
                     :page-height="currentPageDetails.height"
                     @set-pdf-data="storeCurrentQuestionData"
                   />
-                  <PdfCropperCropOverlay
+                  <CbtMakerPdfCropperCropOverlay
                     v-if="isPdfLoaded"
                     v-model:current-overlay-data="mainOverlayData"
                     :main-img-panel-elem="mainImgPanelElem"
@@ -260,7 +260,7 @@
             Webpage might be unresponsive for a few seconds while loading the config editor.
           </p>
         </div>
-        <PdfCropperPatternModeConfigForm
+        <CbtMakerPdfCropperPatternModeConfigForm
           v-if="patternModeForm"
           v-show="currentMode === 'crop'
             && cropperMode.isPattern
@@ -465,7 +465,7 @@
         </UiScrollArea>
       </UiDialogContent>
     </LazyUiDialog>
-    <LazyPdfCropperBulkEditDialog
+    <LazyCbtMakerPdfCropperBulkEditDialog
       v-if="isPdfLoaded"
       v-model="dialogsState.showBulkEdit"
       v-model:optional-questions="testConfig.optionalQuestions"
@@ -481,7 +481,7 @@
       @current-question-progress="(questionNum) => generateOutputState.generationProgress = questionNum"
       @image-blobs-generated="addImageBlobsToZipAndDownload"
     />
-    <LazyPdfCropperEditExistingFilesDialog
+    <LazyCbtMakerPdfCropperEditExistingFilesDialog
       v-if="dialogsState.showEditExistingFiles"
       v-model="dialogsState.showEditExistingFiles"
       @uploaded-data="loadExistingData"
@@ -503,13 +503,6 @@ import { SEPARATOR } from '#layers/shared/shared/constants'
 import { DataFileNames } from '#layers/shared/shared/enums'
 
 type JsonOutputData = PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper
-
-type PdfCropperTestConfig = Omit<PdfCropperJsonOutput['testConfig'], 'optionalQuestions'>
-  & Required<Pick<PdfCropperJsonOutput['testConfig'], 'optionalQuestions'>>
-
-useSeoMeta({
-  title: 'PDF Cropper - PDF2CBT',
-})
 
 const selectOptions = {
   outputFileType: ['.zip', '.json'],
