@@ -70,8 +70,6 @@
 </template>
 
 <script setup lang="ts">
-import MarkdownIt from 'markdown-it'
-
 const homePageLink = useRequestURL().origin
 
 const placeholderText = `#### You can write notes for this question here (also supports markdown format).
@@ -108,11 +106,7 @@ const activeTab = shallowRef<'edit' | 'view'>('edit')
 
 const currentNotes = shallowRef('')
 
-const md = MarkdownIt({
-  breaks: true,
-  linkify: true,
-  typographer: true,
-})
+const md = utilMd()
 
 const compiledNotesHtml = shallowRef('')
 
