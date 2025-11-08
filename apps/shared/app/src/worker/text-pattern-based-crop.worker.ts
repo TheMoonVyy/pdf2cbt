@@ -168,6 +168,14 @@ function updateAreaCoordinatesInConfig(
               pageDims,
             )
           }
+
+          paragraphQuestions.crop.exactlyTo.parsed.l = paragraphQuestions.crop.exactlyTo.raw.l
+            ? getNormalizedCoordinate(paragraphQuestions.crop.exactlyTo.raw.l, pageDims.w)
+            : null // use l coordinate from matched para
+          paragraphQuestions.crop.exactlyTo.parsed.r = getNormalizedCoordinate(
+            paragraphQuestions.crop.exactlyTo.raw.r || '100%',
+            pageDims.w,
+          )
         }
       }
     }
@@ -769,9 +777,10 @@ const endParagraphQuestionCommonOverlay = (
   if (!para.commonOverlayPdfDatas || !currentState.mergeNextCrop)
     para.commonOverlayPdfDatas = []
 
-  coords.b = Math.min(page.h, coords.b + paragraphQuestions.crop.offsetBy.b)
   coords.l = Math.min(Math.max(0, coords.l + paragraphQuestions.crop.offsetBy.l), page.w)
   coords.r = Math.min(Math.max(0, coords.r + paragraphQuestions.crop.offsetBy.r), page.w)
+  coords.t = Math.min(Math.max(0, coords.t + paragraphQuestions.crop.offsetBy.t), page.h)
+  coords.b = Math.min(Math.max(0, coords.b + paragraphQuestions.crop.offsetBy.b), page.h)
 
   para.commonOverlayPdfDatas.push({ ...coords, page: page.num })
 
