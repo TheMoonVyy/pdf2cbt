@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.29.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.29.1...v1.29.2) (2025-11-09)
+
+
+### Bug Fixes
+
+* **pdf-cropper:** fix an issue in pattern based cropper where multiple columns logic was not working ([abcfd0f](https://github.com/TheMoonVyy/pdf2cbt/commit/abcfd0ffdce430f50c00f2a1bb0b7e9a99555e38))
+
 ## [1.29.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.29.0...v1.29.1) (2025-11-09)
 
 
