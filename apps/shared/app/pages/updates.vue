@@ -132,7 +132,7 @@ async function getReleasesData() {
   const data = new Map<string, ReleasesDataItem>()
 
   try {
-    const res = await fetch(`${UpdatesPage.ReleasesContentBaseUrl}/releases.json`)
+    const res = await fetch(`${UpdatesPage.ReleasesContentBaseUrl}/releases.json?t=` + Date.now())
     if (!res.ok)
       throw new Error(`Failed to fetch releases data: ${res.status} - ${res.statusText}`)
 
