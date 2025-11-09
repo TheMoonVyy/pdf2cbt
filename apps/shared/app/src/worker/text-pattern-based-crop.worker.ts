@@ -984,6 +984,7 @@ async function patternBasedCrop(
           ...subject,
           currentSection: null,
         }
+        updateParsedColumnDividers(state, pageWidth)
       }
 
       if (state.currentSubject?.sections) {
