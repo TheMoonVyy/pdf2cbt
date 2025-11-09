@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.29.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.29.0...v1.29.1) (2025-11-09)
+
+
+### Bug Fixes
+
+* **pdf-cropper:** fix an issue where exactlyTo values of paragraph config of pattern cropper were not being used ([ee3db39](https://github.com/TheMoonVyy/pdf2cbt/commit/ee3db397cff6e6aca4e1d7e4173607d57f4d7102))
+
 ## [1.29.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.28.0...v1.29.0) (2025-10-24)
 
 
