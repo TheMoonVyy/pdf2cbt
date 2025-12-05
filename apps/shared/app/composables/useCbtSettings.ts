@@ -129,6 +129,7 @@ const defaultTestSettings: CbtTestSettings = {
   durationInSeconds: 3 * 60 * 60,
   questionImgScale: 2,
   saveTestData: true,
+  saveQuestionsLikeRealExams: true,
 }
 
 const defaultMiscSettings: MiscSettings = {

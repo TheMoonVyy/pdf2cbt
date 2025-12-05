@@ -195,6 +195,27 @@
                         class="col-span-6"
                       />
                     </div>
+                    <div class="grid grid-cols-1 w-full ml-0.5 mt-2">
+                      <div class="flex gap-2 w-full items-center justify-center mb-0.5">
+                        <UiLabel
+                          for="saveQLikeRealExams"
+                          class="text-center"
+                        >
+                          Save Questions<br>
+                          Like Real Exams
+                        </UiLabel>
+                        <IconWithTooltip
+                          :content="tooltipContent.saveQuestionsLikeRealExams"
+                        />
+                      </div>
+                      <BaseSelect
+                        id="saveQLikeRealExams"
+                        v-model="testSettings.saveQuestionsLikeRealExams"
+                        size="sm"
+                        :options="selectOptions.yesNo"
+                        class="col-span-6"
+                      />
+                    </div>
                     <template v-if="!testState.testImageBlobs">
                       <div class="flex justify-center gap-3 mt-3 w-full">
                         <UiLabel
@@ -1226,6 +1247,53 @@ const tooltipContent = {
         ]),
       ]),
       h('strong', 'You can access hidden settings any time, be it before or during the test.'),
+    ]),
+
+  saveQuestionsLikeRealExams: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', [
+        'From my experience and from others as well,',
+        h('br'),
+        'the way answers are saved differs between the Real Exams and the Official Mock Tests.',
+      ]),
+      h('p', [
+        'In the Official Mock Tests, ',
+        'the answer to the current question is saved or updated only when you click on ',
+        '"Save & Next" or "Mark for Review & Next".',
+      ]),
+      h('p', [
+        'In the Real Exams, however, ',
+        'the answer to the current question is saved or updated whenever you change the question.',
+        h('br'),
+        'It doesn’t matter which button you used to move to another question.',
+        h('br'),
+        'This means the answer is saved or updated when you click on "Previous", ',
+        '"Save & Next", "Mark for Review & Next", ',
+        'change the section, or switch questions from the question palette.',
+      ]),
+      h('p', [
+        'So yes, ironically, the Official Mock Test whose purpose is to ',
+        'familiarize candidates with the interface behaves differently ',
+        'from the actual exam interface.',
+      ]),
+      h('p', 'Save questions like Real Exams?'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'Yes'),
+          ': The answer to the current question will be saved or ',
+          'updated whenever you change the question ',
+          '(behaves like Real Exams).',
+        ]),
+        h('li', [
+          h('strong', 'No'),
+          ': The answer to the current question will be saved or updated only when you click on ',
+          '"Save & Next" or "Mark for Review & Next".',
+        ]),
+      ]),
+      h('p', [
+        'In versions before v1.30.0, ',
+        'the behaviour was like official mock test\'s behaviour (i.e. "No").',
+      ]),
     ]),
 
   disableMouseWheel: () =>

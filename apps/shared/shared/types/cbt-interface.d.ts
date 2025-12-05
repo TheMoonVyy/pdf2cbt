@@ -89,10 +89,9 @@ export type CbtUiSettings = {
 
 export type LogTestStateViaType = 'testStarted' | 'testResumed' | 'testFinished'
 
-export type AnswerSavedViaType = 'save&next' | 'mfr'
+export type AnswerSavedViaType = 'save&next' | 'mfr' | 'palette' | 'sectionBtn' | 'previous'
 
 export type CurrentQuestionViaType = LogTestStateViaType | AnswerSavedViaType
-  | 'previous' | 'palette' | 'sectionBtn'
 
 export type TestLogType = LogTestStateViaType | 'currentQuestion'
   | 'answerSaved' | 'currentAnswer' | 'answerCleared'
@@ -211,6 +210,7 @@ export interface CbtTestSettings {
   showPauseBtn: boolean
   questionImgScale: number
   saveTestData: boolean
+  saveQuestionsLikeRealExams: boolean
 }
 
 export interface MiscSettings {

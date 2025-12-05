@@ -800,7 +800,7 @@ const cleanUpDisableScrollEventListeners = () => {
 }
 
 function changeCurrentQuestion(
-  via: 'save&next' | 'mfr' | 'previous' | 'palette' | 'sectionBtn',
+  via: AnswerSavedViaType,
   newQueId: number | null = null,
   newSection: string | null = null,
 ) {
@@ -845,7 +845,18 @@ function changeCurrentQuestion(
         newQueId = testSectionsData.value[newSection]![newQuestionNum]!.queId
       }
     }
+
     if (newQueId !== null) {
+      /*
+         In real exams (not official mock tests) like jee, comedk, ugee etc,
+         answers are saved even when user changes questions
+         via palette, previous or section buttons
+      */
+      if ((via === 'palette' || via === 'sectionBtn' || via === 'previous')
+        && testSettings.value.saveQuestionsLikeRealExams) {
+        answerSavedDetails = saveCurrentAnswer(via)
+      }
+
       const currentQuestionData = testQuestionsData.value.get(currentQueId)
       const newQuestionData = testQuestionsData.value.get(newQueId)
 
@@ -857,7 +868,7 @@ function changeCurrentQuestion(
 
         if (answerSavedDetails) {
           testLogger.answeredSaved(
-            via as 'save&next' | 'mfr',
+            via as AnswerSavedViaType,
             answerSavedDetails.prevAnswer,
             answerSavedDetails.prevStatus,
           )
@@ -913,28 +924,23 @@ function changeCurrentQuestion(
   }
 }
 
-function saveCurrentAnswer(via: 'save&next' | 'mfr' | 'clear') {
+function saveCurrentAnswer(via: AnswerSavedViaType | 'clear') {
   const currentQueId = currentTestState.value.queId
   let currentAnswer = currentTestState.value.currentAnswerBuffer
   const maybeClearedAnswer = currentAnswer
 
   let questionStatus: QuestionStatus
 
-  switch (via) {
-    case 'clear': {
-      questionStatus = 'notAnswered'
-      currentAnswer = null
-      currentTestState.value.currentAnswerBuffer = null
-      break
-    }
-    case 'save&next': {
-      questionStatus = currentAnswer !== null ? 'answered' : 'notAnswered'
-      break
-    }
-    case 'mfr': {
-      questionStatus = currentAnswer !== null ? 'markedAnswered' : 'marked'
-      break
-    }
+  if (via === 'clear') {
+    questionStatus = 'notAnswered'
+    currentAnswer = null
+    currentTestState.value.currentAnswerBuffer = null
+  }
+  else if (via === 'mfr') {
+    questionStatus = currentAnswer !== null ? 'markedAnswered' : 'marked'
+  }
+  else {
+    questionStatus = currentAnswer !== null ? 'answered' : 'notAnswered'
   }
 
   const currentQuestionData = testQuestionsData.value.get(currentQueId)
