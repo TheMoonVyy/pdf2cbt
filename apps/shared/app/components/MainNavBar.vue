@@ -302,7 +302,7 @@
                     </UiSheetClose>
                   </li>
                 </ul>
-                <UiCard class="my-2 py-3 ml-1 mr-2 gap-2">
+                <UiCard class="py-3 ml-1 mr-2 gap-2">
                   <UiCardHeader>
                     <UiCardTitle class="text-center text-lg">
                       Notify Updates of:
@@ -374,6 +374,35 @@
                           />
                         </div>
                       </div>
+                    </div>
+                  </UiCardContent>
+                </UiCard>
+                <UiCard class="my-2 py-2 ml-1 mr-2 gap-2">
+                  <UiCardHeader>
+                    <UiCardTitle class="mx-auto text-lg">
+                      Page Zoom Sizes (in %)
+                    </UiCardTitle>
+                  </UiCardHeader>
+                  <UiCardContent class="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div
+                      v-for="(_, pageSizeKey) in appSettings.pages"
+                      :key="pageSizeKey"
+                      class="flex flex-col items-center gap-1 last:odd:col-span-2"
+                    >
+                      <UiLabel
+                        class="text-sm"
+                        :for="pageSizeKey + 'PageSize'"
+                      >
+                        {{ utilKeyToLabel(pageSizeKey) }}
+                      </UiLabel>
+                      <BaseInputNumber
+                        :id="pageSizeKey + 'PageSize'"
+                        v-model="appSettings.pages[pageSizeKey].size"
+                        :min="50"
+                        :max="250"
+                        :step="5"
+                        input-class="text-sm"
+                      />
                     </div>
                   </UiCardContent>
                 </UiCard>

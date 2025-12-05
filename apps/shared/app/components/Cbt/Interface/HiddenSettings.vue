@@ -69,16 +69,17 @@
               class="flex flex-col items-center gap-3"
             >
               <UiLabel
-                for="hidden_settings_main_layout_size"
+                for="test-interface-zoom-size"
                 class="text-center"
               >
-                Layout Size
+                Page Zoom Size (in %)
               </UiLabel>
               <BaseInputNumber
-                id="hidden_settings_main_layout_size"
-                v-model="uiSettings.mainLayout.size"
-                :min="5"
-                :max="25"
+                id="test-interface-zoom-size"
+                v-model="appSettings.pages.testInterface.size"
+                :min="50"
+                :max="250"
+                :step="5"
               />
             </div>
           </UiCardContent>
@@ -110,6 +111,7 @@ defineProps<{
 const emit = defineEmits(['pauseTest'])
 
 const { uiSettings, testSettings } = useCbtSettings()
+const appSettings = useAppSettings()
 
 const emitPauseCountdown = () => {
   emit('pauseTest')

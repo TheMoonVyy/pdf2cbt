@@ -14,7 +14,6 @@ export type QuesIcons = {
 
 export type CbtUiSettings = {
   mainLayout: {
-    size: number
     testTotalHeaderHeight: number
     sectionHeaderHeight: number
     sectionHeaderAndQuesPanelDividerHeight: number

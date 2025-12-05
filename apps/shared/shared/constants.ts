@@ -97,3 +97,11 @@ export const AREA_BOUNDARY_NAMES = {
   t: 'Top',
   b: 'Bottom',
 } as const
+
+export const PAGE_NAMES_MAP = {
+  'index': 'homePage',
+  'pdf-cropper': 'pdfCropper',
+  'cbt-interface': 'testInterface',
+  'cbt-results': 'testResults',
+  'cbt-generate-answer-key': 'generateAnswerKey',
+} as const

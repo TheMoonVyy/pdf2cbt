@@ -31,7 +31,6 @@ export default () => {
     },
     {
       mergeDefaults: (storageValue, defaults) => utilSelectiveMergeObj(defaults, storageValue),
-      initOnMounted: true,
     },
   )
 }

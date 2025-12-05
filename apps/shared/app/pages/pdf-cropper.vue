@@ -188,7 +188,7 @@
               <!-- Pdf Page Container -->
               <div
                 ref="mainImgPanelElem"
-                class="flex select-none"
+                class="flex select-none touch-none"
                 tabindex="-1"
               >
                 <div
@@ -208,7 +208,10 @@
                     '--crop-selected-region-bg-opacity': settings.general.cropSelectedRegionBgOpacity,
                   }"
                 >
-                  <div class="inline-block">
+                  <div
+                    ref="imgContainerElem"
+                    class="inline-block"
+                  >
                     <img
                       :src="currentPageDetails.url"
                       class="border border-gray-500 pdf-cropper-img"

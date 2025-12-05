@@ -31,6 +31,7 @@ import {
   MiscConsts,
   DeprecatedLocalStorageKeys,
 } from '#layers/shared/shared/enums'
+import { PAGE_NAMES_MAP } from '#layers/shared/shared/constants'
 import { Toaster } from '#layers/shared/app/components/ui/sonner'
 
 if (import.meta.server) {
@@ -42,6 +43,23 @@ const toastPosition = useToastPosition()
 const showBackupWebsiteNotice = shallowRef(false)
 
 const appSettings = useAppSettings()
+const updatesLSState = useUpdatesLocalStorageState()
+const route = useRoute()
+
+const pageSizeCssVar = useCssVar('--app-page-size', null, { initialValue: '100' })
+
+const currentPageSize = computed(() => {
+  const pageName = PAGE_NAMES_MAP[route.name as keyof typeof PAGE_NAMES_MAP]
+
+  return appSettings.value.pages[pageName]?.size || 100
+})
+
+watch(currentPageSize,
+  newSize => pageSizeCssVar.value = newSize + '',
+  { immediate: true },
+)
+
+// migrate mainLayout ui settings of test interface to appSettings
 
 // migrate old settings in localStorage
 
@@ -111,6 +129,29 @@ function checkAndMigrateCbtResultsSettings() {
   utilSelectiveMergeObj(settings.value.quePreview, quePreview)
 }
 
+function checkAndMigrateTestInterfaceMainLayoutSizeSettings() {
+  if (utilCompareVersion(
+    updatesLSState.value.releases.version,
+    '>=',
+    '1.30.0',
+  )) return
+
+  const db = useDB()
+  db.getSettings()
+    .then((s) => {
+      if (!s?.uiSettings.mainLayout) return
+
+      if ('size' in s.uiSettings.mainLayout) {
+        const sizeInPx = s.uiSettings.mainLayout.size
+        if (typeof sizeInPx === 'number') {
+          appSettings.value.pages.testInterface.size = Math.round((sizeInPx / 16) * 100)
+        }
+        delete s.uiSettings.mainLayout.size
+        db.replaceSettings(utilCloneJson(s))
+      }
+    })
+}
+
 onMounted(() => {
   const _isBackupWebsite = useRuntimeConfig().public.isBackupWebsite as string | boolean
   const isBackupWebsite = _isBackupWebsite === 'true' || _isBackupWebsite === true
@@ -120,5 +161,6 @@ onMounted(() => {
   checkAndMigrateThemeSettings()
   checkAndMigratePdfCropperSettings()
   checkAndMigrateCbtResultsSettings()
+  checkAndMigrateTestInterfaceMainLayoutSizeSettings()
 })
 </script>

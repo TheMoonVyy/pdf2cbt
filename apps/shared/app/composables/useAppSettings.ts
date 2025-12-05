@@ -18,10 +18,16 @@ export default () => {
             popup: true,
           },
         },
+        pages: {
+          homePage: { size: 100 },
+          pdfCropper: { size: 100 },
+          testInterface: { size: 100 },
+          testResults: { size: 100 },
+          generateAnswerKey: { size: 100 },
+        },
       },
       {
         mergeDefaults: (storageValue, defaults) => utilSelectiveMergeObj(defaults, storageValue),
-        initOnMounted: true,
       },
     )
   }

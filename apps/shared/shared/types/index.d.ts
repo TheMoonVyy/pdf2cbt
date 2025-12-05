@@ -112,6 +112,23 @@ export type AppSettings = {
       popup: boolean
     }
   }
+  pages: {
+    homePage: {
+      size: number
+    }
+    pdfCropper: {
+      size: number
+    }
+    testInterface: {
+      size: number
+    }
+    testResults: {
+      size: number
+    }
+    generateAnswerKey: {
+      size: number
+    }
+  }
 }
 
 export type MakePropertyOptional<T extends object, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>

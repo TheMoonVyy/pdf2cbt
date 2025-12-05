@@ -334,8 +334,9 @@ const setLineCropperCoord = () => {
   }
 }
 
-const onClick = () => {
+const onClick = (e: PointerEvent) => {
   if (props.cropperMode.isLine) {
+    onPointerMove(e)
     setLineCropperCoord()
   }
 }

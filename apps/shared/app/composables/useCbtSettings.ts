@@ -2,7 +2,6 @@ import { CbtUseState } from '#layers/shared/shared/enums'
 
 const defaultUiSettings: CbtUiSettings = {
   mainLayout: {
-    size: 16,
     testTotalHeaderHeight: 2.2,
     sectionHeaderHeight: 2.7,
     sectionHeaderAndQuesPanelDividerHeight: 1.7,

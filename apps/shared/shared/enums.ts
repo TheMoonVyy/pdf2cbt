@@ -36,6 +36,7 @@ export enum LocalStorageKeys {
   UpdatesState = 'pdf2cbt-updates-state',
   ResultsPageSettings = 'CBT-ResultsPageSettings',
   PdfCropperPageSettings = 'PDFCropperSettings',
+  PagesSettings = 'pdf2cbt-pages-settings',
 }
 
 export enum DeprecatedLocalStorageKeys {

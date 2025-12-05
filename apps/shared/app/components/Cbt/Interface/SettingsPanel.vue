@@ -304,6 +304,24 @@
                     </UiCardTitle>
                   </UiCardHeader>
                   <UiCardContent class="grid grid-cols-4 px-4 gap-4">
+                    <div class="flex flex-col w-full items-center justify-end">
+                      <div class="flex gap-2 items-center justify-center">
+                        <UiLabel
+                          class="text-sm text-center"
+                          for="testInterfacePageZoomSize"
+                        >
+                          Page Zoom Size (in %)
+                        </UiLabel>
+                      </div>
+                      <BaseInputNumber
+                        id="testInterfacePageZoomSize"
+                        v-model="appSettings.pages.testInterface.size"
+                        :min="50"
+                        :max="250"
+                        :step="5"
+                      />
+                    </div>
+
                     <div
                       v-for="item in htmlContent.customizeUi.mainLayout"
                       :key="item.key"
@@ -1305,7 +1323,6 @@ const addIds = <T extends Record<string, unknown>>(items: T[]): (T & { id: strin
 const htmlContent = {
   customizeUi: {
     mainLayout: addIds([
-      { key: 'size', label: 'Main Layout Size (px)', min: 5, max: 25 },
       { key: 'testTotalHeaderHeight', label: '"Test Total" Header Height', min: 0, max: 30, step: 0.1 },
       { key: 'sectionHeaderHeight', label: 'Sections Height', min: 1, max: 20, step: 0.1 },
       { key: 'questionTypeFontSize', label: 'Ques. Type Font Size', min: 0.25, max: 5, step: 0.1 },
@@ -1412,6 +1429,8 @@ const hashMismatchDialogState = shallowReactive<{
   pdfBuffer: null,
   jsonData: null,
 })
+
+const appSettings = useAppSettings()
 
 const {
   uiSettings,
@@ -1898,13 +1917,7 @@ onMounted(() => {
         const heightInRange = window.innerHeight >= 250 && window.innerHeight <= 480
 
         if (widthInRange || heightInRange) {
-          settings.value.mainLayout.size = 9
-        }
-        else {
-          const fontSize = parseInt(getComputedStyle(document.documentElement).fontSize)
-          if (!Number.isNaN(fontSize)) {
-            settings.value.mainLayout.size = fontSize
-          }
+          appSettings.value.pages.testInterface.size = 55
         }
       }
     })

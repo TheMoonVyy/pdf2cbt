@@ -37,6 +37,9 @@ export default defineNuxtConfig({
       projectVersion: '',
     },
   },
+  build: {
+    transpile: ['reka-ui'],
+  },
   routeRules: {
     '/cbt': { redirect: { to: '/cbt/interface', statusCode: 301 } },
   },

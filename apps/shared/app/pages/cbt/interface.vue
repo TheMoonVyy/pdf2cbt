@@ -83,7 +83,7 @@
                   class="flex items-center gap-2 my-[-2px] cursor-pointer"
                   :class="{
                     'primary-theme': sectionItem.name === currentTestState.section,
-                    'border-r-2!': index === (testSectionsList.length - 1),
+                    'border-slate-400 border-r-2!': index === (testSectionsList.length - 1),
                   }"
                   :data-id="'data-id_' + sectionItem.name"
                   @click="changeCurrentQuestion('sectionBtn', null, sectionItem.name)"
@@ -146,7 +146,7 @@
             </span>
             <div
               v-if="uiSettings.mainLayout.showMarkingScheme"
-              class="flex items-center ml-auto divide-x-2 divide-slate-900"
+              class="flex items-center ml-auto divide-x-2 divide-slate-500"
               :style="{ fontSize: `${uiSettings.mainLayout.markingSchemeFontSize}rem` }"
             >
               <span class="px-2">
@@ -1094,23 +1094,9 @@ onLongPress(
   },
 )
 
-const mainLayoutCssVar = useCssVar(
-  '--main-layout-size',
-  null,
-  { initialValue: uiSettings.value.mainLayout.size + 'px' },
-)
-
-watch(
-  () => uiSettings.value.mainLayout.size,
-  () => {
-    mainLayoutCssVar.value = uiSettings.value.mainLayout.size + 'px'
-  },
-)
-
 const pageCleanUpCallback = () => {
   window.removeEventListener('beforeunload', onBeforeUnloadCallback)
   cleanUpDisableScrollEventListeners()
-  document.documentElement.style.removeProperty('--main-layout-size')
 
   removeNagivationGuard()
   stopCountdown(true)
