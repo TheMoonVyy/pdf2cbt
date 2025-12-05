@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.30.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.29.2...v1.30.0) (2025-12-05)
+
+
+### Features
+
+* add settings to zoom each pages and fix touch related issues for touch devices ([ae46461](https://github.com/TheMoonVyy/pdf2cbt/commit/ae46461e29c29fdedc89182d0183162509a76475))
+* **cbt-interface:** add option to test settings to save answers like real exams ([87d8e8d](https://github.com/TheMoonVyy/pdf2cbt/commit/87d8e8d6776e9637502691bd0b98f10d905d17da))
+
 ## [1.29.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.29.1...v1.29.2) (2025-11-09)
 
 
