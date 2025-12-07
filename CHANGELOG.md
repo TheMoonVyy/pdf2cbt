@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.30.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.29.2...v1.30.0) (2025-12-05)
+## [1.30.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.29.2...v1.30.0) (2025-12-07)
 
 
 ### Features
