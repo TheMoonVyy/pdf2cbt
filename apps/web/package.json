@@ -66,7 +66,7 @@
   },
   "devDependencies": {
     "@iconify-json/line-md": "1.2.11",
-    "@iconify-json/material-symbols": "1.2.48",
+    "@iconify-json/material-symbols": "1.2.49",
     "@iconify-json/mdi": "1.2.3",
     "@iconify-json/prime": "1.2.4",
     "@nuxt/eslint": "1.11.0",
