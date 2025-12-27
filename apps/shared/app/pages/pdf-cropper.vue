@@ -115,7 +115,7 @@
                 v-model:current-mode="currentMode"
                 v-model:cropper-overlay-datas="cropperOverlayDatas"
                 v-model:overlays-per-question-data="overlaysPerQuestionData"
-                v-model:optional-questions="testConfig.optionalQuestions!"
+                v-model:optional-questions="testConfig.optionalQuestions"
                 :is-form-ready="!!patternModeConfigFormElem?.isFormReady"
                 :is-pdf-loaded="isPdfLoaded"
                 :page-img-data="pageImgData"
@@ -468,7 +468,7 @@
     <LazyPdfCropperBulkEditDialog
       v-if="isPdfLoaded"
       v-model="dialogsState.showBulkEdit"
-      v-model:optional-questions="testConfig.optionalQuestions!"
+      v-model:optional-questions="testConfig.optionalQuestions"
       v-model:overlay-datas="cropperOverlayDatas"
       :pages-dimensions="pageImgData"
       :allow-resizing-panels="settings.general.allowResizingPanels"
@@ -503,6 +503,9 @@ import { SEPARATOR } from '#layers/shared/shared/constants'
 import { DataFileNames } from '#layers/shared/shared/enums'
 
 type JsonOutputData = PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper
+
+type PdfCropperTestConfig = Omit<PdfCropperJsonOutput['testConfig'], 'optionalQuestions'>
+  & Required<Pick<PdfCropperJsonOutput['testConfig'], 'optionalQuestions'>>
 
 useSeoMeta({
   title: 'PDF Cropper - PDF2CBT',
@@ -597,7 +600,7 @@ const pdfState = shallowReactive({
   fileUint8Array: null as Uint8Array | null,
 })
 
-const testConfig = reactive<PdfCropperJsonOutput['testConfig']>({
+const testConfig = reactive<PdfCropperTestConfig>({
   pdfFileHash: '', // SHA-256 hash of pdf file
   optionalQuestions: [],
 })
@@ -963,7 +966,7 @@ async function loadPdfPatternModeData(
 async function handlePdfFileUpload(file: File | Uint8Array) {
   dialogsState.isLoadingPdf = true
   testConfig.pdfFileHash = ''
-  testConfig.optionalQuestions = []
+  testConfig.optionalQuestions.length = 0
 
   try {
     if (file instanceof File) {
@@ -1124,7 +1127,7 @@ function transformDataToOutputFormat(data: Map<string, PdfCroppedOverlayData>): 
   outputData.pdfCropperData = subjectsData
   outputData.testConfig.pdfFileHash = testConfig.pdfFileHash
 
-  if (testConfig.optionalQuestions?.length)
+  if (testConfig.optionalQuestions.length)
     outputData.testConfig.optionalQuestions = utilCloneJson(testConfig.optionalQuestions)
 
   migrateJsonData.removeEmptyKeysFromTestConfig(outputData.testConfig)

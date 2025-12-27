@@ -439,7 +439,7 @@ async function runCropper(patternModeRawDataForCropper: PdfPagesPatternModeData)
     utilCloneJson(pageImgData),
   )
 
-  optionalQuestions.value = []
+  optionalQuestions.value.length = 0
   const overlays = cropperOverlayDatas.value
   const overlaysCount = overlaysPerQuestionData.value
   overlaysCount.clear()
@@ -453,13 +453,13 @@ async function runCropper(patternModeRawDataForCropper: PdfPagesPatternModeData)
     overlaysCount.set(queId, count)
   }
 
-  for (const [subjectName, subjectConf] of Object.entries(subjectsConfig)) {
-    for (const [sectionName, sectionConf] of Object.entries(subjectConf.sections)) {
+  for (const subjectConf of Object.values(subjectsConfig)) {
+    for (const sectionConf of Object.values(subjectConf.sections)) {
       const optQues = sectionConf.numOfOptionalQuestions
       if (optQues) {
         optionalQuestions.value.push({
-          subject: subjectName,
-          section: sectionName,
+          subject: subjectConf.name,
+          section: sectionConf.name,
           count: optQues,
         })
       }
