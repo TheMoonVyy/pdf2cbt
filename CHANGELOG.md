@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.30.0...v1.30.1) (2025-12-27)
+
+
+### Bug Fixes
+
+* **pdf-cropper:** fix an issue where optional questions of pattern based cropper was not being considered in generated output ([5ad818b](https://github.com/TheMoonVyy/pdf2cbt/commit/5ad818b3e1d5908371cb8e049f68d8b4e98cda66))
+
 ## [1.30.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.29.2...v1.30.0) (2025-12-07)
 
 
