@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.30.1...v1.30.2) (2025-12-29)
+
+
+### Bug Fixes
+
+* **cbt-interface:** fix question that is marked for review reverting on revisiting the question ([eb1d343](https://github.com/TheMoonVyy/pdf2cbt/commit/eb1d3430227bb6aae32b95e0b814072362defe2b))
+
 ## [1.30.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.30.0...v1.30.1) (2025-12-27)
 
 
