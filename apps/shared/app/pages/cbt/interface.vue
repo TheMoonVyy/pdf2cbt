@@ -926,6 +926,8 @@ function changeCurrentQuestion(
 
 function saveCurrentAnswer(via: AnswerSavedViaType | 'clear') {
   const currentQueId = currentTestState.value.queId
+  const currentQuestionData = testQuestionsData.value.get(currentQueId)
+  const currentStatus = currentQuestionData?.status
   let currentAnswer = currentTestState.value.currentAnswerBuffer
   const maybeClearedAnswer = currentAnswer
 
@@ -939,11 +941,16 @@ function saveCurrentAnswer(via: AnswerSavedViaType | 'clear') {
   else if (via === 'mfr') {
     questionStatus = currentAnswer !== null ? 'markedAnswered' : 'marked'
   }
+  else if (currentStatus === 'marked') {
+    questionStatus = currentAnswer !== null ? 'answered' : 'marked'
+  }
+  else if (currentStatus === 'markedAnswered') {
+    questionStatus = currentAnswer !== null ? 'markedAnswered' : 'notAnswered'
+  }
   else {
     questionStatus = currentAnswer !== null ? 'answered' : 'notAnswered'
   }
 
-  const currentQuestionData = testQuestionsData.value.get(currentQueId)
   if (currentQuestionData) {
     const prevStatus = currentQuestionData.status
     const prevAnswer = currentQuestionData.answer
