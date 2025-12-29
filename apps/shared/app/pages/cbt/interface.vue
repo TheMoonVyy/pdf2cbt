@@ -928,6 +928,7 @@ function saveCurrentAnswer(via: AnswerSavedViaType | 'clear') {
   const currentQueId = currentTestState.value.queId
   const currentQuestionData = testQuestionsData.value.get(currentQueId)
   const currentStatus = currentQuestionData?.status
+  const saveQuestionsLikeRealExams = testSettings.value.saveQuestionsLikeRealExams
   let currentAnswer = currentTestState.value.currentAnswerBuffer
   const maybeClearedAnswer = currentAnswer
 
@@ -941,10 +942,10 @@ function saveCurrentAnswer(via: AnswerSavedViaType | 'clear') {
   else if (via === 'mfr') {
     questionStatus = currentAnswer !== null ? 'markedAnswered' : 'marked'
   }
-  else if (currentStatus === 'marked') {
+  else if (saveQuestionsLikeRealExams && currentStatus === 'marked') {
     questionStatus = currentAnswer !== null ? 'answered' : 'marked'
   }
-  else if (currentStatus === 'markedAnswered') {
+  else if (saveQuestionsLikeRealExams && currentStatus === 'markedAnswered') {
     questionStatus = currentAnswer !== null ? 'markedAnswered' : 'notAnswered'
   }
   else {
