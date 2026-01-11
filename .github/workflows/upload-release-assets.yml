@@ -32,9 +32,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm i --frozen-lockfile
-
       - name: Build static site
         env:
           DISABLE_SEO_MODULES: true
@@ -45,6 +42,13 @@ jobs:
           [ ! -d "$BUILD_OUTPUT_FOLDER" ] && echo "Build output not found!" && exit 1
           mv "$BUILD_OUTPUT_FOLDER" "$STATIC_ASSET_NAME"
           zip -r "${STATIC_ASSET_NAME}.zip" "$STATIC_ASSET_NAME"
+
+      - name: Upload as workflow artifact
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.STATIC_ASSET_NAME }}
+          path: ${{ env.STATIC_ASSET_NAME }}.zip
 
       - name: Upload release asset
         env:
