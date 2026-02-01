@@ -61,8 +61,8 @@ importers:
         specifier: 4.4.2
         version: 4.4.2
       dexie:
-        specifier: 4.2.1
-        version: 4.2.1
+        specifier: 4.3.0
+        version: 4.3.0
       echarts:
         specifier: 6.0.0
         version: 6.0.0
@@ -3085,8 +3085,8 @@ packages:
   devalue@5.6.2:
     resolution: {integrity: sha512-nPRkjWzzDQlsejL1WVifk5rvcFi/y1onBRxjaFMjZeR9mFpqu2gmAZ9xUB9/IEanEP/vBtGeGganC/GO1fmufg==}
 
-  dexie@4.2.1:
-    resolution: {integrity: sha512-Ckej0NS6jxQ4Po3OrSQBFddayRhTCic2DoCAG5zacOfOVB9P2Q5Xc5uL/nVa7ZVs+HdMnvUPzLFCB/JwpB6Csg==}
+  dexie@4.3.0:
+    resolution: {integrity: sha512-5EeoQpJvMKHe6zWt/FSIIuRa3CWlZeIl6zKXt+Lz7BU6RoRRLgX9dZEynRfXrkLcldKYCBiz7xekTEylnie1Ug==}
 
   dfa@1.2.0:
     resolution: {integrity: sha512-ED3jP8saaweFTjeGX8HQPjeC1YYyZs98jGNZx6IiBvxW7JG5v492kamAQB3m2wop07CvU/RQmzcKr6bgcC5D/Q==}
@@ -9389,7 +9389,7 @@ snapshots:
 
   devalue@5.6.2: {}
 
-  dexie@4.2.1: {}
+  dexie@4.3.0: {}
 
   dfa@1.2.0: {}
 
