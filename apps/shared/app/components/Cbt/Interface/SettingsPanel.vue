@@ -267,7 +267,7 @@
                         <span class="pl-5 pr-3 text-lg font-bold">Sort Sections Order</span>
                       </div>
                       <div class="flex mx-auto mt-2">
-                        <CbtSectionsOrderList
+                        <CbtOrderList
                           v-model="testSectionsList"
                         />
                       </div>
@@ -845,39 +845,35 @@
                     </div>
                   </UiCardContent>
                 </UiCard>
-              </UiAccordionContent>
-            </UiAccordionItem>
-            <UiAccordionItem value="2">
-              <UiAccordionTrigger>
-                Miscellaneous Settings
-              </UiAccordionTrigger>
-              <UiAccordionContent>
-                <span class="flex text-center justify-center mb-4">
-                  Misc. settings for Profile Details (Top-right corner one)<br>
-                  Everthing under this is for visual use only and thus is optional,<br>
-                  none of these are saved or exported for privacy reasons
-                </span>
-                <div class="flex w-full">
-                  <div class="grid grid-cols-6 gap-4">
+                <UiCard class="py-2 mt-4 rounded-none gap-2">
+                  <UiCardHeader>
+                    <UiCardTitle class="text-lg mx-auto">
+                      Profile Settings
+                    </UiCardTitle>
+                    <UiCardDescription class="mx-auto">
+                      Settings for Profile Details (Top-right corner one)<br>
+                      Everthing under this is for visual use only and thus is optional,<br>
+                      none of these are saved or exported for privacy reasons
+                    </UiCardDescription>
+                  </UiCardHeader>
+                  <UiCardContent class="grid grid-cols-6 gap-4 w-full p-2">
                     <div class="grid grid-cols-1 col-span-2 w-full">
                       <UiLabel
                         class="mb-0.5"
-                        for="misc_user_name"
+                        for="profile_user_name"
                       >
                         User Name
                       </UiLabel>
                       <UiInput
-                        id="misc_user_name"
-                        v-model="miscSettings.username"
+                        id="profile_user_name"
+                        v-model="uiSettings.profile.username"
                         type="text"
                         class="text-center"
                         :maxlength="60"
                       />
                     </div>
                     <div class="grid grid-cols-1 w-full">
-                      <UiLabel
-                        for="misc_profile_icon"
-                      >
+                      <UiLabel>
                         Profile Img
                       </UiLabel>
                       <BaseSimpleFileUpload
@@ -891,7 +887,7 @@
                       />
                     </div>
                     <div
-                      v-for="item in htmlContent.miscSettings"
+                      v-for="item in htmlContent.profileSettings"
                       :key="item.key"
                       class="grid grid-cols-1 w-full"
                     >
@@ -903,14 +899,14 @@
                       </UiLabel>
                       <BaseInputNumber
                         :id="item.id"
-                        v-model="(miscSettings[item.key as keyof MiscSettings] as number)"
+                        v-model="(uiSettings.profile[item.key as keyof CbtUiSettings['profile']] as number)"
                         :min="item.min"
                         :max="item.max"
                         :step="item.step || 1"
                       />
                     </div>
-                  </div>
-                </div>
+                  </UiCardContent>
+                </UiCard>
               </UiAccordionContent>
             </UiAccordionItem>
           </UiAccordion>
@@ -1162,7 +1158,7 @@
 <script lang="ts" setup>
 import type { LocationQueryValue } from 'vue-router'
 import { CBTInterfaceQueryParams } from '#layers/shared/shared/enums'
-import { ANSWER_OPTIONS_COUNTER_TYPES } from '#layers/shared/shared/constants'
+import { ANSWER_OPTIONS_COUNTER_TYPES, MIME_TYPE } from '#layers/shared/shared/constants'
 
 type ImportExportTypeKey = 'import' | 'export' | 'restoreFromSaved' | 'reset'
 
@@ -1434,7 +1430,7 @@ const htmlContent = {
       { key: 'rowsGap', label: 'Palette Rows Gap', min: 0, max: 10, step: 0.1 },
     ]),
   },
-  miscSettings: addIds([
+  profileSettings: addIds([
     { key: 'fontSize', label: 'Font Size', min: 0.5, max: 5, step: 0.1 },
     { key: 'imgWidth', label: 'Img Width (%)', min: 0, max: 100 },
     { key: 'imgHeight', label: 'Img Height (%)', min: 0, max: 100 },
@@ -1505,8 +1501,6 @@ const {
   defaultUiSettings,
   testSettings,
   defaultTestSettings,
-  miscSettings,
-  defaultMiscSettings,
 } = useCbtSettings()
 
 const settings = useThrottle(uiSettings, 400)
@@ -1595,7 +1589,7 @@ const fetchZipFile = async (isRetry: boolean = false) => {
     const data = await utilFetchZipFromUrl(zipFileFromUrlState.url)
 
     if (data.zipFile) {
-      zipFileFromUrlState.zipFile = new File([data.zipFile], 'testData.zip', { type: 'application/zip' })
+      zipFileFromUrlState.zipFile = new File([data.zipFile], 'testData.zip', { type: MIME_TYPE.zip })
       testState.value.testConfig.zipOriginalUrl = data.originalUrl
       testState.value.testConfig.zipConvertedUrl = data.convertedUrl || ''
       zipFileFromUrlState.isDialogOpen = false
@@ -1622,9 +1616,8 @@ const changeIcon = (iconFile: File, key: QuestionStatus) => {
 }
 
 const changeProfileIcon = (iconFile: File) => {
-  utilFileAsDataURL(iconFile).then((dataURL) => {
-    miscSettings.value.profileImg = dataURL
-  })
+  utilFileAsDataURL(iconFile)
+    .then(dataURL => uiSettings.value.profile.img = dataURL)
 }
 
 const handleImportExportBtn = async (name: ImportExportTypeKey, file: File | null = null) => {
@@ -1675,7 +1668,6 @@ const handleImportExportBtn = async (name: ImportExportTypeKey, file: File | nul
       importExportDialogState.data = {
         testSettings: defaultTestSettings,
         uiSettings: defaultUiSettings,
-        miscSettings: defaultMiscSettings,
       }
       importExportDialogState.type = name
       importExportDialogState.isDialogOpen = true
@@ -1706,7 +1698,7 @@ const processImportExport = (name: ImportExportTypeKey | string, data: Record<st
       db.replaceSettings(getPlainData())
 
       const exportData = JSON.stringify(data, null, 2)
-      const blob = new Blob([exportData], { type: 'application/json' })
+      const blob = new Blob([exportData], { type: MIME_TYPE.json })
       utilSaveFile('pdf2cbt.settings.json', blob)
       break
     }
@@ -1715,18 +1707,9 @@ const processImportExport = (name: ImportExportTypeKey | string, data: Record<st
       break
     }
     case 'reset': {
-      const { miscSettings: miscSettingsToReset, ...rest } = data
-
-      if (Object.keys(rest).length > 0) {
-        utilSelectiveMergeObj(currentData, rest)
+      if (Object.keys(data).length > 0) {
+        utilSelectiveMergeObj(currentData, data)
         db.replaceSettings(getPlainData())
-      }
-
-      if (miscSettingsToReset) {
-        utilSelectiveMergeObj(
-          miscSettings.value as unknown as Record<string, unknown>,
-          miscSettingsToReset,
-        )
       }
       break
     }
@@ -1805,14 +1788,23 @@ async function loadTestData(
     if (!testState.value.testConfig.zipOriginalUrl)
       testState.value.testConfig.zipOriginalUrl = testConfig?.zipOriginalUrl || (testConfig?.zipUrl || '')
 
-    if (testConfig.optionalQuestions?.length)
-      testState.value.testConfig.optionalQuestions = testConfig.optionalQuestions
-
     if (testAnswerKey)
       testState.value.testAnswerKey = testAnswerKey
 
     if (!pdfCropperData)
       throw new Error('Error, pdfCropperData not found in json data')
+
+    testState.value.testConfig.additionalData = testConfig.additionalData
+    testState.value.testConfig.testInstructions = testConfig.testInstructions
+    testState.value.pdfCropperData = pdfCropperData
+
+    const instructionsData = utilTransformInstructionsDataToInternalFormat(testConfig)
+    instructionsData
+      .testInstructions
+      .imgLinksFootNotes = utilGetIconUrlFootNotesForInstructionsTemplate()
+    testState.value.instructionsData = instructionsData
+
+    useLoadMdContentOfTestInstructions(instructionsData.testInstructions.type)
 
     // for newCropperSectionsData and sectionsArray
     for (const subject of Object.keys(pdfCropperData)) {
@@ -1978,8 +1970,6 @@ onMounted(() => {
         utilSelectiveMergeObj(data, storedSettings)
       }
       else {
-        console.info('Unable to load settings from db, either does not exists or unable to access it')
-
         // simple method to reduce layout size for small screens
         const widthInRange = window.innerWidth >= 250 && window.innerWidth <= 480
         const heightInRange = window.innerHeight >= 250 && window.innerHeight <= 480
@@ -1989,6 +1979,7 @@ onMounted(() => {
         }
       }
     })
+    .catch(err => useErrorToast('Unable to load settings from db', err))
     .finally(() => {
       const route = useRoute()
       testTimeFormatWatcher.pause()

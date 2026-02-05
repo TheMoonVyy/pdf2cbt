@@ -1,3 +1,5 @@
+import { MIME_TYPE } from '#layers/shared/shared/constants'
+
 export const utilFindTestLog = (
   logs: TestLog[],
   logType: string,
@@ -104,7 +106,7 @@ export const utilIsPdfFile = (file: File): Promise<0 | 1 | 2> => {
         if (arr[0] === 0x25 && arr[1] === 0x50 && arr[2] === 0x44 && arr[3] === 0x46) {
           return resolve(2) // valid pdf by magic number
         }
-        else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        else if (file.type === MIME_TYPE.pdf || file.name.toLowerCase().endsWith('.pdf')) {
           return resolve(1) // probably a pdf
         }
       }
@@ -133,7 +135,7 @@ export const utilIsZipFile = (file: File | Blob): Promise<0 | 1 | 2> => {
           return resolve(2) // valid zip by magic number
         }
         else if (
-          (file.type === 'application/zip')
+          (file.type === MIME_TYPE.zip)
           || (file instanceof File && file.name.toLowerCase().endsWith('.zip'))
         ) {
           return resolve(1) // probably a zip

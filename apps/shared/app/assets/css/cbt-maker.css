@@ -1,64 +1,47 @@
 .pdf-cropper-img {
-  width: calc(var(--pdf-page-width) * var(--pdf-page-scale) * 1px);
-  height: calc(var(--pdf-page-height) * var(--pdf-page-scale) * 1px);
+  width: calc(var(--pdf-page-width, 0) * var(--pdf-page-scale, 1) * 1px);
+  height: calc(var(--pdf-page-height, 0) * var(--pdf-page-scale, 1) * 1px);
   max-width: none;
   max-height: none;
+  position: absolute;
+  left: 0;
+  top: calc(var(--pdf-page-top, 0) * var(--pdf-page-scale, 1) * 1px);
 }
 
 .box-cropper {
-  position: absolute;
-  outline: 2px solid var(--crop-selection-guide-color);
-  outline-offset: -1px;
-  background-color: color-mix(in srgb, var(--crop-selection-guide-color) calc(var(--crop-selection-bg-opacity) * 1%), transparent);
+  stroke: var(--crop-selection-guide-color);
+  stroke-width: 1.5;
   z-index: 15;
-  transform: translate(
-    calc(var(--l) * var(--pdf-page-scale) * 1px),
-    calc(var(--t) * var(--pdf-page-scale) * 1px)
+  fill: color-mix(
+    in srgb,
+    var(--crop-selection-guide-color)
+    calc(var(--crop-selection-bg-opacity) * 1%),
+    transparent
   );
-  width: calc((var(--r) - var(--l)) * var(--pdf-page-scale) * 1px);
-  height: calc((var(--b) - var(--t)) * var(--pdf-page-scale) * 1px);
 }
 
 .line-cropper {
-  position: absolute;
-  outline: 1px solid var(--crop-selection-guide-color);
-  z-index: 15;
+  stroke: var(--crop-selection-guide-color);
+  stroke-width: 1.5;
+  z-index: 25;
 }
 
 .line-cropper.selected {
-  outline: 1px solid var(--crop-selected-region-color);
+  stroke: var(--crop-selected-region-color);
+  z-index: 20;
 }
 
-.line-cropper.b.skip-line {
-  outline: 1px solid var(--crop-selection-skip-color) !important;
+.line-cropper.skip {
+  stroke: var(--crop-selection-skip-color);
 }
 
-.line-cropper.l, .line-cropper.r {
-  top: 0px;
-  width: 0px;
-  height: calc(var(--pdf-page-height) * var(--pdf-page-scale) * 1px);
+.blur-cropped .cropped-overlay {
+  backdrop-filter: blur(calc(var(--pdf-cropped-blur-intensity) * 1px));
 }
 
-.line-cropper.t, .line-cropper.b {
-  left: 0px;
-  height: 0px;
-  width: calc(var(--pdf-page-width) * var(--pdf-page-scale) * 1px);
-}
-
-.line-cropper.l {
-  left: calc(var(--l) * var(--pdf-page-scale) * 1px);
-}
-
-.line-cropper.r {
-  left: calc(var(--r) * var(--pdf-page-scale) * 1px);
-}
-
-.line-cropper.t {
-  top: calc(var(--t) * var(--pdf-page-scale) * 1px);
-}
-
-.line-cropper.b {
-  top: calc(var(--b) * var(--pdf-page-scale) * 1px);
+#cropped-overlay-elem {
+  width: calc(var(--pdf-pages-container-width) * var(--pdf-page-scale) * 1px);
+  height: calc(var(--pdf-pages-container-height) * var(--pdf-page-scale) * 1px);
 }
 
 .resizer {
@@ -137,7 +120,7 @@
 }
 
 .blur-cropped .cropped-overlay {
-  backdrop-filter: blur(calc(var(--pdf-cropped-blur-intensity) * 1px));
+  backdrop-filter: blur(calc(var(--pdf-cropped-blur-intensity) * var(--pdf-page-scale) * 1px));
 }
 
 .overlay-label {
@@ -151,8 +134,8 @@
   pointer-events: none;
   margin: auto;
   font-size: min(
-    clamp(6px, calc((var(--r) - var(--l)) * var(--pdf-page-scale) * 0.1px), 18px),
-    calc((var(--b) - var(--t)) * var(--pdf-page-scale) * 0.5px)
+    clamp(6px, calc((var(--r) - var(--l)) * var(--pdf-page-scale) * 0.05px), 22px),
+    calc((var(--b) - var(--t)) * var(--pdf-page-scale) * 0.3px)
   );
 }
 

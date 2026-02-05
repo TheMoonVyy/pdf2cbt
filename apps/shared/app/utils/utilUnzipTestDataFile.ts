@@ -65,7 +65,10 @@ export default (
                           const filename = `${sectionNamwWithSeparator}${questionNameWithSeparator}${i + 1}.png`
                           const imageBuffer = files[filename]
                           if (imageBuffer) {
-                            const blob = new Blob([imageBuffer], { type: 'image/png' })
+                            const blob = new Blob(
+                              [imageBuffer as unknown as ArrayBuffer],
+                              { type: 'image/png' },
+                            )
                             imageBlobs[section][question].push(blob)
                           }
                           else {

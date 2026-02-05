@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-3 w-full mx-[-1rem]">
+  <div class="flex flex-col gap-3 w-full -mx-4">
     <UiCard class="py-3 gap-2 grow">
       <UiCardHeader>
         <UiCardTitle class="mx-auto text-lg">
@@ -96,7 +96,7 @@
             @click="editConfigHandler"
           />
           <template v-else>
-            <span class="mx-auto text-center font-bold mt-[-0.5rem]">Edits</span>
+            <span class="mx-auto text-center font-bold -mt-2">Edits</span>
             <div class="flex gap-3 items-center justify-center">
               <BaseButton
                 label="Discard"
@@ -216,14 +216,19 @@ import { wrap as comlinkWrap } from 'comlink'
 import patternBasedCropperWorker from '#layers/shared/app/src/worker/text-pattern-based-crop.worker?worker'
 import ManageConfigs from './ManageConfigs.client.vue'
 import { ComboboxContent } from 'reka-ui'
+import {
+  cropperOverlayDatasKey,
+  overlaysPerQuestionDataKey,
+  pagesImgDataKey,
+} from '../../keys'
+import type { InputPdfCropperData } from '#layers/shared/app/utils/utilPdfCropperDataToInternalData'
 
 type ConfigsListItem = MakePropertyOptional<PatternModeBuiltInConfig, 'url'>
-type OptionalQuestions = NonNullable<PdfCropperJsonOutput['testConfig']['optionalQuestions']>
+type AdditionalData = NonNullable<PdfCropperJsonOutput['testConfig']['additionalData']>
 
 const props = defineProps<{
   isFormReady: boolean
   totalPages: number
-  pageImgData: PageImgData
   isPdfLoaded: boolean
 }>()
 
@@ -233,25 +238,18 @@ const emit = defineEmits<{
 
 const showPatternModeEditConfigPanel = defineModel<boolean>({ required: true })
 
-const currentMode = defineModel<PdfCropperCurrentMode>(
-  'currentMode',
+const additionalData = defineModel<AdditionalData>(
+  'additionalData',
   { required: true },
 )
 
-const cropperOverlayDatas = defineModel<Map<string, PdfCroppedOverlayData>>(
-  'cropperOverlayDatas',
-  { required: true },
-)
+const currentMode = defineModel<PdfCropperCurrentMode>('currentMode', { required: true })
 
-const overlaysPerQuestionData = defineModel<Map<string, number>>(
-  'overlaysPerQuestionData',
-  { required: true },
-)
+const cropperOverlayDatas = inject(cropperOverlayDatasKey)!
 
-const optionalQuestions = defineModel<OptionalQuestions>(
-  'optionalQuestions',
-  { required: true },
-)
+const overlaysPerQuestionData = inject(overlaysPerQuestionDataKey)!
+
+const pagesImgData = inject(pagesImgDataKey)!
 
 let patternBasedCrop: ReturnType<typeof comlinkWrap<PatternBasedCropFn>> | null = null
 
@@ -429,39 +427,50 @@ async function runCropper(patternModeRawDataForCropper: PdfPagesPatternModeData)
 
   const patternBasedCropper = initWorker()
 
-  const { pageImgData } = props
-
   const { subjects: subjectsConfig } = parsedConfigData
 
   const newCropperOverlays = await patternBasedCropper(
     subjectsConfig,
     patternModeRawDataForCropper,
-    utilCloneJson(pageImgData),
+    utilCloneJson(pagesImgData),
   )
 
-  optionalQuestions.value = []
   const overlays = cropperOverlayDatas.value
-  const overlaysCount = overlaysPerQuestionData.value
-  overlaysCount.clear()
+  overlaysPerQuestionData.clear()
   overlays.clear()
 
-  for (const overlay of newCropperOverlays.values()) {
-    const { id, queId } = overlay
-    overlays.set(id, overlay)
+  const newCropperSubjectsData: InputPdfCropperData = {}
+  for (const overlayData of newCropperOverlays.values()) {
+    const { subject, section: rawSection, que } = overlayData
+    const section = rawSection || subject
 
-    const count = (overlaysCount.get(queId) || 0) + 1
-    overlaysCount.set(queId, count)
+    newCropperSubjectsData[subject] ??= {}
+    newCropperSubjectsData[subject][section] ??= {}
+    newCropperSubjectsData[subject][section][que] ??= {
+      ...overlayData,
+      pdfData: [],
+    }
+    newCropperSubjectsData[subject][section][que]
+      .pdfData.push(overlayData.pdfData)
   }
+
+  utilPdfCropperDataToInternalData(
+    newCropperSubjectsData,
+    pagesImgData,
+    overlays,
+    overlaysPerQuestionData,
+  )
 
   for (const [subjectName, subjectConf] of Object.entries(subjectsConfig)) {
     for (const [sectionName, sectionConf] of Object.entries(subjectConf.sections)) {
       const optQues = sectionConf.numOfOptionalQuestions
       if (optQues) {
-        optionalQuestions.value.push({
-          subject: subjectName,
-          section: sectionName,
-          count: optQues,
-        })
+        additionalData.value[subjectName] ??= {
+          sections: {},
+        }
+        additionalData.value[subjectName]!.sections[sectionName] ??= {
+          optionalQuestions: optQues,
+        }
       }
     }
   }

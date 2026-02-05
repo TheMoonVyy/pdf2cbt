@@ -4,6 +4,7 @@ import utilRange from '#layers/shared/app/utils/utilRange'
 import type {
   PatternModeParsedConfig,
 } from '#layers/shared/app/src/pdf-cropper-pattern-mode/parsed-config-for-cropper'
+import { MIME_TYPE } from '#layers/shared/shared/constants'
 
 type PdfData = {
   page: number
@@ -28,7 +29,7 @@ const SCRIPT_URLS = [
   `/assets/_mupdf/mupdf.js`,
 ] as const
 
-type LinesGroupedByY = Record<string | number, PageTextChar[]>
+type LinesGroupedByY = Record<Numberish, PageTextChar[]>
 
 export class MuPdfProcessor {
   private mupdf: typeof Mupdf | null = null
@@ -61,7 +62,7 @@ export class MuPdfProcessor {
     if (!this.mupdf) throw new Error('mupdf not loaded')
 
     this.doc?.destroy()
-    this.doc = this.mupdf.Document.openDocument(pdfFile, 'application/pdf')
+    this.doc = this.mupdf.Document.openDocument(pdfFile, MIME_TYPE.pdf)
 
     if (getPageCount)
       return this.doc?.countPages()
@@ -230,25 +231,32 @@ export class MuPdfProcessor {
     return pixmap
   }
 
-  async getAllPagesDimensionsData(): Promise<PageImgData> {
+  async getAllPagesDimensionsData(): Promise<PagesImgData> {
     if (!this.doc)
       throw new Error('PDF not loaded')
 
     const totalPagesCount = this.doc.countPages()
-    const pageImgData: PageImgData = {}
-
+    const pagesImgData: PagesImgData = {}
+    let top = 0
+    let bottom = 0
     for (let i = 0; i < totalPagesCount; i++) {
       const page = this.doc.loadPage(i)
       const [pageMinX, pageMinY, pageMaxX, pageMaxY] = page.getBounds()
-      pageImgData[i + 1] = {
+      const height = Math.abs(pageMaxY - pageMinY)
+      bottom += height
+
+      pagesImgData[i + 1] = {
         width: Math.abs(pageMaxX - pageMinX),
-        height: Math.abs(pageMaxY - pageMinY),
+        height,
+        top,
+        bottom,
         url: '',
         pageScale: 1,
       }
+      top += height
     }
 
-    return pageImgData
+    return pagesImgData
   }
 
   async getPageImage(
@@ -303,7 +311,7 @@ export class MuPdfProcessor {
 
   async generateAndPostQuestionImagesIndividually(
     queIds: Map<number, number>,
-    questionsPdfData: { [queId: string | number]: PdfData[] },
+    questionsPdfData: { [queId: Numberish]: PdfData[] },
     scale: number = 2,
     transparent: boolean = false,
   ) {

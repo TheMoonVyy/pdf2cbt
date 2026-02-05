@@ -13,6 +13,14 @@ export const QUESTION_STATUS_LABELS = {
   notVisited: 'Not Visited',
 }
 
+export const QUESTION_STATUS_FULL_LABELS = {
+  answered: 'Answered',
+  markedAnswered: 'Answered & Marked for Review',
+  notAnswered: 'Not Answered',
+  marked: 'Marked for Review',
+  notVisited: 'Not Visited',
+}
+
 export const RESULT_STATUS_LABELS = {
   correct: 'Correct',
   incorrect: 'Incorrect',
@@ -29,6 +37,13 @@ export const QUESTION_TYPES_LABELS = {
   nat: 'NAT',
   msm: 'MSM',
 }
+
+export const QUESTION_TYPES_IN_WORDS = {
+  MCQ: 'Multiple Choice Question',
+  MSQ: 'Multiple Select Question',
+  NAT: 'Numerial Answer Type',
+  MSM: 'Multiple Select Matrix',
+} as const
 
 export const MARKS_STATUS_LIST = ['positive', 'negative', 'bonus', 'dropped'] as const
 
@@ -105,3 +120,22 @@ export const PAGE_NAMES_MAP = {
   'cbt-results': 'testResults',
   'cbt-generate-answer-key': 'generateAnswerKey',
 } as const
+
+export const MAIN_NAV_BAR_HEIGHT = {
+  cssVar: '--main-nav-bar-height',
+  val: '3.5rem',
+} as const
+
+export const MIME_TYPE = {
+  pdf: 'application/pdf',
+  json: 'application/json',
+  zip: 'application/zip',
+} as const
+
+export const CROPPED_OVERLAY_RESIZE_DIRECTIONS = [
+  'top-left', 'top', 'top-right',
+  'right', 'bottom-right', 'bottom',
+  'bottom-left', 'left',
+] as const
+
+export type CroppedOverlayResizeDirection = (typeof CROPPED_OVERLAY_RESIZE_DIRECTIONS)[number]

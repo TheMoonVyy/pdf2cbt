@@ -228,9 +228,9 @@
             label-class="start-1/2! -translate-x-1/2 text-xs"
           >
             <BaseInputNumber
-              v-model="currentData.pdfData.l"
+              v-model="currentData.coords.l"
               :min="0"
-              :max="currentData.pdfData.r"
+              :max="currentData.coords.r"
               :disabled="!isPdfLoaded"
               input-class="w-full"
             />
@@ -242,9 +242,9 @@
             label-class="start-1/2! -translate-x-1/2 text-xs"
           >
             <BaseInputNumber
-              v-model="currentData.pdfData.r"
-              :min="currentData.pdfData.l"
-              :max="pageWidth"
+              v-model="currentData.coords.r"
+              :min="currentData.coords.l"
+              :max="pdfPagesContainerDims.w"
               :disabled="!isPdfLoaded"
               input-class="w-full"
             />
@@ -256,9 +256,9 @@
             label-class="start-1/2! -translate-x-1/2 text-xs"
           >
             <BaseInputNumber
-              v-model="currentData.pdfData.t"
+              v-model="currentData.coords.t"
               :min="0"
-              :max="currentData.pdfData.b"
+              :max="currentData.coords.b"
               :disabled="!isPdfLoaded"
               input-class="w-full"
             />
@@ -270,9 +270,9 @@
             label-class="start-1/2! -translate-x-1/2 text-xs"
           >
             <BaseInputNumber
-              v-model="currentData.pdfData.b"
-              :min="currentData.pdfData.t"
-              :max="pageHeight"
+              v-model="currentData.coords.b"
+              :min="currentData.coords.t"
+              :max="pdfPagesContainerDims.h"
               :disabled="!isPdfLoaded"
               input-class="w-full"
             />
@@ -291,20 +291,23 @@ import {
   SUBJECTS,
 } from '#layers/shared/shared/constants'
 import {
+  overlaysPerQuestionDataKey,
+  pdfPagesContainerDimsKey,
+} from '../keys'
+import {
   partialMarkingTooltipContent,
   answerOptionsCounterTypeTooltipContent,
 } from './tooltipContents'
 
-const currentData = defineModel<PdfCroppedOverlayData>({ required: true })
+const currentData = defineModel<PdfCroppedOverlayInternalData>({ required: true })
 
 const props = defineProps<{
-  overlayDatas: Map<string, PdfCroppedOverlayData>
-  overlaysPerQuestionData: PdfCropperOverlaysPerQuestion
   isCurrentQuestionMainOverlay: boolean
   isPdfLoaded: boolean
-  pageHeight: number
-  pageWidth: number
 }>()
+
+const pdfPagesContainerDims = inject(pdfPagesContainerDimsKey)!
+const overlaysPerQuestionData = inject(overlaysPerQuestionDataKey)!
 
 const questionState = computed(() => {
   const id = currentData.value.id
@@ -323,7 +326,7 @@ const questionState = computed(() => {
     disableQueDataInput: false,
   }
 
-  const imgCount = props.overlaysPerQuestionData.get(newQueId) ?? 0
+  const imgCount = overlaysPerQuestionData.get(newQueId) ?? 0
   if (newId === id) {
     data.imgNumToShow = imgNum
     if (imgNum > 1) data.disableQueDataInput = true

@@ -80,7 +80,7 @@
             <span class="pl-5 pr-3 text-lg font-bold">Sort Sections Order</span>
           </div>
           <div class="flex mt-2">
-            <CbtSectionsOrderList
+            <CbtOrderList
               v-model="sectionsState.sectionsList"
             />
           </div>
@@ -293,6 +293,7 @@
 import { zip, strToU8 } from 'fflate'
 import type { AsyncZippable } from 'fflate'
 import { DataFileNames } from '#layers/shared/shared/enums'
+import { MIME_TYPE } from '#layers/shared/shared/constants'
 
 type SectionListItem = TestSectionListItem & { totalQuestions: number }
 
@@ -859,7 +860,7 @@ async function downloadOutput() {
   }
 
   if (fileExtension === '.json') {
-    const outputBlob = new Blob([outputJsonString], { type: 'application/json' })
+    const outputBlob = new Blob([outputJsonString], { type: MIME_TYPE.json })
     utilSaveFile(filename + fileExtension, outputBlob)
     generateOutputState.preparingDownload = false
     generateOutputState.downloaded = true
@@ -877,7 +878,7 @@ async function downloadOutput() {
       }
       const outputBlob = new Blob(
         [compressedZip as unknown as Uint8Array<ArrayBuffer>],
-        { type: 'application/zip' },
+        { type: MIME_TYPE.zip },
       )
       utilSaveFile(filename + fileExtension, outputBlob)
       generateOutputState.preparingDownload = false

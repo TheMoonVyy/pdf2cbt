@@ -74,7 +74,7 @@
 
 <script lang="ts" setup>
 type QuestionsImgWidths = {
-  [questionNum: string | number]: {
+  [questionNum: Numberish]: {
     [imageIndex: number | string]: number
   }
 }
@@ -208,7 +208,7 @@ const currentQuestionMcqOrMsqAnswer = computed({
   },
 })
 
-const handleImageLoad = (e: Event, queId: string | number, imgindex: number) => {
+const handleImageLoad = (e: Event, queId: Numberish, imgindex: number) => {
   const w = questionsImgWidths?.[queId]?.[imgindex]
 
   if (typeof w === 'number' && w > 0) {

@@ -27,7 +27,7 @@ const defaultUiSettings: CbtUiSettings = {
       textColor: '#ffffff',
     },
     secondary: {
-      bgColor: '#daeff8',
+      bgColor: '#bbe7f7',
       textColor: '#000000',
     },
   },
@@ -119,6 +119,13 @@ const defaultUiSettings: CbtUiSettings = {
       },
     },
   },
+  profile: {
+    username: 'User Name',
+    fontSize: 1.3,
+    img: '',
+    imgWidth: 85,
+    imgHeight: 85,
+  },
 }
 
 const defaultTestSettings: CbtTestSettings = {
@@ -132,14 +139,6 @@ const defaultTestSettings: CbtTestSettings = {
   saveQuestionsLikeRealExams: true,
 }
 
-const defaultMiscSettings: MiscSettings = {
-  username: 'User Name',
-  fontSize: 1.3,
-  profileImg: '',
-  imgWidth: 85,
-  imgHeight: 85,
-}
-
 export default () => {
   const uiSettings = useState<CbtUiSettings>(
     CbtUseState.UiSettings,
@@ -149,17 +148,11 @@ export default () => {
     CbtUseState.TestSettings,
     () => structuredClone(defaultTestSettings),
   )
-  const miscSettings = useState<MiscSettings>(
-    CbtUseState.MiscSettings,
-    () => structuredClone(defaultMiscSettings),
-  )
 
   return {
     uiSettings,
     defaultUiSettings,
     testSettings,
     defaultTestSettings,
-    miscSettings,
-    defaultMiscSettings,
   }
 }

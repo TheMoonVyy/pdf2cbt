@@ -1,222 +1,48 @@
-<template>
-  <div
-    class="absolute top-0 left-0 w-full h-full"
-    :class="{
-      'pointer-events-none': currentMode !== 'edit',
-    }"
-    @contextmenu.prevent="onOpenContextMenu"
-    @click="setActiveOverlayToNone"
-  >
-    <div
-      v-for="[id, item] in overlays"
-      v-show="currentPageNum === item.pdfData.page"
-      :key="id"
-      class="cropped-overlay"
-      :class="{
-        active: activeId === id,
-      }"
-      :style="{
-        '--l': item.pdfData.l,
-        '--r': item.pdfData.r,
-        '--t': item.pdfData.t,
-        '--b': item.pdfData.b,
-      }"
-      @pointerdown="(e) => onPointerDown(e, id)"
-      @click.stop
-    >
-      <div
-        v-if="settings.general.showQuestionDetailsOnOverlay"
-        class="overlay-label w-fit flex flex-wrap divide-x divide-current [&>span]:px-1"
-      >
-        <span>{{ item.section || item.subject }}</span>
-        <span>
-          Q: {{ item.que }}
-          <template v-if="(overlaysPerQuestionData.get(item.queId) || 0) > 1">
-            ({{ item.imgNum }})
-          </template>
-        </span>
-        <span>
-          {{ item.type.toUpperCase() }}
-          <template v-if="item.type !== 'nat' && item.answerOptions !== '4' && item.answerOptions !== '4x4'">
-            ({{ item.answerOptions }})
-          </template>
-        </span>
-        <span>
-          M: ({{ utilMarksWithSign(item.marks.cm) }}
-          <template v-if="item.type === 'msq'">
-            {{ utilMarksWithSign(item.marks.pm as number) }}
-          </template>
-          {{ utilMarksWithSign(item.marks.im) }})
-        </span>
-      </div>
-
-      <template v-if="id === activeId">
-        <div
-          v-for="dir in resizeDirections"
-          :key="dir"
-          :class="`resizer ${dir}`"
-          @pointerdown.stop.prevent="startResize($event, id, dir)"
-        />
-      </template>
-    </div>
-    <UiDialog
-      v-model:open="contextMenuState.showDeleteAllCurrentPageDialog"
-    >
-      <UiDialogContent>
-        <UiDialogHeader>
-          <UiDialogTitle class="mx-auto">
-            Delete all on current page
-          </UiDialogTitle>
-        </UiDialogHeader>
-        <p class="text-center text-lg mb-2">
-          Are you sure you want to delete all regions on page #{{ currentPageNum }} ?<br>
-        </p>
-        <div class="flex justify-center gap-10 sm:gap-15 m-3 py-4">
-          <BaseButton
-            label="Yes"
-            variant="warn"
-            @click="deleteAllOverlaysOnCurrentPage"
-          />
-          <BaseButton
-            label="No"
-            @click="contextMenuState.showDeleteAllCurrentPageDialog = false"
-          />
-        </div>
-      </UiDialogContent>
-    </UiDialog>
-    <UiDialog
-      v-model:open="contextMenuState.showDeleteAllDialog"
-    >
-      <UiDialogContent>
-        <UiDialogHeader>
-          <UiDialogTitle class="mx-auto">
-            Confirm Deleting All
-          </UiDialogTitle>
-        </UiDialogHeader>
-        <p class="text-center text-lg mb-2">
-          Are you sure you want to delete regions on all pages?<br>
-        </p>
-        <div class="flex justify-center gap-10 sm:gap-15 m-3 py-4">
-          <BaseButton
-            label="Yes"
-            variant="warn"
-            @click="clearAllOverlaysData"
-          />
-          <BaseButton
-            label="No"
-            @click="contextMenuState.showDeleteAllDialog = false"
-          />
-        </div>
-      </UiDialogContent>
-    </UiDialog>
-    <UiContextMenu>
-      <UiContextMenuTrigger
-        class="hidden"
-        @contextmenu.stop
-        @click.stop
-      >
-        <div ref="contextMenuElem" />
-      </UiContextMenuTrigger>
-      <UiContextMenuContent class="w-64">
-        <UiContextMenuLabel
-          class="text-center"
-        >
-          Cropped Regions
-        </UiContextMenuLabel>
-        <UiContextMenuSeparator />
-        <UiContextMenuItem
-          inset
-          :disabled="!activeId"
-          @click="copyRegion"
-        >
-          Copy Region
-          <UiContextMenuShortcut>Ctrl + C</UiContextMenuShortcut>
-        </UiContextMenuItem>
-        <UiContextMenuItem
-          inset
-          :disabled="!contextMenuState.copiedCoords"
-          @click="pasteRegion"
-        >
-          Paste Region
-          <UiContextMenuShortcut>Ctrl + V</UiContextMenuShortcut>
-        </UiContextMenuItem>
-        <UiContextMenuCheckboxItem
-          v-model="settings.general.blurCroppedRegion"
-          inset
-        >
-          Blur Cropped Region
-        </UiContextMenuCheckboxItem>
-        <UiContextMenuItem
-          inset
-          :disabled="!activeId"
-          @click="deleteActiveOverlay"
-        >
-          Delete Region
-          <UiContextMenuShortcut>Delete</UiContextMenuShortcut>
-        </UiContextMenuItem>
-        <UiContextMenuSub>
-          <UiContextMenuSubTrigger inset>
-            Delete all on...
-          </UiContextMenuSubTrigger>
-          <UiContextMenuSubContent class="w-48">
-            <UiContextMenuItem @click="contextMenuState.showDeleteAllCurrentPageDialog = true">
-              Current Page
-            </UiContextMenuItem>
-            <UiContextMenuItem @click="contextMenuState.showDeleteAllDialog = true">
-              All Pages
-            </UiContextMenuItem>
-          </UiContextMenuSubContent>
-        </UiContextMenuSub>
-      </UiContextMenuContent>
-    </UiContextMenu>
-  </div>
-</template>
-
 <script lang="ts" setup>
+import type { CroppedOverlayResizeDirection } from '#layers/shared/shared/constants'
 import { SEPARATOR } from '#layers/shared/shared/constants'
+import {
+  activeOverlayIdKey,
+  pagesImgDataKey,
+  pageZoomScaleKey,
+  pdfPagesContainerDimsKey,
+  cropperOverlayDatasKey,
+  overlaysPerQuestionDataKey,
+} from '../keys'
 
-const props = defineProps<{
-  mainImgPanelElem: HTMLDivElement | null
+const {
+  currentPageNum,
+} = defineProps<{
   currentPageNum: number
-  pageWidth: number
-  pageHeight: number
-  pageScale: number
-  currentMode: PdfCropperCurrentMode
 }>()
 
-const overlays = defineModel<Map<string, PdfCroppedOverlayData>>({ required: true })
+const overlays = inject(cropperOverlayDatasKey)!
+const pageZoomScale = inject(pageZoomScaleKey)!
+const overlaysPerQuestionData = inject(overlaysPerQuestionDataKey)!
+const pdfPagesContainerDims = inject(pdfPagesContainerDimsKey)!
+const activeId = inject(activeOverlayIdKey)!
+const pagesImgData = inject(pagesImgDataKey)!
 
-const overlaysPerQuestionData = defineModel<PdfCropperOverlaysPerQuestion>(
-  'overlaysPerQuestionData',
-  { required: true },
-)
-
-const activeId = defineModel<string>('activeOverlayId', { required: true })
+const croppedOverlaysContainerElem = shallowRef<SVGElement | HTMLElement | null>(null)
 
 const emit = defineEmits<{
-  setPdfData: [data: PdfCroppedOverlayData['pdfData']]
+  setCroppedRect: [data: PdfCroppedOverlayCoords]
 }>()
 
 const settings = usePdfCropperLocalStorageSettings()
 
 const contextMenuElem = useTemplateRef('contextMenuElem')
 
-const resizeDirections = [
-  'top-left', 'top', 'top-right',
-  'right', 'bottom-right', 'bottom',
-  'bottom-left', 'left',
-] as const
-
 const magicKeys = useMagicKeys()
 const isHoldingCtrl = magicKeys['Ctrl']!
 const isEscapePressed = magicKeys['Escape']!
 
-const resizeDir = shallowRef<string | null>(null)
+const resizeDir = shallowRef<CroppedOverlayResizeDirection | null>(null)
 const startPointer = shallowReactive({ x: 0, y: 0 })
 const startBox = shallowReactive({ l: 0, t: 0, r: 0, b: 0 })
 
 const contextMenuState = shallowReactive({
-  copiedCoords: null as PdfCroppedOverlayData['pdfData'] | null,
+  copiedCoords: null as PdfCroppedOverlayCoords | null,
   showDeleteAllCurrentPageDialog: false,
   showDeleteAllDialog: false,
 })
@@ -283,7 +109,7 @@ const clearAllOverlaysData = () => {
   }
 
   overlays.value.clear()
-  overlaysPerQuestionData.value.clear()
+  overlaysPerQuestionData.clear()
   setActiveOverlayToNone()
 }
 
@@ -295,15 +121,18 @@ const deleteAllOverlaysOnCurrentPage = async () => {
     return
   }
 
-  const pageNum = props.currentPageNum
   setActiveOverlayToNone()
   await nextTick()
 
   const overlayIdsToDelete: string[] = []
-
-  for (const [id, overlay] of overlays.value) {
-    if (overlay.pdfData.page === pageNum) {
-      overlayIdsToDelete.push(id)
+  const currentPageImgData = pagesImgData[currentPageNum]
+  if (currentPageImgData) {
+    for (const [id, overlay] of overlays.value) {
+      if (overlay.coords.t >= currentPageImgData.top
+        && overlay.coords.b <= currentPageImgData.bottom
+      ) {
+        overlayIdsToDelete.push(id)
+      }
     }
   }
 
@@ -327,30 +156,22 @@ const deleteAllOverlaysOnCurrentPage = async () => {
 }
 
 const copyRegion = () => {
-  const pdfDataCoords = overlays.value.get(activeId.value)?.pdfData
-  if (!pdfDataCoords) return
+  const coords = overlays.value.get(activeId.value)?.coords
+  if (!coords) return
 
-  contextMenuState.copiedCoords = { ...pdfDataCoords }
+  contextMenuState.copiedCoords = { ...coords }
   activeId.value = ''
 }
 
 const pasteRegion = () => {
   if (!contextMenuState.copiedCoords) return
-  emit('setPdfData', { ...contextMenuState.copiedCoords })
+  emit('setCroppedRect', { ...contextMenuState.copiedCoords })
   contextMenuState.copiedCoords = null
 }
 
 watch(isEscapePressed, (isPressed) => {
-  if (isPressed && props.currentMode === 'edit' && activeId.value) {
+  if (isPressed && activeId.value) {
     cleanUpEventListeners()
-    activeId.value = ''
-  }
-})
-
-watch(() => props.currentMode, (newMode) => {
-  if (newMode !== 'edit') {
-    cleanUpEventListeners()
-    contextMenuState.copiedCoords = null
     activeId.value = ''
   }
 })
@@ -358,21 +179,27 @@ watch(() => props.currentMode, (newMode) => {
 const onPointerMove = (e: PointerEvent) => {
   const id = activeId.value
   if (!id) return
-  const dw = Math.floor((e.clientX - startPointer.x) / props.pageScale)
-  const dh = Math.floor((e.clientY - startPointer.y) / props.pageScale)
-  const pdfData = overlays.value.get(id)?.pdfData
-  if (!pdfData) return
+  const currentRelPointerCoords = getCurrentRelPointerXAndYCoords(e)
+  if (!currentRelPointerCoords) return
 
+  const dw = currentRelPointerCoords.x - startPointer.x
+  const dh = currentRelPointerCoords.y - startPointer.y
+
+  const coords = overlays.value.get(id)?.coords
+  if (!coords) return
+
+  const containerW = pdfPagesContainerDims.w
+  const containerH = pdfPagesContainerDims.h
   if (!resizeDir.value) {
     // Dragging
     const width = startBox.r - startBox.l
     const height = startBox.b - startBox.t
-    const newL = utilClampNumber(startBox.l + dw, 0, props.pageWidth - width)
-    const newT = utilClampNumber(startBox.t + dh, 0, props.pageHeight - height)
-    pdfData.l = newL
-    pdfData.t = newT
-    pdfData.r = newL + width
-    pdfData.b = newT + height
+    const newL = utilClampNumber(startBox.l + dw, 0, containerW - width)
+    const newT = utilClampNumber(startBox.t + dh, 0, containerH - height)
+    coords.l = newL
+    coords.t = newT
+    coords.r = newL + width
+    coords.b = newT + height
   }
   else {
     // Resizing
@@ -409,15 +236,30 @@ const onPointerMove = (e: PointerEvent) => {
         break
     }
 
-    l = utilClampNumber(l, 0, props.pageWidth)
-    r = utilClampNumber(r, 0, props.pageWidth)
-    t = utilClampNumber(t, 0, props.pageHeight)
-    b = utilClampNumber(b, 0, props.pageHeight)
+    l = utilClampNumber(l, 0, containerW)
+    r = utilClampNumber(r, 0, containerW)
+    t = utilClampNumber(t, 0, containerH)
+    b = utilClampNumber(b, 0, containerH)
 
-    pdfData.l = Math.min(l, r)
-    pdfData.t = Math.min(t, b)
-    pdfData.r = Math.max(l, r)
-    pdfData.b = Math.max(t, b)
+    coords.l = Math.min(l, r)
+    coords.t = Math.min(t, b)
+    coords.r = Math.max(l, r)
+    coords.b = Math.max(t, b)
+  }
+}
+
+function getCurrentRelPointerXAndYCoords(e: PointerEvent) {
+  if (!croppedOverlaysContainerElem.value) return
+  e.preventDefault()
+  const rect = croppedOverlaysContainerElem.value.getBoundingClientRect()
+  const xRel = e.clientX - rect.left
+  const yRel = e.clientY - rect.top
+
+  const scale = pageZoomScale.value
+
+  return {
+    x: utilClampNumber(xRel, 0, pdfPagesContainerDims.w, scale),
+    y: utilClampNumber(yRel, 0, pdfPagesContainerDims.h, scale),
   }
 }
 
@@ -450,8 +292,8 @@ const onKeyDown = (e: KeyboardEvent) => {
   const id = activeId.value
   if (!id) return
 
-  const pdfData = overlays.value.get(id)?.pdfData
-  if (!pdfData) return
+  const coords = overlays.value.get(id)?.coords
+  if (!coords) return
   e.preventDefault()
 
   const moveAmount = settings.value.general.moveOnKeyPressDistance
@@ -462,34 +304,36 @@ const onKeyDown = (e: KeyboardEvent) => {
       break
     }
     case 'ArrowUp': {
-      const dh = Math.max(0, pdfData.t - moveAmount)
-      if (dh !== pdfData.t) {
-        pdfData.t = dh
-        pdfData.b = Math.max(0, pdfData.b - moveAmount)
+      const dh = Math.max(0, coords.t - moveAmount)
+      if (dh !== coords.t) {
+        coords.t = dh
+        coords.b = Math.max(0, coords.b - moveAmount)
       }
       break
     }
     case 'ArrowDown': {
-      const dh = Math.min(pdfData.b + moveAmount, props.pageHeight)
-      if (dh !== pdfData.b) {
-        pdfData.b = dh
-        pdfData.t = Math.min(pdfData.t + moveAmount, props.pageHeight)
+      const containerH = pdfPagesContainerDims.h
+      const dh = Math.min(coords.b + moveAmount, containerH)
+      if (dh !== coords.b) {
+        coords.b = dh
+        coords.t = Math.min(coords.t + moveAmount, containerH)
       }
       break
     }
     case 'ArrowLeft': {
-      const dw = Math.max(0, pdfData.l - moveAmount)
-      if (dw !== pdfData.l) {
-        pdfData.l = dw
-        pdfData.r = Math.max(0, pdfData.r - moveAmount)
+      const dw = Math.max(0, coords.l - moveAmount)
+      if (dw !== coords.l) {
+        coords.l = dw
+        coords.r = Math.max(0, coords.r - moveAmount)
       }
       break
     }
     case 'ArrowRight': {
-      const dw = Math.min(pdfData.r + moveAmount, props.pageWidth)
-      if (dw !== pdfData.r) {
-        pdfData.r = dw
-        pdfData.l = Math.min(pdfData.l + moveAmount, props.pageWidth)
+      const containerW = pdfPagesContainerDims.w
+      const dw = Math.min(coords.r + moveAmount, containerW)
+      if (dw !== coords.r) {
+        coords.r = dw
+        coords.l = Math.min(coords.l + moveAmount, containerW)
       }
       break
     }
@@ -498,24 +342,22 @@ const onKeyDown = (e: KeyboardEvent) => {
 
 const addEventListeners = (
   listenersToAdd: (keyof (typeof eventListenersToCleanup))[],
-  e: PointerEvent | FocusEvent | KeyboardEvent | MouseEvent | null = null,
 ) => {
-  const target = e?.currentTarget || window
   cleanUpEventListeners(listenersToAdd)
 
   for (const key of listenersToAdd) {
     switch (key) {
       case 'pointermove':
-        eventListenersToCleanup.pointermove = useEventListener(window, 'pointermove', throttledOnPointerMove)
+        eventListenersToCleanup.pointermove = useEventListener(croppedOverlaysContainerElem, 'pointermove', throttledOnPointerMove)
         break
       case 'pointerup':
         eventListenersToCleanup.pointerup = useEventListener(window, 'pointerup', onPointerUp)
         break
       case 'keydown':
-        eventListenersToCleanup.keydown = useEventListener(props.mainImgPanelElem, 'keydown', onKeyDown)
+        eventListenersToCleanup.keydown = useEventListener(croppedOverlaysContainerElem, 'keydown', onKeyDown)
         break
       case 'contextmenu':
-        eventListenersToCleanup.contextmenu = useEventListener(target, 'contextmenu', (e: PointerEvent) => {
+        eventListenersToCleanup.contextmenu = useEventListener(croppedOverlaysContainerElem, 'contextmenu', (e: PointerEvent) => {
           e.preventDefault()
           e.stopPropagation()
           onOpenContextMenu(e)
@@ -531,40 +373,167 @@ function onPointerDown(e: PointerEvent, id: string) {
   if (activeId.value !== id) {
     activeId.value = id
     cleanUpEventListeners()
-    addEventListeners(['keydown', 'contextmenu'], e)
+    addEventListeners(['keydown', 'contextmenu'])
     return
   }
 
   if (e.buttons === 2) return
 
-  const overlay = overlays.value.get(id)
-  if (!overlay) return
+  const coords = overlays.value.get(id)?.coords
+  if (!coords) return
+  const currentRelPointerCoords = getCurrentRelPointerXAndYCoords(e)
+  if (!currentRelPointerCoords) return
 
-  const { page, ...coords } = overlay.pdfData
-  if (!('l' in coords)) return
-
+  startPointer.x = currentRelPointerCoords.x
+  startPointer.y = currentRelPointerCoords.y
   resizeDir.value = null
-  startPointer.x = e.clientX
-  startPointer.y = e.clientY
 
   Object.assign(startBox, { ...coords })
-  addEventListeners(['pointermove', 'pointerup', 'keydown', 'contextmenu'], e)
+  addEventListeners(['pointermove', 'pointerup', 'keydown', 'contextmenu'])
 }
 
-function startResize(e: PointerEvent, id: string, dir: typeof resizeDirections[number]) {
+function startResize(e: PointerEvent, id: string, dir: CroppedOverlayResizeDirection) {
   if (e.pointerType === 'mouse' && e.buttons !== 1) return
 
-  const overlay = overlays.value.get(id)
-  if (!overlay) return
+  const coords = overlays.value.get(id)?.coords
+  if (!coords) return
+  const currentRelPointerCoords = getCurrentRelPointerXAndYCoords(e)
+  if (!currentRelPointerCoords) return
 
-  const { page, ...coords } = overlay.pdfData ?? {}
-  if (!('l' in coords)) return
-
+  startPointer.x = currentRelPointerCoords.x
+  startPointer.y = currentRelPointerCoords.y
   resizeDir.value = dir
-  startPointer.x = e.clientX
-  startPointer.y = e.clientY
 
   Object.assign(startBox, { ...coords })
-  addEventListeners(['pointermove', 'pointerup'], e)
+  addEventListeners(['pointermove', 'pointerup'])
 }
+
+defineExpose({
+  onPointerDownOnCroppedOverlay: onPointerDown,
+  onStartResizeOnCroppedOverlay: startResize,
+})
+
+onBeforeMount(() => {
+  croppedOverlaysContainerElem.value = document.getElementById('cropped-overlay-elem') || null
+  useEventListener(croppedOverlaysContainerElem, 'pointerdown', () => activeId.value = '')
+})
+onMounted(() => {
+  activeId.value = ''
+})
+onBeforeUnmount(() => {
+  activeId.value = ''
+})
 </script>
+
+<template>
+  <UiDialog
+    v-model:open="contextMenuState.showDeleteAllCurrentPageDialog"
+  >
+    <UiDialogContent>
+      <UiDialogHeader>
+        <UiDialogTitle class="mx-auto">
+          Delete all on current page
+        </UiDialogTitle>
+      </UiDialogHeader>
+      <p class="text-center text-lg mb-2">
+        Are you sure you want to delete all regions on page #{{ currentPageNum }} ?<br>
+      </p>
+      <div class="flex justify-center gap-10 sm:gap-15 m-3 py-4">
+        <BaseButton
+          label="Yes"
+          variant="warn"
+          @click="deleteAllOverlaysOnCurrentPage"
+        />
+        <BaseButton
+          label="No"
+          @click="contextMenuState.showDeleteAllCurrentPageDialog = false"
+        />
+      </div>
+    </UiDialogContent>
+  </UiDialog>
+  <UiDialog
+    v-model:open="contextMenuState.showDeleteAllDialog"
+  >
+    <UiDialogContent>
+      <UiDialogHeader>
+        <UiDialogTitle class="mx-auto">
+          Confirm Deleting All
+        </UiDialogTitle>
+      </UiDialogHeader>
+      <p class="text-center text-lg mb-2">
+        Are you sure you want to delete regions on all pages?<br>
+      </p>
+      <div class="flex justify-center gap-10 sm:gap-15 m-3 py-4">
+        <BaseButton
+          label="Yes"
+          variant="warn"
+          @click="clearAllOverlaysData"
+        />
+        <BaseButton
+          label="No"
+          @click="contextMenuState.showDeleteAllDialog = false"
+        />
+      </div>
+    </UiDialogContent>
+  </UiDialog>
+  <UiContextMenu>
+    <UiContextMenuTrigger
+      class="hidden"
+      @contextmenu.stop
+      @click.stop
+    >
+      <div ref="contextMenuElem" />
+    </UiContextMenuTrigger>
+    <UiContextMenuContent class="w-64">
+      <UiContextMenuLabel
+        class="text-center"
+      >
+        Cropped Regions
+      </UiContextMenuLabel>
+      <UiContextMenuSeparator />
+      <UiContextMenuItem
+        inset
+        :disabled="!activeId"
+        @click="copyRegion"
+      >
+        Copy Region
+        <UiContextMenuShortcut>Ctrl + C</UiContextMenuShortcut>
+      </UiContextMenuItem>
+      <UiContextMenuItem
+        inset
+        :disabled="!contextMenuState.copiedCoords"
+        @click="pasteRegion"
+      >
+        Paste Region
+        <UiContextMenuShortcut>Ctrl + V</UiContextMenuShortcut>
+      </UiContextMenuItem>
+      <UiContextMenuCheckboxItem
+        v-model="settings.general.blurCroppedRegion"
+        inset
+      >
+        Blur Cropped Region
+      </UiContextMenuCheckboxItem>
+      <UiContextMenuItem
+        inset
+        :disabled="!activeId"
+        @click="deleteActiveOverlay"
+      >
+        Delete Region
+        <UiContextMenuShortcut>Delete</UiContextMenuShortcut>
+      </UiContextMenuItem>
+      <UiContextMenuSub>
+        <UiContextMenuSubTrigger inset>
+          Delete all on...
+        </UiContextMenuSubTrigger>
+        <UiContextMenuSubContent class="w-48">
+          <UiContextMenuItem @click="contextMenuState.showDeleteAllCurrentPageDialog = true">
+            Current Page
+          </UiContextMenuItem>
+          <UiContextMenuItem @click="contextMenuState.showDeleteAllDialog = true">
+            All Pages
+          </UiContextMenuItem>
+        </UiContextMenuSubContent>
+      </UiContextMenuSub>
+    </UiContextMenuContent>
+  </UiContextMenu>
+</template>

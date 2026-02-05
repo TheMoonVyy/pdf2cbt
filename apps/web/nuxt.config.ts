@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   $meta: {
     name: 'web',
   },
+  devtools: { enabled: false },
   css: ['./app/assets/css/main.css'],
   site: {
     url: 'https://pdf2cbt.vercel.app',

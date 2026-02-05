@@ -46,6 +46,8 @@ const appSettings = useAppSettings()
 const updatesLSState = useUpdatesLocalStorageState()
 const route = useRoute()
 
+const db = useDB()
+
 const pageSizeCssVar = useCssVar('--app-page-size', null, { initialValue: '100' })
 
 const currentPageSize = computed(() => {
@@ -129,27 +131,26 @@ function checkAndMigrateCbtResultsSettings() {
   utilSelectiveMergeObj(settings.value.quePreview, quePreview)
 }
 
-function checkAndMigrateTestInterfaceMainLayoutSizeSettings() {
+function checkAndMigrateTestInterfaceMainLayoutSizeSettings(
+  settings: {
+    testSettings: CbtTestSettings
+    uiSettings: CbtUiSettings
+  },
+) {
   if (utilCompareVersion(
     updatesLSState.value.releases.version,
     '>=',
     '1.30.0',
   )) return
 
-  const db = useDB()
-  db.getSettings()
-    .then((s) => {
-      if (!s?.uiSettings.mainLayout) return
-
-      if ('size' in s.uiSettings.mainLayout) {
-        const sizeInPx = s.uiSettings.mainLayout.size
-        if (typeof sizeInPx === 'number') {
-          appSettings.value.pages.testInterface.size = Math.round((sizeInPx / 16) * 100)
-        }
-        delete s.uiSettings.mainLayout.size
-        db.replaceSettings(utilCloneJson(s))
-      }
-    })
+  if ('size' in settings.uiSettings.mainLayout) {
+    const sizeInPx = settings.uiSettings.mainLayout.size
+    if (typeof sizeInPx === 'number') {
+      appSettings.value.pages.testInterface.size = Math.round((sizeInPx / 16) * 100)
+    }
+    delete settings.uiSettings.mainLayout.size
+    db.replaceSettings(utilCloneJson(settings))
+  }
 }
 
 onMounted(() => {
@@ -161,6 +162,14 @@ onMounted(() => {
   checkAndMigrateThemeSettings()
   checkAndMigratePdfCropperSettings()
   checkAndMigrateCbtResultsSettings()
-  checkAndMigrateTestInterfaceMainLayoutSizeSettings()
+
+  db.getSettings()
+    .then((storedSettings) => {
+      if (storedSettings) {
+        checkAndMigrateTestInterfaceMainLayoutSizeSettings(storedSettings)
+        const { uiSettings } = useCbtSettings()
+        utilSelectiveMergeObj(uiSettings.value, storedSettings.uiSettings)
+      }
+    })
 })
 </script>

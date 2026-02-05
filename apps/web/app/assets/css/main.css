@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 @source "../../../../shared";
+@source inline("list-{disc,decimal,[lower-alpha],[upper-alpha],[lower-roman],[upper-roman]}!");
 
 @custom-variant dark (&:is(.dark *):not(:is(.light *):not(.light .dark *)));
 

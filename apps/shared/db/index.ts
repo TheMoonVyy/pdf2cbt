@@ -17,7 +17,7 @@ import type {
 import type {
   PatternModeUserConfig,
   PatternModeImportExportConfigData,
-} from '#layers/shared/shared/types/pdf-cropper'
+} from '#layers/shared/shared/types/cbt-maker'
 
 import type {
   TestInterfaceOrResultJsonOutput,

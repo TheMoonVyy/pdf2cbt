@@ -45,8 +45,8 @@ import type {
 } from '#layers/shared/app/src/pdf-cropper-pattern-mode/json-config-to-form-data'
 
 const props = defineProps<{
-  subjectId: string | number
-  sectionId: string | number
+  subjectId: Numberish
+  sectionId: Numberish
   subjectHasSections: boolean
   sectionNamesForSelect: string[]
 }>()

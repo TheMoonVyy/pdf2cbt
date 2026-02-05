@@ -1,7 +1,10 @@
 import type { ClassValue } from 'clsx'
 
+import type { QUESTION_TYPES_IN_WORDS } from '#layers/shared/shared/constants'
+
 export type { ClassValue }
 
+export type Numberish = string | number
 export type QuestionType = 'mcq' | 'msq' | 'nat' | 'msm'
 
 export type QuestionMarks = {
@@ -20,7 +23,7 @@ export type GenericSubjectsTree<T> = {
 }
 
 export type QuestionMsmAnswerType = {
-  [rowNum: string | number]: number[]
+  [rowNum: Numberish]: number[]
 }
 
 export type QuestionAnswer = number | number[] | string | null | QuestionMsmAnswerType | 'BONUS' | 'DROPPED'
@@ -36,6 +39,9 @@ export interface JsonOutput {
   generatedBy: 'pdfCropperPage' | 'answerKeyPage' | 'testInterfacePage' | 'testResultsPage'
 }
 
+export type TestInstructionTypes = 'jee-main' | 'jee-adv' | 'comedk' | 'ugee'
+export type SectionWiseInstructionTypes = 'auto' | 'mcq' | 'msq' | 'nat' | 'msm'
+
 export interface TestInterfaceAndResultCommonJsonOutputData extends JsonOutput {
   testConfig: {
     testName: string
@@ -43,12 +49,66 @@ export interface TestInterfaceAndResultCommonJsonOutputData extends JsonOutput {
     zipOriginalUrl?: string
     zipConvertedUrl?: string
     pdfFileHash: string
-    optionalQuestions?: { subject: string, section: string, count: number }[]
+    testInstructions?: {
+      type: TestInstructionTypes
+    } | {
+      type: 'custom'
+      pages: { title: string, data: string }[]
+      declaration: string
+    }
+    additionalData: {
+      [subject: string ]: {
+        sections: {
+          [section: string]: {
+            optionalQuestions: number
+            instructions?: {
+              type: SectionWiseInstructionTypes
+            } | {
+              type: 'custom'
+              data: string
+            }
+          }
+        }
+      }
+    }
   }
   testSummary: TestSummaryDataTableRow[]
   testLogs: TestLog[]
   testResultOverview: TestResultOverview
   testNotes?: TestNotes
+}
+export type CbtMakerInternalInstructionsData = {
+  testInstructions: {
+    type: TestInstructionTypes | 'custom' | 'default'
+    pages: { title: string, data: string }[]
+    declaration: string
+    imgLinksFootNotes?: string
+  }
+  additionalData: {
+    [subject: string ]: {
+      sections: {
+        [section: string]: {
+          optionalQuestions: number
+          instructions: {
+            type: SectionWiseInstructionTypes | 'custom' | 'none'
+            data: string
+            parsedData: string
+          }
+        }
+      }
+    }
+  }
+}
+
+export type CbtParsedTestInstructions = {
+  pages: { title: string, data: string }[]
+  declaration: string
+}
+
+export type CbtIntructionsDataForTemplate = CbtMakerInternalInstructionsData & {
+  pdfCropperData: CropperOutputData
+  testName: string
+  testDuration: number
 }
 
 export interface TestInterfaceJsonOutput extends TestInterfaceAndResultCommonJsonOutputData {
@@ -69,7 +129,7 @@ export interface PdfCropperJsonOutput extends JsonOutput {
   pdfCropperData: CropperOutputData
   testConfig: Pick<
     TestInterfaceJsonOutput['testConfig'],
-    'pdfFileHash' | 'zipOriginalUrl' | 'zipConvertedUrl' | 'optionalQuestions'
+    'pdfFileHash' | 'zipOriginalUrl' | 'zipConvertedUrl' | 'testInstructions' | 'additionalData'
   > & { zipUrl?: string }
 }
 
@@ -132,3 +192,67 @@ export type AppSettings = {
 }
 
 export type MakePropertyOptional<T extends object, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+
+export type CbtInstructionsConfig = {
+  pages: {
+    title: string
+    body: string
+    footer: string
+  }[]
+}
+
+export type CbtInstructionsParsedConfig = {
+  pages: {
+    title: string
+    body: string
+    parsedBody: string
+    footer: string
+  }[]
+}
+
+type QuestionTypeInCaps = keyof typeof QUESTION_TYPES_IN_WORDS
+type QuestionTypeInWords = (typeof QUESTION_TYPES_IN_WORDS)[QuestionTypeInCaps]
+type QMarks = {
+  correct: number
+  incorrect: number
+  partial: number
+  max: number
+}
+
+export type CbtInstructionsTemplateSectionData = {
+  name: string
+  slNum: number
+  totalQuestions: number
+  questionType: QuestionTypeInCaps
+  questionTypeInWords: QuestionTypeInWords
+  maxMarks: number
+  questionMarks: QMarks
+  optionalQuestions: number
+}
+
+export type CbtInstructionsTemplateSubjectData = {
+  name: string
+  slNum: number
+  totalSections: number
+  totalQuestions: number
+  questionType?: QuestionTypeInCaps
+  questionTypeInWords?: QuestionTypeInWords
+  maxMarks: number
+  questionMarks?: QMarks
+  sections: CbtInstructionsTemplateSectionData[]
+}
+
+export type CbtInstructionsTemplateData = {
+  testName: string
+  testDuration: number
+  testDurationInHours: number
+  icons: ReturnType<typeof useCbtInterfaceIcons>['value']
+  totalSubjects: number
+  totalSections: number
+  totalQuestions: number
+  questionType?: QuestionTypeInCaps
+  questionTypeInWords?: QuestionTypeInWords
+  maxMarks: number
+  questionMarks?: QMarks
+  subjects: CbtInstructionsTemplateSubjectData[]
+}
