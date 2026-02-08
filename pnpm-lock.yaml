@@ -28,11 +28,11 @@ importers:
         specifier: 6.14.0
         version: 6.14.0(magicast@0.5.1)
       '@regle/core':
-        specifier: 1.17.4
-        version: 1.17.4(vue@3.5.27(typescript@5.9.3))
+        specifier: 1.18.3
+        version: 1.18.3(vue@3.5.27(typescript@5.9.3))
       '@regle/rules':
-        specifier: 1.17.4
-        version: 1.17.4(vue@3.5.27(typescript@5.9.3))
+        specifier: 1.18.3
+        version: 1.18.3(vue@3.5.27(typescript@5.9.3))
       '@tailwindcss/typography':
         specifier: 0.5.19
         version: 0.5.19(tailwindcss@4.1.18)
@@ -1767,8 +1767,8 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@regle/core@1.17.4':
-    resolution: {integrity: sha512-J1fEY6HZpIDXbc9h7LovwgpHqcHkmhg0DmvJv7mkz3FvE4TPsLAR/U43g6TTUmAj6BfKN27SNDH7XTi6AxviYg==}
+  '@regle/core@1.18.3':
+    resolution: {integrity: sha512-5n/VNMCj2melAejsr7AHoVtlK2hWfIA97gW7mAF1biHmjHnOkzKBFzz2QXSOXYifEJrXFc3gldsWB583ET8NIA==}
     peerDependencies:
       pinia: '>=2.2.5'
       vue: '>=3.3.0'
@@ -1776,8 +1776,8 @@ packages:
       pinia:
         optional: true
 
-  '@regle/rules@1.17.4':
-    resolution: {integrity: sha512-1sBqLwcW67pSEs4n2MP4lNl/b1cX9tHVxXRvgf33XoQgUZYcM3SQT+I7YM1TSu+wIXd8gB4Sh8hVN+KqVbNNmw==}
+  '@regle/rules@1.18.3':
+    resolution: {integrity: sha512-hiIYv+o/coiC2+If5tXgTj+uW9HN6EaiTiQWZszu9tUW5wHVkwjn22tEwJSpj+isiD6wHk5dT6JEQiFPSxXbEg==}
 
   '@resvg/resvg-js-android-arm-eabi@2.6.2':
     resolution: {integrity: sha512-FrJibrAk6v29eabIPgcTUMPXiEz8ssrAk7TXxsiZzww9UTQ1Z5KAbFJs+Z0Ez+VZTYgnE5IQJqBcoSiMebtPHA==}
@@ -5882,10 +5882,6 @@ packages:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
 
-  type-fest@5.4.1:
-    resolution: {integrity: sha512-xygQcmneDyzsEuKZrFbRMne5HDqMs++aFzefrJTgEIKjQ3rekM+RPfFCVq2Gp1VIDqddoYeppCj4Pcb+RZW0GQ==}
-    engines: {node: '>=20'}
-
   type-fest@5.4.3:
     resolution: {integrity: sha512-AXSAQJu79WGc79/3e9/CR77I/KQgeY1AhNvcShIH4PTcGYyC4xv6H4R4AUOwkPS5799KlVDAu8zExeCrkGquiA==}
     engines: {node: '>=20'}
@@ -8153,17 +8149,17 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@regle/core@1.17.4(vue@3.5.27(typescript@5.9.3))':
+  '@regle/core@1.18.3(vue@3.5.27(typescript@5.9.3))':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@vue/devtools-api': 7.7.9
-      type-fest: 5.4.1
+      type-fest: 5.4.3
       vue: 3.5.27(typescript@5.9.3)
 
-  '@regle/rules@1.17.4(vue@3.5.27(typescript@5.9.3))':
+  '@regle/rules@1.18.3(vue@3.5.27(typescript@5.9.3))':
     dependencies:
-      '@regle/core': 1.17.4(vue@3.5.27(typescript@5.9.3))
-      type-fest: 5.4.1
+      '@regle/core': 1.18.3(vue@3.5.27(typescript@5.9.3))
+      type-fest: 5.4.3
     transitivePeerDependencies:
       - pinia
       - vue
@@ -12869,10 +12865,6 @@ snapshots:
 
   type-fest@4.41.0:
     optional: true
-
-  type-fest@5.4.1:
-    dependencies:
-      tagged-tag: 1.0.0
 
   type-fest@5.4.3:
     dependencies:
