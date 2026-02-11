@@ -209,7 +209,7 @@ function onOpenContextMenu(e: PointerEvent) {
 
 <template>
   <div
-    class="absolute top-0 z-20 left-0 w-full h-full focus-visible:outline-hidden cursor-cell"
+    class="absolute top-0 z-20 left-0 w-full h-full focus-visible:outline-hidden cursor-cell touch-none"
   >
     <svg
       ref="svgElem"

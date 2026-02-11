@@ -44,6 +44,8 @@ watch(() => parsedTestInstructions, () => {
 
   if (currentPageIdx.value >= newPagesLength)
     currentPageIdx.value = 0
+
+  isDeclarationChecked.value = false
 })
 </script>
 
@@ -113,13 +115,14 @@ watch(() => parsedTestInstructions, () => {
               border border-slate-400 transition delay-30 duration-100 ease-in-out"
               label="I am ready to begin"
               label-class="text-xs"
-              :disabled="!isDeclarationChecked || disableBtn"
+              :disabled="disableBtn
+                || (!!parsedTestInstructions.declaration.trim() && !isDeclarationChecked)"
               @click="emit('startTest')"
             />
             <BaseButton
               v-show="!isLastPage"
               class="ml-auto col-start-3 gap-0.5 flex-row-reverse h-10.5 px-5
-              primary-theme-btn-hover bg-whie border border-slate-400
+              primary-theme-btn-hover border border-slate-400
               rounded-none transition delay-30 duration-100 ease-in-out"
               label="Next"
               label-class="text-[0.95rem]"
@@ -133,7 +136,6 @@ watch(() => parsedTestInstructions, () => {
       <template v-else>
         <div
           v-for="(instruction, index) in parsedTestInstructions.pages"
-          v-show="currentPageIdx === index"
           :key="index"
         >
           <div

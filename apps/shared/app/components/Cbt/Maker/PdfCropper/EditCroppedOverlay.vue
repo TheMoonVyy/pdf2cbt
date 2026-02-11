@@ -160,7 +160,7 @@ const copyRegion = () => {
   if (!coords) return
 
   contextMenuState.copiedCoords = { ...coords }
-  activeId.value = ''
+  setActiveOverlayToNone()
 }
 
 const pasteRegion = () => {

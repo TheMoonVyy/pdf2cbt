@@ -74,9 +74,6 @@ export type PdfCropperPdfData = PdfCroppedOverlayCoords & { page: number }
 export type PdfCropperCurrentSelectionCoords = PdfCroppedOverlayCoords & {
   activeLine: keyof PdfCroppedOverlayCoords
 }
-export type PdfCropperLineSelectionCoords = PdfCroppedOverlayCoords & {
-  activeLine: keyof PdfCroppedOverlayCoords
-}
 
 export type PdfCroppedOverlayInternalData = {
   id: string

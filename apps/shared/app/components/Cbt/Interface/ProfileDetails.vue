@@ -6,7 +6,7 @@
       isFullscreen ? 'cursor-zoom-out' : 'cursor-zoom-in',
       isForInstructionsPanel ? 'flex-col items-center gap-1 pt-5 border-0! h-fit' : 'flex-row items-center gap-3',
     ]"
-    :style="{ width: widthInPercent ? `${widthInPercent || 15}%` : 'auto' }"
+    :style="{ width: widthInPercent ? `${widthInPercent}%` : 'auto' }"
     @click="toggleFullScreen()"
   >
     <div

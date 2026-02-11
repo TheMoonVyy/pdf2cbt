@@ -1025,7 +1025,7 @@
         non-closable
       >
         <UiDialogHeader>
-          <UiDialogTitle>PDF hash is not matching with the one in cropper data!</UiDialogTitle>
+          <UiDialogTitle>PDF hash is not matching with the one in Test Maker data!</UiDialogTitle>
         </UiDialogHeader>
         <div class="flex items-center">
           <p

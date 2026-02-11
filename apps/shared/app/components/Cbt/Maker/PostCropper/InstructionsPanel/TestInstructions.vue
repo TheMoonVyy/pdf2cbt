@@ -32,7 +32,7 @@ const parsedTestInstructions = computed<CbtParsedTestInstructions>(() => {
   <UiCard class="w-full py-2 rounded-t-none">
     <UiCardHeader>
       <UiCardDescription class="text-center text-base">
-        Test intructions to show before the test starts.<br>
+        Test instructions to show before the test starts.<br>
         Choose the instructions format to show for this test.
       </UiCardDescription>
     </UiCardHeader>

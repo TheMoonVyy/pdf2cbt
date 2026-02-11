@@ -122,7 +122,7 @@ function onOpenContextMenu(e: PointerEvent) {
 </script>
 
 <template>
-  <div class="absolute z-20 top-0 left-0 w-full h-full focus-visible:outline-hidden cursor-cell">
+  <div class="absolute z-20 top-0 left-0 w-full h-full focus-visible:outline-hidden cursor-cell touch-none">
     <svg
       ref="svgElem"
       :viewBox="`0 0 ${pdfPagesContainerDims.w} ${pdfPagesContainerDims.h}`"

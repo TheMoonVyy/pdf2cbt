@@ -656,9 +656,11 @@ async function applyChanges() {
         delete instructionsData.additionalData[ogSubject]!.sections[ogSection]
       }
       else if (formsChanges.subject) {
-        instructionsData.additionalData[subject] = instructionsData.additionalData[ogSubject]!
+        instructionsData.additionalData[subject] ??= { sections: {} }
+        // Move only the affected section to the new subject
+        instructionsData.additionalData[subject]!.sections[ogSection] = existingSectionAdditionalData
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete instructionsData.additionalData[ogSubject]
+        delete instructionsData.additionalData[ogSubject]!.sections[ogSection]
       }
       else if (formsChanges.section) {
         // move section data to new section and then delete old section data

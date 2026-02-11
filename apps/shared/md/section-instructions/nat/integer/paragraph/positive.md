@@ -1,5 +1,5 @@
 {% layout "../../layout.liquid", questionInfoTypeMsg: "a **POSITIVE INTEGER**", typeMsg: "integer" %}
 
 {%- block sectioninfo %}
-- This section contains **{{ totalQuestions | toWords | upcase }} ({{ totalQuestions | zeroPad: 2 }})** paragraph based questions.
+- This section contains **{{ totalQuestions | toWords | upcase }} ({{ totalQuestions | zeroPad: 2 }})** paragraph-based questions.
 {%- endblock %}

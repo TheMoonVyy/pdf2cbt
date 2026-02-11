@@ -130,14 +130,20 @@ export class MigrateJsonData {
         )
       }
     }
-    else if (data.testConfig?.optionalQuestions?.length) {
-      this.migrateOptionalQuestionsData(
-        data.testConfig.optionalQuestions,
-        output.testConfig.additionalData,
-      )
-    }
     else {
       Object.assign(output, data)
+
+      if (data.testConfig?.optionalQuestions?.length) {
+        output.testConfig.additionalData ??= {}
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+
+        if ('optionalQuestions' in output.testConfig) {
+          delete output.testConfig.optionalQuestions
+        }
+      }
     }
 
     this.removeEmptyKeysFromTestConfig(output.testConfig)
@@ -206,14 +212,20 @@ export class MigrateJsonData {
         )
       }
     }
-    else if (data.testConfig?.optionalQuestions?.length) {
-      this.migrateOptionalQuestionsData(
-        data.testConfig.optionalQuestions,
-        output.testConfig.additionalData,
-      )
-    }
     else {
       Object.assign(output, data)
+
+      if (data.testConfig?.optionalQuestions?.length) {
+        output.testConfig.additionalData ??= {}
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+
+        if ('optionalQuestions' in output.testConfig) {
+          delete output.testConfig.optionalQuestions
+        }
+      }
     }
 
     this.removeEmptyKeysFromTestConfig(output.testConfig)
@@ -273,14 +285,20 @@ export class MigrateJsonData {
         )
       }
     }
-    else if (data.testConfig?.optionalQuestions?.length) {
-      this.migrateOptionalQuestionsData(
-        data.testConfig.optionalQuestions,
-        output.testConfig.additionalData,
-      )
-    }
     else {
       Object.assign(output, data)
+
+      if (data.testConfig?.optionalQuestions?.length) {
+        output.testConfig.additionalData ??= {}
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+
+        if ('optionalQuestions' in output.testConfig) {
+          delete output.testConfig.optionalQuestions
+        }
+      }
     }
 
     this.removeEmptyKeysFromTestConfig(output.testConfig)

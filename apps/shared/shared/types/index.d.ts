@@ -41,7 +41,7 @@ export interface JsonOutput {
   generatedBy: 'pdfCropperPage' | 'answerKeyPage' | 'testInterfacePage' | 'testResultsPage'
 }
 
-export type TestInstructionTypes = 'jee-main' | 'jee-adv' | 'comedk' | 'ugee'
+export type TestInstructionTypes = 'comedk'
 
 export interface TestInterfaceAndResultCommonJsonOutputData extends JsonOutput {
   testConfig: {
@@ -106,12 +106,6 @@ export type CbtMakerInternalInstructionsData = {
 export type CbtParsedTestInstructions = {
   pages: { title: string, data: string }[]
   declaration: string
-}
-
-export type CbtIntructionsDataForTemplate = CbtMakerInternalInstructionsData & {
-  pdfCropperData: CropperOutputData
-  testName: string
-  testDuration: number
 }
 
 export interface TestInterfaceJsonOutput extends TestInterfaceAndResultCommonJsonOutputData {

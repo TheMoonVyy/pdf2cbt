@@ -85,6 +85,7 @@ async function handlePdfFileUpload(file: File | Uint8Array) {
   }
   catch (err) {
     useErrorToast('Error loading uploaded file:', err)
+    return err
   }
 }
 
@@ -99,8 +100,10 @@ async function loadExistingData(
     if (!pdfCropperPanelElem.value)
       throw new Error('Pdf Cropper Panel Ref is undefined')
 
-    await handlePdfFileUpload(data.pdfBuffer)
-    pdfLoadingState.isLoaded = true
+    const maybeErr = await handlePdfFileUpload(data.pdfBuffer)
+    if (maybeErr instanceof Error) {
+      throw maybeErr
+    }
 
     jsonOutputData.value = data.jsonData
 
@@ -133,6 +136,8 @@ async function loadExistingData(
       overlaysPerQuestionData,
     )
     outputZipFileName.value = data.filename
+
+    pdfLoadingState.isLoaded = true
   }
   catch (err) {
     useErrorToast('Error loading JSON Data of Existing files', err)

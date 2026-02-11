@@ -17,7 +17,7 @@
           accept="application/zip,application/json,.zip,.json"
           :label="uploadedFiles.zipOrJsonFile ? 'Change JSON/ZIP file' : 'Select ZIP/JSON file'"
           :variant="uploadedFiles.zipOrJsonFile ? 'success' : 'help'"
-          invalid-file-type-message="Please select a valid PDF file."
+          invalid-file-type-message="Please select a valid ZIP or JSON file."
           @upload="(file) => uploadedFiles.zipOrJsonFile = file"
         />
         <BaseSimpleFileUpload

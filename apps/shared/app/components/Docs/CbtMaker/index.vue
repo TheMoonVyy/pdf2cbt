@@ -252,11 +252,11 @@
                 <li><strong>NAT:</strong> Numerical Answer Type, answer is a number (integer or decimal).</li>
                 <li>
                   <strong>MSM:</strong> Multiple Select Matrix,
-                  this is a question format used by JEE Advanced uptill 2015.<br>
+                  this is a question format used by JEE Advanced until 2015.<br>
                   In this format, you have 2 columns say column A and column B,
                   options in column A can match with one or more options of column B.
                   So it basically is one to many (or one) matching.
-                  If you look carefully this basically becomes a matrix, where rows options in column A and columns are options in column B.
+                  If you look carefully this basically becomes a matrix, where rows are options in column A and columns are options in column B.
                 </li>
               </ul>
             </div>
@@ -330,7 +330,6 @@
                     Bulk Edit allows you to set or change data on a group of questions, sections,
                     or subjects.<br>
                     You can also set <strong>Optional Questions</strong> (Old JEE Main Format) using this.
-                    Navigate to the page containing the question you want to crop.<br>
                   </li>
                   <li>
                     <strong>Sort Subjects or Sections (optional):</strong><br>
@@ -511,7 +510,8 @@
                   @load="imageLoadingState.isImage1Loaded = true"
                   @error="(e) => {
                     const el = e.target as HTMLImageElement
-                    if (el) {
+                    if (el && !isErrorLoadingUrl) {
+                      isErrorLoadingUrl = true
                       el.src = image1Urls[1]!
                       imageLoadingState.isImage1Loaded = true
                     }
@@ -651,10 +651,12 @@ const image2Urls = [
   Image2,
 ]
 
-const _isBuildForWebsite = useRuntimeConfig().public.isBuildForWebsite as string | boolean
-const isBuildForWebsite = _isBuildForWebsite !== 'true' && _isBuildForWebsite !== true
+const isErrorLoadingUrl = shallowRef(false)
 
-if (isBuildForWebsite) {
+const _isBuildForWebsite = useRuntimeConfig().public.isBuildForWebsite as string | boolean
+const isBuildForWebsite = _isBuildForWebsite === 'true' || _isBuildForWebsite === true
+
+if (!isBuildForWebsite) {
   image1Urls.reverse()
   image2Urls.reverse()
 }

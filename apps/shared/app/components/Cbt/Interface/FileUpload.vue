@@ -221,7 +221,7 @@ const fileUploaderState = reactive({
         if (checkIsPdfFile > 0) {
           this.files.set('pdf', file)
         }
-        else if (file.type === MIME_TYPE.json || file.name.toLowerCase().endsWith('json')) {
+        else if (file.type === MIME_TYPE.json || file.name.toLowerCase().endsWith('.json')) {
           this.files.set('json', file)
         }
       }

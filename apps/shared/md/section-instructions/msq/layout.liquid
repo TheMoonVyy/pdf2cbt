@@ -16,7 +16,7 @@
   - |-----------------|---|-------------|
     | *Full Marks*    |&nbsp;:&nbsp;&nbsp;| {{ questionMarks.correct | prepend: '+' }} **ONLY** if (all) the correct option(s) is(are) chosen |
     {%- if questionMarks.partial != 0 %}
-      {%- assign remOpt = answerOptions.rows | size %}
+      {%- assign remOpt = answerOptions.rows.count %}
       {%- for i in (2..remOpt) reversed %}
         {%- assign chosenOpts = i | minus: 1 %}
         {%- assign marks = chosenOpts | times: questionMarks.partial %}
@@ -38,7 +38,7 @@
 
 {%- block examples %}
 {%- if questionMarks.partial != 0 %}
-{%- assign remOpt = answerOptions.rows | size %}
+{%- assign remOpt = answerOptions.rows.count %}
 {%- assign arr = answerOptions.rows.chars %}
 {%- assign size = arr | size %}
 {%- assign sizeMinusOne = size | minus: 1 %}

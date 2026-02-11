@@ -110,7 +110,7 @@
             <div
               class="grid h-fit divide-y divide-gray-500 border-gray-500 rounded
               group-data-[vertical=false]:border
-              [&>div]:group-data-[vertical=true]:[&>*]:p-1
+              [&>div]:group-data-[vertical=true]:*:p-1
               [&>div]:group-data-[vertical=true]:pl-2
               [&>div]:group-data-[vertical=false]:sm:pr-8
               [&>div]:group-data-[vertical=false]:gap-4"
@@ -170,7 +170,7 @@
                 ref="imgContainerScrollAreaElem"
                 type="auto"
               >
-                <div class="grid mt-2 px-4 [&>*]:mx-auto">
+                <div class="grid mt-2 px-4 *:mx-auto">
                   <template v-if="testQuestionsImgUrls[currentTestResultsId]?.[currentQuestionState.id]">
                     <img
                       v-for="(url, index) in testQuestionsImgUrls[currentTestResultsId]![currentQuestionState.id]"
@@ -489,7 +489,7 @@
         </UiDialogHeader>
         <p class="font-bold text-red-400">
           Test Maker's Data is not found in your test data.<br>
-          This may happen if you gave this test before April 16, as versions before that didn't have cropper data in test data
+          This may happen if you gave this test before April 16, 2025, as versions before that didn't have Test Maker data in test data
         </p>
         <p class="my-6">
           No worries!<br>

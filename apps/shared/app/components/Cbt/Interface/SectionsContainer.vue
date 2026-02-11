@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="containerRef"
-    class="relative w-ful"
+    class="relative"
   >
     <div
       class="flex items-center border-y-2 border-slate-400 w-full px-2"

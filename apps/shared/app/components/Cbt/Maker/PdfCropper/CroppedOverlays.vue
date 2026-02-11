@@ -46,7 +46,7 @@ const currentPagesYCoords = computed(() => {
       <div
         v-if="overlay.coords.t <= currentPagesYCoords.b
           && overlay.coords.b >= currentPagesYCoords.t"
-        class="cropped-overlay"
+        class="cropped-overlay touch-none"
         :class="{
           active: activeOverlayId === id,
         }"

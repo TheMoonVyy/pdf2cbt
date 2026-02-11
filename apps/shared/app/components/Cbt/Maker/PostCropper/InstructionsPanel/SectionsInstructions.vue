@@ -48,7 +48,7 @@ const sectionsInstData = computed(() => {
   <UiCard class="w-full py-2 rounded-t-none">
     <UiCardHeader>
       <UiCardDescription class="text-center text-base">
-        Intructions to show on 1st question of each section (or subject if no sections exists).<br>
+        Instructions to show on 1st question of each section (or subject if no sections exists).<br>
         Generally used for marking scheme & question type info (especially in JEE Advanced).
       </UiCardDescription>
     </UiCardHeader>

@@ -119,7 +119,7 @@ watch(currentStep,
     type="auto"
     class="flex"
     viewport-class="min-h-0 h-[calc(100dvh-var(--main-nav-bar-height,0))]!
-      [&>div]:flex [&>div]:flex-col [&>div]:flex-col [&>div]:min-h-0
+      [&>div]:flex [&>div]:flex-col [&>div]:min-h-0
       [&>div]:w-full [&>div]:p-2 [&>div]:lg:px-4"
   >
     <div class="flex w-full justify-center mb-3">

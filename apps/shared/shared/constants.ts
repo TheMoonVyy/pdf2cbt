@@ -41,7 +41,7 @@ export const QUESTION_TYPES_LABELS = {
 export const QUESTION_TYPES_IN_WORDS = {
   mcq: 'Multiple Choice Question',
   msq: 'Multiple Select Question',
-  nat: 'Numerial Answer Type',
+  nat: 'Numerical Answer Type',
   msm: 'Multiple Select Matrix',
 } as const
 
@@ -58,7 +58,7 @@ export const SEPARATOR = '__--__'
 export const QUESTION_TYPES_OPTIONS = [
   { name: 'MCQ (Multiple Choice Question)', value: 'mcq' },
   { name: 'MSQ (Multiple Select Question)', value: 'msq' },
-  { name: 'NAT (Numerial Answer Type)', value: 'nat' },
+  { name: 'NAT (Numerical Answer Type)', value: 'nat' },
   { name: 'MSM (Multiple Select Matrix)', value: 'msm' },
 ]
 
@@ -154,7 +154,7 @@ export const AREA_BOUNDARY_NAMES = {
 
 export const PAGE_NAMES_MAP = {
   'index': 'homePage',
-  'test-maker': 'testMaker',
+  'cbt-maker': 'testMaker',
   'cbt-interface': 'testInterface',
   'cbt-results': 'testResults',
   'cbt-generate-answer-key': 'generateAnswerKey',

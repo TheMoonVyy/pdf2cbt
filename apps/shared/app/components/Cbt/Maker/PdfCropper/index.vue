@@ -518,7 +518,7 @@ onMounted(() => {
 
   watchDebounced(
     [() => settings.value.general.scale, () => settings.value.general.qualityFactor],
-    ([oldScale], [newScale]) => {
+    ([newScale], [oldScale]) => {
       if (oldScale !== newScale) {
         const scale = settings.value.general.scale
         const currentScrollY = pdfContainerScrollY.value

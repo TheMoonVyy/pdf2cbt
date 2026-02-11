@@ -35,10 +35,6 @@
   stroke: var(--crop-selection-skip-color);
 }
 
-.blur-cropped .cropped-overlay {
-  backdrop-filter: blur(calc(var(--pdf-cropped-blur-intensity) * 1px));
-}
-
 #cropped-overlay-elem {
   width: calc(var(--pdf-pages-container-width) * var(--pdf-page-scale) * 1px);
   height: calc(var(--pdf-pages-container-height) * var(--pdf-page-scale) * 1px);

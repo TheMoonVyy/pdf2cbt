@@ -31,7 +31,7 @@ md.use(multimdTable, {
 md.use(underline)
 md.use(imgSize)
 md.use(attrs, {
-  allowedAttributes: ['id', 'class', 'style', 'width', 'height', 'loading', /^data-*$/],
+  allowedAttributes: ['id', 'class', 'style', 'width', 'height', 'loading', /^data-.+$/],
 })
 
 export default () => md

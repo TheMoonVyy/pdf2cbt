@@ -261,7 +261,7 @@
             If you are on phone, take a look at "Customize UI" -> "Main Layout" -> "Main Layout Size", you can change the value to resize the whole layout to fit to your screen.
           </li>
           <li class="mt-2">
-            After that click on Prepare Test, this will start preparing question images from the pdf and cropper data.
+            After that click on Prepare Test, this will start preparing question images from the pdf and test maker data.
             After it is done, you can start the test.
           </li>
           <li class="mt-2">
