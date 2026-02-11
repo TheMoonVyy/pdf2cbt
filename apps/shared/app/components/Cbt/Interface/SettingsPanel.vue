@@ -1032,7 +1032,7 @@
             v-if="fileUploaderFileType === 'zip'"
             class="text-lg text-center"
           >
-            PDF file's hash is different to the one that was used in PDF Cropper.<br><br>
+            PDF file's hash is different to the one that was used in Test Maker.<br><br>
             Hash can differ if even slight modification was done to pdf's contents.<br><br>
             If you sure that both questions.pdf and data.json in zip file are correct, then you can continue.<br>
             OR<br>

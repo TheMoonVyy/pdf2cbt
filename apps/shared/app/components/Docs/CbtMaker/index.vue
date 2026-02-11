@@ -5,7 +5,7 @@
     viewport-class="[&>div]:p-4 [&>div]:text-center [&>div]:mx-4 [&>div]:select-text"
   >
     <h1 class="text-xl font-semibold text-green-500">
-      This page/tool is used to define test questions and their locations in the PDF.
+      This page/tool is used to create CBT from PDF by defining questions and their locations in the PDF.
     </h1>
     <h2 class="text-lg font-semibold my-4">
       You can watch
@@ -24,7 +24,7 @@
     >
       <UiAccordionItem value="1">
         <UiAccordionTrigger>
-          About This Page/Tool
+          About Test Maker Page
         </UiAccordionTrigger>
         <UiAccordionContent>
           <div class="flex flex-col gap-4 text-left leading-8">
@@ -32,11 +32,12 @@
               <strong>Purpose:</strong>
               <ul class="list-disc ml-6">
                 <li>
-                  This tool is designed to help you define test questions and their locations within a PDF.
+                  Test Maker is designed to convert PDF into CBT Format.
                 </li>
                 <li>
-                  It allows you to crop specific areas of the PDF that correspond to questions
-                  and assign details to them (e.g. subject, section, question type, marking scheme, etc.).
+                  It allows you to crop questions from the PDF
+                  and assign details to them<br>
+                  (like subject, section, question type, marking scheme, etc.).
                 </li>
                 <li>
                   The <strong>output</strong> from this tool is an <strong>essential input for </strong>
@@ -53,7 +54,7 @@
               <ul class="list-disc ml-6">
                 <li>
                   You need a <strong>PDF file </strong>
-                  containing the questions you want to usefor the mock test.
+                  containing the questions you want to use for the mock test.
                 </li>
               </ul>
             </div>
@@ -61,35 +62,28 @@
               <strong>Output:</strong>
               <ul class="list-disc ml-6">
                 <li>
-                  The tool mainly generates a <strong>JSON</strong> file containing the
-                  <strong>cropper data</strong> (also referred to as <strong>test data</strong>).
-                </li>
-                <li>
-                  <UiBadge variant="info">
-                    Recommended
-                  </UiBadge>
-                  When you choose <strong>ZIP</strong> as the output:
-                  <ul class="list-disc ml-6">
-                    <li>
-                      <UiBadge variant="info">
-                        Recommended
-                      </UiBadge>
-                      <strong> With Pre-generate Images</strong>: ZIP will contain <strong>JSON and PNG</strong> files.
-                    </li>
-                    <li>
-                      <strong>Without Pre-generated Images</strong>:
-                      The ZIP will contain <strong>JSON</strong> and the uploaded <strong>PDF</strong>.
-                    </li>
-                  </ul>
-                </li>
-                <li>
-                  If you choose <strong>JSON</strong> as the output,
-                  it will include only the JSON file.
+                  The tool generates a <strong>ZIP</strong> file containing
+                  <strong>test related data</strong> in a <strong>JSON</strong> file
+                  and <strong>PDF</strong>, or <strong>PNG</strong> (image) files of questions generated from PDF.
                 </li>
                 <li>
                   This output is essential for the CBT Interface to
                   properly display and manage the questions.
                 </li>
+                <!-- <li>
+                  <UiBadge variant="info">
+                    Recommended
+                  </UiBadge>
+                  <strong> With Pre-generate Images</strong>: ZIP will contain <strong>JSON and PNG</strong> files.
+                </li>
+                <li>
+                  <strong>Without Pre-generated Images</strong>:
+                  The ZIP will contain <strong>JSON</strong> and the uploaded <strong>PDF</strong>.
+                </li>
+                <li>
+                  This output is essential for the CBT Interface to
+                  properly display and manage the questions.
+                </li> -->
               </ul>
             </div>
           </div>
@@ -108,8 +102,8 @@
                 <li>
                   <strong>Crop:</strong> In this mode,
                   you can crop areas of the PDF that contain questions.<br>
-                  Two cropping methods,
-                  <strong>Line Mode</strong> and <strong>Box Mode</strong> are available for you to choose from.
+                  Three cropping methods,
+                  <strong>Line Mode</strong>, <strong>Box Mode</strong> and <strong>Pattern Mode</strong> are available for you to choose from.
                 </li>
                 <li>
                   <strong>Edit:</strong>
@@ -144,6 +138,14 @@
                   <strong>Box Mode:</strong> Works like image cropping.
                   Simply draw a box around the question to define the crop area.
                 </li>
+                <li>
+                  <strong>Pattern Mode:</strong> (a.k.a <strong>Pattern Based Auto-crop</strong>)
+                  This is a mode for automatically cropping questions by
+                  creating a config which defines patterns of Subject Start,
+                  Section Start, Question Start etc.<br>
+                  Once a Config file is created, it will work for all PDFs
+                  following the same pattern (i.e. template).
+                </li>
               </ul>
             </div>
             <div>
@@ -163,15 +165,14 @@
               Displays the left, right, top, and bottom boundaries of the crop area.
             </div>
             <div>
-              <strong>Generate Output:</strong>
-              Once you're done cropping, click this to generate the tool's output.
-              The result can be used directly in the CBT Interface.
+              <strong>Finish Cropping:</strong>
+              Once you're done cropping, click on this to go to next steps of
+              generating the Output ZIP file.
             </div>
           </div>
         </UiAccordionContent>
       </UiAccordionItem>
 
-      <!-- Question Details -->
       <UiAccordionItem value="3">
         <UiAccordionTrigger>
           Question Details
@@ -298,10 +299,9 @@
         </UiAccordionContent>
       </UiAccordionItem>
 
-      <!-- Steps for Using the PDF Cropper -->
       <UiAccordionItem value="4">
         <UiAccordionTrigger>
-          Steps for Using the PDF Cropper
+          Steps for Using the Test Maker
         </UiAccordionTrigger>
         <UiAccordionContent>
           <div class="text-left leading-8">
@@ -314,32 +314,62 @@
               </li>
               <li>
                 <strong>Crop Questions:</strong><br>
+                Once PDF is loaded, PDF viewer should be now visible.
                 Navigate to the page containing the question you want to crop.<br>
                 Use the cropping tool to define the question area.<br>
                 Fill in the details for the cropped question, such as
                 subject name, section name, question type, and marks.<br>
-                Repeat this process for all questions in the PDF.
+                Repeat this process for all questions in the PDF.<br>
               </li>
               <li>
-                <strong>Generate Output:</strong><br>
-                Once all questions are cropped, click the <strong>Generate Output</strong>
-                button at the bottom of the Left Panel (you may need to scroll down).<br>
-                A Generate Output dialog will open, choose the options/settings you want.<br>
-                Download the generated file.
+                When done with cropping all questions, click on <strong>Finish Cropping</strong>.<br>
+                Now you should be seeing these steps:
+                <ul class="list-disc ml-6 [&>li]:mb-3">
+                  <li>
+                    <strong>Bulk Edit Questions (optional):</strong><br>
+                    Bulk Edit allows you to set or change data on a group of questions, sections,
+                    or subjects.<br>
+                    You can also set <strong>Optional Questions</strong> (Old JEE Main Format) using this.
+                    Navigate to the page containing the question you want to crop.<br>
+                  </li>
+                  <li>
+                    <strong>Sort Subjects or Sections (optional):</strong><br>
+                    This allows you to sort the order of subjects/sections.<br>
+                    <strong>For example</strong>, say your PDF has subjects order as
+                    Physics, Chemistry, Maths. <br>
+                    You can change the order to Maths, Physics, Chemistry
+                    which is the order used by some exams (like JEE Main & Adv).
+                  </li>
+                  <li>
+                    <strong>Test or Section-wise Instructions (optional):</strong><br>
+                    This allows you to set/change:
+                    <ul class="list-disc ml-6 [&>li]:mb-3">
+                      <li>
+                        <strong>Test Instructions:</strong><br>
+                        Test Instructions is the instructions panel shown before the test starts.
+                        It may provide additional info on the format of the exam (marking scheme, etc).
+                      </li>
+                      <li>
+                        <strong>Section-wise Instructions:</strong><br>
+                        Section-wise instructions are shown in the first question of that section.<br>
+                        They are commonly <strong>used in JEE Advanced</strong> to
+                        inform candidates about the answer format and marking scheme
+                        of questions in that section.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
               </li>
               <li>
-                <strong>Use the Output File:</strong><br>
-                Use the generated file in the Test Interface to give your test
-                (you will need to generate answer key data after the test),
-                or first go to the Generate Answer Key page to generate the answer key data
-                and then use the file it provides to give the test.
+                <strong>Download:</strong>
+                Finally, you can download the <strong>ZIP</strong> file that is required
+                for CBT.<br>
               </li>
             </ul>
           </div>
         </UiAccordionContent>
       </UiAccordionItem>
 
-      <!-- Text Pattern Based Cropper -->
       <UiAccordionItem value="5">
         <UiAccordionTrigger>
           Text Pattern Based Cropper
@@ -355,88 +385,7 @@
         </UiAccordionContent>
       </UiAccordionItem>
 
-      <!-- Bulk Edit -->
       <UiAccordionItem value="6">
-        <UiAccordionTrigger>
-          Bulk Edit (Includes Optional Questions)
-        </UiAccordionTrigger>
-        <UiAccordionContent>
-          <div class="text-left leading-8">
-            <p>
-              Bulk Edit allows you to set or change data on a group of questions, sections, or subjects.
-            </p>
-            <p>
-              While all fields are self-explanatory on the Bulk Edit dialog itself,
-              the following points provide more clarity:
-            </p>
-            <ul class="list-disc ml-6 [&>li]:mt-3">
-              <li>
-                Data fields that will be changed after applying changes are highlighted in green.
-              </li>
-              <li>
-                When you click on "Load Data" after selecting a group/bulk,
-                the tool fetches existing data fields for the selection.<br>
-                If a data field has the same value across all questions,
-                it will be loaded as the initial value.<br>
-                If even one question has a different value for that field,
-                it will be shown as "No Changes" or left empty.
-              </li>
-              <li>
-                Changes are applied logically.
-                For example, if your bulk includes both MCQ and NAT questions,
-                and you change the number of answer options to 6,
-                this change will only apply to MCQs.<br>
-                Since NAT questions don't have answer options, that field is ignored for them.
-              </li>
-              <li>
-                <strong>Optional Questions (JEE Main pre-2025 format)</strong>:<br>
-                You can set sections that contain optional questions via Bulk Edit.<br>
-                First, crop all the questions. Once done, open Bulk Edit.<br>
-                On Bulk Edit, select the section that should have optional questions and load it.<br>
-                Set the <strong>Optional Questions</strong> field
-                to the number of optional questions in that section,
-                for <strong>JEE Mains pre-2025 format</strong> it is <strong>5</strong>.<br>
-                Apply the changes and repeat the same for other relevant sections.
-              </li>
-              <li>
-                <strong>Swapping Subject/Section:</strong><br>
-                If you want to change the current subject or section name to one that already exists,<br>
-                then the process is similar to how we rename a file.<br>
-                For example:<br>
-
-                Suppose the current subject is <strong>Chemistry</strong>
-                and the section is <strong>Chemistry Section 2</strong>.<br>
-                You want to change it to <strong>Physics</strong> and <strong>Physics Section 2</strong>,
-                which already exist.<br>
-                Follow these steps:
-                <ul class="list-disc pl-6 mt-2">
-                  <li>Select the <strong>Physics Section 2</strong> group and load it.</li>
-                  <li>
-                    Temporarily rename <strong>Physics</strong> and <strong>Physics Section 2</strong>
-                    to something else, say <strong>Temp Subject</strong> and <strong>Temp Section</strong>, then apply the changes.
-                  </li>
-                  <li>
-                    Now load <strong>Chemistry Section 2</strong>.
-                    Rename it to <strong>Physics</strong> and <strong>Physics Section 2</strong>, then apply the changes.
-                  </li>
-                  <li>
-                    The goal has been achieved.
-                    Now, the section we named <strong>Temp Subject</strong> &amp; <strong>Temp Section</strong>
-                    can be renamed to something else.<br>
-                    For example, if the goal was swapping,
-                    then rename <strong>Temp Subject</strong> &amp; <strong>Temp Section</strong>
-                    back to <strong>Chemistry</strong> &amp; <strong>Chemistry Section 2</strong> respectively,
-                    and apply the changes.
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </div>
-        </UiAccordionContent>
-      </UiAccordionItem>
-
-      <!-- Context menus and keyboard shortcuts -->
-      <UiAccordionItem value="7">
         <UiAccordionTrigger>
           Context menus and keyboard shortcuts
         </UiAccordionTrigger>
@@ -517,9 +466,17 @@
                     This action is irreversible, so use it carefully.
                   </li>
                   <li>
-                    <strong>Delete all on...</strong><br>
-                    <strong>Current Page:</strong>Deletes all cropped regions that are on current page.<br>
-                    <strong>All Pages</strong>Deletes all cropped regions on all pages (effectively clearing everything).
+                    <strong>Delete all on...</strong>
+                    <ul class="list-disc ml-6">
+                      <li>
+                        <strong>Current Page:</strong> Deletes all cropped
+                        regions that are on current page.
+                      </li>
+                      <li>
+                        <strong>All Pages:</strong> Deletes all cropped regions on all pages
+                        (effectively clearing everything).
+                      </li>
+                    </ul>
                   </li>
                 </ul>
               </li>
@@ -528,7 +485,7 @@
         </UiAccordionContent>
       </UiAccordionItem>
 
-      <UiAccordionItem value="8">
+      <UiAccordionItem value="7">
         <UiAccordionTrigger>
           Dealing with some special/weird question formats
         </UiAccordionTrigger>
@@ -673,7 +630,7 @@
 import Image1 from '#layers/shared/app/assets/images/cbt-maker/docs-image-1.svg?no-inline'
 import Image2 from '#layers/shared/app/assets/images/cbt-maker/docs-image-2.svg?no-inline'
 
-const { expandedValues = ['3', '5'] } = defineProps<{
+const { expandedValues = [] } = defineProps<{
   expandedValues?: string[]
 }>()
 

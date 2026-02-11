@@ -204,5 +204,26 @@ watch(currentStep,
         @click="handleNextStep"
       />
     </div>
+    <UiCard class="gap-2 mx-2 sm:mx-auto max-w-4xl">
+      <UiCardHeader class="mb-4">
+        <UiCardTitle class="text-xl font-bold text-center">
+          Docs
+        </UiCardTitle>
+      </UiCardHeader>
+      <UiCardContent class="px-6">
+        <DocsCbtMakerPostCropperBulkEditPanel
+          v-if="currentStep === 2"
+        />
+        <DocsCbtMakerPostCropperSortPanel
+          v-if="currentStep === 3"
+        />
+        <DocsCbtMakerPostCropperTestAndSectionsInstructionsPanel
+          v-if="currentStep === 4"
+        />
+        <DocsCbtMakerPostCropperDownloadPanel
+          v-if="currentStep === 5"
+        />
+      </UiCardContent>
+    </UiCard>
   </UiScrollArea>
 </template>

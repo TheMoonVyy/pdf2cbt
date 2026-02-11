@@ -49,22 +49,24 @@
       <!-- Step 1 -->
       <div class="w-full border border-green-500 rounded-2xl p-4">
         <span class="text-xl font-semibold text-green-500">
-          1. Crop Questions from PDF
+          1. Create CBT by Cropping Questions from PDF
         </span>
         <p class="mt-2 text-left">
           Use the
           <NuxtLink
-            to="/pdf-cropper"
+            to="/cbt/test-maker"
             class="underline text-green-400"
             target="_blank"
           >
-            PDF Cropper
+            Test Maker
           </NuxtLink>
-          to upload your PDF containing questions and mark each question area along with its details like subject name, section name, and question type (MCQ, MSQ, NAT) etc.<br>
-          Instructions/Docs for that are on PDF Cropper page itself.
+          to upload your PDF containing questions and mark
+          each question area along with its details like subject name,
+          section name, and question type (MCQ, MSQ, NAT) etc.<br>
+          Instructions/Docs for that are on Test Maker page itself.
         </p>
         <p class="mt-2 text-left">
-          The Output data of PDF Cropper is essential for the
+          The Output data of Test Maker is essential for the
           <NuxtLink
             to="/cbt/interface"
             class="underline text-green-400"
@@ -78,7 +80,7 @@
       <!-- After Step 1 -->
       <div class="w-full border border-yellow-400 rounded-2xl p-4">
         <p class="text-left">
-          You might be wondering — the PDF cropper only defines the questions and their cropped images. But what about the correct answers for evaluation?
+          You might be wondering the Test Maker only defines the questions and their cropped images. But what about the correct answers for evaluation?
         </p>
         <p class="mt-2 text-left">
           That's where the
@@ -131,7 +133,7 @@
                 >
                   Generate Answer Key
                 </NuxtLink>
-                and upload the zip/json file.
+                and upload the zip file of Test Maker.
                 After this the rest of the steps is common with the path 2 as well, so it is mentioned below.
               </li>
             </ul>
@@ -202,14 +204,19 @@
         </p>
         <ul class="list-disc list-outside mt-2 text-left ml-8">
           <li class="mt-2">
-            Test Interface requires the zip file (or pdf & json file) of PDF Cropper.<br>
-            If you had generated answer key data, and chose "zip" or "json (merged)" as the format, then you can upload this file instead. As the zip or json (merged) is nothing but cropper data with answer key data also in it
+            Test Interface requires the zip file of Test Maker.<br>
+            If you had generated answer key data, and chose "zip" or "json" as the format,
+            then you can upload this file instead
+            <em>
+              (As the zip or json is nothing but Test
+              Maker's data with answer key data also in it).
+            </em>
           </li>
           <li class="mt-2">
             Do set the settings like time duration of test, test name etc under the "Test Settings" section.
           </li>
           <li class="mt-2">
-            Load that zip file (or pdf & json file) in the test interface.
+            Load that zip file (or pdf & json file) of Test Maker in the test interface.
           </li>
           <li class="mt-2">
             After loading file(s), you will have <strong>Sort Sections Order</strong> & <strong>Questions Numbering Order</strong>:<br>
@@ -225,7 +232,7 @@
                 Using this, you can redefine how the question numbers appear as follows:
                 <ul class="list-disc list-outside mt-2 text-left ml-10">
                   <li>
-                    <strong>Original:</strong> Just uses the original numbering as it is in the uploaded file (cropper data).
+                    <strong>Original:</strong> Just uses the original numbering as it is in the uploaded file (test data).
                   </li>
                   <li>
                     <strong>Cumulative:</strong> Numbering is started with 1, and keeps continuing across sections.<br>

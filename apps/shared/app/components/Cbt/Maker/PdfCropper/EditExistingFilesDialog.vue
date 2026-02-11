@@ -9,7 +9,7 @@
         </UiDialogTitle>
       </UiDialogHeader>
       <UiDialogDescription>
-        Upload PDF and ZIP/JSON files downloaded from PDF Cropper OR Answer Key Page.<br>
+        Upload PDF and ZIP/JSON files downloaded from Test Maker OR Answer Key Page.<br>
         If ZIP file contains PDF file (when images not pre-generated) then no need to upload PDF file.
       </UiDialogDescription>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-5 my-3">
@@ -106,8 +106,8 @@ async function loadFiles() {
 
     if (!jsonData.pdfCropperData) {
       throw new Error(
-        'PDf Cropper Data is not found in JSON data. '
-        + 'Make sure you are uploading file downloaded from PDF Cropper Page or Generate Answer Key Page.',
+        'Test Maker Data is not found in JSON data. '
+        + 'Make sure you are uploading file downloaded from Test Maker Page or Generate Answer Key Page.',
       )
     }
     jsonData = 'testAnswerKey' in jsonData

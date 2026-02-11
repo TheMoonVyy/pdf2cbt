@@ -485,20 +485,20 @@
     >
       <UiDialogContent class="max-w-lg text-center">
         <UiDialogHeader>
-          <UiDialogTitle>PDF Cropper's data is not in your test data!</UiDialogTitle>
+          <UiDialogTitle>Test Maker's data is not in your test data!</UiDialogTitle>
         </UiDialogHeader>
         <p class="font-bold text-red-400">
-          PDF Cropper's Data is not found in your test data.<br>
+          Test Maker's Data is not found in your test data.<br>
           This may happen if you gave this test before April 16, as versions before that didn't have cropper data in test data
         </p>
         <p class="my-6">
           No worries!<br>
-          You just need to upload the PDF Cropper data now (either the Zip or json file)
+          You just need to upload the Test Maker data now (either the Zip or json file)
         </p>
         <div class="flex my-5 mx-auto justify-center">
           <BaseSimpleFileUpload
             accept="application/json,application/zip,.json,.zip"
-            label="Upload Cropper's ZIP or JSON file"
+            label="Upload Test Maker's ZIP or JSON file"
             invalid-file-type-message="Please select a valid PDF or JSON file which you had uploaded on Test Interface."
             icon-name="prime:upload"
             @upload="(file) => handleFileUpload(file, 'zip-or-json')"

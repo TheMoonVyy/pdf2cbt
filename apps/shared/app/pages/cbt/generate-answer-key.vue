@@ -12,7 +12,7 @@
         (and therefore do not have results yet).
         <br><br>
         Select the one you want to generate answer key for,<br>
-        or you can load a ZIP/JSON file from PDF Cropper
+        or you can load a ZIP/JSON file from Test Maker
         or a JSON file from the CBT Interface/Results.
       </p>
       <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
@@ -54,12 +54,12 @@
       class="flex flex-col gap-5 py-15 items-center"
     >
       <h1 class="text-xl text-center">
-        You can load either zip/json file of PDF Cropper or json file of CBT Interface/Results
+        You can load either zip/json file of Test Maker or json file of CBT Interface/Results
       </h1>
       <BaseSimpleFileUpload
         accept="application/json,application/zip,.json,.zip"
         :label="'Select ZIP/JSON File'"
-        invalid-file-type-message="Please select a valid ZIP or JSON file from PDF Cropper Page."
+        invalid-file-type-message="Please select a valid ZIP or JSON file from Test Maker Page."
         icon-name="line-md:plus"
         @upload="handleFileUpload"
       />
