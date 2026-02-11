@@ -54,7 +54,7 @@
         <p class="mt-2 text-left">
           Use the
           <NuxtLink
-            to="/cbt/test-maker"
+            to="/cbt/maker"
             class="underline text-green-400"
             target="_blank"
           >
@@ -118,7 +118,7 @@
               <li>
                 For this path, you will require the file downloaded from
                 <NuxtLink
-                  to="/cbt/test-maker"
+                  to="/cbt/maker"
                   class="underline text-green-400"
                   target="_blank"
                 >
