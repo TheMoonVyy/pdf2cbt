@@ -1111,7 +1111,7 @@ const subjectChangeHandler = (subject: string) => {
                   title="Settings"
                   class="size-7"
                   size="icon"
-                  icon-name="line-md:cog-filled"
+                  icon-name="material-symbols:settings"
                   icon-class="text-orange-500"
                 />
               </UiDropdownMenuTrigger>
@@ -1170,7 +1170,7 @@ const subjectChangeHandler = (subject: string) => {
                           :key="size"
                           :disabled="storageSettings.tableFontSizes[tableItem.id].header === size"
                           :class="{
-                            'text-green-500 data-[disabled]:opacity-100':
+                            'text-green-500 data-disabled:opacity-100':
                               storageSettings.tableFontSizes[tableItem.id].header === size,
                           }"
                           @click="storageSettings.tableFontSizes[tableItem.id].header = size"
@@ -1192,7 +1192,7 @@ const subjectChangeHandler = (subject: string) => {
                           :key="size"
                           :disabled="storageSettings.tableFontSizes[tableItem.id].body === size"
                           :class="{
-                            'text-green-500 data-[disabled]:opacity-100':
+                            'text-green-500 data-disabled:opacity-100':
                               storageSettings.tableFontSizes[tableItem.id].body === size,
                           }"
                           @click="storageSettings.tableFontSizes[tableItem.id].body = size"
@@ -1379,7 +1379,7 @@ const subjectChangeHandler = (subject: string) => {
                             v-for="t in questionsTableFilterKeyValues[header.column.id as 'queId']"
                             :key="t"
                             :disabled="settings.queNumOrder === t"
-                            class="data-[disabled]:text-green-500 data-[disabled]:opacity-100"
+                            class="data-disabled:text-green-500 data-disabled:opacity-100"
                             @click="settings.queNumOrder = t"
                           >
                             {{ formattedLabels[t] }}

@@ -17,7 +17,7 @@ import type {
 import type {
   PatternModeUserConfig,
   PatternModeImportExportConfigData,
-} from '#layers/shared/shared/types/pdf-cropper'
+} from '#layers/shared/shared/types/cbt-maker'
 
 import type {
   TestInterfaceOrResultJsonOutput,
@@ -133,6 +133,22 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
             ui.questionPanel.answerOptionsFormat = {
               mcqAndMsq: answerOptionsFormat,
             } as unknown as CbtUiSettings['questionPanel']['answerOptionsFormat']
+          }
+        })
+    })
+
+    this.version(6).stores(dbScheme).upgrade(async (tx) => {
+      const migrateJsonData = new MigrateJsonData()
+      const testOutputDatasTable = tx.table('testOutputDatas')
+
+      await testOutputDatasTable
+        .toCollection()
+        .modify((data: TestOutputDataDB) => {
+          if ('testResultData' in data.testOutputData) {
+            data.testOutputData = migrateJsonData.testResultData(data.testOutputData)
+          }
+          else {
+            data.testOutputData = migrateJsonData.testInterfaceData(data.testOutputData)
           }
         })
     })

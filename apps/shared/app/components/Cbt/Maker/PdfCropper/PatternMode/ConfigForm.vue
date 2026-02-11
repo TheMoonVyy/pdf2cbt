@@ -17,13 +17,13 @@ const { form } = usePatternModeFormData()
 
 const formStatus = reactive<PatternModeFormStatus>({})
 
-const subjectToRemove = shallowRef<string | number | null | undefined>(null)
+const subjectToRemove = shallowRef<Numberish | null | undefined>(null)
 
 const NEW_SUBJECT_TAB = 'new-subject'
 
 const SETTINGS_TAB = 'settings-config'
 
-const currentTab = shallowRef<string | number>(0)
+const currentTab = shallowRef<Numberish>(0)
 
 const isLinesToIgnoreAllFilled = computed(() =>
   form.value!.settings.linesToIgnore
@@ -151,7 +151,7 @@ function addNewSubjectFromCurrentConfig(subjectIdx: number) {
               variant="help"
               size="iconSm"
               title="Settings"
-              icon-name="line-md:cog-filled"
+              icon-name="material-symbols:settings"
               icon-size="1.3rem"
               @click="currentTab = SETTINGS_TAB"
             />

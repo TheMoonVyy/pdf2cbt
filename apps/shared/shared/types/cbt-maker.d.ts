@@ -1,3 +1,5 @@
+import type { AsyncZippable } from 'fflate'
+
 export type PdfCropperCurrentMode = 'crop' | 'edit'
 
 export type CropperMode = {
@@ -25,6 +27,12 @@ export type PdfCropperSettings = {
     blurIntensity: number
     showQuestionDetailsOnOverlay: boolean
     allowResizingPanels: boolean
+    pagesToLoad: number
+  }
+  download: {
+    preGenerateImages: boolean
+    imgScale: number
+    zipCompLevel: number
   }
 }
 
@@ -62,8 +70,15 @@ export type GenericCroppedOverlayCoords<T> = {
 }
 
 export type PdfCroppedOverlayCoords = GenericCroppedOverlayCoords<number>
+export type PdfCropperPdfData = PdfCroppedOverlayCoords & { page: number }
+export type PdfCropperCurrentSelectionCoords = PdfCroppedOverlayCoords & {
+  activeLine: keyof PdfCroppedOverlayCoords
+}
+export type PdfCropperLineSelectionCoords = PdfCroppedOverlayCoords & {
+  activeLine: keyof PdfCroppedOverlayCoords
+}
 
-export type PdfCroppedOverlayData = {
+export type PdfCroppedOverlayInternalData = {
   id: string
   queId: string
   que: number
@@ -73,14 +88,23 @@ export type PdfCroppedOverlayData = {
   type: QuestionType
   answerOptions: string
   marks: Required<Omit<QuestionMarks, 'max'>>
-  pdfData: PdfCroppedOverlayCoords & {
-    page: number // page number, starting from 1
-  }
+  coords: PdfCroppedOverlayCoords
   answerOptionsCounterTypePrimary: string
   answerOptionsCounterTypeSecondary: string
 }
 
+export type PdfCroppedOverlayData = Omit<PdfCroppedOverlayInternalData, 'coords'> & {
+  pdfData: PdfCroppedOverlayCoords & { page: number }
+}
+
 export type PdfCropperOverlaysPerQuestion = Map<string, number>
+
+export type PdfCropperActiveLine = {
+  type: keyof PdfCroppedOverlayCoords
+  value: number
+}
+
+export type CropperOverlayIdsPerPage = Record<Numberish, Set<string>>
 
 export type ActiveCroppedOverlay = {
   id: string
@@ -91,6 +115,18 @@ export type PageImgData = {
   [pageNum: number]: {
     width: number
     height: number
+    top: number
+    url: string
+    pageScale: number
+  }
+}
+
+export type PagesImgData = {
+  [pageNum: Numberish]: {
+    width: number
+    height: number
+    top: number
+    bottom: number
     url: string
     pageScale: number
   }
@@ -121,7 +157,7 @@ export type PagePatternModeData = {
 }
 
 export type PdfPagesPatternModeData = {
-  [pageNum: string | number]: PagePatternModeData
+  [pageNum: Numberish]: PagePatternModeData
 }
 
 export type PatternModeFormStatus = Record<number | string, {
@@ -145,4 +181,22 @@ export type PatternModeImportExportConfigData = Omit<PatternModeUserConfig, 'id'
   data: PatternModeConfigDB['data']
 }
 
-export type CbtMakerCurrentPanel = 'cropper' | 'post-cropper'
+export type CbtMakerGenerateOutputState = {
+  generatingImages: boolean
+  generationProgress: number
+  isGenerated: boolean
+  totalQuestions: number
+  preparingOutput: boolean
+  downloaded: boolean
+  filesToZip: AsyncZippable
+  imgScale: number
+  cropperSectionsDataForPreGenerateImages: CropperSectionsData
+}
+
+export type CbtMakerJsonOutput = PdfCropperJsonOutput | AnswerKeyJsonOutputBasedOnPdfCropper
+
+export type CbtMakerPagesState = {
+  startNum: number
+  endNum: number
+  totalPages: number
+}

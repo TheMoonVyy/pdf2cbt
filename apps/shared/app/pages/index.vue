@@ -116,11 +116,11 @@
               <li>
                 For this path, you will require the file downloaded from
                 <NuxtLink
-                  to="/pdf-cropper"
+                  to="/cbt/test-maker"
                   class="underline text-green-400"
                   target="_blank"
                 >
-                  PDF Cropper
+                  Test Maker
                 </NuxtLink>.
               </li>
               <li class="mt-1">

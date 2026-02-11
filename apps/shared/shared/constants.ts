@@ -13,6 +13,14 @@ export const QUESTION_STATUS_LABELS = {
   notVisited: 'Not Visited',
 }
 
+export const QUESTION_STATUS_FULL_LABELS = {
+  answered: 'Answered',
+  markedAnswered: 'Answered & Marked for Review',
+  notAnswered: 'Not Answered',
+  marked: 'Marked for Review',
+  notVisited: 'Not Visited',
+}
+
 export const RESULT_STATUS_LABELS = {
   correct: 'Correct',
   incorrect: 'Incorrect',
@@ -29,6 +37,13 @@ export const QUESTION_TYPES_LABELS = {
   nat: 'NAT',
   msm: 'MSM',
 }
+
+export const QUESTION_TYPES_IN_WORDS = {
+  mcq: 'Multiple Choice Question',
+  msq: 'Multiple Select Question',
+  nat: 'Numerial Answer Type',
+  msm: 'Multiple Select Matrix',
+} as const
 
 export const MARKS_STATUS_LIST = ['positive', 'negative', 'bonus', 'dropped'] as const
 
@@ -56,6 +71,45 @@ export const ANSWER_OPTIONS_COUNTERS = [
   'upper-roman',
   'lower-roman',
 ] as const
+
+export type AnswerOptionsCounterTypes = typeof ANSWER_OPTIONS_COUNTERS[number]
+
+export const ANSWER_OPTIONS_COUNTER_VALUES: Record<AnswerOptionsCounterTypes, string[]> = {
+  'upper-latin': [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+    'U', 'V', 'W', 'X', 'Y', 'Z',
+  ],
+
+  'lower-latin': [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+    'u', 'v', 'w', 'x', 'y', 'z',
+  ],
+
+  'upper-pqrs': [
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  ],
+
+  'lower-pqrs': [
+    'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  ],
+
+  'decimal': [
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+    '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
+  ],
+
+  'upper-roman': [
+    'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+    'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX',
+  ],
+
+  'lower-roman': [
+    'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x',
+    'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx',
+  ],
+} as const
 
 export const ANSWER_OPTIONS_COUNTER_TYPES = [
   { name: 'A, B, C, D...', value: ANSWER_OPTIONS_COUNTERS[0] },
@@ -100,8 +154,203 @@ export const AREA_BOUNDARY_NAMES = {
 
 export const PAGE_NAMES_MAP = {
   'index': 'homePage',
-  'pdf-cropper': 'pdfCropper',
+  'test-maker': 'testMaker',
   'cbt-interface': 'testInterface',
   'cbt-results': 'testResults',
   'cbt-generate-answer-key': 'generateAnswerKey',
 } as const
+
+export const MAIN_NAV_BAR_HEIGHT = {
+  cssVar: '--main-nav-bar-height',
+  val: '3.5rem',
+} as const
+
+export const MIME_TYPE = {
+  pdf: 'application/pdf',
+  json: 'application/json',
+  zip: 'application/zip',
+} as const
+
+export const CROPPED_OVERLAY_RESIZE_DIRECTIONS = [
+  'top-left', 'top', 'top-right',
+  'right', 'bottom-right', 'bottom',
+  'bottom-left', 'left',
+] as const
+
+export type CroppedOverlayResizeDirection = (typeof CROPPED_OVERLAY_RESIZE_DIRECTIONS)[number]
+
+export const SECTION_INSTRUCTION_TYPES = {
+  NONE: 'none',
+
+  // common
+  GEN: 'general',
+  MATCH: 'matching-lists',
+  PARA: 'paragraph',
+  TABLE: 'table',
+
+  // numeric
+  NUM_GEN: 'numeric/general',
+  NUM_POS: 'numeric/positive',
+  NUM_NONNEG: 'numeric/non-negative',
+
+  NUM_PARA_GEN: 'numeric/paragraph/general',
+  NUM_PARA_POS: 'numeric/paragraph/positive',
+  NUM_PARA_NONNEG: 'numeric/paragraph/non-negative',
+
+  // integer
+  INT_GEN: 'integer/general',
+  INT_POS: 'integer/positive',
+  INT_NONNEG: 'integer/non-negative',
+  INT_SD: 'integer/single-digit',
+
+  INT_PARA_GEN: 'integer/paragraph/general',
+  INT_PARA_POS: 'integer/paragraph/positive',
+  INT_PARA_NONNEG: 'integer/paragraph/non-negative',
+  INT_PARA_SD: 'integer/paragraph/single-digit',
+} as const
+
+export const SECTION_INSTRUCTIONS_MENU_MAP = {
+  mcq: [
+    {
+      name: 'None',
+      value: SECTION_INSTRUCTION_TYPES.NONE,
+    },
+    {
+      name: 'General',
+      value: SECTION_INSTRUCTION_TYPES.GEN,
+    },
+    {
+      name: 'Matching Lists',
+      value: SECTION_INSTRUCTION_TYPES.MATCH,
+    },
+    {
+      name: 'Paragraph',
+      value: SECTION_INSTRUCTION_TYPES.PARA,
+    },
+    {
+      name: 'Table',
+      value: SECTION_INSTRUCTION_TYPES.TABLE,
+    },
+  ],
+
+  msq: [
+    {
+      name: 'None',
+      value: SECTION_INSTRUCTION_TYPES.NONE,
+    },
+    {
+      name: 'General',
+      value: SECTION_INSTRUCTION_TYPES.GEN,
+    },
+    {
+      name: 'Matching Lists',
+      value: SECTION_INSTRUCTION_TYPES.MATCH,
+    },
+    {
+      name: 'Paragraph',
+      value: SECTION_INSTRUCTION_TYPES.PARA,
+    },
+    {
+      name: 'Table',
+      value: SECTION_INSTRUCTION_TYPES.TABLE,
+    },
+  ],
+
+  msm: [
+    {
+      name: 'None',
+      value: SECTION_INSTRUCTION_TYPES.NONE,
+    },
+    {
+      name: 'General',
+      value: SECTION_INSTRUCTION_TYPES.GEN,
+    },
+  ],
+
+  nat: [
+    {
+      name: 'None',
+      value: SECTION_INSTRUCTION_TYPES.NONE,
+    },
+    {
+      name: 'Numeric',
+      groupItems: [
+        {
+          name: 'General',
+          value: SECTION_INSTRUCTION_TYPES.NUM_GEN,
+        },
+        {
+          name: 'Positive',
+          value: SECTION_INSTRUCTION_TYPES.NUM_POS,
+        },
+        {
+          name: 'Non-Negative',
+          value: SECTION_INSTRUCTION_TYPES.NUM_NONNEG,
+        },
+        {
+          name: 'Paragraph',
+          groupItems: [
+            {
+              name: 'General',
+              value: SECTION_INSTRUCTION_TYPES.NUM_PARA_GEN,
+            },
+            {
+              name: 'Positive',
+              value: SECTION_INSTRUCTION_TYPES.NUM_PARA_POS,
+            },
+            {
+              name: 'Non-Negative',
+              value: SECTION_INSTRUCTION_TYPES.NUM_PARA_NONNEG,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'Integer',
+      groupItems: [
+        {
+          name: 'General',
+          value: SECTION_INSTRUCTION_TYPES.INT_GEN,
+        },
+        {
+          name: 'Positive',
+          value: SECTION_INSTRUCTION_TYPES.INT_POS,
+        },
+        {
+          name: 'Non-Negative',
+          value: SECTION_INSTRUCTION_TYPES.INT_NONNEG,
+        },
+        {
+          name: 'Single Digit',
+          value: SECTION_INSTRUCTION_TYPES.INT_SD,
+        },
+        {
+          name: 'Paragraph',
+          groupItems: [
+            {
+              name: 'General',
+              value: SECTION_INSTRUCTION_TYPES.INT_PARA_GEN,
+            },
+            {
+              name: 'Positive',
+              value: SECTION_INSTRUCTION_TYPES.INT_PARA_POS,
+            },
+            {
+              name: 'Non-Negative',
+              value: SECTION_INSTRUCTION_TYPES.INT_PARA_NONNEG,
+            },
+            {
+              name: 'Single Digit',
+              value: SECTION_INSTRUCTION_TYPES.INT_PARA_SD,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+} as const
+
+type InstTypesMap = typeof SECTION_INSTRUCTION_TYPES
+
+export type SectionInstructionTypes = InstTypesMap[keyof InstTypesMap]

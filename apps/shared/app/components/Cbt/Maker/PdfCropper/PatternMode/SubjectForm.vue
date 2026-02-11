@@ -81,7 +81,7 @@ const { r$ } = useCustomRegle(subjectFormData, () => {
   }
 })
 
-const sectionToRemove = shallowRef<string | number | null | undefined>(null)
+const sectionToRemove = shallowRef<Numberish | null | undefined>(null)
 
 const showRemoveSectionDialog = computed({
   get: () => !!sectionToRemove.value,

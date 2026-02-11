@@ -1,3 +1,5 @@
+import { MIME_TYPE } from '#layers/shared/shared/constants'
+
 export default async function (
   originalRawUrl: string,
   convertUrl: boolean = true,
@@ -44,7 +46,7 @@ export default async function (
     const blob = await response.blob()
     const isZip = await utilIsZipFile(blob)
     if (isZip > 0) {
-      data.zipFile = new File([blob], 'testData.zip', { type: 'application/zip' })
+      data.zipFile = new File([blob], 'testData.zip', { type: MIME_TYPE.zip })
       data.originalUrl = parsedHref
       data.convertedUrl = jsDelivrUrl || ''
     }

@@ -45,8 +45,8 @@ import type {
 } from '#layers/shared/app/src/pdf-cropper-pattern-mode/json-config-to-form-data'
 
 const props = defineProps<{
-  subjectId: string | number
-  sectionId: string | number
+  subjectId: Numberish
+  sectionId: Numberish
   subjectHasSections: boolean
   sectionNamesForSelect: string[]
 }>()
@@ -368,6 +368,12 @@ onBeforeUnmount(() => {
     </UiCardContent>
   </UiCard>
 
+  <CbtMakerSectionsInstructionsInputDropDown
+    v-model="r$.$value.instructions.type"
+    class="mt-5 mb-10"
+    :question-type="r$.questions.details.$value.type"
+  />
+
   <!-- Questions Config -->
   <UiCard
     class="pt-2.5 pb-2 gap-3"
@@ -465,7 +471,7 @@ onBeforeUnmount(() => {
                 <UiCardContent class="flex flex-col items-center gap-5 w-70">
                   <FormLabel
                     label="When Split By"
-                    :field="r$.questions.mergeQuestions.splitBy"
+                    :field="r$.questions.mergeQuestions.splitBy.$self"
                   >
                     <UiCheckboxGroupRoot
                       v-model="r$.questions.mergeQuestions.$value.splitBy"
@@ -492,7 +498,7 @@ onBeforeUnmount(() => {
 
                   <FormLabel
                     label="Merge Only If Contains Any Of"
-                    :field="r$.questions.mergeQuestions.mergeOnlyIfContainsAny"
+                    :field="r$.questions.mergeQuestions.mergeOnlyIfContainsAny.$self"
                   >
                     <UiCheckboxGroupRoot
                       v-model="r$.questions.mergeQuestions.$value.mergeOnlyIfContainsAny"
@@ -568,7 +574,7 @@ onBeforeUnmount(() => {
                   <div class="flex flex-col gap-3.5 items-center">
                     <FormLabel
                       label="For"
-                      :field="r$.questions.forTopCoordinateLookUp.for"
+                      :field="r$.questions.forTopCoordinateLookUp.for.$self"
                     />
                     <UiCheckboxGroupRoot
                       v-model="r$.questions.forTopCoordinateLookUp.$value.for"

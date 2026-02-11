@@ -10,4 +10,5 @@ export const answerOptionsMcqAndMsqRegex = /^[1-9]\d?$/
 
 export const answerOptionsMsmRegex = /^[1-9]\d?(?:x[1-9]\d?)?$/
 
+export const answerOptionsMsmCaptureRegex = /^(?<rows>[1-9]\d?)(?:x(?<cols>[1-9]\d?))?$/
 export const digitsRegex = /\d+/

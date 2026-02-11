@@ -127,6 +127,8 @@
 </template>
 
 <script lang="ts" setup>
+import { MIME_TYPE } from '#layers/shared/shared/constants'
+
 const showDialog = defineModel<boolean>({ required: true })
 
 const configs = defineModel<Map<number, PatternModeUserConfig>>('configs', { required: true })
@@ -178,7 +180,7 @@ async function exportConfigs() {
   const configsToExport = await db.bulkGetPatternModeConfigs(ids)
 
   const dataStr = JSON.stringify(configsToExport, null, 2)
-  const blob = new Blob([dataStr], { type: 'application/json' })
+  const blob = new Blob([dataStr], { type: MIME_TYPE.json })
   utilSaveFile('pattern-cropper-configs.json', blob)
 }
 

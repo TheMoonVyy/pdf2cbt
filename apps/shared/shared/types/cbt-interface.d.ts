@@ -19,7 +19,6 @@ export type CbtUiSettings = {
     sectionHeaderAndQuesPanelDividerHeight: number
     showQuestionType: boolean
     showMarkingScheme: boolean
-    showQuestionPaperBtn: boolean
     disableMouseWheel: boolean
     showQuestionTimeSpent: boolean
     showScrollToTopAndBottomBtns: boolean
@@ -85,6 +84,14 @@ export type CbtUiSettings = {
     rowsGap: number
     quesIcons: QuesIcons
   }
+
+  profile: {
+    username: string
+    fontSize: number
+    img: string
+    imgWidth: number
+    imgHeight: number
+  }
 }
 
 export type LogTestStateViaType = 'testStarted' | 'testResumed' | 'testFinished'
@@ -124,7 +131,7 @@ export type TestSessionQuestionData = Pick<
 }
 
 export type TestSessionSectionData = {
-  [question: string | number]: TestSessionQuestionData
+  [question: Numberish]: TestSessionQuestionData
 }
 
 export type TestSessionSubjectData = {
@@ -189,7 +196,7 @@ export type TestInterfaceTestData = {
 
 export type TestImageBlobs = GenericSubjectsTree<Blob[]>[string]
 
-export interface TestState {
+export type TestState = {
   pdfFile: Uint8Array | null
   testImageBlobs: TestImageBlobs | null
   testConfig: TestInterfaceJsonOutput['testConfig']
@@ -197,9 +204,15 @@ export interface TestState {
   isSectionsDataLoaded: boolean
   totalQuestions: number
   totalSections: number
+  pdfCropperData: CropperOutputData | null
   preparingTestCurrentQuestion: number
-  currentProcess: 'initial' | 'preparing-data' | 'preparing-imgs' | 'test-is-ready' | 'test-started'
+  currentProcess: 'initial' | 'preparing-data' | 'preparing-imgs' | 'test-started'
   continueLastTest: boolean | null
+  instructionsData: CbtMakerInternalInstructionsData | null
+  instructionsTemplateData: CbtInstructionsTemplateData | null
+  parsedTestInstructions: CbtParsedTestInstructions | null
+  isQImgBlobUrlsLoaded: boolean
+  isTestReady: boolean
 }
 
 export interface CbtTestSettings {
@@ -211,14 +224,6 @@ export interface CbtTestSettings {
   questionImgScale: number
   saveTestData: boolean
   saveQuestionsLikeRealExams: boolean
-}
-
-export interface MiscSettings {
-  username: string
-  fontSize: number
-  profileImg: string
-  imgWidth: number
-  imgHeight: number
 }
 
 export type UploadedTestData = {

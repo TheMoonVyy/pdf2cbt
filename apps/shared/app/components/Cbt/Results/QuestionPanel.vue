@@ -534,7 +534,7 @@ interface Props {
 }
 
 type QuestionsPdfData = {
-  [queId: string | number]: {
+  [queId: Numberish]: {
     page: number
     x: number
     y: number
@@ -959,7 +959,7 @@ async function startRenderingImgs() {
     drawerVisibility.value = true
     pdfRenderingProgress.value = 'loading-file'
 
-    const questionSectionsRelations: Record<string | number, { section: string, que: number | string }> = {}
+    const questionSectionsRelations: Record<Numberish, { section: string, que: number | string }> = {}
     for (const question of allQuestions) {
       const { queId, section, oriQueId } = question
       questionSectionsRelations[queId] = { section, que: oriQueId }

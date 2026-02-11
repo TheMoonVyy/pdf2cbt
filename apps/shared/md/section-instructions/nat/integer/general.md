@@ -1,0 +1,1 @@
+{% layout "../layout.liquid", questionInfoTypeMsg: "an **INTEGER**", typeMsg: "integer" %}

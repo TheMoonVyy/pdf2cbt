@@ -9,6 +9,7 @@ import {
 import {
   ANSWER_OPTIONS_COUNTERS,
   PATTERN_MODE,
+  SECTION_INSTRUCTION_TYPES,
 // } from '#layers/shared/shared/constants'
 } from '../../../shared/constants'
 
@@ -233,9 +234,14 @@ const patternAndSearchInForSubjectAndSectionSchema = z.strictObject({
   }),
 })
 
+const sectionInstructions = z.strictObject({
+  type: z.enum(Object.values(SECTION_INSTRUCTION_TYPES)),
+}).optional()
+
 const sectionSchema = patternAndSearchInForSubjectAndSectionSchema.extend({
-  questions: patternModeFormQuestionsSchema,
+  instructions: sectionInstructions,
   numOfOptionalQuestions: z.number().nonnegative().optional(),
+  questions: patternModeFormQuestionsSchema,
 })
 
 const columnDividersSchema = z.string()
@@ -266,6 +272,7 @@ export const subjectWithoutSectionsSchema = z.strictObject({
   start: patternAndSearchInForSubjectAndSectionSchema,
   end: patternAndSearchInForSubjectAndSectionSchema.optional(),
   columnDividers: columnDividersSchema,
+  instructions: sectionInstructions,
   questions: patternModeFormQuestionsSchema,
 })
 

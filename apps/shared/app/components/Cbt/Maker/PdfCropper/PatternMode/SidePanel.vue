@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-3 w-full mx-[-1rem]">
+  <div class="flex flex-col gap-3 w-full -mx-4">
     <UiCard class="py-3 gap-2 grow">
       <UiCardHeader>
         <UiCardTitle class="mx-auto text-lg">
@@ -96,7 +96,7 @@
             @click="editConfigHandler"
           />
           <template v-else>
-            <span class="mx-auto text-center font-bold mt-[-0.5rem]">Edits</span>
+            <span class="mx-auto text-center font-bold -mt-2">Edits</span>
             <div class="flex gap-3 items-center justify-center">
               <BaseButton
                 label="Discard"
@@ -216,14 +216,18 @@ import { wrap as comlinkWrap } from 'comlink'
 import patternBasedCropperWorker from '#layers/shared/app/src/worker/text-pattern-based-crop.worker?worker'
 import ManageConfigs from './ManageConfigs.client.vue'
 import { ComboboxContent } from 'reka-ui'
+import {
+  cropperOverlayDatasKey,
+  overlaysPerQuestionDataKey,
+  pagesImgDataKey,
+} from '../../keys'
+import type { InputPdfCropperData } from '#layers/shared/app/utils/utilPdfCropperDataToInternalData'
 
 type ConfigsListItem = MakePropertyOptional<PatternModeBuiltInConfig, 'url'>
-type OptionalQuestions = NonNullable<PdfCropperJsonOutput['testConfig']['optionalQuestions']>
 
 const props = defineProps<{
   isFormReady: boolean
   totalPages: number
-  pageImgData: PageImgData
   isPdfLoaded: boolean
 }>()
 
@@ -233,25 +237,18 @@ const emit = defineEmits<{
 
 const showPatternModeEditConfigPanel = defineModel<boolean>({ required: true })
 
-const currentMode = defineModel<PdfCropperCurrentMode>(
-  'currentMode',
+const additionalData = defineModel<CbtMakerInternalInstructionsData['additionalData']>(
+  'additionalData',
   { required: true },
 )
 
-const cropperOverlayDatas = defineModel<Map<string, PdfCroppedOverlayData>>(
-  'cropperOverlayDatas',
-  { required: true },
-)
+const currentMode = defineModel<PdfCropperCurrentMode>('currentMode', { required: true })
 
-const overlaysPerQuestionData = defineModel<Map<string, number>>(
-  'overlaysPerQuestionData',
-  { required: true },
-)
+const cropperOverlayDatas = inject(cropperOverlayDatasKey)!
 
-const optionalQuestions = defineModel<OptionalQuestions>(
-  'optionalQuestions',
-  { required: true },
-)
+const overlaysPerQuestionData = inject(overlaysPerQuestionDataKey)!
+
+const pagesImgData = inject(pagesImgDataKey)!
 
 let patternBasedCrop: ReturnType<typeof comlinkWrap<PatternBasedCropFn>> | null = null
 
@@ -429,39 +426,54 @@ async function runCropper(patternModeRawDataForCropper: PdfPagesPatternModeData)
 
   const patternBasedCropper = initWorker()
 
-  const { pageImgData } = props
-
   const { subjects: subjectsConfig } = parsedConfigData
 
   const newCropperOverlays = await patternBasedCropper(
     subjectsConfig,
     patternModeRawDataForCropper,
-    utilCloneJson(pageImgData),
+    utilCloneJson(pagesImgData),
   )
 
-  optionalQuestions.value.length = 0
   const overlays = cropperOverlayDatas.value
-  const overlaysCount = overlaysPerQuestionData.value
-  overlaysCount.clear()
+  overlaysPerQuestionData.clear()
   overlays.clear()
 
-  for (const overlay of newCropperOverlays.values()) {
-    const { id, queId } = overlay
-    overlays.set(id, overlay)
+  const newCropperSubjectsData: InputPdfCropperData = {}
+  for (const overlayData of newCropperOverlays.values()) {
+    const { subject, section: rawSection, que } = overlayData
+    const section = rawSection || subject
 
-    const count = (overlaysCount.get(queId) || 0) + 1
-    overlaysCount.set(queId, count)
+    newCropperSubjectsData[subject] ??= {}
+    newCropperSubjectsData[subject][section] ??= {}
+    newCropperSubjectsData[subject][section][que] ??= {
+      ...overlayData,
+      pdfData: [],
+    }
+    newCropperSubjectsData[subject][section][que]
+      .pdfData.push(overlayData.pdfData)
   }
 
-  for (const subjectConf of Object.values(subjectsConfig)) {
-    for (const sectionConf of Object.values(subjectConf.sections)) {
-      const optQues = sectionConf.numOfOptionalQuestions
-      if (optQues) {
-        optionalQuestions.value.push({
-          subject: subjectConf.name,
-          section: sectionConf.name,
-          count: optQues,
-        })
+  utilPdfCropperDataToInternalData(
+    newCropperSubjectsData,
+    pagesImgData,
+    overlays,
+    overlaysPerQuestionData,
+  )
+
+  for (const [subjectName, subjectConf] of Object.entries(subjectsConfig)) {
+    additionalData.value[subjectName] ??= { sections: {} }
+    const sections = additionalData.value[subjectName].sections
+
+    for (const [sectionName, sectionConf] of Object.entries(subjectConf.sections)) {
+      const optionalQuestions = sectionConf.numOfOptionalQuestions || 0
+      const instructions = sectionConf.instructions || { type: 'none' }
+      if (!sections[sectionName]) {
+        sections[sectionName] = { optionalQuestions, instructions }
+      }
+      else {
+        const sec = sections[sectionName]
+        sec.instructions = instructions
+        sec.optionalQuestions = optionalQuestions
       }
     }
   }
@@ -478,88 +490,4 @@ onMounted(() => {
     .then(configs => configs.forEach(conf => userConfigs.set(conf.id, conf)),
     )
 })
-
-// let parsedConfig: PatternModeParsedConfig | null = null
-
-// onMounted(initWorker)
-
-// const state = {
-//   config: null as null | PatternModeConfigJson,
-// }
-
-// const downloadExtractedPdfData = () => {
-//   if (props.pdfPagesPatternModeData)
-//     utilSaveFile('pdf_data.json', new Blob([JSON.stringify(props.pdfPagesPatternModeData, null, 2)]))
-// }
-
-// const pdfTextDataWatcherHandle = watch(
-//   () => props.pdfPagesPatternModeData,
-//   () => parsedConfig?.subjects ? runCropper(parsedConfig?.subjects) : null,
-// )
-
-// pdfTextDataWatcherHandle.pause()
-
-// async function handleFileUpload(file: File) {
-//   state.config = await utilParseJsonFile(file) as PatternModeConfigJson
-
-//   // const pageNums = getPdfPageNumsToSearchIn(state.config.subjects)
-//   validateConfigAndRunCropper()
-//   if (parsedConfig) {
-//     const pageNums = [...parsedConfig.subjects[0]!.start.searchIn.pages]
-//       .sort((a, b) => a - b)
-//     emit('loadPdfPatternModeData', pageNums, parsedConfig.settings)
-//   }
-// }
-
-// function validateConfigAndRunCropper() {
-//   if (!state.config) return
-
-//   const configSchema = getPatternModeConfigSchema(props.totalPages)
-//   const result = configSchema.safeParse(utilCloneJson(state.config))
-
-//   if (result.success) {
-//     pdfTextDataWatcherHandle.resume()
-//     parsedConfig = result.data
-//   }
-//   else {
-//     console.error(result.error)
-//   }
-// }
-
-// // function getPdfPageNumsToSearchIn(
-// //   configData: PatternModeConfigJson['subjects'],
-// //   totalPages: number = props.totalPages,
-// // ) {
-// //   let pageNums = new Set<number>()
-
-// //   for (const subjectConfig of Object.values(configData)) {
-// //     if (pageNums.size === totalPages)
-// //       break
-
-// //     const subjectPages = utilParsePdfPageNumbers(subjectConfig.searchIn.pages, totalPages)
-// //     pageNums = new Set([...pageNums, ...subjectPages])
-
-// //     if ('sections' in subjectConfig) {
-// //       for (const sectionConfig of Object.values(subjectConfig.sections)) {
-// //         if (pageNums.size === totalPages)
-// //           break
-
-// //         const sectionPages = utilParsePdfPageNumbers(sectionConfig.searchIn.pages, totalPages)
-// //         pageNums = new Set([...pageNums, ...sectionPages])
-
-// //         if (pageNums.size === totalPages)
-// //           break
-
-// //         const questionPages = utilParsePdfPageNumbers(sectionConfig.questions.pagesToSearchIn, totalPages)
-// //         pageNums = new Set([...pageNums, ...questionPages])
-// //       }
-// //     }
-// //     else if (pageNums.size !== totalPages) {
-// //       const questionPages = utilParsePdfPageNumbers(subjectConfig.questions.pagesToSearchIn, totalPages)
-// //       pageNums = new Set([...pageNums, ...questionPages])
-// //     }
-// //   }
-
-// //   return [...pageNums].sort((a, b) => a - b)
-// // }
 </script>

@@ -1,14 +1,35 @@
 <script setup lang="ts">
 import { ListboxContent, ListboxItem, ListboxRoot } from 'reka-ui'
 
-const items = defineModel<TestSectionListItem[]>({ required: true })
+type ListItem = {
+  id: number
+  name: string
+}
 
-const containerElem = useTemplateRef('container')
+const {
+  allowOneOnlySelectionToPersist = false,
+  listContainerClass = 'max-w-56',
+  scrollContainerClass = '[&>div]:max-h-80',
+} = defineProps<{
+  allowOneOnlySelectionToPersist?: boolean
+  listContainerClass?: string
+  scrollContainerClass?: string
+}>()
+const items = defineModel<ListItem[]>({ required: true })
 
 const selectedItemsIds = ref<number[]>([])
 
+defineExpose({
+  selectedItemsIds,
+})
+
+const containerElem = useTemplateRef('container')
+
 onClickOutside(containerElem, () => {
-  if (selectedItemsIds.value.length)
+  const len = selectedItemsIds.value.length
+  if (!len) return
+
+  if (!allowOneOnlySelectionToPersist || len > 1)
     selectedItemsIds.value.length = 0
 })
 
@@ -23,7 +44,7 @@ function moveTop() {
   const selectedIndexes = getSelectedItemsIdsWithIndices()
 
   let start = 0
-  const itemsToInsert: TestSectionListItem[] = []
+  const itemsToInsert: ListItem[] = []
   const indicesToRemove: number[] = []
 
   for (const idx of selectedIndexes) {
@@ -49,7 +70,7 @@ function moveBottom() {
   const allItems = items.value
   const reversedSelectedIndexes = getSelectedItemsIdsWithIndices().reverse()
 
-  const itemsToInsert: TestSectionListItem[] = []
+  const itemsToInsert: ListItem[] = []
 
   for (const idx of reversedSelectedIndexes) {
     itemsToInsert.push(...allItems.splice(idx, 1))
@@ -147,7 +168,7 @@ function getSelectedItemsIdsWithIndices() {
     ref="container"
     class="flex gap-3.5 justify-center w-fit mx-auto"
   >
-    <div class="flex flex-col gap-2.5 items-center mt-2">
+    <div class="flex flex-col gap-2.5 items-center my-1">
       <BaseButton
         variant="outline"
         size="icon"
@@ -181,14 +202,17 @@ function getSelectedItemsIdsWithIndices() {
         @click="moveBottom"
       />
     </div>
-    <div class="rounded-sm bg-neutral-950/30 border-input border max-w-56">
-      <UiScrollArea class="[&>div]:max-h-80">
+    <div
+      class="rounded-sm bg-neutral-950/30 border-input border"
+      :class="listContainerClass"
+    >
+      <UiScrollArea :class="scrollContainerClass">
         <ListboxRoot
           v-model="selectedItemsIds"
           multiple
         >
           <ListboxContent
-            class="list-none m-0 p-1 outline-none flex flex-col gap-[2px] text-white select-none"
+            class="list-none m-0 p-1 outline-none flex flex-col gap-0.5 text-white select-none"
             data-slot="order-list"
           >
             <ListboxItem

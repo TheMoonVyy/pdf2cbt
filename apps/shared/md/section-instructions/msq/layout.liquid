@@ -1,0 +1,62 @@
+{%- block heading %}
+## SECTION {{ slNum }} (Maximum Marks: {{ maxMarks }}){.text-center}
+{%- endblock %}
+
+{%- block sectioninfo %}
+- This section contains **{{ totalQuestions | toWords | upcase }} ({{ totalQuestions | zeroPad: 2 }})** questions.
+{%- endblock %}
+{%- block questioninfo %}
+- Each question has **{{ answerOptions.rows.count | toWords | upcase }}** options {{ answerOptions.rows.chars | joinInEnglish: '(', ')' }}. **ONE OR MORE THAN ONE** of these {{ answerOptions.rows.count | toWords | downcase }} option(s) is(are) correct answer(s).
+{%- endblock %}
+{%- block eachquestion %}
+- For each question, choose the option(s) corresponding to (all) the correct answer(s).
+{%- endblock %}
+{%- block markingscheme %}
+- Answers to each question will be evaluated _according to the following marking scheme_:
+  - |-----------------|---|-------------|
+    | *Full Marks*    |&nbsp;:&nbsp;&nbsp;| {{ questionMarks.correct | prepend: '+' }} **ONLY** if (all) the correct option(s) is(are) chosen |
+    {%- if questionMarks.partial != 0 %}
+      {%- assign remOpt = answerOptions.rows | size %}
+      {%- for i in (2..remOpt) reversed %}
+        {%- assign chosenOpts = i | minus: 1 %}
+        {%- assign marks = chosenOpts | times: questionMarks.partial %}
+        {%- if i == remOpt %}
+    | *Partial Marks* |&nbsp;:&nbsp;&nbsp;| +{{ marks }} If all the {{ i | toWords | downcase }} options are correct but **ONLY** {{ chosenOpts | toWords | downcase }} correct options are chosen; |
+        {%- else %}
+    | *Partial Marks* |&nbsp;:&nbsp;&nbsp;| +{{ marks }} If {{ i | toWords | downcase }} or more options are correct but **ONLY** {{ chosenOpts | toWords | downcase }} correct options are chosen; |
+        {%- endif %}
+      {%- endfor %}
+    {%- endif %}
+    {%- if questionMarks.incorrect == 0 %}
+    | *Zero Marks*    |&nbsp;:&nbsp;&nbsp;| 0 In all other cases. |
+    {%- else %}
+    | *Zero Marks*    |&nbsp;:&nbsp;&nbsp;| 0 If none of the options is chosen (i.e., the question is unanswered); |
+    | *Negative Marks* {.text-nowrap}|&nbsp;:&nbsp;&nbsp;| {{ questionMarks.incorrect }} In all other cases. |
+    {%- endif %}
+    {.no-border}
+{%- endblock %}
+
+{%- block examples %}
+{%- if questionMarks.partial != 0 %}
+{%- assign remOpt = answerOptions.rows | size %}
+{%- assign arr = answerOptions.rows.chars %}
+{%- assign size = arr | size %}
+{%- assign sizeMinusOne = size | minus: 1 %}
+{%- assign sizeMinusTwo = size | minus: 2 %}
+{%- assign firstPart = arr | slice: 0, sizeMinusTwo %}
+{%- assign lastPart = arr | slice: sizeMinusOne %}
+{%- assign rowsChars = firstPart | push: lastPart %}
+{%- assign rowsCharsCombo = rowsChars | toCombinations | reverse %}
+
+- For example, in a question, if {{ rowsChars | joinInEnglish: '(', ')' }} are the ONLY {{ rowsChars | size }} options corresponding to correct answers, then:
+  - choosing ONLY {{ rowsChars | joinInEnglish: '(', ')' }} will get +{{ questionMarks.correct }} marks;
+  {%- for comboRow in rowsCharsCombo %}
+    {%- assign rowMarks = forloop.rindex | times: questionMarks.partial %}
+    {%- for chars in comboRow %}
+  - choosing ONLY {{ chars | joinInEnglish: '(', ')'  }} will get +{{ rowMarks }} marks;
+    {%- endfor %} 
+  {%- endfor %}
+  - choosing no option (i.e., the question is unanswered) will get 0 marks; and
+  - choosing any other combination of options will get {{ questionMarks.incorrect }} marks.
+{%- endif %}
+{%- endblock %}
