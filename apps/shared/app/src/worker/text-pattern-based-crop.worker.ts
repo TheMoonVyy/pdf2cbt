@@ -47,14 +47,14 @@ function getTextCharsOfLineInSearchArea(
   searchArea: NormalizedCoordinates,
   lineData: PageTextLineData,
   pageWidth: number,
-  returnTextAsWell?: true
+  returnTextAsWell?: true,
 ): { chars: PageTextChar[], text: string } | null
 
 function getTextCharsOfLineInSearchArea(
   searchArea: NormalizedCoordinates,
   lineData: PageTextLineData,
   pageWidth: number,
-  returnTextAsWell: false
+  returnTextAsWell: false,
 ): { chars: PageTextChar[] } | null
 
 function getTextCharsOfLineInSearchArea(

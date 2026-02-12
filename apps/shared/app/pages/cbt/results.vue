@@ -118,7 +118,7 @@ import type {
   LineSeriesOption,
   PieSeriesOption,
 } from 'echarts/types/dist/shared'
-
+import { MIME_TYPE } from '#layers/shared/shared/constants'
 import { ResultsPagePanels } from '#layers/shared/shared/enums'
 
 interface ChartDataState {
@@ -426,7 +426,7 @@ function getTestTimebySection() {
 
 function loadTestJourneyToChartDataState() {
   type SeriesDataObj = {
-    value: [string | number, string]
+    value: [Numberish, string]
     symbol?: 'roundRect'
     itemStyle?: { color: string }
   }
@@ -744,12 +744,12 @@ function getTestStartedCountdownTime(testLogs: TestLog[]) {
 
 function generateTestResults(
   loadToTestResultsOutputData?: true,
-  testDataToUse?: TestInterfaceOrResultJsonOutput | null
+  testDataToUse?: TestInterfaceOrResultJsonOutput | null,
 ): boolean | null
 
 function generateTestResults(
   loadToTestResultsOutputData: false,
-  testDataToUse?: TestInterfaceOrResultJsonOutput | null
+  testDataToUse?: TestInterfaceOrResultJsonOutput | null,
 ): TestResultJsonOutput | null | false
 
 function generateTestResults(
@@ -819,9 +819,8 @@ function generateTestResults(
           }
 
           const sectionQuestions = Object.values(testResultSectionData)
-          const totalOptionalQuestions = testConfig.optionalQuestions
-            ?.find(obj => obj.subject === subject && obj.section === section)
-            ?.count || 0
+          const totalOptionalQuestions = testConfig
+            .additionalData[subject]?.sections[section]?.optionalQuestions || 0
 
           if (totalOptionalQuestions > 0) {
             // sort questions such that attempted questions are to the left of the array,
@@ -1138,7 +1137,7 @@ async function processImportExport(
         throw new Error('Error: testOutputDataDBList or testNotesDBList is undefined')
       }
 
-      const testNotesObject: Record<string | number, TestNotes> = {}
+      const testNotesObject: Record<Numberish, TestNotes> = {}
       for (const notesItem of testNotesDBList) {
         const { id, notes } = notesItem ?? {}
         if (id && notes) {
@@ -1159,7 +1158,7 @@ async function processImportExport(
       }
 
       if (testOutputDatas.length > 0) {
-        const outputBlob = new Blob([JSON.stringify({ testOutputDatas })], { type: 'application/json' })
+        const outputBlob = new Blob([JSON.stringify({ testOutputDatas })], { type: MIME_TYPE.json })
         utilSaveFile('pdf2cbt_test_results.json', outputBlob)
       }
     }

@@ -10,6 +10,12 @@
       ref="imageContainerElem"
       class="flex flex-col pb-12 grow"
     >
+      <CbtSectionInstructionsPanel
+        v-if="currentSectionInstructions"
+        class="select-none mb-6"
+        :instructions="currentSectionInstructions.instructions"
+        :template-data="currentSectionInstructions.templateData"
+      />
       <img
         v-for="(url, index) in currentQuestionImgUrls"
         :key="index"
@@ -74,14 +80,22 @@
 
 <script lang="ts" setup>
 type QuestionsImgWidths = {
-  [questionNum: string | number]: {
+  [questionNum: Numberish]: {
     [imageIndex: number | string]: number
   }
 }
 
-const props = defineProps<{
+const {
+  isQuestionPalleteCollapsed,
+  cropperSectionsData,
+  sectionsInstructionsData,
+} = defineProps<{
   isQuestionPalleteCollapsed: boolean
   cropperSectionsData: CropperSectionsData
+  sectionsInstructionsData: Record<string, {
+    instructions: CbtMakerInternalSectionInstructionsData['instructions']
+    templateData: CbtInstructionsTemplateSectionData
+  }>
 }>()
 
 const scrollAreaRef = useTemplateRef('scrollAreaRef')
@@ -96,7 +110,7 @@ const { uiSettings } = useCbtSettings()
 const questionsImgWidths = reactive<QuestionsImgWidths>({})
 
 const questionImgMaxSize = computed(() => {
-  if (props.isQuestionPalleteCollapsed) {
+  if (isQuestionPalleteCollapsed) {
     return uiSettings.value.questionPanel.questionImgMaxWidth.maxWidthWhenQuestionPaletteClosed
   }
   else {
@@ -139,14 +153,32 @@ const currentQuestionDetails = computed(() => {
   const currentQuestion = testQuestionsData.value.get(currentQueId)!
   const questionType = currentQuestion.type
   const answerOptions = currentQuestion.answerOptions || '4'
-  const { answerOptionsCounterType } = props.cropperSectionsData[currentQuestion.section]?.[currentQuestion.que] ?? {}
+
+  const {
+    answerOptionsCounterType,
+  } = cropperSectionsData[currentQuestion.section]?.[currentQuestion.que] ?? {}
 
   return {
     questionType,
     answerOptions,
     currentQueId,
     answerOptionsCounterType,
+    isFirstQueOfSection: currentQuestion.secQueId === 1,
   }
+})
+
+const currentSectionInstructions = computed(() => {
+  if (!currentQuestionDetails.value.isFirstQueOfSection) return null
+
+  const section = currentTestState.value.section
+
+  const data = sectionsInstructionsData[section]
+  if (!data) return null
+
+  if (data.instructions.type !== 'none')
+    return data
+
+  return null
 })
 
 const currentQuestionMsmAnswer = computed({
@@ -208,7 +240,7 @@ const currentQuestionMcqOrMsqAnswer = computed({
   },
 })
 
-const handleImageLoad = (e: Event, queId: string | number, imgindex: number) => {
+const handleImageLoad = (e: Event, queId: Numberish, imgindex: number) => {
   const w = questionsImgWidths?.[queId]?.[imgindex]
 
   if (typeof w === 'number' && w > 0) {

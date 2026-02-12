@@ -246,6 +246,7 @@ function getParsedSection(
     pages: utilParsePdfPageNumbers(section.searchIn.pages, totalPages),
     area: getParsedSearchArea(section.searchIn.area),
   }
+  const instructions = section.instructions
   const numOfOptionalQuestions = section.numOfOptionalQuestions || 0
   return {
     name: sectionName,
@@ -253,6 +254,7 @@ function getParsedSection(
     searchIn,
     questions,
     numOfOptionalQuestions,
+    instructions,
   }
 }
 
@@ -310,8 +312,9 @@ function getParsedSubject(
       sections: [{
         name: subjectName,
         ...structuredClone(start),
-        questions,
+        instructions: subject.instructions,
         numOfOptionalQuestions: 0,
+        questions,
       }],
     }
   }

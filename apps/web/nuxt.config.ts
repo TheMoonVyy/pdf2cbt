@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   $meta: {
     name: 'web',
   },
+  devtools: { enabled: false },
   css: ['./app/assets/css/main.css'],
   site: {
     url: 'https://pdf2cbt.vercel.app',
@@ -28,7 +29,7 @@ export default defineNuxtConfig({
     define: {
       'import.meta.env.PROJECT_VERSION': `"${packageJson.version}"`,
     },
-    plugins: [tailwindVitePlugin()],
+    plugins: [tailwindVitePlugin() as any], // eslint-disable-line @typescript-eslint/no-explicit-any
   },
   icon: {
     clientBundle: {

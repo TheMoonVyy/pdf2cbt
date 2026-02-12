@@ -12,7 +12,7 @@
         (and therefore do not have results yet).
         <br><br>
         Select the one you want to generate answer key for,<br>
-        or you can load a ZIP/JSON file from PDF Cropper
+        or you can load a ZIP/JSON file from Test Maker
         or a JSON file from the CBT Interface/Results.
       </p>
       <div class="flex flex-row justify-center flex-wrap gap-6 py-4 px-2 sm:px-4 md:px-8">
@@ -54,12 +54,12 @@
       class="flex flex-col gap-5 py-15 items-center"
     >
       <h1 class="text-xl text-center">
-        You can load either zip/json file of PDF Cropper or json file of CBT Interface/Results
+        You can load either zip/json file of Test Maker or json file of CBT Interface/Results
       </h1>
       <BaseSimpleFileUpload
         accept="application/json,application/zip,.json,.zip"
         :label="'Select ZIP/JSON File'"
-        invalid-file-type-message="Please select a valid ZIP or JSON file from PDF Cropper Page."
+        invalid-file-type-message="Please select a valid ZIP or JSON file from Test Maker Page."
         icon-name="line-md:plus"
         @upload="handleFileUpload"
       />
@@ -80,7 +80,7 @@
             <span class="pl-5 pr-3 text-lg font-bold">Sort Sections Order</span>
           </div>
           <div class="flex mt-2">
-            <CbtSectionsOrderList
+            <CbtOrderList
               v-model="sectionsState.sectionsList"
             />
           </div>
@@ -293,6 +293,7 @@
 import { zip, strToU8 } from 'fflate'
 import type { AsyncZippable } from 'fflate'
 import { DataFileNames } from '#layers/shared/shared/enums'
+import { MIME_TYPE } from '#layers/shared/shared/constants'
 
 type SectionListItem = TestSectionListItem & { totalQuestions: number }
 
@@ -859,7 +860,7 @@ async function downloadOutput() {
   }
 
   if (fileExtension === '.json') {
-    const outputBlob = new Blob([outputJsonString], { type: 'application/json' })
+    const outputBlob = new Blob([outputJsonString], { type: MIME_TYPE.json })
     utilSaveFile(filename + fileExtension, outputBlob)
     generateOutputState.preparingDownload = false
     generateOutputState.downloaded = true
@@ -877,7 +878,7 @@ async function downloadOutput() {
       }
       const outputBlob = new Blob(
         [compressedZip as unknown as Uint8Array<ArrayBuffer>],
-        { type: 'application/zip' },
+        { type: MIME_TYPE.zip },
       )
       utilSaveFile(filename + fileExtension, outputBlob)
       generateOutputState.preparingDownload = false

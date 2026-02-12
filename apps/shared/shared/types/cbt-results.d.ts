@@ -143,7 +143,7 @@ export type TestResultOverviewsDBSortByOption = 'addedAscending'
   | 'endTimeDescending'
 
 export type TestNotes = {
-  [queId: string | number]: string
+  [queId: Numberish]: string
 }
 
 export type ScoreCardData = Required<Omit<TestResultOverview['overview'], 'accuracy' | 'testDuration'>> & {

@@ -11,16 +11,15 @@
   >
     <div
       v-show="!submitState.isSubmitBtnClicked
+        && (testState.currentProcess === 'initial' || testState.currentProcess === 'test-started')
         && !submitState.isSubmitting
         && !submitState.isSubmitted
         && !submitState.unableToSave"
       class="flex flex-col max-w-full max-h-dvh min-h-dvh select-none"
     >
-      <div
-        class="flex shrink-0"
-      >
+      <div class="flex shrink-0">
         <div
-          class="flex flex-col border-b-2 border-slate-400 shrink-0"
+          class="flex flex-col shrink-0"
           :style="{ width: `${100 - (uiSettings.questionPalette.width || 15)}%` }"
         >
           <div
@@ -46,12 +45,22 @@
               class="flex gap-2 items-center ml-auto"
             >
               <BaseButton
-                v-if="uiSettings.mainLayout.showQuestionPaperBtn"
+                label="Test Instructions"
+                variant="link"
+                size="sm"
+                class="mr-1 text-black!"
+                icon-name="material-symbols:text-snippet-outline-rounded"
+                icon-size="1.3rem"
+                :disabled="isTestPaused || testState.currentProcess !== 'test-started'"
+                @click="showTestInstructionsDialog = true"
+              />
+              <BaseButton
                 label="Question Paper"
                 variant="link"
                 size="sm"
                 class="mr-1 text-black!"
                 icon-name="prime:file"
+                icon-size="1.3rem"
                 :disabled="isTestPaused || testState.currentProcess !== 'test-started'"
                 @click="questionPaperDialogState.openDialog = true"
               />
@@ -65,73 +74,27 @@
             v-model="questionPaperDialogState.openDialog"
             v-model:img-width-size="questionPaperDialogState.imgWidthSize"
             :questions-numbering-order-type="currentTestState.questionsNumberingOrderType"
+            :sections-instructions-data="sectionsInstructionsData"
           />
-          <UiScrollArea
-            class="w-full border-slate-400"
-            viewport-class="[&>div]:mb-3"
-            type="auto"
-          >
-            <div
-              class="flex last:border-r-2 border-y-2 border-slate-400 w-full whitespace-nowrap px-2 divide-x-2 divide-slate-400"
-              :style="{ height: `${uiSettings.mainLayout.sectionHeaderHeight}rem` }"
-            >
-              <template
-                v-for="(sectionItem, index) in testSectionsList"
-                :key="sectionItem.name"
-              >
-                <div
-                  class="flex items-center gap-2 my-[-2px] cursor-pointer"
-                  :class="{
-                    'primary-theme': sectionItem.name === currentTestState.section,
-                    'border-slate-400 border-r-2!': index === (testSectionsList.length - 1),
-                  }"
-                  :data-id="'data-id_' + sectionItem.name"
-                  @click="changeCurrentQuestion('sectionBtn', null, sectionItem.name)"
-                >
-                  <span class="pl-3 py-0.5">
-                    {{ sectionItem.name }}
-                  </span>
-                  <CbtInterfaceSectionSummaryTooltip
-                    :section-name="sectionItem.name"
-                    :question-status-list="questionStatusList"
-                    :ques-icons="uiSettings.questionPalette.quesIcons"
-                    :section-summary="testSectionsSummary.get(sectionItem.name)!"
-                    :data-id-selector="'data-id_' + sectionItem.name"
-                  />
-                </div>
-              </template>
-            </div>
-            <UiScrollBar
-              orientation="horizontal"
-              class="bg-neutral-800/60"
-              thumb-area-class="bg-(--bg-primary-theme-color)"
-            />
-          </UiScrollArea>
+          <CbtInterfaceTestInstructionsDialog
+            v-if="testState.parsedTestInstructions && showTestInstructionsDialog"
+            v-model="showTestInstructionsDialog"
+            :parsed-test-instructions="testState.parsedTestInstructions"
+          />
+          <CbtInterfaceSectionsContainer
+            :test-sections-list="testSectionsList"
+            :question-status-list="questionStatusList"
+            :test-sections-summary="testSectionsSummary"
+            :current-section="currentTestState.section"
+            @section-change="changeCurrentQuestion('sectionBtn', null, $event)"
+          />
         </div>
-        <div
-          ref="profileDetailsContainerElem"
-          class="flex flex-1 gap-3 border-l-2 border-b-2 border-slate-500"
-          :class="isFullscreen ? 'cursor-zoom-out' : 'cursor-zoom-in'"
-          @click="toggleFullScreen()"
-        >
-          <div class="flex items-center justify-center w-2/5">
-            <span
-              class="bg-image bg-contain"
-              :style="{
-                backgroundImage: `url(&quot;${miscSettings.profileImg || profileIcon}&quot;)`,
-                width: `${miscSettings.imgWidth}%`,
-                height: `${miscSettings.imgHeight}%`,
-              }"
-            />
-          </div>
-          <div class="flex items-center flex-1">
-            <span :style="{ fontSize: `${miscSettings.fontSize}rem` }">{{ miscSettings.username }}</span>
-          </div>
-        </div>
+        <CbtInterfaceProfileDetails
+          v-model:show-hidden-settings="hiddenSettingsVisibility"
+          :profile-settings="uiSettings.profile"
+        />
       </div>
-      <div
-        class="flex grow overflow-auto"
-      >
+      <div class="flex grow overflow-auto">
         <div class="flex flex-col relative grow">
           <div
             v-if="uiSettings.mainLayout.showQuestionType || uiSettings.mainLayout.showMarkingScheme"
@@ -214,12 +177,13 @@
             @image-blobs-generated="loadQuestionsImgUrlsFromBlobs"
           />
           <CbtInterfaceQuestionPanel
-            v-else-if="testState.currentProcess === 'test-is-ready' || testState.currentProcess === 'test-started'"
+            v-else-if="testState.currentProcess === 'test-started'"
             :class="{
               hidden: testState.currentProcess !== 'test-started',
             }"
             :is-question-pallete-collapsed="isQuestionPalleteCollapsed"
             :cropper-sections-data="cropperSectionsData"
+            :sections-instructions-data="sectionsInstructionsData"
           />
           <div
             class="flex absolute py-3 cursor-pointer right-0 top-1/2 z-10 bg-black"
@@ -233,7 +197,7 @@
           </div>
         </div>
         <div
-          class="flex flex-col shrink-0 border-black border-y-2 border-l-2"
+          class="ml-auto flex flex-col shrink-0 border-black border-y-2 border-l-2"
           :class="{ hidden: isQuestionPalleteCollapsed }"
           :style="{ width: `${uiSettings.questionPalette.width}%` }"
         >
@@ -280,26 +244,23 @@
                 rowGap: uiSettings.questionPalette.rowsGap + 'rem',
               }"
             >
-              <template
+              <span
                 v-for="question in testSectionsData[currentTestState.section]"
                 :key="question.secQueId"
+                class="flex shrink-0 cursor-pointer bg-image bg-size"
+                :class="question.status"
+                @click="changeCurrentQuestion('palette', question.queId)"
               >
-                <span
-                  class="flex shrink-0 cursor-pointer bg-image bg-size"
-                  :class="question.status"
-                  @click="changeCurrentQuestion('palette', question.queId)"
-                >
-                  <span class="flex justify-center items-center w-full h-full">
-                    {{
-                      currentTestState.questionsNumberingOrderType === 'cumulative'
-                        ? question.queId
-                        : currentTestState.questionsNumberingOrderType === 'section-wise'
-                          ? question.secQueId
-                          : question.que
-                    }}
-                  </span>
+                <span class="flex justify-center items-center w-full h-full">
+                  {{
+                    currentTestState.questionsNumberingOrderType === 'cumulative'
+                      ? question.queId
+                      : currentTestState.questionsNumberingOrderType === 'section-wise'
+                        ? question.secQueId
+                        : question.que
+                  }}
                 </span>
-              </template>
+              </span>
             </div>
           </div>
         </div>
@@ -334,7 +295,6 @@
               class="mx-auto h-10.5 px-5 rounded-none primary-theme-btn border border-slate-400
                 transition delay-30 duration-100 ease-in-out"
               label="Save & Next"
-              unstyled
               @click="changeCurrentQuestion('save&next')"
             />
           </div>
@@ -352,6 +312,72 @@
             :disabled="testSettings.submitBtn === 'disabled'"
             @click="submitState.isSubmitBtnClicked = true"
           />
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="testState.currentProcess !== 'initial'
+        && testState.currentProcess !== 'test-started'"
+      class="flex max-w-full max-h-dvh min-h-dvh select-none"
+    >
+      <CbtTestInstructionsPanel
+        v-if="testState.parsedTestInstructions"
+        class="grow"
+        :parsed-test-instructions="testState.parsedTestInstructions"
+        :disable-btn="!testState.isTestReady"
+        @start-test="startTest"
+      />
+      <div
+        v-else
+        class="grow"
+      />
+      <div
+        class="flex flex-col gap-10 flex-none border-l-2 border-black"
+        :style="{
+          width: `${uiSettings.questionPalette.width || 15}%`,
+        }"
+      >
+        <CbtInterfaceProfileDetails
+          v-model:show-hidden-settings="hiddenSettingsVisibility"
+          class="flex-initial"
+          :profile-settings="uiSettings.profile"
+          :is-for-instructions-panel="true"
+        />
+        <div
+          v-if="!testState.isTestReady"
+          class="flex flex-col gap-3 px-4"
+        >
+          <h2 class="text-center font-bold text-xl">
+            Preparing mock test
+          </h2>
+          <span class="text-center text-lg font-semibold">
+            <template v-if="testState.currentProcess === 'preparing-data'">
+              Processing {{ testSettings.saveTestData ? 'and storing' : '' }} test data...
+            </template>
+            <template v-else-if="testState.preparingTestCurrentQuestion === 0">
+              loading pdf...
+            </template>
+            <template v-else>
+              processing question&nbsp;
+              {{ testState.preparingTestCurrentQuestion }}/{{ testState.totalQuestions }}
+            </template>
+          </span>
+          <span
+            v-if="currentTestState.saveTestData === null"
+            class="flex flex-col text-amber-300 text-center"
+          >
+            <span class="text-lg">Warning!</span>
+            Failed to save the test in local storage (IndexedDB).<br>
+            The auto-save feature is now disabled for current test.<br>
+          </span>
+          <UiProgress
+            :model-value="preparingTestProgressBar"
+            class="h-7"
+          />
+          <span class="text-sm">
+            This may take some time, depending on the number of questions and your device's capacity.<br>
+            In the meantime, buckle up for the test!
+          </span>
         </div>
       </div>
     </div>
@@ -473,88 +499,6 @@
     </div>
 
     <!-- Dialogs -->
-    <UiDialog
-      :open="testState.currentProcess === 'preparing-data'
-        || testState.currentProcess === 'preparing-imgs'
-        || testState.currentProcess === 'test-is-ready'"
-    >
-      <UiDialogContent
-        non-closable
-        class="data-[state=closed]:animate-none! data-[state=closed]:transition-none! data-[state=closed]:zoom-out-100"
-        :class="testState.currentProcess === 'test-is-ready'
-          ? 'sm:w-fit'
-          : 'sm:w-lg'
-        "
-      >
-        <UiDialogHeader>
-          <UiDialogTitle>
-            {{
-              testState.currentProcess === 'test-is-ready'
-                ? 'Mock test is now ready!'
-                : 'Preparing mock test...'
-            }}
-          </UiDialogTitle>
-        </UiDialogHeader>
-        <div
-          v-if="testState.currentProcess !== 'test-is-ready'"
-          class="flex flex-col gap-3"
-        >
-          <span class="text-center text-lg font-semibold">
-            <template v-if="testState.currentProcess === 'preparing-data'">
-              processing {{ testSettings.saveTestData ? 'and storing' : '' }} data
-            </template>
-            <template v-else-if="testState.preparingTestCurrentQuestion === 0">
-              loading pdf...
-            </template>
-            <template v-else>
-              processing question&nbsp;
-              {{ testState.preparingTestCurrentQuestion }}/{{ testState.totalQuestions }}
-            </template>
-          </span>
-          <span
-            v-if="currentTestState.saveTestData === null"
-            class="flex flex-col text-amber-300 text-center"
-          >
-            <span class="text-lg">Warning!</span>
-            Failed to save the test in local storage (IndexedDB).<br>
-            The auto-save feature is now disabled for current test.<br>
-          </span>
-          <UiProgress
-            :model-value="preparingTestProgressBar"
-            class="h-7"
-          />
-          <span class="text-sm">
-            This may take some time, depending on the number of questions and your device's capacity.<br>
-            In the meantime, buckle up for the test!
-          </span>
-        </div>
-        <div
-          v-else-if="testState.currentProcess === 'test-is-ready'"
-          class="flex flex-col gap-8"
-        >
-          <span class="text-center">
-            You can now start your mock test
-          </span>
-          <span
-            v-if="currentTestState.saveTestData === null"
-            class="flex flex-col text-amber-300 text-center"
-          >
-            <span class="text-lg">Warning!</span>
-            Failed to save the test in local storage (IndexedDB).<br>
-            The save feature is now disabled.<br>
-            You can continue the test, but progress will be lost if the test,<br>
-            browser, or device closes unexpectedly.
-          </span>
-          <BaseButton
-            class="mx-auto"
-            label="Start Mock Test"
-            variant="help"
-            icon-name="mdi:stopwatch-play-outline"
-            @click="startTest()"
-          />
-        </div>
-      </UiDialogContent>
-    </UiDialog>
     <UiDialog :open="isTestPaused">
       <UiDialogContent non-closable>
         <UiDialogHeader>
@@ -578,13 +522,8 @@
 
 <script lang="ts" setup>
 import '#layers/shared/app/assets/css/cbt-interface.css'
-import answeredIcon from '#layers/shared/app/assets/icons/ques-answered.svg?no-inline'
-import notAnsweredIcon from '#layers/shared/app/assets/icons/ques-notAnswered.svg?no-inline'
-import notVisitedIcon from '#layers/shared/app/assets/icons/ques-notVisited.svg?no-inline'
-import markedIcon from '#layers/shared/app/assets/icons/ques-marked.svg?no-inline'
-import markedAnsweredIcon from '#layers/shared/app/assets/icons/ques-markedAnswered.svg?no-inline'
-import profileIcon from '#layers/shared/app/assets/icons/profile.svg?no-inline'
 import { CbtUseState } from '#layers/shared/shared/enums'
+import { MIME_TYPE } from '#layers/shared/shared/constants'
 
 definePageMeta({
   layout: false,
@@ -616,7 +555,13 @@ const questionPaperDialogState = shallowReactive({
   imgWidthSize: 100,
 })
 
+const showTestInstructionsDialog = shallowRef(false)
+
 const db = useDB()
+
+const { uiSettings, testSettings } = useCbtSettings()
+
+const iconUrls = useCbtInterfaceIcons()
 
 // styles and css variables being used on page
 const pageCssVars = computed(() => {
@@ -634,11 +579,11 @@ const pageCssVars = computed(() => {
 
     // Question Palette
     // icons
-    '--bg-answered-image-url': `url("${icons.answered.image || answeredIcon}")`,
-    '--bg-notAnswered-image-url': `url("${icons.notAnswered.image || notAnsweredIcon}")`,
-    '--bg-notVisited-image-url': `url("${icons.notVisited.image || notVisitedIcon}")`,
-    '--bg-marked-image-url': `url("${icons.marked.image || markedIcon}")`,
-    '--bg-markedAnswered-image-url': `url("${icons.markedAnswered.image || markedAnsweredIcon}")`,
+    '--bg-answered-image-url': `url("${iconUrls.value.answered}")`,
+    '--bg-notAnswered-image-url': `url("${iconUrls.value.notAnswered}")`,
+    '--bg-notVisited-image-url': `url("${iconUrls.value.notVisited}")`,
+    '--bg-marked-image-url': `url("${iconUrls.value.marked}")`,
+    '--bg-markedAnswered-image-url': `url("${iconUrls.value.markedAnswered}")`,
 
     // icons text colors
     '--text-answered-image-color': icons.answered.textColor,
@@ -663,15 +608,9 @@ const pageCssVars = computed(() => {
   }
 })
 
-const profileDetailsContainerElem = useTemplateRef('profileDetailsContainerElem')
-
 const hiddenSettingsVisibility = shallowRef(false)
 
 let testOutputData: TestInterfaceJsonOutput | null = null
-
-const { isFullscreen, toggle: toggleFullScreen } = useFullscreen()
-
-const { uiSettings, testSettings, miscSettings } = useCbtSettings()
 
 const testLogger = useCbtLogger(true)
 
@@ -684,7 +623,9 @@ const testState = reactive<TestState>({
     pdfFileHash: '',
     zipOriginalUrl: '',
     zipConvertedUrl: '',
+    additionalData: {},
   },
+  pdfCropperData: null,
   testAnswerKey: null,
   isSectionsDataLoaded: false,
   totalQuestions: 75,
@@ -692,12 +633,16 @@ const testState = reactive<TestState>({
   currentProcess: 'initial',
   preparingTestCurrentQuestion: 0,
   continueLastTest: false,
+  instructionsData: null,
+  instructionsTemplateData: null,
+  parsedTestInstructions: null,
+  isQImgBlobUrlsLoaded: false,
+  isTestReady: false,
 })
 
-const preparingTestProgressBar = computed(() => {
-  const ratio = testState.preparingTestCurrentQuestion / testState.totalQuestions
-  return Math.floor(ratio * 100)
-})
+const preparingTestProgressBar = computed(() => Math.floor(
+  (testState.preparingTestCurrentQuestion / testState.totalQuestions) * 100,
+))
 
 const isQuestionPalleteCollapsed = shallowRef(false)
 
@@ -785,6 +730,41 @@ const testSummaryDataTable = computed<TestSummaryDataTableRow[]>(() => {
 
   return data
 })
+
+const sectionsInstructionsData = computed(() => {
+  const data: Record<string, {
+    instructions: CbtMakerInternalSectionInstructionsData['instructions']
+    templateData: CbtInstructionsTemplateSectionData
+  }> = {}
+
+  const tplData = testState.instructionsTemplateData
+  const instData = testState.instructionsData?.additionalData
+
+  for (const subject of (tplData?.subjects || [])) {
+    for (const section of subject.sections) {
+      let instructions = instData?.[subject.name]?.sections?.[section.name]?.instructions
+
+      if (!instructions?.type)
+        instructions = { type: 'none' }
+
+      data[section.name] = {
+        instructions,
+        templateData: section,
+      }
+    }
+  }
+
+  return data
+})
+
+watch(
+  [() => testState.isQImgBlobUrlsLoaded, () => testState.parsedTestInstructions],
+  () => {
+    if (testState.isQImgBlobUrlsLoaded && testState.parsedTestInstructions?.pages.length)
+      testState.isTestReady = true
+  },
+  { deep: true },
+)
 
 const scrollSectionIntoView = (section: string) => {
   const el = document.querySelector(`[data-id="data-id_${section}"]`) as HTMLElement | null
@@ -994,6 +974,7 @@ function startTest() {
 
 async function prepareTest() {
   testState.currentProcess = 'preparing-data'
+
   const continueFromBackup = testState.continueLastTest
 
   const settingsData = {
@@ -1045,6 +1026,26 @@ async function prepareTest() {
     }
   }
 
+  const instructionsTemplateData = utilGetParsedInstructionsDataForTemplate(
+    testState.pdfCropperData!,
+    testState.instructionsData!,
+    currentTestState.value.testName,
+    Math.floor(currentTestState.value.testDuration / 60),
+    uiSettings.value,
+    iconUrls.value,
+  )
+
+  testState.instructionsTemplateData = instructionsTemplateData
+
+  const testInstructions = testState.instructionsData!.testInstructions
+  const imgLinksFootNotes = testInstructions?.imgLinksFootNotes || ''
+
+  testState.parsedTestInstructions = useGetCbtTestInstructionsContent(
+    testInstructions.type,
+    instructionsTemplateData,
+    imgLinksFootNotes,
+  )
+
   if (testState.pdfFile) {
     testState.currentProcess = 'preparing-imgs'
   }
@@ -1057,7 +1058,7 @@ const loadQuestionsImgUrlsFromBlobs = (testImageBlobs: TestImageBlobs) => {
   testQuestionsUrls.value = utilGetQuestionsUrlsFromTestImageBlobs(testImageBlobs, testQuestionsData.value)
   testState.testImageBlobs = null
   testState.pdfFile = null
-  testState.currentProcess = 'test-is-ready'
+  testState.isQImgBlobUrlsLoaded = true
 }
 
 const pauseTestHandler = () => {
@@ -1095,17 +1096,6 @@ watch(testState,
     })
   },
   { once: true, deep: false },
-)
-
-onLongPress(
-  profileDetailsContainerElem,
-  () => hiddenSettingsVisibility.value = true,
-  {
-    modifiers: {
-      prevent: true,
-    },
-    delay: 750,
-  },
 )
 
 const pageCleanUpCallback = () => {
@@ -1183,8 +1173,6 @@ function generateTestOutputData() {
   }
   if (!testConfig.zipConvertedUrl)
     delete testConfig.zipConvertedUrl
-  if (!testConfig.optionalQuestions?.length)
-    delete testConfig.optionalQuestions
 
   const testLogs = testLogger.getLogs()
 
@@ -1279,7 +1267,7 @@ function loadQuestionImgUrlsToResultsUrlsState(testId: number) {
 }
 
 const downloadTestData = () => {
-  const blob = new Blob([JSON.stringify(testOutputData, null, 2)], { type: 'application/json' })
+  const blob = new Blob([JSON.stringify(testOutputData, null, 2)], { type: MIME_TYPE.json })
   utilSaveFile('pdf2cbt_test_data.json', blob)
 }
 

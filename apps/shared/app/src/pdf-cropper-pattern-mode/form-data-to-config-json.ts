@@ -204,6 +204,7 @@ export function getSectionData(section: PatternModeFormSectionData): PatternMode
     pattern: section.pattern,
     searchIn: section.searchIn,
     numOfOptionalQuestions: section.numOfOptionalQuestions,
+    instructions: section.instructions,
     questions: getQuestionsData(section.questions),
   }
 }

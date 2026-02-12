@@ -4,11 +4,17 @@ type QuestionData = Pick<TestSessionQuestionData, 'queId' | 'section' | 'secQueI
   queNumToShow: number
 }
 
+type SectionInstructionsData = Record<string, {
+  instructions: CbtMakerInternalSectionInstructionsData['instructions']
+  templateData: CbtInstructionsTemplateSectionData
+}>
+
 const showDialog = defineModel<boolean>({ required: true })
 const imgWidthSize = defineModel<number>('imgWidthSize', { required: true })
 
 const props = defineProps<{
   questionsNumberingOrderType: CurrentTestState['questionsNumberingOrderType']
+  sectionsInstructionsData: SectionInstructionsData
 }>()
 
 function getQuestionsImageData(): QuestionData[] {
@@ -58,6 +64,17 @@ function resizeImage(type: 'increase' | 'decrease') {
       break
   }
 }
+
+const isSectionInstructionDataValid = (
+  instData?: SectionInstructionsData[string],
+) => {
+  const type = instData?.instructions?.type
+  if (type) {
+    if (type !== 'none') return true
+  }
+
+  return false
+}
 </script>
 
 <template>
@@ -68,14 +85,10 @@ function resizeImage(type: 'increase' | 'decrease') {
     }"
     @click.self="showDialog = false"
   >
-    <div class="flex flex-col bg-white rounded-xl w-[90dvw] h-[90dvh]">
+    <div class="flex flex-col bg-white rounded-xl max-w-[90dvw] h-[90dvh]">
       <!-- Header -->
       <div class="sticky top-0 z-10 py-2 px-6 grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-gray-400">
-        <div></div> <!-- Empty placeholder for left spacing -->
-        <h2 class="text-2xl font-bold text-center">
-          Question Paper
-        </h2>
-        <div class="flex justify-end gap-2">
+        <div class="flex gap-2 justify-baseline">
           <BaseButton
             variant="help"
             size="iconMd"
@@ -94,6 +107,11 @@ function resizeImage(type: 'increase' | 'decrease') {
             :disabled="imgWidthSize <= 20"
             @click="resizeImage('decrease')"
           />
+        </div>
+        <h2 class="text-2xl font-bold text-center">
+          Question Paper
+        </h2>
+        <div class="flex justify-end gap-2">
           <BaseButton
             variant="destructive"
             size="iconMd"
@@ -111,7 +129,7 @@ function resizeImage(type: 'increase' | 'decrease') {
         viewport-class="[&>div]:px-8"
         scroll-bar-class="w-3 mr-0.5"
       >
-        <h2 class="text-red-600 mb-4 text-center">
+        <h2 class="text-red-600 mb-4 text-center text-xl">
           Note that the timer is ticking while you read the Question Paper.<br>
           Close this page to return to answering the questions.
         </h2>
@@ -121,12 +139,19 @@ function resizeImage(type: 'increase' | 'decrease') {
           :key="question.queId"
           class="mb-4 w-(--img-width-size) mx-auto"
         >
-          <div
-            v-if="question.secQueId === 1"
-            class="font-semibold text-blue-700 text-xl text-center"
-          >
-            {{ question.section }}
-          </div>
+          <template v-if="question.secQueId === 1">
+            <div
+              class="font-semibold text-blue-700 text-xl text-center"
+            >
+              {{ question.section }}
+            </div>
+            <CbtSectionInstructionsPanel
+              v-if="isSectionInstructionDataValid(sectionsInstructionsData[question.section])"
+              class="select-none mb-6"
+              :instructions="sectionsInstructionsData[question.section]!.instructions"
+              :template-data="sectionsInstructionsData[question.section]!.templateData"
+            />
+          </template>
           <div class="mb-1 text-blue-700 text-lg font-bold">
             Question No. {{ question.queNumToShow }}
           </div>

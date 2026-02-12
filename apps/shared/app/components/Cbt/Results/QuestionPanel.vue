@@ -110,7 +110,7 @@
             <div
               class="grid h-fit divide-y divide-gray-500 border-gray-500 rounded
               group-data-[vertical=false]:border
-              [&>div]:group-data-[vertical=true]:[&>*]:p-1
+              [&>div]:group-data-[vertical=true]:*:p-1
               [&>div]:group-data-[vertical=true]:pl-2
               [&>div]:group-data-[vertical=false]:sm:pr-8
               [&>div]:group-data-[vertical=false]:gap-4"
@@ -170,7 +170,7 @@
                 ref="imgContainerScrollAreaElem"
                 type="auto"
               >
-                <div class="grid mt-2 px-4 [&>*]:mx-auto">
+                <div class="grid mt-2 px-4 *:mx-auto">
                   <template v-if="testQuestionsImgUrls[currentTestResultsId]?.[currentQuestionState.id]">
                     <img
                       v-for="(url, index) in testQuestionsImgUrls[currentTestResultsId]![currentQuestionState.id]"
@@ -485,20 +485,20 @@
     >
       <UiDialogContent class="max-w-lg text-center">
         <UiDialogHeader>
-          <UiDialogTitle>PDF Cropper's data is not in your test data!</UiDialogTitle>
+          <UiDialogTitle>Test Maker's data is not in your test data!</UiDialogTitle>
         </UiDialogHeader>
         <p class="font-bold text-red-400">
-          PDF Cropper's Data is not found in your test data.<br>
-          This may happen if you gave this test before April 16, as versions before that didn't have cropper data in test data
+          Test Maker's Data is not found in your test data.<br>
+          This may happen if you gave this test before April 16, 2025, as versions before that didn't have Test Maker data in test data
         </p>
         <p class="my-6">
           No worries!<br>
-          You just need to upload the PDF Cropper data now (either the Zip or json file)
+          You just need to upload the Test Maker data now (either the Zip or json file)
         </p>
         <div class="flex my-5 mx-auto justify-center">
           <BaseSimpleFileUpload
             accept="application/json,application/zip,.json,.zip"
-            label="Upload Cropper's ZIP or JSON file"
+            label="Upload Test Maker's ZIP or JSON file"
             invalid-file-type-message="Please select a valid PDF or JSON file which you had uploaded on Test Interface."
             icon-name="prime:upload"
             @upload="(file) => handleFileUpload(file, 'zip-or-json')"
@@ -534,7 +534,7 @@ interface Props {
 }
 
 type QuestionsPdfData = {
-  [queId: string | number]: {
+  [queId: Numberish]: {
     page: number
     x: number
     y: number
@@ -959,7 +959,7 @@ async function startRenderingImgs() {
     drawerVisibility.value = true
     pdfRenderingProgress.value = 'loading-file'
 
-    const questionSectionsRelations: Record<string | number, { section: string, que: number | string }> = {}
+    const questionSectionsRelations: Record<Numberish, { section: string, que: number | string }> = {}
     for (const question of allQuestions) {
       const { queId, section, oriQueId } = question
       questionSectionsRelations[queId] = { section, que: oriQueId }

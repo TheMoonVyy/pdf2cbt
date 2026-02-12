@@ -6,6 +6,7 @@
 const utilSelectiveMergeObj = <T extends object>(
   target: T,
   data: Partial<T>,
+  deepMerge: boolean = true,
 ): T => {
   if (
     typeof target !== 'object' || target === null
@@ -27,6 +28,7 @@ const utilSelectiveMergeObj = <T extends object>(
     if (
       typeof targetValue === 'object' && targetValue !== null
       && typeof dataValue === 'object' && dataValue !== null
+      && deepMerge
     ) {
       target[key] = utilSelectiveMergeObj(
         targetValue,

@@ -1,7 +1,6 @@
 export enum CbtUseState {
   UiSettings = 'CBT-UiSettings',
   TestSettings = 'CBT-TestSettings',
-  MiscSettings = 'CBT-MiscSettings',
   TestSectionsList = 'CBT-TestSectionsList',
   CropperSectionsData = 'CBT-CropperSectionsData',
   TestSectionsData = 'CBT-TestSectionsData',

@@ -11,7 +11,7 @@ export default async function (
     data = input
   }
 
-  const hashBuffer = await crypto.subtle.digest(algorithm, data)
+  const hashBuffer = await crypto.subtle.digest(algorithm, data as ArrayBuffer)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }

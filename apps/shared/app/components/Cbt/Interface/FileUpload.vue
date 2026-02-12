@@ -109,6 +109,7 @@
 
 <script lang="ts" setup>
 import { DataFileNames } from '#layers/shared/shared/enums'
+import { MIME_TYPE } from '#layers/shared/shared/constants'
 
 type FileTypes = 'zip' | 'json'
 
@@ -220,7 +221,7 @@ const fileUploaderState = reactive({
         if (checkIsPdfFile > 0) {
           this.files.set('pdf', file)
         }
-        else if (file.type === 'application/json' || file.name.toLowerCase().endsWith('json')) {
+        else if (file.type === MIME_TYPE.json || file.name.toLowerCase().endsWith('.json')) {
           this.files.set('json', file)
         }
       }
@@ -308,10 +309,10 @@ async function handleUpload(uploadedFiles: File[] | File) {
 
     try {
       for (const file of files) {
-        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        if (file.type === MIME_TYPE.pdf || file.name.toLowerCase().endsWith('.pdf')) {
           pdfBuffer = new Uint8Array(await file.arrayBuffer())
         }
-        else if (file.type === 'application/json' || file.name.toLowerCase().endsWith('.json')) {
+        else if (file.type === MIME_TYPE.json || file.name.toLowerCase().endsWith('.json')) {
           jsonData = await utilParseJsonFile(file)
         }
       }

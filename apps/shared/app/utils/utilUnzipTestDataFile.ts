@@ -42,7 +42,7 @@ export default (
             else if (jsonData && Object.keys(files).length > 1 && requiredData !== 'pdf-and-json') {
               const pdfCropperData = jsonData.pdfCropperData as CropperOutputData
               if (!pdfCropperData) {
-                reject('Error: PDF Cropper data not found in data.json of Zip file!')
+                reject('Error: Test Maker data not found in data.json of Zip file!')
                 return
               }
 
@@ -65,7 +65,10 @@ export default (
                           const filename = `${sectionNamwWithSeparator}${questionNameWithSeparator}${i + 1}.png`
                           const imageBuffer = files[filename]
                           if (imageBuffer) {
-                            const blob = new Blob([imageBuffer], { type: 'image/png' })
+                            const blob = new Blob(
+                              [imageBuffer as unknown as ArrayBuffer],
+                              { type: 'image/png' },
+                            )
                             imageBlobs[section][question].push(blob)
                           }
                           else {
@@ -84,7 +87,7 @@ export default (
                 data.testImageBlobs = imageBlobs
               }
               catch {
-                reject('Error: Unable to get images from Zip file, pdf cropper data in data.json is probably not in valid format!')
+                reject('Error: Unable to get images from Zip file, Test Maker data in data.json is probably not in valid format!')
                 return
               }
             }

@@ -1,0 +1,30 @@
+{%- block heading %}
+## SECTION {{ slNum }} (Maximum Marks: {{ maxMarks }}){.text-center}
+{%- endblock %}
+
+{%- block sectioninfo %}
+- This section contains **{{ totalQuestions | toWords | upcase }} ({{ totalQuestions | zeroPad: 2 }})** questions.
+{%- endblock %}
+{%- block questioninfo %}
+- Each question contains two columns, **Column-I** and **Column-II**.
+- **Column-I** has **{{ answerOptions.rows.count | toWords | upcase }}** entries {{ answerOptions.rows.chars | joinInEnglish: '(', ')' }}.
+- **Column-II** has **{{ answerOptions.cols.count | toWords | upcase }}** entries {{ answerOptions.cols.chars | joinInEnglish: '(', ')' }}.
+- Match the entries in **Column-I** with the entries in **Column-II**.
+- One or more entries in **Column-I** may match with one or more entries in **Column-II**.
+{%- endblock %}
+{%- block eachquestion %}
+- For each entry in **Column-I**, select the options of all the matching entries. For example, if entry ({{ answerOptions.rows.chars[0] }}) in **Column-I** matches with entries {{ answerOptions.cols.chars | slice: 0, 3 | joinInEnglish: '(', ')' }}, then choose these {{ answerOptions.cols.chars | slice: 0, 3 | size | toWords | downcase }} options. Similarly, for entries {{ answerOptions.rows.chars | slice: 1, answerOptions.rows.count | joinInEnglish: '(', ')' }}.
+{%- endblock %}
+{%- block markingscheme %}
+- Answers to each question will be evaluated _according to the following marking scheme_:
+  - For each entry in **Column-I**
+  - |-----------------|---|-------------|
+    | *Full Marks*    |&nbsp;:&nbsp;&nbsp;| {{ questionMarks.correct | prepend: "+" }} if **ONLY** the option(s) corresponding to all the correct options(s) is(are) chosen; |
+    {%- if questionMarks.incorrect == 0 %}
+    | *Zero Marks*    |&nbsp;:&nbsp;&nbsp;| 0 In all other cases. |
+    {%- else %}
+    | *Zero Marks*    |&nbsp;:&nbsp;&nbsp;| 0 If none of the options is chosen (i.e., the question is unanswered); |
+    | *Negative Marks* {.text-nowrap}|&nbsp;:&nbsp;&nbsp;| {{ questionMarks.incorrect }} In all other cases. |
+    {%- endif %}
+    {.no-border}
+{%- endblock %}

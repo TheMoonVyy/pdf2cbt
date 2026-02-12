@@ -1,0 +1,30 @@
+{%- block heading %}
+## SECTION {{ slNum }} (Maximum Marks: {{ maxMarks }}){.text-center}
+{%- endblock %}
+
+{%- block sectioninfo %}
+- This section contains **{{ totalQuestions | toWords | upcase }} ({{ totalQuestions | zeroPad: 2 }})** questions.
+{%- endblock %}
+{%- block questioninfo %}
+- The answer to each question is {{ questionInfoTypeMsg | default: "a **NUMERICAL VALUE**" }}.
+{%- endblock %}
+{%- block roundoff %}
+{%- if decimalValueUpto %}
+- if the numerical value has more than {{ decimalValueUpto | toWords | downcase }} decimal places, **truncate/round-off** the value to **{{ decimalValueUpto | toWords | upcase }}** decimal places.
+{%- endif %}
+{%- endblock %}
+{%- block eachquestion %}
+- For each question, enter the correct {{ typeMsg | default: "numerical value" }} corresponding to the answer using the mouse and the on-screen virtual numeric keypad in the place designated to enter the answer.
+{%- endblock %}
+{%- block markingscheme %}
+- Answers to each question will be evaluated _according to the following marking scheme_:
+  - |-----------------|---|-------------|
+    | *Full Marks*    |&nbsp;:&nbsp;&nbsp;| {{ questionMarks.correct | prepend: "+" }} if **ONLY** the correct {{ typeMsg | default: "numerical value" }} is entered; |
+    {%- if questionMarks.incorrect == 0 %}
+    | *Zero Marks*    |&nbsp;:&nbsp;&nbsp;| 0 In all other cases. |
+    {%- else %}
+    | *Zero Marks*    |&nbsp;:&nbsp;&nbsp;| 0 If no value is entered (i.e., the question is unanswered); |
+    | *Negative Marks* {.text-nowrap}|&nbsp;:&nbsp;&nbsp;| {{ questionMarks.incorrect }} In all other cases. |
+    {%- endif %}
+    {.no-border}
+{%- endblock %}

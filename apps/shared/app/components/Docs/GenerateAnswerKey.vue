@@ -29,7 +29,7 @@
                 <strong>Purpose:</strong>
                 <ul class="list-disc ml-6">
                   <li>This tool is designed to generate answer key data for your test.</li>
-                  <li>It allows you to load test data from the database or upload a ZIP/JSON file from the PDF Cropper or CBT Interface.</li>
+                  <li>It allows you to load test data from the database or upload a ZIP/JSON file from the Test Maker or CBT Interface.</li>
                   <li>The generated answer key is used to evaluate your test results.</li>
                 </ul>
               </div>
@@ -40,7 +40,7 @@
                     If test data without an answer key is found in the database,
                     you'll automatically be shown those tests.<br>
                     You can either select one to generate the answer key for,
-                    or upload a <strong>ZIP</strong>/<strong>JSON</strong> file which you got from the PDF Cropper.
+                    or upload a <strong>ZIP</strong>/<strong>JSON</strong> file which you got from the Test Maker.
                   </li>
                 </ul>
               </div>
@@ -52,7 +52,7 @@
                     The tool generates or includes answer key data in a <strong>JSON</strong> or <strong>ZIP</strong> file.
                   </li>
                   <li>
-                    If you're using a <strong>ZIP file from PDF Cropper</strong> as input, you can choose from the following output formats:
+                    If you're using a <strong>ZIP file from Test Maker</strong> as input, you can choose from the following output formats:
                     <ul class="list-disc ml-6 mt-1">
                       <li>
                         <strong>ZIP file:</strong> A ZIP file with the answer key data included.<br>

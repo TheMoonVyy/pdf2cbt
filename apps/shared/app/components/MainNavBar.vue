@@ -15,116 +15,55 @@
           </NuxtLink>
         </span>
         <div class="hidden min-[73.5rem]:flex items-center mx-auto">
-          <template
-            v-for="item in [pdfCropperItem, ...cbtItems]"
+          <NuxtLink
+            v-for="item in menuItems"
             :key="item.title"
-          >
-            <NuxtLink
-              :to="item.href"
-              class="outline-hidden rounded-sm shadow-xs transition-all
+            v-slot="{ isActive }"
+            :to="item.href"
+            class="outline-hidden rounded-sm shadow-xs transition-all
               focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:border"
+          >
+            <div
+              class="flex gap-1.5 justify-center"
+              :class="[navigationMenuTriggerStyle(), 'h-full', isActive ? 'text-green-400 hover:text-green-400' : '']"
             >
-              <template #default="{ isActive }">
-                <div
-                  class="flex gap-1.5 justify-center"
-                  :class="[navigationMenuTriggerStyle(), 'h-full', isActive ? 'text-green-400' : '']"
-                >
-                  <Icon
-                    :name="item.icon"
-                    size="1.3rem"
-                  />
-                  <span class="text-lg font-bold text-nowrap">
-                    {{ item.title }}
-                  </span>
-                </div>
-              </template>
-            </NuxtLink>
-          </template>
+              <Icon
+                :name="item.icon"
+                size="1.3rem"
+              />
+              <span class="text-lg font-bold text-nowrap">
+                {{ item.title }}
+              </span>
+            </div>
+          </NuxtLink>
         </div>
-        <UiNavigationMenu class="hidden min-[43rem]:flex min-[73.5rem]:hidden mx-auto">
-          <UiNavigationMenuList>
-            <UiNavigationMenuItem
-              v-for="item in menuItems"
-              :key="item.title"
+        <div class="grid-cols-4 gap-3 hidden min-[43rem]:grid min-[73.5rem]:hidden mx-auto">
+          <NuxtLink
+            v-for="item in menuItems"
+            :key="item.title"
+            v-slot="{ isActive }"
+            class="h-12"
+            :class="navigationMenuTriggerStyle()"
+            :to="item.href"
+          >
+            <div
+              class="flex items-center gap-2.5 p-1"
+              :class="isActive ? 'text-green-400' : ''"
             >
-              <template v-if="'content' in item">
-                <UiNavigationMenuTrigger class="h-12 p-2 text-xl font-semibold">
-                  <Icon
-                    class="text-foreground"
-                    :name="item.icon"
-                    size="1.3rem"
-                  />
-                  <span class="ml-2">{{ item.title }}</span>
-                </UiNavigationMenuTrigger>
-                <UiNavigationMenuContent>
-                  <ul
-                    class="grid grid-cols-1 gap-2 p-2 w-64"
-                  >
-                    <li
-                      v-for="contentItem in item.content"
-                      :key="contentItem.title"
-                    >
-                      <NuxtLink
-                        v-slot="{ isActive, href, navigate }"
-                        :to="contentItem.href"
-                        custom
-                      >
-                        <UiNavigationMenuLink
-                          :active="isActive"
-                          :href="href"
-                          :class="navigationMenuTriggerStyle()"
-                          class="w-full"
-                          @click="navigate"
-                        >
-                          <div
-                            class="flex items-center gap-2.5 p-1"
-                            :class="isActive ? 'text-green-400' : ''"
-                          >
-                            <Icon
-                              :name="contentItem.icon"
-                              size="1.3rem"
-                            />
-                            <span class="text-lg font-bold text-nowrap">
-                              {{ contentItem.title }}
-                            </span>
-                          </div>
-                        </UiNavigationMenuLink>
-                      </NuxtLink>
-                    </li>
-                  </ul>
-                </UiNavigationMenuContent>
-              </template>
-              <NuxtLink
-                v-else
-                v-slot="{ isActive, href, navigate }"
-                :to="item.href"
-                custom
-              >
-                <UiNavigationMenuLink
-                  :active="isActive"
-                  :href="href"
-                  :class="navigationMenuTriggerStyle()"
-                  class="h-12"
-                  @click="navigate"
-                >
-                  <div
-                    class="flex items-center gap-2.5 p-1"
-                    :class="isActive ? 'text-green-400' : ''"
-                  >
-                    <Icon
-                      :name="item.icon"
-                      size="1.3rem"
-                    />
-                    <span class="text-lg font-bold text-nowrap">
-                      {{ item.title }}
-                    </span>
-                  </div>
-                </UiNavigationMenuLink>
-              </NuxtLink>
-            </UiNavigationMenuItem>
-          </UiNavigationMenuList>
-        </UiNavigationMenu>
-        <div class="flex gap-2.5 sm:gap-3 xl:gap-4 items-center h-14 ml-auto min-[43rem]:ml-2 pr-4 xl:pr-8">
+              <Icon
+                :name="item.icon"
+                size="1.3rem"
+              />
+              <span class="text-lg font-bold text-nowrap">
+                {{ item.title }}
+              </span>
+            </div>
+          </NuxtLink>
+        </div>
+        <div
+          class="flex gap-2.5 sm:gap-3 xl:gap-4 items-center ml-auto min-[43rem]:ml-2 pr-4 xl:pr-8"
+          :style="{ height: MAIN_NAV_BAR_HEIGHT.val }"
+        >
           <NuxtLink
             to="https://github.com/TheMoonVyy/pdf2cbt"
             class="flex items-center justify-center"
@@ -159,7 +98,7 @@
               </NuxtLink>
             </PopoverAnchor>
             <UiPopoverContent
-              class="bg-[color-mix(in_srgb,_theme(colors.gray.900),_black_10%)] max-w-[96dvw]
+              class="bg-[color-mix(in_srgb,var(--color-gray-900),black_10%)] max-w-[96dvw]
               sm:max-w-sm min-w-fit w-auto lg:max-w-md text-white text-base px-2 py-1.5"
               avoid-collisions
               :collision-padding="16"
@@ -216,7 +155,7 @@
                   width="14"
                   height="7"
                   viewBox="0 0 12 6"
-                  class="text-[color-mix(in_srgb,_theme(colors.gray.800),_black_10%)]"
+                  class="text-[color-mix(in_srgb,var(--color-gray-800),black_10%)]"
                   preserveAspectRatio="none"
                   style="display: block;"
                 >
@@ -253,7 +192,7 @@
                   title="Menu"
                   class="hidden min-[43rem]:flex"
 
-                  icon-name="line-md:cog"
+                  icon-name="material-symbols:settings"
                 />
               </div>
             </UiSheetTrigger>
@@ -269,35 +208,28 @@
                   class="grid grid-cols-1 gap-2 p-2 min-[43rem]:hidden"
                 >
                   <li
-                    v-for="contentItem in [pdfCropperItem, ...cbtItems]"
-                    :key="contentItem.title"
+                    v-for="item in menuItems"
+                    :key="item.title"
                   >
                     <UiSheetClose as-child>
                       <NuxtLink
-                        v-slot="{ isActive, href, navigate }"
-                        :to="contentItem.href"
-                        custom
+                        v-slot="{ isActive }"
+                        :to="item.href"
+                        :class="navigationMenuTriggerStyle()"
+                        class="w-full"
                       >
-                        <UiNavigationMenuLink
-                          :active="isActive"
-                          :href="href"
-                          :class="navigationMenuTriggerStyle()"
-                          class="w-full"
-                          @click="navigate"
+                        <div
+                          class="flex items-center gap-2.5 p-1"
+                          :class="isActive ? 'text-green-400' : ''"
                         >
-                          <div
-                            class="flex items-center gap-2.5 p-1"
-                            :class="isActive ? 'text-green-400' : ''"
-                          >
-                            <Icon
-                              :name="contentItem.icon"
-                              size="1.3rem"
-                            />
-                            <span class="text-lg font-bold text-nowrap">
-                              {{ contentItem.title }}
-                            </span>
-                          </div>
-                        </UiNavigationMenuLink>
+                          <Icon
+                            :name="item.icon"
+                            size="1.3rem"
+                          />
+                          <span class="text-lg font-bold text-nowrap">
+                            {{ item.title }}
+                          </span>
+                        </div>
                       </NuxtLink>
                     </UiSheetClose>
                   </li>
@@ -445,6 +377,7 @@
 import { navigationMenuTriggerStyle } from '#layers/shared/app/components/ui/navigation-menu'
 import { UpdatesPage } from '#layers/shared/shared/enums'
 import { PopoverArrow, PopoverAnchor } from 'reka-ui'
+import { MAIN_NAV_BAR_HEIGHT } from '#layers/shared/shared/constants'
 
 const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
 
@@ -477,13 +410,24 @@ const colorMode = useColorMode<keyof typeof themeVariants>({
   initialValue: 'blue',
 })
 
-const pdfCropperItem = {
-  title: 'PDF Cropper',
-  href: '/pdf-cropper',
-  icon: 'material-symbols:crop-rounded',
-}
+const mainNavBarHeightCssVar = useCssVar(
+  MAIN_NAV_BAR_HEIGHT.cssVar,
+  null,
+  { initialValue: isFullscreen.value ? '0' : MAIN_NAV_BAR_HEIGHT.val },
+)
 
-const cbtItems = [
+watch(
+  isFullscreen,
+  newVal => mainNavBarHeightCssVar.value = newVal ? '0' : MAIN_NAV_BAR_HEIGHT.val,
+  { flush: 'pre' },
+)
+
+const menuItems = [
+  {
+    title: 'Test Maker',
+    href: '/cbt/maker',
+    icon: 'my-icon:filesettings',
+  },
   {
     title: 'Test Interface',
     href: '/cbt/interface',
@@ -498,15 +442,6 @@ const cbtItems = [
     title: 'Generate Answer Key',
     href: '/cbt/generate-answer-key',
     icon: 'mdi:script-text-key-outline',
-  },
-]
-
-const menuItems = [
-  pdfCropperItem,
-  {
-    title: 'CBT',
-    icon: 'line-md:computer',
-    content: cbtItems,
   },
 ]
 

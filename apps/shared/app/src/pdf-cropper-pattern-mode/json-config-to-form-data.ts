@@ -24,12 +24,12 @@ export type PatternModeFormQuestionDetails = Pick<
 
 function getPatternStartOrEndData(
   startOrEndConfig: EndConfig,
-  dataFor: 'subject'
+  dataFor: 'subject',
 ): PatternModeSubjectConfigJson['end'] & { required: boolean }
 
 function getPatternStartOrEndData(
   startOrEndConfig: EndConfig,
-  dataFor?: 'others'
+  dataFor?: 'others',
 ): PatternModeQuestionsColumnConfigJson['end'] & { required: boolean }
 
 function getPatternStartOrEndData(
@@ -149,12 +149,19 @@ function getQuestionsData(questionsConfig: PatternModeQuestionsConfigJson) {
 }
 
 export function getSectionData(sectionName: string, sectionConfig: PatternModeSectionConfigJson) {
+  let instructions = sectionConfig.instructions
+
+  if (!instructions?.type || typeof instructions?.type !== 'string') {
+    instructions = { type: 'none' }
+  }
+
   return {
     name: sectionName,
     ...sectionConfig,
     id: Date.now() + Math.random(),
     questions: getQuestionsData(sectionConfig.questions),
     numOfOptionalQuestions: sectionConfig.numOfOptionalQuestions || 0,
+    instructions,
   }
 }
 
@@ -184,6 +191,12 @@ export function getSubjectData(subjectName: string, subjectConfig: PatternModeSu
     }
   }
 
+  let instructions = subjectConfig.instructions
+
+  if (!instructions?.type || typeof instructions?.type !== 'string') {
+    instructions = { type: 'none' }
+  }
+
   const sectionId = Date.now() + Math.random()
   return {
     name,
@@ -199,6 +212,7 @@ export function getSubjectData(subjectName: string, subjectConfig: PatternModeSu
         questions: getQuestionsData(subjectConfig.questions),
         numOfOptionalQuestions: 0,
         id: sectionId,
+        instructions,
       },
     },
   }

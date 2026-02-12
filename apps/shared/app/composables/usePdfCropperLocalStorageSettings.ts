@@ -18,6 +18,7 @@ export default () => {
           minCropDimension: 10, // units of coords
           moveOnKeyPressDistance: 10, // units of coords
           allowResizingPanels: true,
+          pagesToLoad: 3,
           // Crop Selection
           cropSelectionGuideColor: '#0000ff', // blue
           cropSelectionBgOpacity: 15, // in %
@@ -29,6 +30,11 @@ export default () => {
           showQuestionDetailsOnOverlay: true,
           blurCroppedRegion: true,
           blurIntensity: 1.5, // in px
+        },
+        download: {
+          preGenerateImages: true,
+          imgScale: 2,
+          zipCompLevel: 6,
         },
       },
       { mergeDefaults: (storageValue, defaults) => utilSelectiveMergeObj(defaults, storageValue) },

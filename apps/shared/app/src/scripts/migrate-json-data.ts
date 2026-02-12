@@ -4,6 +4,10 @@ type OldAnswerKeyJsonOutput = Omit<AnswerKeyJsonOutput, 'testAnswerKey'> & {
   testAnswerKey: GenericSubjectsTree<QuestionAnswer>
 }
 
+type OldOptionalQuestions = {
+  optionalQuestions?: { subject: string, section: string, count: number }[]
+}
+
 export class MigrateJsonData {
   currentAppVersion: string
   constructor(currentAppVersion: string = import.meta.env.PROJECT_VERSION) {
@@ -17,6 +21,22 @@ export class MigrateJsonData {
       for (const sectionData of Object.values(subjectData)) {
         for (const questionData of Object.values(sectionData)) {
           this.questionData(questionData, isDataOfTestResults)
+        }
+      }
+    }
+  }
+
+  private migrateOptionalQuestionsData(
+    data: NonNullable<OldOptionalQuestions['optionalQuestions']>,
+    output: TestInterfaceAndResultCommonJsonOutputData['testConfig']['additionalData'],
+  ) {
+    if (data.length) {
+      for (const item of data) {
+        output[item.subject] ??= {
+          sections: {},
+        }
+        output[item.subject]!.sections[item.section] ??= {
+          optionalQuestions: item.count,
         }
       }
     }
@@ -64,15 +84,10 @@ export class MigrateJsonData {
   removeEmptyKeysFromTestConfig<
     T extends (TestInterfaceAndResultCommonJsonOutputData['testConfig'] | PdfCropperJsonOutput['testConfig']),
   >(testConfig: T) {
-    for (const key of Object.keys(testConfig) as (keyof T)[])
-      if (key === 'optionalQuestions') {
-        if (!testConfig.optionalQuestions?.length)
-          delete testConfig.optionalQuestions
-      }
-      else {
-        if (!testConfig[key])
-          delete testConfig[key] // eslint-disable-line @typescript-eslint/no-dynamic-delete
-      }
+    for (const key of Object.keys(testConfig) as (keyof T)[]) {
+      if (!testConfig[key])
+        delete testConfig[key] // eslint-disable-line @typescript-eslint/no-dynamic-delete
+    }
   }
 
   getPdfCropperJsonOutputTemplate(): PdfCropperJsonOutput {
@@ -81,8 +96,8 @@ export class MigrateJsonData {
         zipConvertedUrl: '',
         zipOriginalUrl: '',
         zipUrl: '',
-        optionalQuestions: [],
         pdfFileHash: '',
+        additionalData: {},
       },
       pdfCropperData: {},
       appVersion: this.currentAppVersion,
@@ -100,16 +115,35 @@ export class MigrateJsonData {
       }
 
       if ('testConfig' in data && Object.keys(data.testConfig).length > 0) {
-        utilSelectiveMergeObj(output.testConfig, data.testConfig)
+        utilSelectiveMergeObj(output.testConfig, data.testConfig, false)
       }
 
       if ('pdfCropperData' in data) {
         output.pdfCropperData = data.pdfCropperData
         this.migrateSubjectsData(output.pdfCropperData)
       }
+
+      if (data.testConfig?.optionalQuestions?.length) {
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+      }
     }
     else {
       Object.assign(output, data)
+
+      if (data.testConfig?.optionalQuestions?.length) {
+        output.testConfig.additionalData ??= {}
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+
+        if ('optionalQuestions' in output.testConfig) {
+          delete output.testConfig.optionalQuestions
+        }
+      }
     }
 
     this.removeEmptyKeysFromTestConfig(output.testConfig)
@@ -124,6 +158,7 @@ export class MigrateJsonData {
         zipOriginalUrl: '',
         zipConvertedUrl: '',
         pdfFileHash: '',
+        additionalData: {},
       },
       testData: {},
       testSummary: [],
@@ -141,7 +176,7 @@ export class MigrateJsonData {
 
     if (!('appVersion' in data)) {
       if ('testConfig' in data && Object.keys(data.testConfig).length > 0) {
-        utilSelectiveMergeObj(output.testConfig, data.testConfig)
+        utilSelectiveMergeObj(output.testConfig, data.testConfig, false)
       }
 
       if ('testLogs' in data && Array.isArray(data.testLogs)) {
@@ -170,9 +205,27 @@ export class MigrateJsonData {
       if ('testAnswerKey' in data) {
         output.testAnswerKey = data.testAnswerKey
       }
+      if (data.testConfig?.optionalQuestions?.length) {
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+      }
     }
     else {
       Object.assign(output, data)
+
+      if (data.testConfig?.optionalQuestions?.length) {
+        output.testConfig.additionalData ??= {}
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+
+        if ('optionalQuestions' in output.testConfig) {
+          delete output.testConfig.optionalQuestions
+        }
+      }
     }
 
     this.removeEmptyKeysFromTestConfig(output.testConfig)
@@ -187,6 +240,7 @@ export class MigrateJsonData {
         zipOriginalUrl: '',
         zipConvertedUrl: '',
         pdfFileHash: '',
+        additionalData: {},
       },
       testResultData: {},
       testSummary: [],
@@ -203,7 +257,7 @@ export class MigrateJsonData {
 
     if (!('appVersion' in data)) {
       if ('testConfig' in data && Object.keys(data.testConfig).length > 0) {
-        utilSelectiveMergeObj(output.testConfig, data.testConfig)
+        utilSelectiveMergeObj(output.testConfig, data.testConfig, false)
       }
 
       if ('testLogs' in data && Array.isArray(data.testLogs)) {
@@ -223,10 +277,30 @@ export class MigrateJsonData {
         output.testResultOverview = data.testResultOverview || {}
       }
       output.testResultOverview = utilGetTestResultOverview(output)
+
+      if (data.testConfig?.optionalQuestions?.length) {
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+      }
     }
     else {
       Object.assign(output, data)
+
+      if (data.testConfig?.optionalQuestions?.length) {
+        output.testConfig.additionalData ??= {}
+        this.migrateOptionalQuestionsData(
+          data.testConfig.optionalQuestions,
+          output.testConfig.additionalData,
+        )
+
+        if ('optionalQuestions' in output.testConfig) {
+          delete output.testConfig.optionalQuestions
+        }
+      }
     }
+
     this.removeEmptyKeysFromTestConfig(output.testConfig)
 
     return output
