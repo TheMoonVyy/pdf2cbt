@@ -88,7 +88,7 @@ const checkboxIconNameAndColor = {
 const questionResultStatusOfNotConsideredQues = new Map<number, ValidQuestionResultStatus>()
 
 const totalRowsAndCols = computed(
-  () => utilGetMaxRowsAndColsFromMsmOptions(questionData.answerOptions || '4'),
+  () => utilGetMaxRowsAndColsFromAnswerOptions(questionData.answerOptions || '4'),
 )
 
 const getNotConsideredQuestionResultStatus = (
