@@ -348,7 +348,7 @@ export class MigrateJsonData {
     if (
       output.testAnswerKey
       && ('testData' in output || 'pdfCropperData' in output)
-      && utilCompareVersion(output.appVersion || '', '<', '1.29.0')
+      && utilCompareVersion(output.appVersion || '', '<', '2.0.0')
     ) {
       const oldAnswerKeyData = output as unknown as OldAnswerKeyJsonOutput
       const subjects = 'testData' in output
@@ -360,9 +360,25 @@ export class MigrateJsonData {
         newTestAnswerKey[subject] = {}
         for (const [section, sectionData] of Object.entries(subjectData)) {
           newTestAnswerKey[subject][section] = {}
-          for (const [qNum, correctAnswer] of Object.entries(sectionData)) {
+          for (const [qNum, maybeCorrectAnswer] of Object.entries(sectionData)) {
             const qData = subjects[subject]?.[section]?.[qNum]
             if (!qData) continue
+
+            const type = qData.type
+
+            let correctAnswer: QuestionAnswer
+            if (maybeCorrectAnswer
+              && typeof maybeCorrectAnswer === 'object'
+              && 'correctAnswer' in maybeCorrectAnswer) {
+              correctAnswer = maybeCorrectAnswer.correctAnswer
+            }
+            else {
+              correctAnswer = maybeCorrectAnswer
+            }
+
+            if (type === 'mcq' && !Array.isArray(correctAnswer)) {
+              correctAnswer = [correctAnswer as number]
+            }
 
             const answerData: TestAnswerKeyData[string][string][string] = {
               type: qData.type,
