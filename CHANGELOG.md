@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.30.2...v2.0.0) (2026-02-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* revamp pdf cropper page into test maker page and add test instructions related features
+
+### Features
+
+* **generate-answer-key:** revamp ui of generate answer key page to more user friendly ui ([#227](https://github.com/TheMoonVyy/pdf2cbt/issues/227)) ([651565b](https://github.com/TheMoonVyy/pdf2cbt/commit/651565b0aa3c2ac4d5976a1cb233a28d1e441bd6))
+* revamp pdf cropper page into test maker page and add test instructions related features ([08af637](https://github.com/TheMoonVyy/pdf2cbt/commit/08af637a8c251d529f14aacadfc8095b7ec42c52))
+
 ## [1.30.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.30.1...v1.30.2) (2025-12-29)
 
 
