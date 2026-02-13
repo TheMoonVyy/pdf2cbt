@@ -283,13 +283,15 @@ function zipAndSaveOutput() {
         { type: MIME_TYPE.zip },
       )
 
+      const time = Date.now()
       cachedTestData.value = {
         by: 'cbt-maker',
         file: new File(
           [outputBlob],
-          utilGetFileNameForCachedTestData('CBT-Maker'),
+          utilGetFileNameForCachedTestData('CBT-Maker', time),
           { type: outputBlob.type },
         ),
+        time,
       }
       generateOutputState.preparingOutput = false
       generateOutputState.isGenerated = true
