@@ -253,7 +253,7 @@
                     v-if="!hashMismatchDialogState.showDialog"
                     v-model="fileUploaderFileType"
                     v-model:show-zip-from-url-dialog="zipFileFromUrlState.isDialogOpen"
-                    :zip-file-to-load="zipFileFromUrlState.zipFile"
+                    :zip-file-to-load="zipToLoad"
                     @uploaded="verifyTestData"
                   />
                 </template>
@@ -946,44 +946,77 @@
         </UiDialogFooter>
       </UiDialogContent>
     </UiDialog>
-    <UiDialog
-      v-if="!zipFileFromUrlState.isDialogOpen"
-      v-model:open="prepareTestState.isOngoingTestFoundInDB"
-    >
-      <UiDialogContent
-        class="sm:w-fit z-51"
-        non-closable
+    <template v-if="!zipFileFromUrlState.isDialogOpen">
+      <UiDialog
+        v-if="prepareTestState.isOngoingTestFoundInDB"
+        v-model:open="prepareTestState.isOngoingTestFoundInDB"
       >
-        <UiDialogHeader>
-          <UiDialogTitle>Unfinished Test is Found!</UiDialogTitle>
-        </UiDialogHeader>
-        <div class="flex">
-          <p class="text-lg text-center">
-            An unfinished test was found!<br>
-            You can continue the test or discard it.<br><br>
-            The steps to continue remain the same as for a fresh test<br>
-            (upload the .zip file or .pdf &amp; .json files).<br><br>
-            Some settings from this test will be locked, while others can be modified as needed.
-          </p>
-        </div>
-        <UiDialogFooter>
-          <BaseButton
-            label="Continue Unfinished Test"
-            icon-name="mdi:rocket"
-            @click="() => {
-              testState.continueLastTest = true
-              prepareTestState.isOngoingTestFoundInDB = false
-            }"
-          />
-          <BaseButton
-            label="Discard Test"
-            variant="destructive"
-            icon-name="mdi:clear-circle"
-            @click="prepareTestState.isOngoingTestFoundInDB = false"
-          />
-        </UiDialogFooter>
-      </UiDialogContent>
-    </UiDialog>
+        <UiDialogContent
+          class="sm:w-fit z-51"
+          non-closable
+        >
+          <UiDialogHeader>
+            <UiDialogTitle>Unfinished Test is Found!</UiDialogTitle>
+          </UiDialogHeader>
+          <div class="flex">
+            <p class="text-lg text-center">
+              An unfinished test was found!<br>
+              You can continue the test or discard it.<br><br>
+              The steps to continue remain the same as for a fresh test<br>
+              (upload the .zip file or .pdf &amp; .json files).<br><br>
+              Some settings from this test will be locked, while others can be modified as needed.
+            </p>
+          </div>
+          <UiDialogFooter>
+            <BaseButton
+              label="Continue Unfinished Test"
+              icon-name="mdi:rocket"
+              @click="() => {
+                testState.continueLastTest = true
+                prepareTestState.isOngoingTestFoundInDB = false
+              }"
+            />
+            <BaseButton
+              label="Discard Test"
+              variant="destructive"
+              icon-name="mdi:clear-circle"
+              @click="prepareTestState.isOngoingTestFoundInDB = false"
+            />
+          </UiDialogFooter>
+        </UiDialogContent>
+      </UiDialog>
+      <UiDialog
+        v-else-if="cachedTestData?.file && showCachedTestDataDialog"
+        v-model:open="showCachedTestDataDialog"
+      >
+        <UiDialogContent class="sm:w-fit z-51">
+          <UiDialogHeader>
+            <UiDialogTitle>Load Recently Generated Test Data</UiDialogTitle>
+          </UiDialogHeader>
+          <h1 class="text-xl">
+            Do you want to load the ZIP file that was generated
+            during this session <span class="text-yellow-400">
+              {{ utilGetTimeAgo(cachedTestData.time) }}
+            </span>?
+          </h1>
+          <div class="flex justify-center my-3 gap-10">
+            <BaseButton
+              label="Yes"
+              variant="success"
+              @click="() => {
+                zipToLoad = cachedTestData?.file ?? null
+                showCachedTestDataDialog = !zipToLoad
+              }"
+            />
+            <BaseButton
+              label="No"
+              variant="warn"
+              @click="showCachedTestDataDialog = false"
+            />
+          </div>
+        </UiDialogContent>
+      </UiDialog>
+    </template>
     <UiDialog
       v-if="testState.continueLastTest === null"
       default-open
@@ -1457,24 +1490,22 @@ const emit = defineEmits(['prepareTest'])
 
 const db = useDB()
 
+const cachedTestData = useCachedTestData()
+
+const showCachedTestDataDialog = shallowRef(false)
+
 const migrateJsonData = useMigrateJsonData()
 
 const fileUploaderFileType = shallowRef<'zip' | 'json'>('zip')
 
-const zipFileFromUrlState = shallowReactive<{
-  url: string
-  isLoading: boolean
-  errorMsg: string
-  retryCount: number
-  isDialogOpen: boolean
-  zipFile: File | null
-}>({
+const zipToLoad = shallowRef<File | null>(null)
+
+const zipFileFromUrlState = shallowReactive({
   url: '',
   isLoading: false,
   errorMsg: '',
   retryCount: 0,
   isDialogOpen: false,
-  zipFile: null,
 })
 
 const importExportDialogState = shallowReactive<ImportExportDialogState>({
@@ -1582,7 +1613,7 @@ watch(
 const fetchZipFile = async (isRetry: boolean = false) => {
   if (!zipFileFromUrlState.url) return
   zipFileFromUrlState.errorMsg = ''
-  zipFileFromUrlState.zipFile = null
+  zipToLoad.value = null
   zipFileFromUrlState.isLoading = true
   await nextTick()
 
@@ -1590,7 +1621,7 @@ const fetchZipFile = async (isRetry: boolean = false) => {
     const data = await utilFetchZipFromUrl(zipFileFromUrlState.url)
 
     if (data.zipFile) {
-      zipFileFromUrlState.zipFile = new File([data.zipFile], 'testData.zip', { type: MIME_TYPE.zip })
+      zipToLoad.value = new File([data.zipFile], 'testData.zip', { type: MIME_TYPE.zip })
       testState.value.testConfig.zipOriginalUrl = data.originalUrl
       testState.value.testConfig.zipConvertedUrl = data.convertedUrl || ''
       zipFileFromUrlState.isDialogOpen = false
@@ -1769,7 +1800,7 @@ async function loadTestData(
   uploadedData: UploadedTestData,
 ) {
   try {
-    zipFileFromUrlState.zipFile = null
+    zipToLoad.value = null
     const { jsonData, pdfBuffer, testImageBlobs } = uploadedData
     testState.value.pdfFile = pdfBuffer
     testState.value.testImageBlobs = testImageBlobs
@@ -2061,5 +2092,6 @@ onMounted(() => {
     .catch((e: unknown) => useErrorToast(
       'Error getting last test data (if present) in db', e,
     ))
+    .finally(() => showCachedTestDataDialog.value = true)
 })
 </script>
