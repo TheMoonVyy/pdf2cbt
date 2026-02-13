@@ -42,7 +42,7 @@ export const utilStringifyAnswer = (
 
     const maybeRanges = answer
       .toUpperCase()
-      .replace('OR', ',')
+      .replaceAll('OR', ',')
       .split(',')
 
     const results: string[] = []

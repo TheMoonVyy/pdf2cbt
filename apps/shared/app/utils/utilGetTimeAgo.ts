@@ -2,6 +2,9 @@ export default (timeSinceEpoch: number) => {
   const diff = Date.now() - timeSinceEpoch
 
   const seconds = Math.floor(diff / 1000)
+  if (seconds <= 0)
+    return 'just now'
+
   if (seconds < 60)
     return `${seconds} second${seconds !== 1 ? 's' : ''} ago`
 
