@@ -253,7 +253,7 @@
 
 <script lang="ts" setup>
 import { zip, strToU8 } from 'fflate'
-import type { AsyncZippable } from 'fflate'
+import type { AsyncZipOptions, AsyncZippable } from 'fflate'
 import { DataFileNames } from '#layers/shared/shared/enums'
 import { MIME_TYPE } from '#layers/shared/shared/constants'
 import { answerOptionsFormatKey } from '#layers/shared/app/components/Cbt/GenerateAnswerKey/keys'
@@ -488,8 +488,9 @@ function checkIfQuestionIsAnswered(question: GenerateAnswerKeyInternalQuestionDa
         return false
       }
     }
-
     if (!hasOnlyOneItem) {
+      // last OR slot can be left empty
+
       const item = ans[iterUpto]!
       if (item.isRange) {
         if (item.max.trim() || item.min.trim()) {
@@ -556,7 +557,7 @@ async function checkForTestOutputDataInDB() {
     const testResultOverviews = await db.getTestResultOverviews('addedDescending', 10)
     const overviewsList: TestResultOverviewDB[] = []
     for (const data of testResultOverviews) {
-      if (!data?.overview?.marksObtained) {
+      if (typeof data?.overview?.marksObtained !== 'number') {
         overviewsList.push(data)
       }
     }
@@ -601,13 +602,15 @@ async function loadDataFromDB(id: number) {
       dbTestOutputDataState.isDataFound = false
       dbTestOutputDataState.testResultOverviews = []
       generateOutputState.selectedFileType = 'json'
+      fileUploaderState.jsonData = testOutputData as unknown as AnswerKeyJsonOutput
       loadDataState(subjectsData)
+      return true
     }
-    return true
   }
   catch (err) {
     useErrorToast('Error while loading selected Test Data from db', err)
   }
+  return false
 }
 
 async function handleFileUpload(files: File | File[]) {
@@ -678,7 +681,7 @@ function loadDataState(subjectsData: SubjectsData) {
         subject,
         name: section,
         totalQuestions: Object.keys(sectionData).length,
-        id: ++sectionCount, // initial, proper id is being set below
+        id: ++sectionCount,
       }
       sectionsState.sectionsList.push(sectionListItem)
 
@@ -870,7 +873,10 @@ async function downloadOutput() {
 
   const filename = generateOutputState.filename
 
-  const jsonData = fileUploaderState.jsonData ?? {} as AnswerKeyJsonOutput
+  const jsonData = fileUploaderState.jsonData
+    ? utilCloneJson(fileUploaderState.jsonData)
+    : {} as AnswerKeyJsonOutput
+
   jsonData.testAnswerKey = testAnswerKeyData
   jsonData.appVersion = migrateJsonData.getAppVersion()
   jsonData.generatedBy = 'answerKeyPage'
@@ -885,14 +891,18 @@ async function downloadOutput() {
     cachedTestData.value = null
   }
   else {
-    if (!fileUploaderState.unzippedFiles) return
+    if (!fileUploaderState.unzippedFiles) {
+      generateOutputState.preparingDownload = false
+      return
+    }
 
     const jsonU8Array = strToU8(outputJsonString)
     fileUploaderState.unzippedFiles[DataFileNames.DataJson] = [jsonU8Array, { level: 6 }]
 
-    zip(fileUploaderState.unzippedFiles, { level: zipCompLevel as 0 }, (err, compressedZip) => {
+    zip(fileUploaderState.unzippedFiles, { level: zipCompLevel as AsyncZipOptions['level'] }, (err, compressedZip) => {
       if (err) {
         useErrorToast('Error creating zip file:', err)
+        generateOutputState.preparingDownload = false
         return
       }
       const outputBlob = new Blob(
@@ -901,7 +911,7 @@ async function downloadOutput() {
       )
       const time = Date.now()
       cachedTestData.value = {
-        by: 'cbt-maker',
+        by: 'generate-answer-key',
         file: new File(
           [outputBlob],
           utilGetFileNameForCachedTestData('CBT-GAK', time),

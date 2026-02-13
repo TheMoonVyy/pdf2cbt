@@ -4,15 +4,6 @@
       <h1 class="text-xl font-semibold text-green-500">
         This page/tool is used to generate the answer key of the test for results to be evaluated.
       </h1>
-      <!-- <h2 class="text-lg font-semibold my-4">
-        Though this is pretty easy to use, but here's a
-        <NuxtLink
-          to="https://www.youtube.com/watch?v=L0EWtvrZNYE"
-          class="underline text-green-400"
-          target="_blank"
-        >video</NuxtLink>
-        on using this tool just in case.
-      </h2> -->
       <UiAccordion
         type="multiple"
         :default-value="expandedValues"
@@ -155,7 +146,7 @@
                 </li>
                 <li>
                   <strong>BONUS</strong>: Full marks are awarded for this question
-                  only if you attempted (i.e answered) it in the test.
+                  only if you attempted (i.e. answered) it in the test.
                 </li>
               </ul>
               At the bottom of each question card,
