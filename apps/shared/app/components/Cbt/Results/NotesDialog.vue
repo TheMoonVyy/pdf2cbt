@@ -145,7 +145,7 @@ watch(showNotesDialog, async (isShowDialog) => {
 
 watchEffect(() => {
   if (activeTab.value === 'view') {
-    compiledNotesHtml.value = md.render(currentNotes.value || placeholderText)
+    compiledNotesHtml.value = md.render(utilDomPurify(currentNotes.value) || placeholderText)
   }
 })
 
