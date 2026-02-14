@@ -118,7 +118,7 @@ const chartTemplates: ChartTemplates = {
       },
       formatter: (params: TopLevelFormatterParams) => {
         const p = params as CallbackDataParams
-        return `<p><strong>${p.seriesName}</strong></p>${p.marker} ${p.name}: ${p.value} (${p.percent}%)`
+        return utilDomPurify(`<p><strong>${p.seriesName}</strong></p>${p.marker} ${p.name}: ${p.value} (${p.percent}%)`)
       },
     },
     series: [
@@ -132,7 +132,7 @@ const chartTemplates: ChartTemplates = {
           show: true,
           color: '#fff',
           fontSize: 15,
-          formatter: '{c} ({d}%)',
+          formatter: utilDomPurify('{c} ({d}%)'),
         },
         labelLine: {
           lineStyle: {
@@ -233,7 +233,7 @@ const chartOptions = {
       formatter: (params: TopLevelFormatterParams) => {
         const p = params as CallbackDataParams
         const body = `${p.marker} ${p.name}: ${utilSecondsToTime(p.value as number, 'mmm:ss')} (${p.percent}%)`
-        return `<p><strong>${p.seriesName}</strong></p>${body}`
+        return utilDomPurify(`<p><strong>${p.seriesName}</strong></p>${body}`)
       },
     },
     series: [{
@@ -243,7 +243,7 @@ const chartOptions = {
         ...(chartTemplates.pie.series as PieSeriesOption[])[0]!.label,
         formatter: (params: TopLevelFormatterParams) => {
           const p = params as CallbackDataParams
-          return `${utilSecondsToTime(p.value as number, 'mmm:ss')} (${p.percent}%)`
+          return utilDomPurify(`${utilSecondsToTime(p.value as number, 'mmm:ss')} (${p.percent}%)`)
         },
       },
     }],
@@ -299,7 +299,7 @@ const chartOptions = {
             `
         }
 
-        return header + body + '</strong>'
+        return utilDomPurify(header + body + '</strong>')
       },
     },
     series: [{
@@ -382,7 +382,7 @@ const chartOptions = {
           }
         }
 
-        const tooltipContent = `
+        const tooltipContent = utilDomPurify(`
             <strong style="line-height: 1.5rem;">
             <p style="margin-bottom: 0.5rem;">Question ID: ${secQueId}-${oriQueId}-${queIdString}</p>
             ${subjectContentText || ''}
@@ -407,7 +407,7 @@ const chartOptions = {
             </p>
             <p>Time Spent: <span>${utilSecondsToTime(timeSpent, 'mmm:ss')}</span></p>
             </strong>
-          `
+          `)
 
         chartTooltipCache.testJourney.set(queIdString, tooltipContent)
         return tooltipContent
