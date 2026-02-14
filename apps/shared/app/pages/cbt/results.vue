@@ -772,6 +772,8 @@ function generateTestResults(
     testDataToUse.testResultOverview = utilGetTestResultOverview(testDataToUse)
   }
 
+  testConfig.additionalData ??= {}
+
   if (!testAnswerKey) {
     showAnswerKeyMissingDialog.value = true
     return null

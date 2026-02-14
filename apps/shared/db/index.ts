@@ -137,7 +137,7 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
         })
     })
 
-    this.version(6).stores(dbScheme).upgrade(async (tx) => {
+    this.version(7).stores(dbScheme).upgrade(async (tx) => {
       const migrateJsonData = new MigrateJsonData()
       const testOutputDatasTable = tx.table('testOutputDatas')
 

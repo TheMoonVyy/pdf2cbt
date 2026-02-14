@@ -1,3 +1,5 @@
+import utilSelectiveMergeObj from '#layers/shared/app/utils/utilSelectiveMergeObj'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 type OldAnswerKeyJsonOutput = Omit<AnswerKeyJsonOutput, 'testAnswerKey'> & {
@@ -85,6 +87,8 @@ export class MigrateJsonData {
     T extends (TestInterfaceAndResultCommonJsonOutputData['testConfig'] | PdfCropperJsonOutput['testConfig']),
   >(testConfig: T) {
     for (const key of Object.keys(testConfig) as (keyof T)[]) {
+      if (key === 'additionalData') continue
+
       if (!testConfig[key])
         delete testConfig[key] // eslint-disable-line @typescript-eslint/no-dynamic-delete
     }
@@ -132,9 +136,9 @@ export class MigrateJsonData {
     }
     else {
       Object.assign(output, data)
+      output.testConfig.additionalData ??= {}
 
       if (data.testConfig?.optionalQuestions?.length) {
-        output.testConfig.additionalData ??= {}
         this.migrateOptionalQuestionsData(
           data.testConfig.optionalQuestions,
           output.testConfig.additionalData,
@@ -214,9 +218,9 @@ export class MigrateJsonData {
     }
     else {
       Object.assign(output, data)
+      output.testConfig.additionalData ??= {}
 
       if (data.testConfig?.optionalQuestions?.length) {
-        output.testConfig.additionalData ??= {}
         this.migrateOptionalQuestionsData(
           data.testConfig.optionalQuestions,
           output.testConfig.additionalData,
@@ -287,9 +291,9 @@ export class MigrateJsonData {
     }
     else {
       Object.assign(output, data)
+      output.testConfig.additionalData ??= {}
 
       if (data.testConfig?.optionalQuestions?.length) {
-        output.testConfig.additionalData ??= {}
         this.migrateOptionalQuestionsData(
           data.testConfig.optionalQuestions,
           output.testConfig.additionalData,
