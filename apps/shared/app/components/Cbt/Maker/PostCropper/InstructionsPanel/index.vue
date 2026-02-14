@@ -48,7 +48,7 @@ onBeforeMount(() => {
 
 <template>
   <UiTabs
-    default-value="section"
+    default-value="test"
     class="mt-4 w-9/10! gap-0 max-w-4xl"
   >
     <UiTabsList class="w-full flex justify-center h-12 rounded-b-none">

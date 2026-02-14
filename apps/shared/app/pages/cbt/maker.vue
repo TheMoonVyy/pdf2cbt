@@ -117,7 +117,7 @@ async function loadExistingData(
     for (const [subject, subjectData] of Object.entries(additionalData || {})) {
       for (const [section, sectionData] of Object.entries(subjectData.sections)) {
         if (sectionData.optionalQuestions || sectionData.instructions?.type) {
-          instructionsData.additionalData[subject] ??= { sections: {} }
+          instructionsData.additionalData[subject] = { sections: {} }
 
           instructionsData.additionalData[subject].sections[section] = {
             optionalQuestions: sectionData.optionalQuestions || 0,

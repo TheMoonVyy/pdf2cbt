@@ -218,6 +218,7 @@ import ManageConfigs from './ManageConfigs.client.vue'
 import { ComboboxContent } from 'reka-ui'
 import {
   cropperOverlayDatasKey,
+  instructionsDataKey,
   overlaysPerQuestionDataKey,
   pagesImgDataKey,
 } from '../../keys'
@@ -237,16 +238,13 @@ const emit = defineEmits<{
 
 const showPatternModeEditConfigPanel = defineModel<boolean>({ required: true })
 
-const additionalData = defineModel<CbtMakerInternalInstructionsData['additionalData']>(
-  'additionalData',
-  { required: true },
-)
-
 const currentMode = defineModel<PdfCropperCurrentMode>('currentMode', { required: true })
 
 const cropperOverlayDatas = inject(cropperOverlayDatasKey)!
 
 const overlaysPerQuestionData = inject(overlaysPerQuestionDataKey)!
+
+const instructionsData = inject(instructionsDataKey)!
 
 const pagesImgData = inject(pagesImgDataKey)!
 
@@ -460,22 +458,21 @@ async function runCropper(patternModeRawDataForCropper: PdfPagesPatternModeData)
     overlaysPerQuestionData,
   )
 
-  for (const [subjectName, subjectConf] of Object.entries(subjectsConfig)) {
-    additionalData.value[subjectName] ??= { sections: {} }
-    const sections = additionalData.value[subjectName].sections
+  instructionsData.additionalData = {}
+  for (const subjectConf of subjectsConfig) {
+    const sections: CbtMakerInternalInstructionsData['additionalData'][string]['sections'] = {}
 
-    for (const [sectionName, sectionConf] of Object.entries(subjectConf.sections)) {
+    for (const sectionConf of subjectConf.sections) {
       const optionalQuestions = sectionConf.numOfOptionalQuestions || 0
       const instructions = sectionConf.instructions || { type: 'none' }
-      if (!sections[sectionName]) {
-        sections[sectionName] = { optionalQuestions, instructions }
-      }
-      else {
-        const sec = sections[sectionName]
-        sec.instructions = instructions
-        sec.optionalQuestions = optionalQuestions
+
+      sections[sectionConf.name || subjectConf.name] = {
+        optionalQuestions,
+        instructions,
       }
     }
+
+    instructionsData.additionalData[subjectConf.name] = { sections }
   }
 
   currentMode.value = 'edit'

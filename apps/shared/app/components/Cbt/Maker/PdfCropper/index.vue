@@ -799,13 +799,13 @@ provide(cropperModeKey, cropperMode)
             <span class="text-lg font-bold mx-auto">Please wait. Loading config editor...</span><br><br>
             Webpage might be unresponsive for a few seconds while loading the config editor.
           </p>
-          <CbtMakerPdfCropperPatternModeConfigForm
-            v-if="patternModeForm"
-            v-show="cropperMode.isPattern
-              && patternModeState.showEditConfigPanel"
-            ref="patternModeConfigForm"
-          />
         </div>
+        <CbtMakerPdfCropperPatternModeConfigForm
+          v-if="patternModeForm"
+          v-show="cropperMode.isPattern
+            && patternModeState.showEditConfigPanel"
+          ref="patternModeConfigForm"
+        />
       </UiResizablePanel>
     </UiResizablePanelGroup>
     <UiDialog v-model:open="dialogsState.showQuestionDetails">
