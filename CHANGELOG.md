@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.0.0...v2.0.1) (2026-02-14)
+
+
+### Bug Fixes
+
+* **security:** sanitize echarts tooltips and markdown with dompurify to prevent xss ([#229](https://github.com/TheMoonVyy/pdf2cbt/issues/229)) ([81fbc8d](https://github.com/TheMoonVyy/pdf2cbt/commit/81fbc8da4e6359dd488d62397a1e9e63f490ad9d))
+
 ## [2.0.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v1.30.2...v2.0.0) (2026-02-13)
 
 
