@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.0.1...v2.0.2) (2026-02-14)
+
+
+### Bug Fixes
+
+* **results-page:** ensure additionalData of testConfig is not removed when it is empty ([#231](https://github.com/TheMoonVyy/pdf2cbt/issues/231)) ([461713e](https://github.com/TheMoonVyy/pdf2cbt/commit/461713ed316d68aff7a33d2a7a24c2e4f7e489b5))
+* **test-maker:** use section instructions and optional questions from pattern config when in pattern mode ([44b452b](https://github.com/TheMoonVyy/pdf2cbt/commit/44b452b31af96a94e687df127c15a3fc22ddfecf))
+
 ## [2.0.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.0.0...v2.0.1) (2026-02-14)
 
 
