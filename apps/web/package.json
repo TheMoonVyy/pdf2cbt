@@ -19,7 +19,7 @@
     },
     "dependencies": {
         "@mdit/plugin-img-size": "0.22.5",
-        "@mdit/plugin-tasklist": "0.22.2",
+        "@mdit/plugin-tasklist": "0.22.3",
         "@nuxt/fonts": "0.13.0",
         "@nuxt/icon": "2.2.1",
         "@nuxtjs/robots": "5.7.0",
