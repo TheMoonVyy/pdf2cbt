@@ -14,8 +14,8 @@ const emit = defineEmits<{
   sectionChange: [sectionName: string]
 }>()
 
-const containerRef = ref<HTMLElement | null>(null)
-const virtualItemRefs = ref<HTMLElement[]>([])
+const containerRef = useTemplateRef('containerRef')
+const virtualItemRefs = useTemplateRef('virtualItemRefs')
 
 const sectionWidths = ref<number[]>([])
 const pages = ref<typeof props.testSectionsList[]>([])
@@ -23,18 +23,19 @@ const currentPage = ref(0)
 
 const { uiSettings } = useCbtSettings()
 
+const { width: containerWidth } = useElementSize(containerRef)
+
 const visibleSections = computed(() => pages.value[currentPage.value] || [])
 
 function measureWidths() {
-  sectionWidths.value = virtualItemRefs.value
-    .map(el => el.clientWidth)
+  sectionWidths.value = virtualItemRefs.value?.map(el => el.clientWidth) || []
 }
 
 function computePages() {
-  if (!containerRef.value) return
+  if (!containerWidth.value) return
   if (!sectionWidths.value.length) return
 
-  const containerWidth = containerRef.value.clientWidth
+  const effectiveWidth = Math.max(0, containerWidth.value)
 
   const newPages: typeof props.testSectionsList[] = []
   let currentItems: typeof props.testSectionsList = []
@@ -43,10 +44,7 @@ function computePages() {
   props.testSectionsList.forEach((section, index) => {
     const width = sectionWidths.value[index]!
 
-    if (
-      currentWidth + width > containerWidth
-      && currentItems.length
-    ) {
+    if ((currentWidth + width) > effectiveWidth && currentItems.length) {
       newPages.push(currentItems)
       currentItems = []
       currentWidth = 0
@@ -56,69 +54,47 @@ function computePages() {
     currentWidth += width
   })
 
-  if (currentItems.length) {
+  if (currentItems.length)
     newPages.push(currentItems)
-  }
 
   pages.value = newPages
 
-  if (currentPage.value >= newPages.length) {
+  if (currentPage.value >= newPages.length)
     currentPage.value = newPages.length - 1
-  }
 
-  if (currentPage.value < 0) {
+  if (currentPage.value < 0)
     currentPage.value = 0
-  }
 }
 
 function goLeft() {
-  if (currentPage.value > 0) {
-    currentPage.value--
-  }
+  if (currentPage.value > 0) currentPage.value--
 }
 
 function goRight() {
-  if (currentPage.value < pages.value.length - 1) {
-    currentPage.value++
-  }
+  if (currentPage.value < pages.value.length - 1) currentPage.value++
 }
 
-let resizeObserver: ResizeObserver | null = null
+const virtualItemRefsComputed = computed(() => virtualItemRefs.value ?? [])
 
-onMounted(() => {
-  nextTick().then(() => {
-    measureWidths()
-    computePages()
+useResizeObserver(virtualItemRefsComputed, measureWidths)
 
-    if (containerRef.value) {
-      resizeObserver = new ResizeObserver(computePages)
-      resizeObserver.observe(containerRef.value)
-    }
-  })
-})
+watchDebounced([sectionWidths, containerWidth], computePages, { debounce: 200 })
 
-watch(() => props.testSectionsList,
-  () => {
+watch(
+  () => props.testSectionsList,
+  async () => {
+    await nextTick()
     measureWidths()
     computePages()
   },
   { deep: true, flush: 'post' },
 )
-
-onBeforeUnmount(() => {
-  if (resizeObserver && containerRef.value) {
-    resizeObserver.unobserve(containerRef.value)
-  }
-})
 </script>
 
 <template>
-  <div
-    ref="containerRef"
-    class="relative"
-  >
+  <div class="relative">
     <div
-      class="flex items-center border-y-2 border-slate-400 w-full px-2"
+      class="flex items-center border-y-2 border-slate-400 w-full"
       :style="{ height: `${uiSettings.mainLayout.sectionHeaderHeight}rem` }"
     >
       <BaseButton
@@ -131,7 +107,11 @@ onBeforeUnmount(() => {
         @click="goLeft"
       />
 
-      <div class="flex whitespace-nowrap flex-1 overflow-hidden divide-x-2 h-full divide-slate-400">
+      <div
+        ref="containerRef"
+        class="flex whitespace-nowrap flex-1 overflow-hidden border-x-2
+        border-slate-400 divide-x-2 h-full divide-slate-400"
+      >
         <template
           v-for="(sectionItem, index) in visibleSections"
           :key="sectionItem.name"
@@ -187,7 +167,6 @@ onBeforeUnmount(() => {
         </span>
 
         <Icon
-          ref="iconElem"
           name="my-icon:info"
           class="text-[1.4rem] mr-1"
         />

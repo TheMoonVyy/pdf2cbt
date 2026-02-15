@@ -8,7 +8,7 @@
   >
     <div
       ref="imageContainerElem"
-      class="flex flex-col pb-12 grow"
+      class="flex flex-col pb-12 pl-2 grow"
     >
       <CbtSectionInstructionsPanel
         v-if="currentSectionInstructions"
@@ -33,7 +33,7 @@
         :question-type="currentQuestionDetails.questionType"
         :total-options="currentQuestionDetails.answerOptions"
         :answer-options-counter-type="currentQuestionDetails.answerOptionsCounterType"
-        class="ml-5 mt-1"
+        class="ml-3 mt-1"
         @update:model-value="logCurrentAnswer"
       />
       <CbtInterfaceMsmAnswerOptionsDiv
@@ -42,7 +42,7 @@
         :question-type="currentQuestionDetails.questionType"
         :total-options="currentQuestionDetails.answerOptions"
         :answer-options-counter-type="currentQuestionDetails.answerOptionsCounterType"
-        class="ml-5 mt-1"
+        class="ml-3 mt-1"
         @log-current-answer="logCurrentAnswer"
         @answer-changed="currentQuestionMsmAnswer = $event"
       />

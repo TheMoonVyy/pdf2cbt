@@ -14,7 +14,7 @@
             <span class="text-cyan-500 text-sm sm:text-[.9rem] md:text-base">v{{ appVersion }}</span>
           </NuxtLink>
         </span>
-        <div class="hidden min-[73.5rem]:flex items-center mx-auto">
+        <div class="hidden min-[43rem]:flex items-center mx-auto">
           <NuxtLink
             v-for="item in menuItems"
             :key="item.title"
@@ -29,33 +29,14 @@
             >
               <Icon
                 :name="item.icon"
-                size="1.3rem"
+                class="text-2xl min-[59rem]:text-[1.3rem]"
+                :title="item.title"
               />
-              <span class="text-lg font-bold text-nowrap">
+              <span class="text-lg font-bold text-nowrap hidden min-[73.5rem]:inline">
                 {{ item.title }}
               </span>
-            </div>
-          </NuxtLink>
-        </div>
-        <div class="grid-cols-4 gap-3 hidden min-[43rem]:grid min-[73.5rem]:hidden mx-auto">
-          <NuxtLink
-            v-for="item in menuItems"
-            :key="item.title"
-            v-slot="{ isActive }"
-            class="h-12"
-            :class="navigationMenuTriggerStyle()"
-            :to="item.href"
-          >
-            <div
-              class="flex items-center gap-2.5 p-1"
-              :class="isActive ? 'text-green-400' : ''"
-            >
-              <Icon
-                :name="item.icon"
-                size="1.3rem"
-              />
-              <span class="text-lg font-bold text-nowrap">
-                {{ item.title }}
+              <span class="text-lg font-bold text-nowrap hidden min-[59rem]:inline min-[73.5rem]:hidden">
+                {{ item.shortTitle }}
               </span>
             </div>
           </NuxtLink>
@@ -425,21 +406,25 @@ watch(
 const menuItems = [
   {
     title: 'Test Maker',
+    shortTitle: 'Cbt Maker',
     href: '/cbt/maker',
     icon: 'my-icon:filesettings',
   },
   {
     title: 'Test Interface',
+    shortTitle: 'CBT',
     href: '/cbt/interface',
     icon: 'line-md:computer',
   },
   {
     title: 'Test Results',
+    shortTitle: 'Results',
     href: '/cbt/results',
     icon: 'material-symbols:bar-chart-4-bars-rounded',
   },
   {
     title: 'Generate Answer Key',
+    shortTitle: 'Answer Key',
     href: '/cbt/generate-answer-key',
     icon: 'mdi:script-text-key-outline',
   },

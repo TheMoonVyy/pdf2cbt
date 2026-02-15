@@ -16,8 +16,8 @@
         class="bg-image"
         :style="{
           backgroundImage: `url(&quot;${profileSettings.img || profileIcon}&quot;)`,
-          width: (1.18 * profileSettings.imgWidth) + 'px',
-          height: (1.18 * profileSettings.imgHeight) + 'px',
+          width: (0.07 * profileSettings.imgWidth) + 'rem',
+          height: (0.07 * profileSettings.imgHeight) + 'rem',
         }"
       />
     </div>

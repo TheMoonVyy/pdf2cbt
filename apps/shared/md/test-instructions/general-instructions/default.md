@@ -8,18 +8,18 @@ Please read the instructions carefully{.text-center}
 2. The clock will be set at the server. The countdown timer in the top right corner of screen will display the remaining time available for you to complete the examination. When the timer reaches zero, the examination will end by itself. You will not be required to end or submit your examination.
 
 3. The Question Palette displayed on the right side of screen will show the status of each question using one of the following symbols:
-    - ![ =40x40][notVisited]{.inline-block} You have not visited the question yet.  
-    - ![ =40x40][notAnswered]{.inline-block} You have not answered the question.   
-    - ![ =40x40][answered]{.inline-block} You have answered the question.   
-    - ![ =40x40][marked]{.inline-block} You have NOT answered the question, but have marked the question for review.   
-    - ![ =40x40][markedAnswered]{.inline-block} The question(s) "Answered and Marked for Review" will be considered for evaluation.   
+    - ![ =40x40][notVisited]{.inline-block style="height: 2.5rem; width: 2.5rem"} You have not visited the question yet.  
+    - ![ =40x40][notAnswered]{.inline-block style="height: 2.5rem; width: 2.5rem"} You have not answered the question.   
+    - ![ =40x40][answered]{.inline-block style="height: 2.5rem; width: 2.5rem"} You have answered the question.   
+    - ![ =40x40][marked]{.inline-block style="height: 2.5rem; width: 2.5rem"} You have NOT answered the question, but have marked the question for review.   
+    - ![ =40x40][markedAnswered]{.inline-block style="height: 2.5rem; width: 2.5rem"} The question(s) "Answered and Marked for Review" will be considered for evaluation.   
     - The Marked for Review status for a question simply indicates that you would like to look at that question again.
 
 4. You can click on your "Profile" image on the top right corner of your screen to change the language during the exam for the entire question paper. On clicking on the Profile image, you will get a drop-down to change the question content to the desired language.
 
 5. You can click on the ">" arrow which appears to the left of question palette to collapse the question palette thereby maximizing the question window. To view the question palette again, you can click on "< " which appears on the right side of question window.
 
-6. You can click on ![ =40x40][scrollDown]{.inline-block} to navigate to the bottom and ![ =40x40][scrollUp]{.inline-block} to navigate to the top of the question area, without scrolling.
+6. You can click on ![ =40x40][scrollDown]{.inline-block style="height: 2.5rem; width: 2.5rem"} to navigate to the bottom and ![ =40x40][scrollUp]{.inline-block style="height: 2.5rem; width: 2.5rem"} to navigate to the top of the question area, without scrolling.
 
 &nbsp;
 **_Navigating to a Question:_**  

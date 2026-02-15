@@ -95,7 +95,12 @@
         />
       </div>
       <div class="flex grow overflow-auto">
-        <div class="flex flex-col relative grow">
+        <div
+          class="flex flex-col relative grow"
+          :style="{
+            width: `${100 - (isQuestionPalleteCollapsed ? 0 : uiSettings.questionPalette.width)}%`,
+          }"
+        >
           <div
             v-if="uiSettings.mainLayout.showQuestionType || uiSettings.mainLayout.showMarkingScheme"
             class="flex px-2"
@@ -197,12 +202,12 @@
           </div>
         </div>
         <div
-          class="ml-auto flex flex-col shrink-0 border-black border-y-2 border-l-2"
+          class="flex flex-col shrink-0 border-black border-y-2 border-l-2"
           :class="{ hidden: isQuestionPalleteCollapsed }"
           :style="{ width: `${uiSettings.questionPalette.width}%` }"
         >
           <!-- Section Summary -->
-          <div class="grid grid-cols-2 gap-2 p-4">
+          <div class="grid grid-cols-2 gap-2 p-2.5">
             <div
               v-for="item in questionStatusList"
               :key="item.key"
@@ -236,7 +241,7 @@
           >
             {{ currentTestState.section }}
           </div>
-          <div class="flex grow overflow-y-auto overflow-x-hidden w-full py-3 pl-4 pr-2 secondary-theme">
+          <div class="flex flex-col grow overflow-y-auto overflow-x-hidden w-full py-3 pl-4 pr-2 secondary-theme">
             <div
               class="flex flex-wrap content-start"
               :style="{
@@ -262,6 +267,7 @@
                 </span>
               </span>
             </div>
+            <div class="h-1 w-full" />
           </div>
         </div>
       </div>
