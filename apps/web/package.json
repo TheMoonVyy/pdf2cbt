@@ -30,7 +30,7 @@
         "@tailwindcss/typography": "0.5.19",
         "@tailwindcss/vite": "4.1.18",
         "@tanstack/vue-table": "8.21.3",
-        "@unhead/vue": "2.1.3",
+        "@unhead/vue": "2.1.4",
         "@vueuse/core": "14.2.0",
         "@vueuse/nuxt": "14.2.0",
         "class-variance-authority": "0.7.1",
