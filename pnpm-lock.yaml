@@ -14,10 +14,10 @@ importers:
     dependencies:
       '@mdit/plugin-img-size':
         specifier: 0.22.3
-        version: 0.22.3(markdown-it@14.1.0)
+        version: 0.22.3(markdown-it@14.1.1)
       '@mdit/plugin-tasklist':
         specifier: 0.22.2
-        version: 0.22.2(markdown-it@14.1.0)
+        version: 0.22.2(markdown-it@14.1.1)
       '@nuxt/fonts':
         specifier: 0.13.0
         version: 0.13.0(@netlify/blobs@9.1.2)(db0@0.3.4)(ioredis@5.9.2)(magicast@0.5.1)(vite@7.3.1(@types/node@24.10.11)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))
@@ -85,11 +85,11 @@ importers:
         specifier: 0.563.0
         version: 0.563.0(vue@3.5.27(typescript@5.9.3))
       markdown-it:
-        specifier: 14.1.0
-        version: 14.1.0
+        specifier: 14.1.1
+        version: 14.1.1
       markdown-it-attrs:
         specifier: 4.2.0
-        version: 4.2.0(markdown-it@14.1.0)
+        version: 4.2.0(markdown-it@14.1.1)
       markdown-it-block-embed:
         specifier: 0.0.3
         version: 0.0.3
@@ -4716,8 +4716,8 @@ packages:
   markdown-it-underline@1.0.1:
     resolution: {integrity: sha512-J597ni39vPHIH1ONVZoDvQKUUXkOqoB93bm6Fc/5Deu6XaWMXrT0xf2m2r9qZCA8dncWJ5V8d5PyGkpmQuy/vg==}
 
-  markdown-it@14.1.0:
-    resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
+  markdown-it@14.1.1:
+    resolution: {integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==}
     hasBin: true
 
   marky@1.3.0:
@@ -7451,17 +7451,17 @@ snapshots:
       - encoding
       - supports-color
 
-  '@mdit/plugin-img-size@0.22.3(markdown-it@14.1.0)':
+  '@mdit/plugin-img-size@0.22.3(markdown-it@14.1.1)':
     dependencies:
       '@types/markdown-it': 14.1.2
     optionalDependencies:
-      markdown-it: 14.1.0
+      markdown-it: 14.1.1
 
-  '@mdit/plugin-tasklist@0.22.2(markdown-it@14.1.0)':
+  '@mdit/plugin-tasklist@0.22.2(markdown-it@14.1.1)':
     dependencies:
       '@types/markdown-it': 14.1.2
     optionalDependencies:
-      markdown-it: 14.1.0
+      markdown-it: 14.1.1
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -11451,9 +11451,9 @@ snapshots:
       '@babel/types': 7.28.5
       source-map-js: 1.2.1
 
-  markdown-it-attrs@4.2.0(markdown-it@14.1.0):
+  markdown-it-attrs@4.2.0(markdown-it@14.1.1):
     dependencies:
-      markdown-it: 14.1.0
+      markdown-it: 14.1.1
 
   markdown-it-block-embed@0.0.3: {}
 
@@ -11463,7 +11463,7 @@ snapshots:
 
   markdown-it-underline@1.0.1: {}
 
-  markdown-it@14.1.0:
+  markdown-it@14.1.1:
     dependencies:
       argparse: 2.0.1
       entities: 4.5.0
