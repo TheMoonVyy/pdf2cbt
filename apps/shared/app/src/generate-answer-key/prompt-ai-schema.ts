@@ -127,6 +127,7 @@ export function getPromptOutputJsonSchema(outputMetaData: PromptOutputMetaData) 
             path: [qNum],
             message: `${label}: at least one value required.`,
           })
+          continue
         }
 
         answer.forEach((a, i) => {
