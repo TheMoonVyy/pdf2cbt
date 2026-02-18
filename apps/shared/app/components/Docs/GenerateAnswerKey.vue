@@ -158,6 +158,87 @@
 
         <UiAccordionItem value="3">
           <UiAccordionTrigger>
+            Prompt AI to Extract Answers
+          </UiAccordionTrigger>
+          <UiAccordionContent>
+            <div class="flex flex-col gap-4 text-left leading-8">
+              <div>
+                <ul class="list-disc ml-6">
+                  <li>
+                    This feature uses AI (like ChatGPT, Gemini, Claude, etc.) to automatically
+                    extract answers from an answer key PDF or image.
+                  </li>
+                  <li>
+                    Instead of manually selecting each answer, you can let AI read the answer key
+                    and generate the answer key data for you.
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <strong>How to use:</strong>
+                <ol class="list-decimal ml-6 mt-1">
+                  <li class="mb-2">
+                    <strong>Load Test Data:</strong> First, load/upload your test data (like ZIP from Test Maker)
+                    or upload a ZIP/JSON file (same as manual entry).
+                  </li>
+                  <li class="mb-2">
+                    <strong>Click "Prompt AI" Button:</strong> After the test data is loaded,
+                    you'll see the "Prompt AI" button alongside "Enter Answers Manually".
+                    Click on it to open the Prompt AI dialog.
+                  </li>
+                  <li class="mb-2">
+                    <strong>Copy the Prompt:</strong> In the dialog, you'll see a generated prompt
+                    in the left textbox. Copy this prompt by clicking the copy button.
+                  </li>
+                  <li class="mb-2">
+                    <strong>Send to AI:</strong> Paste the prompt into your preferred AI
+                    (ChatGPT, Gemini, Claude, etc.) along with your answer key PDF or image.
+                  </li>
+                  <li class="mb-2">
+                    <strong>Copy JSON Output of AI:</strong> The AI should respond with the answers in JSON format.
+                    Copy the JSON output from the AI's response.
+                  </li>
+                  <li class="mb-2">
+                    <strong>Paste and Validate:</strong> Paste the JSON into the right textbox
+                    ("Paste output JSON") in the dialog. Click "Validate Output" to check if it's valid.
+                  </li>
+                  <li class="mb-2">
+                    <strong>Review or Generate:</strong> If valid, you can either:
+                    <ul class="list-disc ml-6 mt-1">
+                      <li>
+                        <strong>Manually Check:</strong> Load the answers into the answer entry interface
+                        to review and correct any errors before generating.
+                      </li>
+                      <li>
+                        <strong>Generate Anyway:</strong> Directly generate the answer key file
+                        (not recommended without reviewing).
+                      </li>
+                    </ul>
+                  </li>
+                </ol>
+              </div>
+              <div>
+                <strong>Important Notes:</strong>
+                <ul class="list-disc ml-6 mt-1">
+                  <li>
+                    The AI-generated answers may not be 100% accurate. It is recommended to review them
+                    before generating the final answer key.
+                  </li>
+                  <li>
+                    If the AI output has errors, the dialog will show you what's wrong.
+                    You can copy the error details and send them back to the AI for correction.
+                  </li>
+                  <li>
+                    This feature works best with clear, readable answer key documents.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </UiAccordionContent>
+        </UiAccordionItem>
+
+        <UiAccordionItem value="4">
+          <UiAccordionTrigger>
             Steps for Generating Answer Key
           </UiAccordionTrigger>
           <UiAccordionContent>
@@ -171,13 +252,24 @@
                 <li>
                   <strong>Sort Sections Order (Optional):</strong><br>
                   If needed, reorder the sections list.<br>
-                  Click "Start" when ready to proceed to answering questions.
                 </li>
                 <li>
-                  <strong>Enter Correct Answers:</strong><br>
-                  For each question, select/enter the correct answer.<br>
-                  Use the "Bonus" or "Dropped" buttons if applicable.<br>
-                  Navigate through sections using the Previous/Next section buttons.
+                  <strong>Enter Questions:</strong><br>
+                  Choose one of the following options:
+                  <ul class="list-disc ml-6 mt-1">
+                    <li>
+                      <strong>Prompt AI:</strong> Click this button to use AI to automatically
+                      extract answers from an answer key PDF or image.
+                      Refer to "Prompt AI to Extract Answers" given above.
+                    </li>
+                    <li>
+                      <strong>Enter Answers Manually:</strong> Click this button to manually
+                      select/enter the correct answers for each question.<br>
+                      For each question, select/enter the correct answer.<br>
+                      Use the "Bonus" or "Dropped" buttons if applicable.<br>
+                      Navigate through sections using the Previous/Next section buttons.
+                    </li>
+                  </ul>
                 </li>
                 <li>
                   <strong>Generate Output:</strong><br>
@@ -199,7 +291,7 @@
 </template>
 
 <script lang="ts" setup>
-const { expandedValues = ['3'] } = defineProps<{
+const { expandedValues = ['4'] } = defineProps<{
   expandedValues?: string[]
 }>()
 </script>
