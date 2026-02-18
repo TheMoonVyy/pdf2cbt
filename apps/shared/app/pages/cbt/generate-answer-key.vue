@@ -80,18 +80,23 @@
           <span class="pl-5 pr-3 text-lg font-bold">Sort Sections Order</span>
         </div>
         <div class="flex mt-2">
-          <CbtOrderList
-            v-model="sectionsState.sectionsList"
-          />
+          <CbtOrderList v-model="sectionsState.sectionsList" />
         </div>
       </div>
-      <div class="flex flex-col items-center gap-5">
+      <div class="flex flex-col sm:flex-row items-center gap-5">
         <BaseButton
-          label="Start"
+          label="Prompt AI"
           label-class="text-lg"
-          class="my-auto"
           size="lg"
-          icon-name="mdi:script-text-key-outline"
+          icon-name="mdi:robot-outline"
+          icon-size="1.6rem"
+          @click="showGeneratePromptDialog = true"
+        />
+        <BaseButton
+          label="Enter Answers Manually"
+          label-class="text-lg"
+          size="lg"
+          icon-name="mdi:pencil-outline"
           icon-size="1.6rem"
           @click="showAnswerKeyMainBlock()"
         />
@@ -188,16 +193,30 @@
 
     <DocsGenerateAnswerKey class="mt-15" />
 
-    <UiDialog v-model:open="generateOutputState.showDialog">
-      <UiDialogContent class="max-w-full sm:max-w-md px-0">
-        <UiDialogHeader class="mb-4">
-          <UiDialogTitle class="text-xl font-bold text-center">
-            Generate Test Data (with Answer-key included)
+    <LazyCbtGenerateAnswerKeyPromptAiDialog
+      v-if="internalAnswerKeyData
+        && showGeneratePromptDialog
+        && sectionsState.sectionsList?.length"
+      v-model="showGeneratePromptDialog"
+      v-model:internal-answer-key-data="internalAnswerKeyData"
+      :sections-list="sectionsState.sectionsList"
+      @manual-check="showAnswerKeyMainBlock"
+      @generate-answer-key="generateOutputState.showDialog = true"
+    />
+
+    <LazyUiDialog
+      v-if="internalAnswerKeyData"
+      v-model:open="generateOutputState.showDialog"
+    >
+      <UiDialogContent class="max-w-full sm:max-w-md px-0 pt-4">
+        <UiDialogHeader>
+          <UiDialogTitle class="text-lg font-bold text-center">
+            Generate Test Data (with Answer-key)
           </UiDialogTitle>
         </UiDialogHeader>
         <UiScrollArea class="max-h-128 w-full px-6">
           <div class="grid grid-cols-7 w-full gap-2">
-            <div class="flex flex-col col-span-4 gap-1">
+            <div class="flex flex-col col-span-5 gap-2">
               <UiLabel
                 for="generate_output_filename"
               >
@@ -211,7 +230,7 @@
                 :maxlength="100"
               />
             </div>
-            <div class="flex flex-col gap-1 col-span-3">
+            <div class="flex flex-col gap-1 col-span-2">
               <div class="flex gap-2 justify-center">
                 <UiLabel
                   for="generate_output_file_type"
@@ -234,6 +253,7 @@
           <div class="flex justify-center py-5">
             <BaseButton
               label="Download"
+              :disable="generateOutputState.preparingDownload"
               @click="downloadOutput()"
             />
           </div>
@@ -247,7 +267,7 @@
           </div>
         </UiScrollArea>
       </UiDialogContent>
-    </UiDialog>
+    </LazyUiDialog>
   </UiScrollArea>
 </template>
 
@@ -317,6 +337,17 @@ const generateOutputState = shallowReactive({
   preparingDownload: false,
   downloaded: false,
 })
+
+const downloadedSignal = useTimeoutFn(
+  () => generateOutputState.downloaded = false,
+  3000,
+  {
+    immediate: false,
+    immediateCallback: false,
+  },
+)
+
+const showGeneratePromptDialog = shallowRef(false)
 
 // if isDataFound then load that and this below will be storing it
 const dbTestOutputDataState = shallowReactive<DBTestOutputDataState>({
@@ -887,7 +918,9 @@ async function downloadOutput() {
     const outputBlob = new Blob([outputJsonString], { type: MIME_TYPE.json })
     utilSaveFile(`${filename}.json`, outputBlob)
     generateOutputState.preparingDownload = false
+    downloadedSignal.stop()
     generateOutputState.downloaded = true
+    downloadedSignal.start()
     cachedTestData.value = null
   }
   else {
@@ -899,30 +932,40 @@ async function downloadOutput() {
     const jsonU8Array = strToU8(outputJsonString)
     fileUploaderState.unzippedFiles[DataFileNames.DataJson] = [jsonU8Array, { level: 6 }]
 
-    zip(fileUploaderState.unzippedFiles, { level: zipCompLevel as AsyncZipOptions['level'] }, (err, compressedZip) => {
-      if (err) {
-        useErrorToast('Error creating zip file:', err)
-        generateOutputState.preparingDownload = false
-        return
-      }
-      const outputBlob = new Blob(
-        [compressedZip as unknown as Uint8Array<ArrayBuffer>],
-        { type: MIME_TYPE.zip },
-      )
-      const time = Date.now()
-      cachedTestData.value = {
-        by: 'generate-answer-key',
-        file: new File(
-          [outputBlob],
-          utilGetFileNameForCachedTestData('CBT-GAK', time),
-          { type: outputBlob.type },
-        ),
-        time,
-      }
-      utilSaveFile(`${filename}.zip`, outputBlob)
-      generateOutputState.preparingDownload = false
-      generateOutputState.downloaded = true
-    })
+    zip(
+      fileUploaderState.unzippedFiles,
+      { level: zipCompLevel as AsyncZipOptions['level'] },
+      (err, compressedZip) => {
+        if (err) {
+          useErrorToast('Error creating zip file:', err)
+          generateOutputState.preparingDownload = false
+          return
+        }
+
+        try {
+          const outputBlob = new Blob(
+            [compressedZip as unknown as Uint8Array<ArrayBuffer>],
+            { type: MIME_TYPE.zip },
+          )
+          const time = Date.now()
+          cachedTestData.value = {
+            by: 'generate-answer-key',
+            file: new File(
+              [outputBlob],
+              utilGetFileNameForCachedTestData('CBT-GAK', time),
+              { type: outputBlob.type },
+            ),
+            time,
+          }
+          utilSaveFile(`${filename}.zip`, outputBlob)
+          downloadedSignal.stop()
+          generateOutputState.downloaded = true
+          downloadedSignal.start()
+        }
+        finally {
+          generateOutputState.preparingDownload = false
+        }
+      })
   }
 }
 
