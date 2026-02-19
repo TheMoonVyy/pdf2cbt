@@ -9,6 +9,7 @@ const defaultUiSettings: CbtUiSettings = {
     markingSchemeFontSize: 0.875,
     questionTimeSpentFontSize: 1,
     questionNumFontSize: 1,
+    offsetTestDurationInSeconds: 0,
     showQuestionType: true,
     showMarkingScheme: true,
     showQuestionPaperBtn: true,

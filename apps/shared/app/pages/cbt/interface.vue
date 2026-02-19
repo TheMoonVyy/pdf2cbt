@@ -68,7 +68,9 @@
             </div>
           </div>
           <div class="flex justify-between px-3 py-0.5 shrink-0">
-            <span class="flex ml-auto items-center">Time Left:&nbsp;&nbsp;{{ testTimeLeftString }}</span>
+            <span class="flex ml-auto items-center">
+              Time Left:&nbsp;&nbsp;{{ testTimeLeftWithOffsetDurationString }}
+            </span>
           </div>
           <CbtInterfaceQuestionPaperDialog
             v-if="questionPaperDialogState.openDialog"
@@ -701,10 +703,11 @@ const {
   stopCountdown,
 } = useCbtCountdownTimer()
 
-const testTimeLeftString = computed(() => {
+const testTimeLeftWithOffsetDurationString = computed(() => {
   const seconds = currentTestState.value.remainingSeconds ?? testSettings.value.durationInSeconds
   const timeFormat = testSettings.value.timeFormat
-  return utilSecondsToTime(seconds, timeFormat)
+  const offset = uiSettings.value.mainLayout.offsetTestDurationInSeconds || 0
+  return utilSecondsToTime(seconds + offset, timeFormat)
 })
 
 const questionTimeSpentString = computed(() => {

@@ -27,6 +27,7 @@ export type CbtUiSettings = {
     markingSchemeFontSize: number
     questionTimeSpentFontSize: number
     questionNumFontSize: number
+    offsetTestDurationInSeconds: number
   }
 
   themes: {

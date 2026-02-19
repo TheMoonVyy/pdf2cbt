@@ -1372,6 +1372,43 @@ const tooltipContent = {
         ]),
       ]),
     ]),
+
+  offsetTestDurationInSeconds: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', [
+        'This adds a ',
+        h('strong', 'visual offset'),
+        ' to the countdown timer without changing the actual test duration.',
+      ]),
+      h('p', [
+        'The offset value must be provided in ',
+        h('strong', 'seconds'),
+        '.',
+      ]),
+      h('p', [
+        'For example, if the test duration is ',
+        h('strong', '150 minutes'),
+        ' and the offset is ',
+        h('strong', '1800 seconds'),
+        ' (30 minutes), the timer will start from ',
+        h('strong', '180 minutes'),
+        '.',
+      ]),
+      h('p', [
+        'The timer will count down normally, but when it reaches ',
+        h('strong', '30 minutes remaining'),
+        ', the test will be ',
+        h('strong', 'submitted automatically'),
+        ' because the internal duration is still 150 minutes.',
+      ]),
+      h('p', [
+        'This does ',
+        h('strong', 'not'),
+        ' affect evaluation, saved time, or any real test logic. ',
+        'It is only meant to provide a psychological buffer.',
+      ]),
+    ]),
+
 }
 
 const dummyValue = ref<QuestionAnswer>(null)
@@ -1428,6 +1465,7 @@ const htmlContent = {
       { key: 'markingSchemeFontSize', label: 'Marking Scheme Font Size', min: 0.25, max: 5, step: 0.1 },
       { key: 'questionTimeSpentFontSize', label: 'Ques. Time Spent Font Size', min: 0.25, max: 5, step: 0.1 },
       { key: 'questionNumFontSize', label: 'Ques. No. Font Size', min: 0.25, max: 5, step: 0.1 },
+      { key: 'offsetTestDurationInSeconds', label: 'Offset Test Duration', min: 0, tooltip: tooltipContent.offsetTestDurationInSeconds },
       {
         key: 'sectionHeaderAndQuesPanelDividerHeight',
         label: 'Sections & Question-panel Divider Height', min: 0, max: 30, step: 0.1,
