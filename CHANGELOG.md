@@ -11,7 +11,7 @@
 
 ### Bug Fixes
 
-* **cbt-interface:** add showQuestionPanelBtn to ui settings which is missing ([d8aace5](https://github.com/TheMoonVyy/pdf2cbt/commit/d8aace5daac314b1c1a0535e31782c8a2c08a377))
+* **cbt-interface:** add showQuestionPaperBtn to ui settings which is missing ([d8aace5](https://github.com/TheMoonVyy/pdf2cbt/commit/d8aace5daac314b1c1a0535e31782c8a2c08a377))
 
 ## [2.0.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.0.1...v2.0.2) (2026-02-14)
 
