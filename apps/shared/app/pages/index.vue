@@ -18,7 +18,7 @@
         </p>
         <ul class="list-disc list-outside mt-2 text-left ml-8">
           <li class="mt-2">
-            Turn PDF of Questions into interactive real exam-like CBT and view a detailed analysis of your test.
+            Turn PDF of Questions into an interactive real exam-like CBT and view a detailed analysis of your test.
           </li>
           <li class="mt-2">
             <strong>100% free with no ads, no login, no email/phone number needed.</strong><br>
