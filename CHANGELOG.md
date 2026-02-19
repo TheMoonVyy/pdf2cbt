@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.0.2...v2.1.0) (2026-02-19)
+
+
+### Features
+
+* **cbt-interface:** add ability to offset test duration visually ([ba6a799](https://github.com/TheMoonVyy/pdf2cbt/commit/ba6a799e47c925ef018787a42f4777d8aebb5476))
+* **generate-answer-key:** add feature to prompt ai to read answers from pdf or image to get answers of questions ([#242](https://github.com/TheMoonVyy/pdf2cbt/issues/242)) ([96b3280](https://github.com/TheMoonVyy/pdf2cbt/commit/96b3280ee726b7881e5a5ee7b8d93b7df02c71cd))
+
+
+### Bug Fixes
+
+* **cbt-interface:** add showQuestionPanelBtn to ui settings which is missing ([d8aace5](https://github.com/TheMoonVyy/pdf2cbt/commit/d8aace5daac314b1c1a0535e31782c8a2c08a377))
+
 ## [2.0.2](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.0.1...v2.0.2) (2026-02-14)
 
 
