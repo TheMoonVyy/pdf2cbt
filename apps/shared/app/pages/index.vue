@@ -3,7 +3,7 @@
     class="flex flex-col grow min-h-0 py-8 overflow-auto border-t-2"
   >
     <h1 class="text-2xl font-bold text-center text-green-500">
-      Turn PDF of Questions into interactive CBT (Computer Based Test)
+      Turn PDF of Questions into an interactive CBT (Computer Based Test)
     </h1>
 
     <div class="flex flex-col w-full items-center gap-6 mt-10 px-4 max-w-4xl mx-auto text-center">
@@ -18,28 +18,27 @@
         </p>
         <ul class="list-disc list-outside mt-2 text-left ml-8">
           <li class="mt-2">
-            Turn PDF of Questions into interactive real exam-like CBT and view detailed analysis of your test.
+            Turn PDF of Questions into an interactive real exam-like CBT and view a detailed analysis of your test.
           </li>
           <li class="mt-2">
             <strong>100% free with no ads, no login, no email/phone number needed.</strong><br>
-            You just need a PDF with questions and a modern browser (any version from 2023 or later is recommended)<br>
+            You just need a PDF with questions and a modern browser (any version from 2023 or later is recommended).<br>
             Recommended to use Firefox or Chromium based browsers (chrome, brave, ms edge etc).
           </li>
           <li class="mt-2">
-            <strong>None of your data is sent to server</strong>. All Data is stored and accessed from your own storage (using browser's IndexedDB API).<br>
+            <strong>None of your data is sent to the server</strong>. All data is stored and accessed from your own storage (using the browser's IndexedDB API).<br>
             The use of server is to only send the webpage to your browser via internet.<br>
-            You are free to use fully offline version by following the instructions on project's
+            You are free to use the fully offline version by following the instructions on the project's
             <NuxtLink
               to="https://github.com/TheMoonVyy/pdf2cbt"
               class="underline text-green-400"
               target="_blank"
             >
-              Github Repo
-            </NuxtLink>.<br>
-            Though it is recommended to use the website version as it is always up-to-date with any updates/features.
+              GitHub Repo
+            </NuxtLink>, though it is recommended to use the website version as it is always up-to-date with any updates/features.
           </li>
           <li class="mt-2">
-            Test is auto-saved, so you continue where you left off if your test was interrupted (like due to electricity cut, browser closed etc)
+            Test is auto-saved, so you continue where you left off if your test was interrupted (like due to an electricity cut, browser closing, etc.).
           </li>
         </ul>
       </div>
