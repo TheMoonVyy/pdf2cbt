@@ -22,6 +22,7 @@ export type CbtUiSettings = {
     disableMouseWheel: boolean
     showQuestionTimeSpent: boolean
     showScrollToTopAndBottomBtns: boolean
+    showQuestionPaperBtn: boolean
     questionTypeFontSize: number
     markingSchemeFontSize: number
     questionTimeSpentFontSize: number

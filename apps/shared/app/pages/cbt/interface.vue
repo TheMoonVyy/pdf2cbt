@@ -55,6 +55,7 @@
                 @click="showTestInstructionsDialog = true"
               />
               <BaseButton
+                v-if="uiSettings.mainLayout.showQuestionPaperBtn"
                 label="Question Paper"
                 variant="link"
                 size="sm"

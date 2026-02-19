@@ -269,6 +269,7 @@
                       <div class="flex mx-auto mt-2">
                         <CbtOrderList
                           v-model="testSectionsList"
+                          scroll-container-class="[&>div]:max-h-100"
                         />
                       </div>
                     </div>
@@ -295,7 +296,7 @@
                         <BaseButton
                           label="Prepare Test"
                           size="lg"
-                          class="my-auto"
+                          class="mt-8"
                           icon-name="mdi:rocket-launch"
                           icon-size="1.6rem"
                           @click="prepareTestState.dialogVisibility = true"
@@ -350,7 +351,7 @@
                     >
                       <div class="flex gap-2 items-center justify-center">
                         <UiLabel
-                          class="text-sm text-center"
+                          class="text-sm text-center text-wrap"
                           :for="item.id"
                         >
                           {{ item.label }}
@@ -718,7 +719,7 @@
                         />
                       </div>
                     </div>
-                    <div class="flex justify-center p-5 gap-3">
+                    <div class="flex items-center justify-center p-5 gap-3">
                       <UiLabel class="text-lg font-semibold text-center">
                         Customize Icons & its sizes
                       </UiLabel>
