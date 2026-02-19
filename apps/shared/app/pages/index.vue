@@ -35,7 +35,7 @@
               target="_blank"
             >
               GitHub Repo
-            </NuxtLink>.<br>, though it is recommended to use the website version as it is always up-to-date with any updates/features.
+            </NuxtLink>, though it is recommended to use the website version as it is always up-to-date with any updates/features.
           </li>
           <li class="mt-2">
             Test is auto-saved, so you continue where you left off if your test was interrupted (like due to an electricity cut, browser closing, etc.).
