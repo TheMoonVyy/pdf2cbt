@@ -497,7 +497,7 @@ async function checkForUpdates() {
     && !notifySettings.dev.popup
     && !notifySettings.dev.indicator
   ) {
-    // stop checking for updates as all swtches are off
+    // stop checking for updates as all switches are off
     if (checkForUpdatesSetTimeoutId)
       clearTimeout(checkForUpdatesSetTimeoutId)
 

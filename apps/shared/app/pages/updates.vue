@@ -196,7 +196,9 @@ async function selectMenu(menu: 'releases' | 'dev') {
       renderedMarkdown.value = existingData
     }
     else {
-      const data = await fetchMarkdownFile(UpdatesPage.DevContentBaseUrl + '/content.md')
+      const data = await fetchMarkdownFile(
+        `${UpdatesPage.DevContentBaseUrl}/content.md?t=${Date.now()}`,
+      )
       const renderedMd = md.render(utilDomPurify(data.mdRawString))
       renderedMarkdown.value = renderedMd
       if (data.success)
@@ -234,7 +236,9 @@ async function selectReleasesSubMenu(version?: string) {
     const title = releaseTitle.value
     renderedMarkdown.value = md.render(utilDomPurify(title + 'Loading...'))
 
-    const data = await fetchMarkdownFile(`${UpdatesPage.ReleasesContentBaseUrl}/v${major}-${minor}-${patch}.md`)
+    const data = await fetchMarkdownFile(
+      `${UpdatesPage.ReleasesContentBaseUrl}/v${major}-${minor}-${patch}.md?t=${Date.now()}`,
+    )
 
     const renderedMd = md.render(utilDomPurify(title + data.mdRawString))
     renderedMarkdown.value = renderedMd
