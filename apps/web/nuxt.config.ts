@@ -41,11 +41,13 @@ export default defineNuxtConfig({
   },
   ogImage: {
     enabled: enableSeoModules,
+    zeroRuntime: true,
   },
   robots: {
     enabled: enableSeoModules,
   },
   sitemap: {
     enabled: enableSeoModules,
+    zeroRuntime: true,
   },
 })
