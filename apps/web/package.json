@@ -70,7 +70,7 @@
     },
     "devDependencies": {
         "@iconify-json/line-md": "1.2.14",
-        "@iconify-json/material-symbols": "1.2.55",
+        "@iconify-json/material-symbols": "1.2.56",
         "@iconify-json/mdi": "1.2.3",
         "@iconify-json/prime": "1.2.4",
         "@nuxt/eslint": "1.15.1",
@@ -80,7 +80,7 @@
         "@types/node": "24.10.13",
         "@types/regexp.escape": "2.0.0",
         "@types/to-regex-range": "5.0.3",
-        "eslint": "10.0.0",
+        "eslint": "10.0.1",
         "zod": "4.3.6"
     }
 }
