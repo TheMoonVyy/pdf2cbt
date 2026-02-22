@@ -479,7 +479,7 @@ function changeCurrentPage(changeTo: 'prev' | 'next') {
   else if (changeTo === 'prev' && prevAndNextSections.value.prevSection) {
     sectionsState.currentSection = prevAndNextSections.value.prevSection
   }
-  scrollAreaElem.value?.scrollTop()
+  scrollAreaElem.value?.scrollTop?.()
 }
 
 function checkIfQuestionIsAnswered(question: GenerateAnswerKeyInternalQuestionData) {
@@ -498,7 +498,7 @@ function checkIfQuestionIsAnswered(question: GenerateAnswerKeyInternalQuestionDa
   }
 
   if (type === 'nat') {
-    const ans = (answer as GenerateAnswerKeyInternalNatAnswer).values().toArray()
+    const ans = Array.from((answer as GenerateAnswerKeyInternalNatAnswer).values())
 
     const hasOnlyOneItem = ans.length === 1
 
@@ -849,7 +849,7 @@ function generateAnswerKey() {
           correctAnswer = 'DROPPED'
         }
         else if (type === 'nat') {
-          correctAnswer = (questionData.answer as GenerateAnswerKeyInternalNatAnswer)
+          const correctAnswerIterObj = (questionData.answer as GenerateAnswerKeyInternalNatAnswer)
             .values()
             .filter((item) => {
               if (item.isRange) {
@@ -863,11 +863,11 @@ function generateAnswerKey() {
               }
               return item.value.trim()
             })
-            .toArray()
-            .join(',')
+
+          correctAnswer = Array.from(correctAnswerIterObj).join(',')
         }
         else if (type === 'mcq' || type === 'msq') {
-          correctAnswer = (questionData.answer as Set<number>).values().toArray()
+          correctAnswer = Array.from((questionData.answer as Set<number>).values())
         }
         else {
           correctAnswer = utilCloneJson(

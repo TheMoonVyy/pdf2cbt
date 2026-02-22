@@ -18,9 +18,7 @@ function onOrBtnClick(
     return
   }
 
-  const nextItemId = questionAnswer.value
-    .keys()
-    .toArray()[idx + 1]
+  const nextItemId = Array.from(questionAnswer.value.keys())[idx + 1]
 
   if (typeof nextItemId === 'number')
     questionAnswer.value.delete(nextItemId)
