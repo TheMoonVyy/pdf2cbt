@@ -105,7 +105,7 @@ export default (
       }
 
       if (questionResultRowsStatus.size === 1) {
-        result.status = questionResultRowsStatus.values().toArray()[0]!
+        result.status = Array.from(questionResultRowsStatus.values())[0]!
       }
       else {
         result.status = 'partial'

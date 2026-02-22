@@ -136,7 +136,7 @@ const deleteAllOverlaysOnCurrentPage = async () => {
     }
   }
 
-  const sortedIds = overlayIdsToDelete.toSorted((a, b) => {
+  const sortedIds = [...overlayIdsToDelete].sort((a, b) => {
     const [subA, qA, iA] = a.split(SEPARATOR)
     const [subB, qB, iB] = b.split(SEPARATOR)
 

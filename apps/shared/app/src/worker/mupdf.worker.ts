@@ -38,7 +38,7 @@ export class MuPdfProcessor {
   async loadMuPdf(preferLocalScript: boolean) {
     if (!this.mupdf) {
       const scriptUrls = preferLocalScript
-        ? SCRIPT_URLS.toReversed()
+        ? [...SCRIPT_URLS].reverse()
         : SCRIPT_URLS
 
       for (let i = 0; i < scriptUrls.length; i++) {

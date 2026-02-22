@@ -498,7 +498,7 @@ function checkIfQuestionIsAnswered(question: GenerateAnswerKeyInternalQuestionDa
   }
 
   if (type === 'nat') {
-    const ans = (answer as GenerateAnswerKeyInternalNatAnswer).values().toArray()
+    const ans = Array.from((answer as GenerateAnswerKeyInternalNatAnswer).values())
 
     const hasOnlyOneItem = ans.length === 1
 
@@ -849,8 +849,9 @@ function generateAnswerKey() {
           correctAnswer = 'DROPPED'
         }
         else if (type === 'nat') {
-          correctAnswer = (questionData.answer as GenerateAnswerKeyInternalNatAnswer)
-            .values()
+          correctAnswer = Array.from(
+            (questionData.answer as GenerateAnswerKeyInternalNatAnswer).values(),
+          )
             .filter((item) => {
               if (item.isRange) {
                 return Boolean(item.min.trim() && item.max.trim())
@@ -863,11 +864,10 @@ function generateAnswerKey() {
               }
               return item.value.trim()
             })
-            .toArray()
             .join(',')
         }
         else if (type === 'mcq' || type === 'msq') {
-          correctAnswer = (questionData.answer as Set<number>).values().toArray()
+          correctAnswer = Array.from((questionData.answer as Set<number>).values())
         }
         else {
           correctAnswer = utilCloneJson(
