@@ -479,7 +479,7 @@ function changeCurrentPage(changeTo: 'prev' | 'next') {
   else if (changeTo === 'prev' && prevAndNextSections.value.prevSection) {
     sectionsState.currentSection = prevAndNextSections.value.prevSection
   }
-  scrollAreaElem.value?.scrollTop?.()
+  scrollAreaElem.value?.scrollTop()
 }
 
 function checkIfQuestionIsAnswered(question: GenerateAnswerKeyInternalQuestionData) {
@@ -849,8 +849,9 @@ function generateAnswerKey() {
           correctAnswer = 'DROPPED'
         }
         else if (type === 'nat') {
-          const correctAnswerIterObj = (questionData.answer as GenerateAnswerKeyInternalNatAnswer)
-            .values()
+          correctAnswer = Array.from(
+            (questionData.answer as GenerateAnswerKeyInternalNatAnswer).values(),
+          )
             .filter((item) => {
               if (item.isRange) {
                 return Boolean(item.min.trim() && item.max.trim())
@@ -863,8 +864,7 @@ function generateAnswerKey() {
               }
               return item.value.trim()
             })
-
-          correctAnswer = Array.from(correctAnswerIterObj).join(',')
+            .join(',')
         }
         else if (type === 'mcq' || type === 'msq') {
           correctAnswer = Array.from((questionData.answer as Set<number>).values())
