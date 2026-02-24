@@ -1145,7 +1145,7 @@
             <a
               href="https://github.com/TheMoonVyy/pdf2cbt/blob/main/apps/shared/app/assets/zip/demo_test_data_pre_generated.zip"
               target="_blank"
-              class="text-blue-400 underline"
+              class="text-blue-400 underline wrap-anywhere"
             >
               https://github.com/TheMoonVyy/pdf2cbt/blob/main/apps/shared/app/assets/zip/demo_test_data_pre_generated.zip
             </a>
