@@ -13,8 +13,8 @@ importers:
   apps/web:
     dependencies:
       '@mdit/plugin-img-size':
-        specifier: 0.22.5
-        version: 0.22.5(markdown-it@14.1.1)
+        specifier: 0.23.0
+        version: 0.23.0(markdown-it@14.1.1)
       '@mdit/plugin-tasklist':
         specifier: 0.23.0
         version: 0.23.0(markdown-it@14.1.1)
@@ -753,9 +753,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@mdit/plugin-img-size@0.22.5':
-    resolution: {integrity: sha512-Yi4f8QJ1RwcKX6haOeCphSF7RmM5A6q8zN3uutzqu/CtmW5rOpkX0czC8kk/AO8QILrfo3lH8N9DRikRkcsyHw==}
-    engines: {node: '>= 18'}
+  '@mdit/plugin-img-size@0.23.0':
+    resolution: {integrity: sha512-QiQqLq/AEu3NibNmKhv1g026EOhBk+BSuHn4lvWyoYxRtDYKkMGMlt+w8SbHeV/D3mi5ORXOv3GYb/uke1V+5Q==}
+    engines: {node: '>= 20'}
     peerDependencies:
       markdown-it: ^14.1.0
     peerDependenciesMeta:
@@ -6837,7 +6837,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@mdit/plugin-img-size@0.22.5(markdown-it@14.1.1)':
+  '@mdit/plugin-img-size@0.23.0(markdown-it@14.1.1)':
     dependencies:
       '@types/markdown-it': 14.1.2
     optionalDependencies:

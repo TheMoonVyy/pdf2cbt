@@ -18,7 +18,7 @@
         "preview": "nuxt preview"
     },
     "dependencies": {
-        "@mdit/plugin-img-size": "0.22.5",
+        "@mdit/plugin-img-size": "0.23.0",
         "@mdit/plugin-tasklist": "0.23.0",
         "@nuxt/fonts": "0.14.0",
         "@nuxt/icon": "2.2.1",
