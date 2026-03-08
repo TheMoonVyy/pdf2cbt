@@ -13,8 +13,8 @@ importers:
   apps/web:
     dependencies:
       '@mdit/plugin-img-size':
-        specifier: 0.23.0
-        version: 0.23.0(markdown-it@14.1.1)
+        specifier: 0.23.1
+        version: 0.23.1(markdown-it@14.1.1)
       '@mdit/plugin-tasklist':
         specifier: 0.23.0
         version: 0.23.0(markdown-it@14.1.1)
@@ -745,8 +745,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@mdit/plugin-img-size@0.23.0':
-    resolution: {integrity: sha512-QiQqLq/AEu3NibNmKhv1g026EOhBk+BSuHn4lvWyoYxRtDYKkMGMlt+w8SbHeV/D3mi5ORXOv3GYb/uke1V+5Q==}
+  '@mdit/plugin-img-size@0.23.1':
+    resolution: {integrity: sha512-cpnXRpLWGBhBAxuIqq4YTeqcF5wLdmSFlKiEr4dBCKI/pj9Gsjd6WY40OzvpXyamSMoyAjYj4Fo+JO1ghwvarg==}
     engines: {node: '>= 20'}
     peerDependencies:
       markdown-it: ^14.1.0
@@ -777,8 +777,8 @@ packages:
     resolution: {integrity: sha512-5XUvZuffe3KetyhbWwd4n2ktd7wraocCYw10tlM+/u/95iAz29GjNiuNxbCD1T6Bn1MyGc4QLVNKOWhzJkVFAw==}
     engines: {node: ^14.16.0 || >=16.0.0}
 
-  '@netlify/open-api@2.49.2':
-    resolution: {integrity: sha512-0YqRW4Yn4XmZjljmuIMakwOS6ERtwpkMOz3F1j4QoFFdatZCiJ7PgkRzCGt61cR4iIBcA+mgIFmGSdjAqDjJxQ==}
+  '@netlify/open-api@2.50.0':
+    resolution: {integrity: sha512-nvtP3GQqAg2fDCzZIz/PNIjgdQcbKRqJlRRQquRfBTP3DJi4254fMApWvBoj6+v07eowy2/t9xXHu+KRPw6iKw==}
     engines: {node: '>=14.8.0'}
 
   '@netlify/runtime-utils@1.3.1':
@@ -6829,7 +6829,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@mdit/plugin-img-size@0.23.0(markdown-it@14.1.1)':
+  '@mdit/plugin-img-size@0.23.1(markdown-it@14.1.1)':
     dependencies:
       '@types/markdown-it': 14.1.2
     optionalDependencies:
@@ -6876,7 +6876,7 @@ snapshots:
       write-file-atomic: 6.0.0
     optional: true
 
-  '@netlify/open-api@2.49.2':
+  '@netlify/open-api@2.50.0':
     optional: true
 
   '@netlify/runtime-utils@1.3.1':
@@ -10816,7 +10816,7 @@ snapshots:
 
   netlify@13.3.5:
     dependencies:
-      '@netlify/open-api': 2.49.2
+      '@netlify/open-api': 2.50.0
       lodash-es: 4.17.23
       micro-api-client: 3.3.0
       node-fetch: 3.3.2
