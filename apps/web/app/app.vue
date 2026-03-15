@@ -35,7 +35,7 @@ import { PAGE_NAMES_MAP } from '#layers/shared/shared/constants'
 import { Toaster } from '#layers/shared/app/components/ui/sonner'
 
 if (import.meta.server) {
-  defineOgImageComponent('OgImage')
+  defineOgImage('Main')
 }
 
 const toastPosition = useToastPosition()
