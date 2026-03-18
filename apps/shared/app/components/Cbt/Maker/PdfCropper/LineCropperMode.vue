@@ -6,6 +6,10 @@ const emit = defineEmits<{
 }>()
 
 const currentCoords = defineModel<PdfCroppedOverlayCoords>({ required: true })
+const currentActiveLine = defineModel<keyof PdfCroppedOverlayCoords>(
+  'currentActiveLine',
+  { required: true },
+)
 
 const pdfPagesContainerDims = inject(pdfPagesContainerDimsKey)!
 const pageZoomScale = inject(pageZoomScaleKey)!
@@ -19,33 +23,30 @@ const magicKeys = useMagicKeys()
 const isHoldingCtrl = magicKeys['Ctrl']!
 const isHoldingShift = magicKeys['Shift']!
 
-const state = shallowReactive({
-  skipNextBottomLine: false,
-  activeLine: 'l' as keyof PdfCroppedOverlayCoords,
-})
+const isSkipNextBottomLine = shallowRef(false)
 
 const skipNextBottomLine = computed({
   get: () => {
-    return isHoldingShift.value || state.skipNextBottomLine
+    return isHoldingShift.value || isSkipNextBottomLine.value
   },
-  set: v => state.skipNextBottomLine = v,
+  set: v => isSkipNextBottomLine.value = v,
 })
 
 function undoLastLine() {
   const coords = currentCoords.value
-  switch (state.activeLine) {
+  switch (currentActiveLine.value) {
     case 'b':
-      state.activeLine = 't'
+      currentActiveLine.value = 't'
       coords.b = 0
       coords.t = 0
       break
     case 't':
-      state.activeLine = 'r'
+      currentActiveLine.value = 'r'
       coords.t = 0
       coords.r = 0
       break
     case 'r':
-      state.activeLine = 'l'
+      currentActiveLine.value = 'l'
       coords.r = 0
       coords.l = 0
       break
@@ -60,7 +61,7 @@ function onPointerMove(e: PointerEvent) {
   const xRel = e.clientX - rect.left
   const yRel = e.clientY - rect.top
 
-  const line = state.activeLine
+  const line = currentActiveLine.value
   const coords = currentCoords.value
   const scale = pageZoomScale.value
 
@@ -83,16 +84,15 @@ const throttledOnPointerMove = useThrottleFn(
 )
 
 function setLineCropperCoord() {
-  const line = state.activeLine
-  switch (line) {
+  switch (currentActiveLine.value) {
     case 'l':
-      state.activeLine = 'r'
+      currentActiveLine.value = 'r'
       break
     case 'r':
-      state.activeLine = 't'
+      currentActiveLine.value = 't'
       break
     case 't':
-      state.activeLine = 'b'
+      currentActiveLine.value = 'b'
       break
     case 'b': {
       const coords = currentCoords.value
@@ -140,7 +140,7 @@ const onKeyDown = (e: KeyboardEvent) => {
     return
   }
 
-  const line = state.activeLine
+  const line = currentActiveLine.value
 
   let moveAmount = settings.value.general.moveOnKeyPressDistance
 
@@ -225,7 +225,7 @@ function onOpenContextMenu(e: PointerEvent) {
       <line
         class="line-cropper"
         :class="{
-          selected: state.activeLine !== 'l',
+          selected: currentActiveLine !== 'l',
         }"
         :x1="currentCoords.l"
         :x2="currentCoords.l"
@@ -234,10 +234,10 @@ function onOpenContextMenu(e: PointerEvent) {
       />
       <!-- Right Line -->
       <line
-        v-if="state.activeLine !== 'l'"
+        v-if="currentActiveLine !== 'l'"
         class="line-cropper"
         :class="{
-          selected: state.activeLine === 't' || state.activeLine === 'b',
+          selected: currentActiveLine === 't' || currentActiveLine === 'b',
         }"
         :x1="currentCoords.r"
         :x2="currentCoords.r"
@@ -246,10 +246,10 @@ function onOpenContextMenu(e: PointerEvent) {
       />
       <!-- Top Line -->
       <line
-        v-if="state.activeLine === 't' || state.activeLine === 'b'"
+        v-if="currentActiveLine === 't' || currentActiveLine === 'b'"
         class="line-cropper"
         :class="{
-          selected: state.activeLine === 'b',
+          selected: currentActiveLine === 'b',
         }"
         x1="0"
         :x2="pdfPagesContainerDims.w"
@@ -258,7 +258,7 @@ function onOpenContextMenu(e: PointerEvent) {
       />
       <!-- Bottom Line -->
       <line
-        v-if="state.activeLine === 'b'"
+        v-if="currentActiveLine === 'b'"
         class="line-cropper"
         :class="{
           skip: skipNextBottomLine,
@@ -286,7 +286,7 @@ function onOpenContextMenu(e: PointerEvent) {
       <UiContextMenuSeparator />
       <UiContextMenuItem
         inset
-        :disabled="state.activeLine === 'l'"
+        :disabled="currentActiveLine === 'l'"
         @click="undoLastLine"
       >
         Undo Last Line
@@ -295,7 +295,7 @@ function onOpenContextMenu(e: PointerEvent) {
       <UiContextMenuCheckboxItem
         v-model="skipNextBottomLine"
         inset
-        :disabled="state.activeLine !== 'b'"
+        :disabled="currentActiveLine !== 'b'"
       >
         Skip Next Bottom Line
         <UiContextMenuShortcut>Shift</UiContextMenuShortcut>

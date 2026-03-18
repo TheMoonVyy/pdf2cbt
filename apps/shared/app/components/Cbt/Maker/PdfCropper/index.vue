@@ -76,6 +76,18 @@ const patternModeState = shallowReactive({
   showEditConfigPanel: false,
 })
 
+const currentLineModeActiveLine = shallowRef<keyof PdfCroppedOverlayCoords>('l')
+
+watch(
+  () => settings.value.general.cropperMode,
+  (newMode) => {
+    if (newMode === 'line') {
+      currentLineModeActiveLine.value = 'l'
+    }
+  },
+  { flush: 'pre' },
+)
+
 const isPdfNotLoaded = computed(() => !pdfLoadingState.value.isLoaded)
 
 const pdfPagesContainerScaledDims = computed(() => {
@@ -773,6 +785,7 @@ provide(cropperModeKey, cropperMode)
             <CbtMakerPdfCropperLineCropperMode
               v-if="cropperMode.isLine"
               v-model="mainOverlayData.coords"
+              v-model:current-active-line="currentLineModeActiveLine"
               @set-cropped-rect="storeCurrentQuestionData"
             />
             <CbtMakerPdfCropperBoxCropperMode
