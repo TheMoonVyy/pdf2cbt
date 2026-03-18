@@ -26,7 +26,7 @@ const pagesImgData = inject(pagesImgDataKey)!
 const croppedOverlaysContainerElem = shallowRef<SVGElement | HTMLElement | null>(null)
 
 const emit = defineEmits<{
-  setCroppedRect: [data: PdfCroppedOverlayCoords]
+  setCroppedRect: [data: PdfCroppedOverlayCoords, incrementQNum: false]
 }>()
 
 const settings = usePdfCropperLocalStorageSettings()
@@ -165,7 +165,7 @@ const copyRegion = () => {
 
 const pasteRegion = () => {
   if (!contextMenuState.copiedCoords) return
-  emit('setCroppedRect', { ...contextMenuState.copiedCoords })
+  emit('setCroppedRect', { ...contextMenuState.copiedCoords }, false)
   contextMenuState.copiedCoords = null
 }
 
