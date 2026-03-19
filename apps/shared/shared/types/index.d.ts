@@ -1,4 +1,4 @@
-import type { ClassValue } from 'clsx'
+import type { ClassValue } from 'vue'
 import type {
   QUESTION_TYPES_IN_WORDS,
   SectionInstructionTypes,

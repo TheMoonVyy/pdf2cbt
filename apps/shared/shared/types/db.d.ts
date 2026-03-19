@@ -64,9 +64,8 @@ export interface IPdf2CbtDB {
     ]>
   ): Promise<TestResultOverviewDB[]>
   getTestResultOverviews(
-    sortBy: TestResultOverviewsDBSortByOption,
-    limit?: number | null
-  ): Promise<TestResultOverviewDB[]>
+    sortBy: TestResultOverviewsDBSortBy,
+  ): Promise<TestResultOverviewDB[] | { sorted: TestResultOverviewDB[], unsorted: TestResultOverviewDB[] }>
   addTestOutputData(testOutputData: TestInterfaceOrResultJsonOutput): Promise<number>
   bulkAddTestOutputData(testOutputDatas: TestInterfaceOrResultJsonOutput[]): Promise<number[]>
   replaceTestResultOverview(data: TestResultOverviewDB): Promise<number>

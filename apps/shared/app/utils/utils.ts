@@ -46,17 +46,16 @@ export function utilCloneJson<T>(data: T, returnString: boolean = false): T | st
   return returnString ? dataString : JSON.parse(dataString)
 }
 
-export const utilGetTestResultOverview = (
-  testOutputData: Omit<TestInterfaceAndResultCommonJsonOutputData, 'testResultData'>,
+export const utilGetTestResultOverviewWithoutOverviewData = (
+  testOutputData: TestInterfaceOrResultJsonOutput,
   fresh: boolean = false,
-): TestResultOverview => {
-  // first try to obtain testOutputData.testResultOverview, if it is invalid then create fresh one
+): Omit<TestResultOverview, 'overview'> => {
   if (!fresh) {
     const {
       testName,
       testStartTime,
       testEndTime,
-      overview,
+      testDuration,
     } = testOutputData.testResultOverview ?? {}
 
     if (testName && testStartTime && testEndTime) {
@@ -64,12 +63,13 @@ export const utilGetTestResultOverview = (
         testName,
         testStartTime,
         testEndTime,
-        overview: overview ?? {},
+        testDuration: testDuration ?? testOutputData.testConfig.testDurationInSeconds,
       }
     }
   }
 
-  const testName = testOutputData?.testConfig?.testName
+  const testName = testOutputData.testConfig.testName
+  const testDuration = testOutputData.testConfig.testDurationInSeconds
 
   if (!testName) {
     throw utilCreateError('MissingTestNameError', 'Missing Test Name')
@@ -87,8 +87,34 @@ export const utilGetTestResultOverview = (
     testName,
     testStartTime,
     testEndTime,
-    overview: {},
+    testDuration,
   }
+}
+
+export const utilGetTestResultOverview = (
+  testOutputData: TestInterfaceOrResultJsonOutput,
+  fresh: boolean = false,
+): TestResultOverview => {
+  const data = utilGetTestResultOverviewWithoutOverviewData(testOutputData, fresh)
+
+  if (!fresh) {
+    const { overview } = testOutputData.testResultOverview ?? {}
+
+    if (overview && Object.keys(overview).length) {
+      return {
+        ...data,
+        overview,
+      } satisfies TestResultOverview
+    }
+  }
+
+  return {
+    ...data,
+    overview: utilGenerateOverviewForTestResultOverview(
+      testOutputData,
+      'testResultData' in testOutputData,
+    ),
+  } satisfies TestResultOverview
 }
 
 export const utilIsPdfFile = (file: File): Promise<0 | 1 | 2> => {

@@ -31,10 +31,19 @@ export default () => {
           drawerWidth: RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE,
           imgPanelDir: 'left',
         },
+        myTests: {
+          sortBy: {
+            type: 'added',
+            order: 'descending',
+            // qType is added even though type is 'added' so that selective merge can work properly
+            qType: 'all',
+          } as TestResultOverviewsDBSortBy,
+          showDetailedOverviewOnCard: false,
+        },
       },
       {
         mergeDefaults: (storageValue, defaults) => {
-          const result = utilSelectiveMergeObj(defaults, storageValue) as CbtResultsSettings
+          const result = utilSelectiveMergeObj(defaults, storageValue)
           // if drawerWidth in local storage is less then 80, then set to min size
           if (result.quePreview.drawerWidth < RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE)
             result.quePreview.drawerWidth = RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE

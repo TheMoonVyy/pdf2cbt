@@ -9,17 +9,13 @@
         <slot />
       </main>
       <div class="relative min-w-0 flex flex-row w-full">
-        <div
-          class="flex flex-col w-full grow overflow-auto h-screen"
-        >
+        <div class="flex flex-col w-full grow overflow-auto h-screen">
           <div
+            v-show="currentPanelName !== ResultsPagePanels.MyTests"
             class="py-4 px-2"
           >
             <!-- Title for Test Results PagePanel -->
-            <h1
-              v-show="currentPanelName !== ResultsPagePanels.MyTests"
-              class="text-xl text-center flex flex-col sm:flex-row justify-center items-center"
-            >
+            <h1 class="text-xl text-center flex flex-col sm:flex-row justify-center items-center">
               <span>Showing Results for&nbsp;</span>
               <ClientOnly>
                 <span class="font-bold">
@@ -27,35 +23,6 @@
                 </span>
               </ClientOnly>
             </h1>
-            <!-- Title for My Tests PagePanel -->
-            <div
-              v-show="currentPanelName === ResultsPagePanels.MyTests"
-              class="grid grid-cols-2 gap-4"
-            >
-              <h2 class="text-2xl w-full font-bold text-center mx-auto col-span-2 sm:col-span-1 sm:text-end">
-                My Tests
-              </h2>
-              <div class="flex flex-row gap-5 sm:gap-8 text-nowrap mx-auto sm:ml-auto sm:mr-8 col-span-2 sm:col-span-1">
-                <!-- Import Button -->
-                <BaseSimpleFileUpload
-                  class="col-span-2 sm:col-span-1 flex flex-col"
-                  accept="application/json,.json"
-                  :label="screenWidth.isSmOrAbove ? 'Import Test Data' : 'Import Data'"
-                  invalid-file-type-message="Please select a valid JSON file containing Test Data."
-                  :icon-name="isLoading ? 'line-md:loading-twotone-loop' : 'prime:download'"
-                  @upload="(file) => showImportExportDialog('Import', file)"
-                />
-                <!-- Export Button -->
-                <BaseButton
-                  class="col-span-2 sm:col-span-1"
-                  :label="screenWidth.isSmOrAbove ? 'Export Test Data' : 'Export Data'"
-                  variant="help"
-                  icon-name="prime:upload"
-                  :disabled="disableExportDataBtn"
-                  @click="() => showImportExportDialog('Export')"
-                />
-              </div>
-            </div>
           </div>
           <ClientOnly>
             <div
@@ -96,13 +63,6 @@
         </div>
       </div>
     </UiSidebarProvider>
-    <CbtResultsImportExportDialog
-      v-if="importExportDialogState.isVisible && importExportDialogState.data"
-      v-model="importExportDialogState.isVisible"
-      :type="importExportDialogState.type"
-      :data="importExportDialogState.data"
-      @processed="processImportExport"
-    />
     <CbtResultsAnswerKeyDialog
       v-if="showAnswerKeyMissingDialog && testOutputData?.testResultOverview"
       v-model="showAnswerKeyMissingDialog"
@@ -118,7 +78,6 @@ import type {
   LineSeriesOption,
   PieSeriesOption,
 } from 'echarts/types/dist/shared'
-import { MIME_TYPE } from '#layers/shared/shared/constants'
 import { ResultsPagePanels } from '#layers/shared/shared/enums'
 
 interface ChartDataState {
@@ -170,11 +129,6 @@ const chartColors: {
   },
 }
 
-const screenBreakpoints = useBreakpoints(
-  { sm: 640 },
-  { ssrWidth: 1024 },
-)
-
 const db = useDB()
 
 const appVersion = useRuntimeConfig().public.projectVersion
@@ -185,24 +139,8 @@ const currentResultsID = useCbtResultsCurrentID()
 
 const currentPanelName = shallowRef<ResultsPagePanels>(ResultsPagePanels.Summary)
 
-const screenWidth = reactive({
-  isSmOrAbove: screenBreakpoints.greaterOrEqual('sm'),
-})
-
 const showAnswerKeyMissingDialog = shallowRef(false)
 
-const importExportDialogState = shallowReactive<{
-  isVisible: boolean
-  type: 'Import' | 'Export'
-  data: TestInterfaceOrResultJsonOutput[] | null
-}>({
-  isVisible: false,
-  type: 'Import',
-  data: null,
-})
-
-// This holds the loading state of the file upload process.
-const isLoading = shallowRef(false)
 // toggle for v-if of CbtResultsChartsPanel component
 const showChart = shallowRef(false)
 
@@ -768,10 +706,6 @@ function generateTestResults(
 
   if (!testConfig || !testData || !testSummary || !testLogs) return false
 
-  if (!testDataToUse.testResultOverview) {
-    testDataToUse.testResultOverview = utilGetTestResultOverview(testDataToUse)
-  }
-
   testConfig.additionalData ??= {}
 
   if (!testAnswerKey) {
@@ -781,13 +715,6 @@ function generateTestResults(
   else {
     try {
       const testResultData: TestResultData = {}
-
-      let marksObtained = 0
-      let maxMarks = 0
-      let totalCorrect = 0
-      let totalAnswered = 0
-      let totalQuestions = 0
-      let questionsAttempted = 0
 
       for (const [subject, subjectData] of Object.entries(testData)) {
         testResultData[subject] = {}
@@ -848,41 +775,10 @@ function generateTestResults(
               q.marks.max = 0
             }
           }
-
-          for (const question of sectionQuestions) {
-            if (question.result.status === 'notConsidered')
-              continue
-
-            maxMarks += question.marks.max ?? question.marks.cm
-            marksObtained += question.result.marks
-            if (question.status === 'answered'
-              || question.status === 'markedAnswered')
-              questionsAttempted++
-
-            switch (question.result.status) {
-              case 'correct':
-              case 'partial':
-                totalCorrect += question.result.accuracyNumerator
-                totalAnswered++
-                break
-              case 'incorrect':
-                totalAnswered++
-            }
-            totalQuestions++
-          }
         }
       }
 
       const testResultOverview = testDataToUse.testResultOverview
-      testResultOverview.overview = {
-        maxMarks,
-        marksObtained,
-        timeSpent: Math.abs(getTestStartedCountdownTime(testLogs) - getTestFinishedCountdownTime(testLogs)),
-        testDuration: testDataToUse.testConfig.testDurationInSeconds,
-        totalQuestions,
-        questionsAttempted,
-        accuracy: Math.round((totalCorrect / (totalAnswered || 1)) * 10000) / 100,
-      }
 
       const resultsOutputData: TestResultJsonOutput = {
         testConfig,
@@ -893,6 +789,7 @@ function generateTestResults(
         appVersion,
         generatedBy: 'testResultsPage',
       }
+      testResultOverview.overview = utilGenerateOverviewForTestResultOverview(resultsOutputData, true)
 
       if (loadToTestResultsOutputData) {
         testResultJsonData.value = resultsOutputData
@@ -1025,9 +922,9 @@ async function loadAnswerKeyToTest(testAnswerKey: TestAnswerKeyData) {
 
   testOutputData.value = testData
 
-  const testResultOverview = utilCloneJson(utilGetTestResultOverview(testData))
-  testData.testResultOverview = testResultOverview
-  const testResultOverviewDB = await db.getTestResultOverviewByCompoundIndex(testResultOverview)
+  const testResultOverviewDB = await db.getTestResultOverviewByCompoundIndex(
+    utilGetTestResultOverviewWithoutOverviewData(testData),
+  )
 
   if (testResultOverviewDB && testResultOverviewDB.id) {
     const status = generateTestResults()
@@ -1046,131 +943,6 @@ async function loadAnswerKeyToTest(testAnswerKey: TestAnswerKeyData) {
       loadDataToChartDataState(id)
     }
   }
-}
-
-async function showImportExportDialog(
-  type: 'Import' | 'Export',
-  importDataFile: File | null = null,
-) {
-  try {
-    if (type === 'Export') {
-      const data = await db.getTestResultOverviews('addedDescending')
-      if (Array.isArray(data) && data.length > 0) {
-        const testResultOverviews: Partial<TestInterfaceOrResultJsonOutput>[] = []
-        data.forEach(data => testResultOverviews.push({ testResultOverview: data }))
-
-        importExportDialogState.type = type
-        importExportDialogState.data = testResultOverviews as TestInterfaceOrResultJsonOutput[]
-        importExportDialogState.isVisible = true
-      }
-    }
-    else if (importDataFile && type === 'Import') {
-      importExportDialogState.data = null
-
-      const importedData = await utilParseJsonFile(importDataFile)
-      if (Array.isArray(importedData.testOutputDatas)) {
-        const testOutputDatas = importedData.testOutputDatas
-          .map((data: unknown) => migrateJsonData.testInterfaceOrResultData(data))
-
-        importExportDialogState.data = testOutputDatas
-      }
-      else if (importedData.testConfig
-        && (importedData.testData || importedData.testResultData)
-        && importedData.testSummary
-        && importedData.testLogs
-      ) {
-        importExportDialogState.data = [migrateJsonData.testInterfaceOrResultData(importedData)]
-      }
-
-      if (importExportDialogState.data !== null) {
-        importExportDialogState.type = type
-        importExportDialogState.isVisible = true
-      }
-    }
-  }
-  catch (err) {
-    useErrorToast(`Error while ${type}ing Test Data`, err)
-  }
-}
-
-async function processImportExport(
-  type: 'Import' | 'Export',
-  data: (TestInterfaceOrResultJsonOutput)[],
-) {
-  if (type === 'Import') {
-    try {
-      if (data.length > 0) {
-        const queryList: [string, number, number][] = []
-        for (const dataItem of data) {
-          const {
-            testName,
-            testStartTime,
-            testEndTime,
-          } = utilGetTestResultOverview(dataItem)
-
-          queryList.push([testName, testStartTime, testEndTime])
-        }
-        const duplicateDatas = await db.getTestResultOverviewsByCompoundIndexes(queryList)
-
-        if (duplicateDatas.length > 0) {
-          useErrorToast('Error: Importing duplicate test data is disallowed, a better way to handle this will be available soon')
-        }
-        else if (queryList.length > 0) {
-          await db.bulkAddTestOutputData(utilCloneJson(data))
-        }
-      }
-    }
-    catch (err) {
-      useErrorToast('Error while trying to save Imported Test Data to DB:', err)
-    }
-  }
-  else {
-    try {
-      const ids: number[] = []
-      for (const outputData of data) {
-        const id = (outputData.testResultOverview as TestResultOverviewDB).id
-        if (id) ids.push(id)
-      }
-
-      const testOutputDataDBList = await db.getTestOutputDatas(ids)
-      const testNotesDBList = await db.bulkGetTestNotes(ids)
-
-      if (!testOutputDataDBList || !testNotesDBList) {
-        throw new Error('Error: testOutputDataDBList or testNotesDBList is undefined')
-      }
-
-      const testNotesObject: Record<Numberish, TestNotes> = {}
-      for (const notesItem of testNotesDBList) {
-        const { id, notes } = notesItem ?? {}
-        if (id && notes) {
-          testNotesObject[id] = notes
-        }
-      }
-
-      const testOutputDatas: TestInterfaceOrResultJsonOutput[] = []
-
-      for (const outputData of testOutputDataDBList) {
-        const { id, testOutputData } = outputData ?? {}
-        if (testOutputData) {
-          if (id && testNotesObject[id]) {
-            testOutputData.testNotes = testNotesObject[id]
-          }
-          testOutputDatas.push(testOutputData)
-        }
-      }
-
-      if (testOutputDatas.length > 0) {
-        const outputBlob = new Blob([JSON.stringify({ testOutputDatas })], { type: MIME_TYPE.json })
-        utilSaveFile('pdf2cbt_test_results.json', outputBlob)
-      }
-    }
-    catch (err) {
-      useErrorToast(`Error ${type}ing Test Data(s)`, err)
-    }
-  }
-
-  importExportDialogState.isVisible = false
-  importExportDialogState.data = null
 }
 
 const renameCurrentTest = (newName: string) => {

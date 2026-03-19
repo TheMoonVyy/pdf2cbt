@@ -148,7 +148,7 @@
           <CbtResultsOverviewCard
             :test-result-overview="testResultOverview"
             read-only
-            class="w-[80dvh] max-w-3xs sm:w-3xs xl:w-60 cursor-pointer select-none"
+            class="cursor-pointer select-none"
             :selected="dbTestOutputDataState.selectedTestResultOverviewIndex === index"
             @click="() => dbTestOutputDataState.selectedTestResultOverviewIndex = index"
           />
@@ -585,10 +585,15 @@ function parseNatAnswerText(answerText: string) {
 
 async function checkForTestOutputDataInDB() {
   try {
-    const testResultOverviews = await db.getTestResultOverviews('addedDescending', 10)
+    const testResultOverviews = await db.testResultOverviews
+      .orderBy('id')
+      .reverse()
+      .limit(20)
+      .toArray()
+
     const overviewsList: TestResultOverviewDB[] = []
     for (const data of testResultOverviews) {
-      if (typeof data?.overview?.marksObtained !== 'number') {
+      if (typeof data?.overview?.accuracy?.all !== 'number') {
         overviewsList.push(data)
       }
     }

@@ -1,5 +1,5 @@
 import Dexie from 'dexie'
-import type { Collection, EntityTable, InsertType } from 'dexie'
+import type { EntityTable } from 'dexie'
 import type {
   CbtUiSettings,
   TestSectionListItem,
@@ -11,8 +11,8 @@ import type {
 
 import type {
   TestResultOverviewDB,
-  TestResultOverviewsDBSortByOption,
   TestNotes,
+  TestResultOverviewsDBSortBy,
 } from '#layers/shared/shared/types/cbt-results'
 import type {
   PatternModeUserConfig,
@@ -151,6 +151,26 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
             data.testOutputData = migrateJsonData.testInterfaceData(data.testOutputData)
           }
         })
+    })
+
+    this.version(8).stores(dbScheme).upgrade(async (tx) => {
+      const testOutputDatasTable = tx.table('testOutputDatas')
+      const testResultOverviews = tx.table('testResultOverviews')
+      await testResultOverviews.clear()
+
+      const newTestResultOverviews: TestResultOverviewDB[] = []
+      await testOutputDatasTable
+        .toCollection()
+        .modify((data: TestOutputDataDB) => {
+          data.testOutputData.testResultOverview = utilGetTestResultOverview(
+            data.testOutputData,
+            true,
+          )
+
+          newTestResultOverviews.push({ ...data.testOutputData.testResultOverview, id: data.id })
+        })
+
+      await testResultOverviews.bulkPut(newTestResultOverviews)
     })
   }
 
@@ -338,7 +358,9 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
     return this.testResultOverviews.orderBy('id').last()
   }
 
-  async getTestResultOverviewByCompoundIndex(data: TestResultOverview) {
+  async getTestResultOverviewByCompoundIndex(
+    data: Pick<TestResultOverview, 'testName' | 'testStartTime' | 'testEndTime'>,
+  ) {
     const { testName, testStartTime, testEndTime } = data
 
     return this.testResultOverviews
@@ -361,39 +383,71 @@ export class Pdf2CbtDB extends Dexie implements IPdf2CbtDB {
   }
 
   async getTestResultOverviews(
-    sortBy: TestResultOverviewsDBSortByOption,
-    limit: number | null = null,
-  ) {
-    let collection: Collection<TestResultOverviewDB, number, InsertType<TestResultOverviewDB, 'id'>>
-      | null = null
-
-    switch (sortBy) {
-      case 'addedAscending':
-        collection = this.testResultOverviews.orderBy('id')
-        break
-      case 'addedDescending':
-        collection = this.testResultOverviews.orderBy('id').reverse()
-        break
-      case 'startTimeAscending':
-        collection = this.testResultOverviews.orderBy('testStartTime')
-        break
-      case 'startTimeDescending':
-        collection = this.testResultOverviews.orderBy('testStartTime').reverse()
-        break
-      case 'endTimeAscending':
-        collection = this.testResultOverviews.orderBy('testEndTime')
-        break
-      case 'endTimeDescending':
-        collection = this.testResultOverviews.orderBy('testEndTime').reverse()
-        break
+    sortBy: Omit<TestResultOverviewsDBSortBy, 'order'>,
+  ): Promise<
+    TestResultOverviewDB[]
+    | {
+      // sorted based on sortBy
+      sorted: TestResultOverviewDB[]
+      // for tests without sortMetaData for the sortBy type,
+      // return sorted by id instead of sortBy type
+      unsorted: TestResultOverviewDB[]
+    }
+  > {
+    if (sortBy.type === 'added') {
+      return this.testResultOverviews.orderBy('id').toArray()
     }
 
-    if (!collection) return []
+    if (sortBy.type === 'startTime') {
+      return this.testResultOverviews.orderBy('testStartTime').toArray()
+    }
 
-    if (limit && limit > 0)
-      collection = collection.limit(limit)
+    if (sortBy.type === 'endTime') {
+      return this.testResultOverviews.orderBy('testEndTime').toArray()
+    }
 
-    return collection.toArray()
+    if (sortBy.type === 'testName') {
+      return this.testResultOverviews.orderBy('testName').toArray()
+    }
+
+    if (!('qType' in sortBy) || !sortBy.qType) {
+      // this case should ideally not come
+      // as remaining sort types should have qType
+      // returning order by id as fallback
+      return this.testResultOverviews.orderBy('id').toArray()
+    }
+
+    // For the rest of the sortBy types,
+    // we need to sort manually as they are not indexed in db
+    const allOverviews = await this.testResultOverviews.orderBy('id').toArray()
+
+    const overviewsWithSortMetaData: TestResultOverviewDB[] = []
+    const overviewsWithoutSortMetaData: TestResultOverviewDB[] = []
+
+    const { type, qType } = sortBy
+    for (const overviewDbData of allOverviews) {
+      const sortMetaData = overviewDbData.overview?.[type]?.[qType]
+      if (sortMetaData !== undefined) {
+        overviewsWithSortMetaData.push(overviewDbData)
+      }
+      else {
+        overviewsWithoutSortMetaData.push(overviewDbData)
+      }
+    }
+
+    overviewsWithSortMetaData.sort((a, b) => {
+      const aData = a.overview?.[type]?.[qType] ?? 0
+      const bData = b.overview?.[type]?.[qType] ?? 0
+
+      if (aData < bData) return -1
+      if (aData > bData) return 1
+      return 0
+    })
+
+    return {
+      sorted: overviewsWithSortMetaData,
+      unsorted: overviewsWithoutSortMetaData,
+    }
   }
 
   async addTestOutputData(testOutputData: TestInterfaceOrResultJsonOutput) {

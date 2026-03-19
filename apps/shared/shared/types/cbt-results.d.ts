@@ -1,4 +1,8 @@
-import type { FONT_SIZES } from '#layers/shared/shared/constants'
+import type {
+  FONT_SIZES,
+  OVERVIEW_PRE_RESULT_GENERATION_KEYS,
+  OVERVIEW_POST_RESULT_GENERATION_KEYS,
+} from '#layers/shared/shared/constants'
 
 export type StatsItem = {
   count: number
@@ -86,6 +90,10 @@ export type CbtResultsSettings = {
     drawerWidth: number
     imgPanelDir: 'left' | 'right'
   }
+  myTests: {
+    sortBy: TestResultOverviewsDBSortBy
+    showDetailedOverviewOnCard: boolean
+  }
 }
 
 export type ValidQuestionResultStatus = 'correct' | 'incorrect' | 'partial' | 'dropped' | 'bonus' | 'notAnswered'
@@ -116,37 +124,47 @@ export type TestResultData = {
   [subject: string]: TestResultSubjectData
 }
 
+export type OverviewPreResultGenerationData = Record<
+  (typeof OVERVIEW_PRE_RESULT_GENERATION_KEYS)[number],
+  Record<QuestionType | 'all', number>
+>
+
+export type OverviewPostResultGenerationData = Record<
+  (typeof OVERVIEW_POST_RESULT_GENERATION_KEYS)[number],
+  Record<QuestionType | 'all', number>
+>
+
 export type TestResultOverview = {
   testName: string
   testStartTime: number // of Date.now()
   testEndTime: number // of Date.now()
-  overview: {
-    marksObtained?: number
-    maxMarks?: number
-    accuracy?: number // in %
-    timeSpent?: number // seconds
-    testDuration?: number // seconds
-    questionsAttempted?: number
-    totalQuestions?: number
-  }
+  testDuration: number // seconds
+  overview: OverviewPreResultGenerationData & Partial<OverviewPostResultGenerationData>
 }
 
 export type TestResultOverviewDB = TestResultOverview & {
   id: number // this will be the id of testOutputData as a binding link between both
 }
 
-export type TestResultOverviewsDBSortByOption = 'addedAscending'
-  | 'addedDescending'
-  | 'startTimeAscending'
-  | 'startTimeDescending'
-  | 'endTimeAscending'
-  | 'endTimeDescending'
+export type TestResultOverviewsDBSortByWithQType = {
+  type: keyof Required<TestResultOverview['overview']>
+  qType: QuestionType | 'all'
+}
+
+export type TestResultOverviewsDBSortByWithoutQType = {
+  type: 'added' | 'startTime' | 'endTime' | 'testName'
+  qType?: 'all'
+}
+
+export type TestResultOverviewsDBSortBy = (
+  TestResultOverviewsDBSortByWithQType | TestResultOverviewsDBSortByWithoutQType
+) & { order: 'ascending' | 'descending' }
 
 export type TestNotes = {
   [queId: Numberish]: string
 }
 
-export type ScoreCardData = Required<Omit<TestResultOverview['overview'], 'accuracy' | 'testDuration'>> & {
+export type ScoreCardData = {
   title: string
   marks: {
     correct: number
@@ -159,5 +177,14 @@ export type ScoreCardData = Required<Omit<TestResultOverview['overview'], 'accur
     count: number
     denominator: number
   }
+  marksObtained: number
+  maxMarks: number
+  timeSpent: number
+  questionsAttempted: number
+  totalQuestions: number
   testDuration?: number
+}
+
+export type ExportedCbtResultsJsonData = {
+  testOutputDatas: TestInterfaceOrResultJsonOutput[]
 }
