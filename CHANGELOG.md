@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.1.0...v2.2.0) (2026-03-20)
+
+
+### Features
+
+* **cbt-results:** implement pagination, detailed test cards, and sorting in my tests section ([#278](https://github.com/TheMoonVyy/pdf2cbt/issues/278)) ([0c873c8](https://github.com/TheMoonVyy/pdf2cbt/commit/0c873c8d73c374220ec8b87fcf14aee8b589fa21))
+* **cbt-results:** show max marks and enable keyboard arrow key navigation to questions for question panel ([c172f30](https://github.com/TheMoonVyy/pdf2cbt/commit/c172f30a4adab1843ab0990d6484263aed10883e))
+
+
+### Bug Fixes
+
+* **test-maker:** persist active line of line cropper mode when switching between crop and edit modes ([4586f4a](https://github.com/TheMoonVyy/pdf2cbt/commit/4586f4a5c3da5690e3a181eef9fde555d6eaeba0))
+* **test-maker:** prevent question number increment on paste in edit mode ([e3430b5](https://github.com/TheMoonVyy/pdf2cbt/commit/e3430b58edbfdec97285227051bcd6a70febeec3))
+
 ## [2.1.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.0.2...v2.1.0) (2026-02-19)
 
 
