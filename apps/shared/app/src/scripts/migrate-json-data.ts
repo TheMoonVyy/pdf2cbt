@@ -1,5 +1,3 @@
-import utilSelectiveMergeObj from '#layers/shared/app/utils/utilSelectiveMergeObj'
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 type OldAnswerKeyJsonOutput = Omit<AnswerKeyJsonOutput, 'testAnswerKey'> & {
@@ -171,8 +169,8 @@ export class MigrateJsonData {
         testName: '',
         testStartTime: 0,
         testEndTime: 0,
-        overview: {},
-      },
+        testDuration: 0,
+      } as TestResultOverview,
       testAnswerKey: {},
       generatedBy: 'testInterfacePage',
       appVersion: this.currentAppVersion,
@@ -204,11 +202,8 @@ export class MigrateJsonData {
       if ('testResultOverview' in data && Object.keys(data.testResultOverview).length > 0) {
         output.testResultOverview = data.testResultOverview || {}
       }
-      output.testResultOverview = utilGetTestResultOverview(output)
+      output.testResultOverview = utilGetTestResultOverview(output, true)
 
-      if ('testAnswerKey' in data) {
-        output.testAnswerKey = data.testAnswerKey
-      }
       if (data.testConfig?.optionalQuestions?.length) {
         this.migrateOptionalQuestionsData(
           data.testConfig.optionalQuestions,
@@ -229,6 +224,10 @@ export class MigrateJsonData {
         if ('optionalQuestions' in output.testConfig) {
           delete output.testConfig.optionalQuestions
         }
+      }
+
+      if (utilCompareVersion(data.appVersion || '', '<', '2.2.0')) {
+        output.testResultOverview = utilGetTestResultOverview(output, true)
       }
     }
 
@@ -253,8 +252,8 @@ export class MigrateJsonData {
         testName: '',
         testStartTime: 0,
         testEndTime: 0,
-        overview: {},
-      },
+        testDuration: 0,
+      } as TestResultOverview,
       generatedBy: 'testResultsPage',
       appVersion: this.currentAppVersion,
     }
@@ -280,7 +279,7 @@ export class MigrateJsonData {
       if ('testResultOverview' in data && Object.keys(data.testResultOverview).length > 0) {
         output.testResultOverview = data.testResultOverview || {}
       }
-      output.testResultOverview = utilGetTestResultOverview(output)
+      output.testResultOverview = utilGetTestResultOverview(output, true)
 
       if (data.testConfig?.optionalQuestions?.length) {
         this.migrateOptionalQuestionsData(
@@ -302,6 +301,10 @@ export class MigrateJsonData {
         if ('optionalQuestions' in output.testConfig) {
           delete output.testConfig.optionalQuestions
         }
+      }
+
+      if (utilCompareVersion(data.appVersion || '', '<', '2.2.0')) {
+        output.testResultOverview = utilGetTestResultOverview(output, true)
       }
     }
 

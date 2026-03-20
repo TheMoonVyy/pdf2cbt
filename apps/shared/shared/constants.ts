@@ -354,3 +354,67 @@ export const SECTION_INSTRUCTIONS_MENU_MAP = {
 type InstTypesMap = typeof SECTION_INSTRUCTION_TYPES
 
 export type SectionInstructionTypes = InstTypesMap[keyof InstTypesMap]
+
+export const TEST_RESULT_OVERVIEW_KEYS = [
+  'marksObtained',
+  'marksPercent',
+  'maxMarks',
+  'accuracy',
+  'avgTimeSpent',
+  'totalTimeSpent',
+  'qAttempted',
+  'qAttemptedPercent',
+  'totalQuestions',
+  'correctQ',
+  'incorrectQ',
+] as const
+
+export const OVERVIEW_PRE_RESULT_GENERATION_KEYS = [
+  TEST_RESULT_OVERVIEW_KEYS[2],
+  TEST_RESULT_OVERVIEW_KEYS[4],
+  TEST_RESULT_OVERVIEW_KEYS[5],
+  TEST_RESULT_OVERVIEW_KEYS[6],
+  TEST_RESULT_OVERVIEW_KEYS[7],
+  TEST_RESULT_OVERVIEW_KEYS[8],
+] as const
+
+export const OVERVIEW_POST_RESULT_GENERATION_KEYS = [
+  TEST_RESULT_OVERVIEW_KEYS[0],
+  TEST_RESULT_OVERVIEW_KEYS[1],
+  TEST_RESULT_OVERVIEW_KEYS[3],
+  TEST_RESULT_OVERVIEW_KEYS[9],
+  TEST_RESULT_OVERVIEW_KEYS[10],
+] as const
+
+export const OVERVIEW_QTYPE_LABELS = {
+  all: 'All',
+  ...QUESTION_TYPES_LABELS,
+}
+
+export const OVERVIEW_LABELS: Record<keyof Required<TestResultOverview['overview']>, string> = {
+  maxMarks: 'Max Marks',
+  qAttempted: 'Number of Questions Attempted',
+  totalQuestions: 'Number of Questions',
+  qAttemptedPercent: 'Percent of Questions Attempted',
+  avgTimeSpent: 'Avg Time Spent (mmm:ss) per Question',
+  totalTimeSpent: 'Total Time Spent (mmm:ss)',
+  marksObtained: 'Marks Obtained',
+  marksPercent: 'Percent of Marks Obtained',
+  correctQ: 'Number of Correct Questions',
+  incorrectQ: 'Number of Incorrect Questions',
+  accuracy: 'Accuracy',
+}
+
+export const OVERVIEW_SHORT_LABELS: typeof OVERVIEW_LABELS = {
+  maxMarks: 'Max Marks',
+  qAttempted: 'Qs Attempted',
+  totalQuestions: 'Total Qs',
+  qAttemptedPercent: 'Qs Attempted %',
+  avgTimeSpent: 'Avg Time/Q',
+  totalTimeSpent: 'Total Time',
+  marksObtained: 'Marks',
+  marksPercent: 'Marks %',
+  correctQ: 'Correct Qs',
+  incorrectQ: 'Incorrect Qs',
+  accuracy: 'Accuracy',
+}
