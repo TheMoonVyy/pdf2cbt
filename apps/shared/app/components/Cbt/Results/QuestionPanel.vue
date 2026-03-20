@@ -149,7 +149,11 @@
                     class="font-semibold"
                     :class="styleClasses.resultStatus[currentQuestionState.data.result.status]"
                   >
-                    {{ utilMarksWithSign(currentQuestionState.data.result.marks) }}
+                    {{
+                      utilMarksWithSign(currentQuestionState.data.result.marks)
+                    }}&nbsp;/&nbsp;{{
+                      currentQuestionState.data.marks.max ?? currentQuestionState.data.marks.cm
+                    }}
                   </span>
                 </div>
                 <div class="text-right">
@@ -377,7 +381,9 @@
                           utilStringifyAnswer(
                             currentQuestionState.data.result.status === 'correct'
                               ? currentQuestionState.data.result.correctAnswer
-                              : (n === 1 ? currentQuestionState.data.answer : currentQuestionState.data.result.correctAnswer),
+                              : (n === 1
+                                ? currentQuestionState.data.answer
+                                : currentQuestionState.data.result.correctAnswer),
                             currentQuestionState.data.type,
                           )
                         }}
@@ -428,8 +434,12 @@
           (the same one you had uploaded on test interface).
         </p>
         <p class="m-4 text-base">
-          Once loaded, question images will be in RAM and hence active as long as this website is opened.<br>
-          Refreshing the page, closing window, or changing to another test (via My Tests) will clear all imgs thus requiring you to upload the file again if you want to see the question preview.
+          Once loaded, question images will be in RAM and
+          hence active as long as this website is opened.<br>
+          Refreshing the page, closing window,
+          or changing to another test (via My Tests)
+          will clear all imgs thus requiring you to upload the file again
+          if you want to see the question preview.
         </p>
         <UiDialogFooter>
           <BaseSimpleFileUpload
@@ -515,6 +525,7 @@
 </template>
 
 <script lang="ts" setup>
+import { onKeyDown } from '@vueuse/core'
 import { strFromU8 } from 'fflate'
 import * as Comlink from 'comlink'
 import mupdfWorkerFile from '#layers/shared/app/src/worker/mupdf.worker?worker'
@@ -823,6 +834,23 @@ const navigateQuestion = (type: 'next' | 'prev') => {
   answersContainerScrollAreaElem.value?.scrollTopLeft()
 }
 
+onKeyDown(
+  'ArrowLeft',
+  () => {
+    if (drawerVisibility.value)
+      navigateQuestion('prev')
+  },
+  { dedupe: true },
+)
+
+onKeyDown(
+  'ArrowRight',
+  () => {
+    if (drawerVisibility.value)
+      navigateQuestion('next')
+  }, { dedupe: true },
+)
+
 const resizeDrawer = (resizeType: 'increase' | 'decrease') => {
   const currentSize = storageSettings.value.quePreview.drawerWidth
 
@@ -830,7 +858,10 @@ const resizeDrawer = (resizeType: 'increase' | 'decrease') => {
     storageSettings.value.quePreview.drawerWidth = Math.min(currentSize + 5, 100)
   }
   else if (resizeType === 'decrease' && currentSize > 0) {
-    storageSettings.value.quePreview.drawerWidth = Math.max(currentSize - 5, RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE)
+    storageSettings.value.quePreview.drawerWidth = Math.max(
+      currentSize - 5,
+      RESULTS_QUESTION_PANEL_DRAWER_MIN_SIZE,
+    )
   }
 }
 
