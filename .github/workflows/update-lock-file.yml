@@ -17,10 +17,8 @@ jobs:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install pnpm
-        run: |
-          corepack enable
-          corepack use pnpm@latest
+      - name: Enable corepack
+        run: corepack enable
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -29,7 +27,7 @@ jobs:
           cache: pnpm
 
       - name: Update lockfile
-        run: pnpm install --lockfile-only
+        run: pnpm install --lockfile-only --no-frozen-lockfile
 
       - name: Commit and push updated lockfile
         run: |
