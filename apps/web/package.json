@@ -82,7 +82,7 @@
         "@types/regexp.escape": "2.0.0",
         "@types/to-regex-range": "5.0.3",
         "eslint": "10.0.3",
-        "satori": "0.25.0",
+        "satori": "0.26.0",
         "zod": "4.3.6"
     }
 }
