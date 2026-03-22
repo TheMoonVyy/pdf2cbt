@@ -1,0 +1,44 @@
+name: Update pnpm lockfile
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-lockfile:
+    name: Update pnpm-lock.yaml
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Update lockfile
+        run: pnpm install --lockfile-only
+
+      - name: Commit and push updated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          if git diff --staged --quiet; then
+            echo "pnpm-lock.yaml is already up to date. Nothing to commit."
+          else
+            git commit -m "chore: update pnpm-lock.yaml"
+            git push origin main
+          fi
