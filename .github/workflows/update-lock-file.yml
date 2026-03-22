@@ -17,15 +17,15 @@ jobs:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack use pnpm@latest
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version-file: .nvmrc
+          node-version: ${{ vars.NODE_VERSION }}
           cache: pnpm
 
       - name: Update lockfile
