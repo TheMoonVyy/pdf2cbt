@@ -29,14 +29,24 @@ jobs:
       - name: Update lockfile
         run: pnpm install --lockfile-only --no-frozen-lockfile
 
-      - name: Commit and push updated lockfile
+      - name: Commit and open PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add pnpm-lock.yaml
           if git diff --staged --quiet; then
             echo "pnpm-lock.yaml is already up to date. Nothing to commit."
-          else
-            git commit -m "chore: update pnpm-lock.yaml"
-            git push origin main
+            exit 0
           fi
+          BRANCH="chore/update-pnpm-lockfile"
+          git checkout -b "$BRANCH"
+          git commit -m "chore: update pnpm-lock.yaml"
+          git push -f origin "$BRANCH"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore: update pnpm-lock.yaml" \
+            --body "Automated update of \`pnpm-lock.yaml\` triggered via workflow dispatch." \
+            || echo "PR already exists, skipping creation."
