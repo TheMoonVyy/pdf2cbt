@@ -10,19 +10,24 @@
           "properties": {
             "yCoordinateGroupingRangeForLine": {
               "type": "number",
-              "minimum": 0
+              "minimum": 0,
+              "title": "Y Coordinate Grouping Range for Line",
+              "description": "The range in points to group text elements into lines based on their Y coordinates.\nText elements that have Y coordinates within this range will be grouped into the same line.\nUse 8 if unsure, the right value is experimental and varies between PDFs."
             },
             "ignoreElementsGoingOutsidePage": {
-              "type": "boolean"
+              "type": "boolean",
+              "title": "Ignore Elements that are Going Outside the Page?",
+              "description": "When true, elements that are going outside the page boundaries will be ignored.\nThis is useful to avoid including elements that are going outside the page which typically are not question related elements."
             },
             "calculateCharacterBoundariesPrecisely": {
-              "type": "boolean"
+              "title": "Calculate Character Boundaries (bbox) Precisely?",
+              "description": "When true, the boundaries (bbox) of each character will be calculated based on how it visually appears.\nInterally, this uses mupdfjs's \"accurate-bbox\" of StructuredText.\nWhen false, the boundaries that are reported by the font spec will be used.",
+              "$ref": "#/$defs/__schema0"
             },
             "linesToIgnore": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/__schema0"
-              }
+              "title": "Lines to ignore",
+              "description": "The lines that should be ignored when the given pattern is detected.\nUseful to ignore lines that are not important and might be falsely detected as part of the question area.\n\nFor example, if there are headers, footers, watermarks, etc in the document and they are getting in the way of the question area, these can be ignored by providing patterns to detect them.",
+              "$ref": "#/$defs/__schema1"
             }
           },
           "required": [
@@ -43,13 +48,17 @@
                 "type": "object",
                 "properties": {
                   "start": {
-                    "$ref": "#/$defs/__schema1"
+                    "title": "Start Pattern and Area to search in for Subject",
+                    "description": "The pattern to identify the start of the subject and the area to search for it in.",
+                    "$ref": "#/$defs/__schema12"
                   },
                   "end": {
-                    "$ref": "#/$defs/__schema1"
+                    "title": "End Pattern and Area to search in for Subject (optional)",
+                    "description": "The pattern to identify the end of the subject and the area to search for it in.\nIf not specified, the subject is considered to have ended when next subject start pattern is found.",
+                    "$ref": "#/$defs/__schema12"
                   },
                   "columnDividers": {
-                    "$ref": "#/$defs/__schema6"
+                    "$ref": "#/$defs/__schema13"
                   },
                   "sections": {
                     "type": "object",
@@ -61,20 +70,21 @@
                       "type": "object",
                       "properties": {
                         "pattern": {
-                          "$ref": "#/$defs/__schema0"
-                        },
-                        "searchIn": {
                           "$ref": "#/$defs/__schema2"
                         },
+                        "searchIn": {
+                          "$ref": "#/$defs/__schema4"
+                        },
                         "instructions": {
-                          "$ref": "#/$defs/__schema7"
+                          "$ref": "#/$defs/__schema15"
                         },
                         "numOfOptionalQuestions": {
-                          "type": "number",
-                          "minimum": 0
+                          "title": "Number of optional questions in the section (optional)",
+                          "description": "The number of optional questions in the section.\n",
+                          "$ref": "#/$defs/__schema17"
                         },
                         "questions": {
-                          "$ref": "#/$defs/__schema8"
+                          "$ref": "#/$defs/__schema18"
                         }
                       },
                       "required": [
@@ -96,19 +106,23 @@
                 "type": "object",
                 "properties": {
                   "start": {
-                    "$ref": "#/$defs/__schema1"
+                    "title": "Start Pattern and Area to search in for Subject",
+                    "description": "The pattern to identify the start of the subject and the area to search for it in.",
+                    "$ref": "#/$defs/__schema12"
                   },
                   "end": {
-                    "$ref": "#/$defs/__schema1"
+                    "title": "End Pattern and Area to search in for Subject (optional)",
+                    "description": "The pattern to identify the end of the subject and the area to search for it in.\nIf not specified, the subject is considered to have ended when next subject start pattern is found.",
+                    "$ref": "#/$defs/__schema12"
                   },
                   "columnDividers": {
-                    "$ref": "#/$defs/__schema6"
+                    "$ref": "#/$defs/__schema13"
                   },
                   "instructions": {
-                    "$ref": "#/$defs/__schema7"
+                    "$ref": "#/$defs/__schema15"
                   },
                   "questions": {
-                    "$ref": "#/$defs/__schema8"
+                    "$ref": "#/$defs/__schema18"
                   }
                 },
                 "required": [
@@ -133,6 +147,15 @@
   ],
   "$defs": {
     "__schema0": {
+      "type": "boolean"
+    },
+    "__schema1": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema2"
+      }
+    },
+    "__schema2": {
       "type": "object",
       "properties": {
         "type": {
@@ -140,13 +163,17 @@
           "enum": [
             "text",
             "regex"
-          ]
+          ],
+          "title": "Pattern type",
+          "description": "The type of the pattern, either \"text\" or \"regex\".\n\"text\" means the value will be treated as a plain text string.\n\"regex\" means the value must be regex pattern for Javascript."
         },
         "value": {
-          "type": "string"
+          "type": "string",
+          "title": "The pattern to search for",
+          "description": "The pattern to search for, either as a text string (when type is \"text\") or a regex expression (when type is \"regex\")."
         },
         "isCaseSensitive": {
-          "type": "boolean"
+          "$ref": "#/$defs/__schema3"
         }
       },
       "required": [
@@ -156,30 +183,19 @@
       ],
       "additionalProperties": false
     },
-    "__schema1": {
-      "type": "object",
-      "properties": {
-        "pattern": {
-          "$ref": "#/$defs/__schema0"
-        },
-        "searchIn": {
-          "$ref": "#/$defs/__schema2"
-        }
-      },
-      "required": [
-        "pattern",
-        "searchIn"
-      ],
-      "additionalProperties": false
+    "__schema3": {
+      "type": "boolean",
+      "title": "Is case sensitive?",
+      "description": "If true, the search will be case sensitive. If false, it will be case insensitive."
     },
-    "__schema2": {
+    "__schema4": {
       "type": "object",
       "properties": {
         "pages": {
-          "$ref": "#/$defs/__schema3"
+          "$ref": "#/$defs/__schema5"
         },
         "area": {
-          "$ref": "#/$defs/__schema4"
+          "$ref": "#/$defs/__schema6"
         }
       },
       "required": [
@@ -188,24 +204,26 @@
       ],
       "additionalProperties": false
     },
-    "__schema3": {
+    "__schema5": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "title": "Pages to Consider",
+      "description": "The format should be a comma-separated list of page numbers and/or page ranges.\nFor counting from the end of the document, use L or L1 to indicate Last Page, L2 for second last page, and so on.\n\nFor example:\n\"1-L\" or \"1-L1\" means all pages will be considered.\n\"1, 3, 5-7\" means pages 1, 3, 5, 6, and 7 will be considered."
     },
-    "__schema4": {
+    "__schema6": {
       "type": "object",
       "properties": {
         "l": {
-          "$ref": "#/$defs/__schema5"
+          "$ref": "#/$defs/__schema7"
         },
         "r": {
-          "$ref": "#/$defs/__schema5"
+          "$ref": "#/$defs/__schema9"
         },
         "t": {
-          "$ref": "#/$defs/__schema5"
+          "$ref": "#/$defs/__schema10"
         },
         "b": {
-          "$ref": "#/$defs/__schema5"
+          "$ref": "#/$defs/__schema11"
         }
       },
       "required": [
@@ -214,16 +232,64 @@
         "t",
         "b"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "title": "Search area coordinates",
+      "description": "The area within the PDF page to search in.\nUse l = 0, r = 100%, t = 0, and b = 100% to search in the whole page.\n"
     },
-    "__schema5": {
+    "__schema7": {
+      "title": "Left coordinate",
+      "description": "The coordinate value either as an absolute value in points (e.g. \"297\") or as a percentage relative to page width (e.g. \"50%\").",
+      "$ref": "#/$defs/__schema8"
+    },
+    "__schema8": {
       "type": "string",
       "minLength": 1
     },
-    "__schema6": {
+    "__schema9": {
+      "title": "Right coordinate",
+      "description": "The coordinate value either as an absolute value in points (e.g. \"297\") or as a percentage relative to page width (e.g. \"50%\").",
+      "$ref": "#/$defs/__schema8"
+    },
+    "__schema10": {
+      "title": "Top coordinate",
+      "description": "The coordinate value either as an absolute value in points (e.g. \"210\") or as a percentage relative to page height (e.g. \"50%\").",
+      "$ref": "#/$defs/__schema8"
+    },
+    "__schema11": {
+      "title": "Bottom coordinate",
+      "description": "The coordinate value either as an absolute value in points (e.g. \"210\") or as a percentage relative to page height (e.g. \"50%\").",
+      "$ref": "#/$defs/__schema8"
+    },
+    "__schema12": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "searchIn": {
+          "$ref": "#/$defs/__schema4"
+        }
+      },
+      "required": [
+        "pattern",
+        "searchIn"
+      ],
+      "additionalProperties": false
+    },
+    "__schema13": {
+      "title": "Column dividers",
+      "description": "The coordinates of the column dividers, each separated by commas.\nEach coordinate must be a number or in percentage (i.e n%) relative to page width.\nNumber of columns will be number of dividers + 1.\n\nFor examples:\n\"297\" means there is one column divider at 297 points from the left of the page, dividing the page into 2 columns.\n\"50%\" means there is one column divider at 50% of the page width from the left of the page, dividing the page into 2 columns.\n\"33%, 66%\" means there are two column dividers, one at 33% and another at 66% of the page width from the left of the page, dividing the page into 3 columns.",
+      "$ref": "#/$defs/__schema14"
+    },
+    "__schema14": {
       "type": "string"
     },
-    "__schema7": {
+    "__schema15": {
+      "title": "Section Instructions",
+      "description": "The instructions for the section.\nThis is optional and can be used to provide instructions for the section.",
+      "$ref": "#/$defs/__schema16"
+    },
+    "__schema16": {
       "type": "object",
       "properties": {
         "type": {
@@ -256,138 +322,43 @@
       ],
       "additionalProperties": false
     },
-    "__schema8": {
+    "__schema17": {
+      "type": "number",
+      "minimum": 0
+    },
+    "__schema18": {
       "type": "object",
       "properties": {
         "pages": {
-          "$ref": "#/$defs/__schema3"
+          "$ref": "#/$defs/__schema5"
         },
         "details": {
           "oneOf": [
             {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "const": "nat"
-                },
-                "marks": {
-                  "$ref": "#/$defs/__schema9"
-                }
-              },
-              "required": [
-                "type",
-                "marks"
-              ],
-              "additionalProperties": false
+              "$ref": "#/$defs/__schema19"
             },
             {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "enum": [
-                    "mcq",
-                    "msm"
-                  ]
-                },
-                "marks": {
-                  "$ref": "#/$defs/__schema9"
-                },
-                "answerOptions": {
-                  "$ref": "#/$defs/__schema12"
-                },
-                "answerOptionsCounterType": {
-                  "$ref": "#/$defs/__schema13"
-                }
-              },
-              "required": [
-                "type",
-                "marks",
-                "answerOptions"
-              ],
-              "additionalProperties": false
+              "$ref": "#/$defs/__schema23"
             },
             {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "const": "msq"
-                },
-                "marks": {
-                  "type": "object",
-                  "properties": {
-                    "cm": {
-                      "$ref": "#/$defs/__schema10"
-                    },
-                    "im": {
-                      "$ref": "#/$defs/__schema11"
-                    },
-                    "pm": {
-                      "type": "number",
-                      "minimum": 0
-                    }
-                  },
-                  "required": [
-                    "cm",
-                    "im",
-                    "pm"
-                  ],
-                  "additionalProperties": false
-                },
-                "answerOptions": {
-                  "$ref": "#/$defs/__schema12"
-                },
-                "answerOptionsCounterType": {
-                  "$ref": "#/$defs/__schema13"
-                }
-              },
-              "required": [
-                "type",
-                "marks",
-                "answerOptions"
-              ],
-              "additionalProperties": false
+              "$ref": "#/$defs/__schema28"
+            },
+            {
+              "$ref": "#/$defs/__schema29"
             }
-          ]
+          ],
+          "title": "Question details",
+          "description": "The details of the question type and its related properties such as marks allocated and number of answer options."
         },
         "forBottomCoordinateUseBottom": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "text",
-              "image",
-              "vector"
-            ]
-          }
+          "title": "For Bottom Coordinate Use bottom coordinates of given elements",
+          "description": "Initially bottom coordinate of the crop area is determined by the topmost boundary of next question start pattern's matched text.\nThese elements can be used to look up the bottom coordinate instead of using the next question.\nThis option will use the bottom coordinate of the bottommost given element(s).\nGenerally useful to specify all elements provided.",
+          "$ref": "#/$defs/__schema32"
         },
         "forTopCoordinateLookUp": {
-          "type": "object",
-          "properties": {
-            "by": {
-              "type": "number",
-              "exclusiveMinimum": 0
-            },
-            "chainBy": {
-              "type": "number",
-              "minimum": 0
-            },
-            "for": {
-              "minItems": 1,
-              "maxItems": 3,
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/__schema14"
-              }
-            }
-          },
-          "required": [
-            "by",
-            "for"
-          ],
-          "additionalProperties": false
+          "title": "For Top Coordinate Look Up for given elements by a given coordinate and chain by",
+          "description": "This will look up for the top coordinate of the selected elements.\nUseful when the question start pattern is not very reliable for determining the top coordinate of the question area.\nFor example when there are diagrams, math expressions that are above the question start pattern.\nUse with caution for document having watermarks or other decorations as these might be falsely detected as elements and affect the top coordinate detection.",
+          "$ref": "#/$defs/__schema33"
         },
         "obtainedQuestionNum": {
           "type": "object",
@@ -398,10 +369,14 @@
                 "replace",
                 "merge",
                 "ignore"
-              ]
+              ],
+              "title": "When duplicate question numbers are obtained",
+              "description": "When there are duplicate question numbers obtained, this determines which one to use.\n\"replace\" means use the new obtained question and replace the previous one.\n\"merge\" means merge the new obtained question with the previous one.\n\"ignore\" means ignore the new obtained question number."
             },
             "nextQNumMustBeOneNumGreater": {
-              "type": "boolean"
+              "type": "boolean",
+              "title": "Next question number must be one number greater than previous question number?",
+              "description": "When true, if the newly obtained question number is not exactly one number greater than the previous question number, then it will be ignored.\nThis is useful when question numbers are expected to be in a sequence and this can be used to filter out falsely matched question numbers."
             }
           },
           "required": [
@@ -411,126 +386,23 @@
           "additionalProperties": false
         },
         "mergeQuestions": {
-          "type": "object",
-          "properties": {
-            "splitBy": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "pages",
-                  "columns"
-                ]
-              }
-            },
-            "mergeOnlyIfContainsAny": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "text",
-                  "image",
-                  "vector"
-                ]
-              }
-            }
-          },
-          "required": [
-            "splitBy",
-            "mergeOnlyIfContainsAny"
-          ],
-          "additionalProperties": false
+          "title": "Merge questions as they are split by pages or columns",
+          "description": "Use this when questions are split into multiple parts across pages or columns.",
+          "$ref": "#/$defs/__schema36"
         },
         "paragraphQuestions": {
-          "type": "object",
-          "properties": {
-            "start": {
-              "type": "object",
-              "properties": {
-                "pattern": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "searchIn": {
-                  "$ref": "#/$defs/__schema4"
-                }
-              },
-              "required": [
-                "pattern",
-                "searchIn"
-              ],
-              "additionalProperties": false
-            },
-            "end": {
-              "type": "object",
-              "properties": {
-                "pattern": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "searchIn": {
-                  "$ref": "#/$defs/__schema4"
-                }
-              },
-              "required": [
-                "pattern",
-                "searchIn"
-              ],
-              "additionalProperties": false
-            },
-            "crop": {
-              "type": "object",
-              "properties": {
-                "exactlyTo": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "l": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "r": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        }
-                      },
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "offsetBy": {
-                  "$ref": "#/$defs/__schema15"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "start",
-            "crop"
-          ],
-          "additionalProperties": false
+          "title": "Paragraph/Table questions",
+          "description": "This is to identify questions that have a common paragraph/table.\n",
+          "$ref": "#/$defs/__schema39"
         },
         "columns": {
           "minItems": 1,
           "type": "array",
           "items": {
-            "$ref": "#/$defs/__schema16"
-          }
+            "$ref": "#/$defs/__schema43"
+          },
+          "title": "Columns",
+          "description": "The number of columns must be one greater than number of column dividers speficied in the subject."
         }
       },
       "required": [
@@ -541,34 +413,52 @@
       ],
       "additionalProperties": false
     },
-    "__schema9": {
+    "__schema19": {
       "type": "object",
       "properties": {
-        "cm": {
-          "$ref": "#/$defs/__schema10"
+        "type": {
+          "type": "string",
+          "const": "mcq",
+          "title": "Question type",
+          "description": "The type of the question.\n\"nat\" means Numerical Answer Type question.\n\"mcq\" means Multiple Choice Question with only one correct answer.\n\"msq\" means Multiple Select Question with multiple correct answers.\n\"msm\" means Multiple Select Matrix Question where 2 lists are provided and a option from List 1 can be mapped to one or more options in List 2 (many-to-many relation)."
         },
-        "im": {
-          "$ref": "#/$defs/__schema11"
+        "answerOptions": {
+          "type": "string",
+          "title": "Answer options",
+          "description": "The number of answer options for the question.\n\nFor example, \"4\" means there are 4 answer options for the question."
+        },
+        "answerOptionsCounterType": {
+          "title": "Answer options counter type",
+          "description": "The type of the counter used for answer options.\nFor MCQ/MSQ questions, only primary counter type is applicable.\n\nFor example, \"upper-latin\" means answer options are labeled as A, B, C, D, etc.",
+          "$ref": "#/$defs/__schema20"
+        },
+        "marks": {
+          "type": "object",
+          "properties": {
+            "cm": {
+              "$ref": "#/$defs/__schema21"
+            },
+            "im": {
+              "$ref": "#/$defs/__schema22"
+            }
+          },
+          "required": [
+            "cm",
+            "im"
+          ],
+          "additionalProperties": false,
+          "title": "Marks per question",
+          "description": "The marks allocated for each question."
         }
       },
       "required": [
-        "cm",
-        "im"
+        "type",
+        "answerOptions",
+        "marks"
       ],
       "additionalProperties": false
     },
-    "__schema10": {
-      "type": "number",
-      "minimum": 0
-    },
-    "__schema11": {
-      "type": "number",
-      "maximum": 0
-    },
-    "__schema12": {
-      "type": "string"
-    },
-    "__schema13": {
+    "__schema20": {
       "type": "object",
       "properties": {
         "primary": {
@@ -598,7 +488,278 @@
       },
       "additionalProperties": false
     },
-    "__schema14": {
+    "__schema21": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Correct marks",
+      "description": "The marks allocated when answer is correct."
+    },
+    "__schema22": {
+      "type": "number",
+      "maximum": 0,
+      "title": "Incorrect marks",
+      "description": "The marks allocated when answer is incorrect."
+    },
+    "__schema23": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "msq",
+          "title": "Question type",
+          "description": "The type of the question.\n\"nat\" means Numerical Answer Type question.\n\"mcq\" means Multiple Choice Question with only one correct answer.\n\"msq\" means Multiple Select Question with multiple correct answers.\n\"msm\" means Multiple Select Matrix Question where 2 lists are provided and a option from List 1 can be mapped to one or more options in List 2 (many-to-many relation)."
+        },
+        "answerOptions": {
+          "type": "string",
+          "title": "Answer options",
+          "description": "The number of answer options for the question.\n\nFor example, \"4\" means there are 4 answer options for the question."
+        },
+        "answerOptionsCounterType": {
+          "title": "Answer options counter type",
+          "description": "The type of the counter used for answer options.\nFor MCQ/MSQ questions, only primary counter type is applicable.\n\nFor example, \"upper-latin\" means answer options are labeled as A, B, C, D, etc.",
+          "$ref": "#/$defs/__schema24"
+        },
+        "marks": {
+          "type": "object",
+          "properties": {
+            "cm": {
+              "$ref": "#/$defs/__schema25"
+            },
+            "im": {
+              "$ref": "#/$defs/__schema26"
+            },
+            "pm": {
+              "$ref": "#/$defs/__schema27"
+            }
+          },
+          "required": [
+            "cm",
+            "im",
+            "pm"
+          ],
+          "additionalProperties": false,
+          "title": "Marks per question",
+          "description": "The marks allocated for each question."
+        }
+      },
+      "required": [
+        "type",
+        "answerOptions",
+        "marks"
+      ],
+      "additionalProperties": false
+    },
+    "__schema24": {
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": "string",
+          "enum": [
+            "upper-latin",
+            "lower-latin",
+            "upper-pqrs",
+            "lower-pqrs",
+            "decimal",
+            "upper-roman",
+            "lower-roman"
+          ]
+        },
+        "secondary": {
+          "type": "string",
+          "enum": [
+            "upper-latin",
+            "lower-latin",
+            "upper-pqrs",
+            "lower-pqrs",
+            "decimal",
+            "upper-roman",
+            "lower-roman"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "__schema25": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Correct marks",
+      "description": "The marks allocated when answer is correct."
+    },
+    "__schema26": {
+      "type": "number",
+      "maximum": 0,
+      "title": "Incorrect marks",
+      "description": "The marks allocated when answer is incorrect."
+    },
+    "__schema27": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Partially correct marks",
+      "description": "The marks allocated when answers are partially correct.\nApplicable only for MSQ questions and when user answers is a subset of correct answers.\n\nFor example, \"1\" is used by JEE Advanced for awarding 1 mark for each partially correct option selected (when user answers is a subset of correct answers)."
+    },
+    "__schema28": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "nat",
+          "title": "Question type",
+          "description": "The type of the question.\n\"nat\" means Numerical Answer Type question.\n\"mcq\" means Multiple Choice Question with only one correct answer.\n\"msq\" means Multiple Select Question with multiple correct answers.\n\"msm\" means Multiple Select Matrix Question where 2 lists are provided and a option from List 1 can be mapped to one or more options in List 2 (many-to-many relation)."
+        },
+        "marks": {
+          "type": "object",
+          "properties": {
+            "cm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "im": {
+              "type": "number",
+              "maximum": 0
+            }
+          },
+          "required": [
+            "cm",
+            "im"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "marks"
+      ],
+      "additionalProperties": false
+    },
+    "__schema29": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "msm",
+          "title": "Question type",
+          "description": "The type of the question.\n\"nat\" means Numerical Answer Type question.\n\"mcq\" means Multiple Choice Question with only one correct answer.\n\"msq\" means Multiple Select Question with multiple correct answers.\n\"msm\" means Multiple Select Matrix Question where 2 lists are provided and a option from List 1 can be mapped to one or more options in List 2 (many-to-many relation)."
+        },
+        "answerOptions": {
+          "type": "string",
+          "title": "Answer options",
+          "description": "For MSM questions, the format should be \"rowxcolumn\", where row is the number of options in List 1 and column is the number of options in List 2.\n\nFor example, \"4x5\" means there are 4 options in List 1 and 5 options in List 2."
+        },
+        "answerOptionsCounterType": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "type": "string",
+              "enum": [
+                "upper-latin",
+                "lower-latin",
+                "upper-pqrs",
+                "lower-pqrs",
+                "decimal",
+                "upper-roman",
+                "lower-roman"
+              ]
+            },
+            "secondary": {
+              "type": "string",
+              "enum": [
+                "upper-latin",
+                "lower-latin",
+                "upper-pqrs",
+                "lower-pqrs",
+                "decimal",
+                "upper-roman",
+                "lower-roman"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "marks": {
+          "type": "object",
+          "properties": {
+            "cm": {
+              "$ref": "#/$defs/__schema30"
+            },
+            "im": {
+              "$ref": "#/$defs/__schema31"
+            }
+          },
+          "required": [
+            "cm",
+            "im"
+          ],
+          "additionalProperties": false,
+          "title": "Marks per question",
+          "description": "The marks allocated for each question."
+        }
+      },
+      "required": [
+        "type",
+        "answerOptions",
+        "marks"
+      ],
+      "additionalProperties": false
+    },
+    "__schema30": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Correct marks",
+      "description": "The marks allocated per row when answer is correct (max marks per question / number of rows)."
+    },
+    "__schema31": {
+      "type": "number",
+      "maximum": 0,
+      "title": "Incorrect marks",
+      "description": "The marks allocated when answer is incorrect."
+    },
+    "__schema32": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "text",
+          "image",
+          "vector"
+        ]
+      }
+    },
+    "__schema33": {
+      "type": "object",
+      "properties": {
+        "by": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "title": "The value to look up by",
+          "description": "Say if y is the given value and Y is the initial coordinate.\nA area is formed between \"Y\" and \"Y - y\" and the elements that intersect with this area are looked up.\nIf elements are found, uses the top coordinate of the topmost element as top coordinate for the question area."
+        },
+        "chainBy": {
+          "title": "The value to Chain the look up by (optional)",
+          "description": "Once an element is found by the look up, more look ups can be chained by the given value.\nWill continue chaining the look up until specified elements are not found.",
+          "$ref": "#/$defs/__schema34"
+        },
+        "for": {
+          "minItems": 1,
+          "maxItems": 3,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema35"
+          },
+          "title": "The Elements to look up for",
+          "description": "The elements to look up for to use as the top coordinate of the question area.\n"
+        }
+      },
+      "required": [
+        "by",
+        "for"
+      ],
+      "additionalProperties": false
+    },
+    "__schema34": {
+      "type": "number",
+      "minimum": 0
+    },
+    "__schema35": {
       "type": "string",
       "enum": [
         "text",
@@ -606,7 +767,144 @@
         "vector"
       ]
     },
-    "__schema15": {
+    "__schema36": {
+      "type": "object",
+      "properties": {
+        "splitBy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema37"
+          },
+          "title": "Merge questions split by",
+          "description": "\"pages\" means merge questions as they are split by pages.\n\"columns\" means merge questions as they are split by columns.\n"
+        },
+        "mergeOnlyIfContainsAny": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema38"
+          },
+          "title": "Merge only if question contains any of the following elements",
+          "description": "When merging questions split by pages or columns, only merge questions that contain any of the specified elements.\nThis is useful to avoid merging regions that are empty.\nUse with caution for document having watermarks or other decorations as these might be falsely detected as elements and affect the merging of questions."
+        }
+      },
+      "required": [
+        "splitBy",
+        "mergeOnlyIfContainsAny"
+      ],
+      "additionalProperties": false
+    },
+    "__schema37": {
+      "type": "string",
+      "enum": [
+        "pages",
+        "columns"
+      ]
+    },
+    "__schema38": {
+      "type": "string",
+      "enum": [
+        "text",
+        "image",
+        "vector"
+      ]
+    },
+    "__schema39": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "$ref": "#/$defs/__schema2"
+            },
+            "searchIn": {
+              "$ref": "#/$defs/__schema6"
+            }
+          },
+          "required": [
+            "pattern",
+            "searchIn"
+          ],
+          "additionalProperties": false,
+          "title": "Start Pattern and Area to search in for Common part of question paragraph/table",
+          "description": "The pattern to identify the start of common part of paragraph/table question and the area to search for it in."
+        },
+        "end": {
+          "title": "End Pattern and Area to search in for Common part of question paragraph/table (optional)",
+          "description": "The pattern to identify the end of common part of paragraph/table question and the area to search for it in.\nIf not specified, the common part is considered to have ended when question start is found.",
+          "$ref": "#/$defs/__schema40"
+        },
+        "crop": {
+          "type": "object",
+          "properties": {
+            "exactlyTo": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "l": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "r": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "offsetBy": {
+              "$ref": "#/$defs/__schema41"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "start",
+        "crop"
+      ],
+      "additionalProperties": false
+    },
+    "__schema40": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "searchIn": {
+          "$ref": "#/$defs/__schema6"
+        }
+      },
+      "required": [
+        "pattern",
+        "searchIn"
+      ],
+      "additionalProperties": false
+    },
+    "__schema41": {
+      "title": "Crop Coordinates to Offset By",
+      "description": "The number of points to offset the crop coordinates by for each side.\nFor Left and Right Coordinates, positive value means offsetting to the right and negative value means offsetting to the left relative to current position.\nFor Top and Bottom Coordinates, positive value means offsetting downwards and negative value means offsetting upwards relative to current position.\nThis is optional and can be used to fine-tune the crop area so that nothing important is cropped out and also to include/exclude thin elements that are close to the crop boundary.",
+      "$ref": "#/$defs/__schema42"
+    },
+    "__schema42": {
       "type": "object",
       "properties": {
         "l": {
@@ -624,97 +922,31 @@
       },
       "additionalProperties": false
     },
-    "__schema16": {
+    "__schema43": {
       "type": "object",
       "properties": {
         "start": {
           "type": "object",
           "properties": {
             "pattern": {
-              "oneOf": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "regex"
-                    },
-                    "value": {
-                      "type": "string"
-                    },
-                    "isCaseSensitive": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": [
-                    "type",
-                    "value",
-                    "isCaseSensitive"
-                  ],
-                  "additionalProperties": false
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "text"
-                    },
-                    "prefix": {
-                      "type": "string"
-                    },
-                    "questionRange": {
-                      "type": "string",
-                      "minLength": 3,
-                      "pattern": "^(?<start>\\d+)\\s{0,3}-\\s{0,3}(?<end>\\d+)$"
-                    },
-                    "suffix": {
-                      "type": "string"
-                    },
-                    "isLeadingZeroesOptional": {
-                      "type": "boolean"
-                    },
-                    "isCaseSensitive": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": [
-                    "type",
-                    "prefix",
-                    "questionRange",
-                    "suffix",
-                    "isLeadingZeroesOptional",
-                    "isCaseSensitive"
-                  ],
-                  "additionalProperties": false
-                }
-              ]
+              "$ref": "#/$defs/__schema44"
             },
             "searchIn": {
-              "$ref": "#/$defs/__schema4"
+              "$ref": "#/$defs/__schema6"
             }
           },
           "required": [
             "pattern",
             "searchIn"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "title": "Question Start for this column",
+          "description": "The pattern to identify the start of a question for this column and the area to search for it in."
         },
         "end": {
-          "type": "object",
-          "properties": {
-            "pattern": {
-              "$ref": "#/$defs/__schema0"
-            },
-            "searchIn": {
-              "$ref": "#/$defs/__schema4"
-            }
-          },
-          "required": [
-            "pattern",
-            "searchIn"
-          ],
-          "additionalProperties": false
+          "title": "Question End for this column (optional)",
+          "description": "The pattern to identify the end of a question for this column and the area to search for it in.",
+          "$ref": "#/$defs/__schema47"
         },
         "crop": {
           "type": "object",
@@ -723,42 +955,39 @@
               "type": "object",
               "properties": {
                 "t": {
-                  "$ref": "#/$defs/__schema5"
+                  "$ref": "#/$defs/__schema8"
                 },
                 "b": {
-                  "$ref": "#/$defs/__schema5"
+                  "$ref": "#/$defs/__schema8"
                 }
               },
               "required": [
                 "t",
                 "b"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "title": "Top/Bottom Coordinates to Crop within",
+              "description": "This is to limit the crop areas to be within the specified top and bottom coordinates.\nUseful to exclude Headers and Footers.\nUse t = 0 and b = 100% to allow the whole height of the page for cropping."
             },
             "exactlyTo": {
               "type": "object",
               "properties": {
                 "l": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
+                  "$ref": "#/$defs/__schema48"
                 },
                 "r": {
-                  "$ref": "#/$defs/__schema5"
+                  "$ref": "#/$defs/__schema50"
                 }
               },
               "required": [
                 "r"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "title": "Left/Right Coordinates to Crop exactly to",
+              "description": "This is to crop the question exactly to the specified left and right coordinates.\nIf Left Coordinate is null, uses the leftmost boundary of the question start pattern's matched text as the left crop coordinate.\nFor Right Coordinate, this is required and is also important to set the crop of the question area to limit it to its column only.\nFor example for right coordinate if there are two columns with column divided at 50%, then for column 1 this is around 50% and for column 2 this is around 100%."
             },
             "offsetBy": {
-              "$ref": "#/$defs/__schema15"
+              "$ref": "#/$defs/__schema41"
             }
           },
           "required": [
@@ -773,6 +1002,124 @@
         "crop"
       ],
       "additionalProperties": false
+    },
+    "__schema44": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/__schema45"
+        },
+        {
+          "$ref": "#/$defs/__schema46"
+        }
+      ],
+      "title": "Question start pattern",
+      "description": "The pattern to identify the start of a question.\nThis is required and can be either a text pattern or a regex pattern.\nTypically, question number is the question start pattern."
+    },
+    "__schema45": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "regex",
+          "title": "Pattern type",
+          "description": "The type of the pattern, either \"text\" or \"regex\".\n\"text\" means the value will be treated as a plain text string.\n\"regex\" means the value must be regex pattern for Javascript."
+        },
+        "value": {
+          "type": "string",
+          "title": "The pattern to search for",
+          "description": "The pattern to search for, either as a text string (when type is \"text\") or a regex expression (when type is \"regex\")."
+        },
+        "isCaseSensitive": {
+          "$ref": "#/$defs/__schema3"
+        }
+      },
+      "required": [
+        "type",
+        "value",
+        "isCaseSensitive"
+      ],
+      "additionalProperties": false
+    },
+    "__schema46": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "text",
+          "title": "Pattern type",
+          "description": "The type of the pattern, either \"text\" or \"regex\".\n\"text\" means the value will be treated as a plain text string.\n\"regex\" means the value must be regex pattern for Javascript."
+        },
+        "prefix": {
+          "type": "string",
+          "title": "Question prefix",
+          "description": "The text that appears before the question number.\nThis is optional and can be used to differentiate between question numbers and other numbers in the document.\n\nFor example, if question numbers are in the format \"Q.1\", \"Q.2\", etc., then the prefix is \"Q.\"."
+        },
+        "questionRange": {
+          "type": "string",
+          "minLength": 3,
+          "pattern": "^(?<start>\\d+)\\s{0,3}-\\s{0,3}(?<end>\\d+)$",
+          "title": "Question range",
+          "description": "The format of the question number or range of question numbers.\n\nFor example, \"1-10\" means question numbers from 1 to 10, \"1\" means only question number 1, and \"1,3,5-7\" means question numbers 1, 3, and 5 to 7 (i.e. 1, 3, 5, 6, 7)."
+        },
+        "suffix": {
+          "type": "string",
+          "title": "Question suffix",
+          "description": "The text that appears after the question number.\nThis is optional and can be used to differentiate between question numbers and other numbers in the document.\n\nFor example, if question numbers are in the format \"1.\", \"2.\", etc., then the suffix is \".\"."
+        },
+        "isLeadingZeroesOptional": {
+          "type": "boolean",
+          "title": "Is leading zeroes optional?",
+          "description": "If true, the search will match question numbers with or without leading zeroes.\n\nFor example, if this is true then it will match \"1\", \"01\", \"2\", \"02\", ..., \"10\"."
+        },
+        "isCaseSensitive": {
+          "$ref": "#/$defs/__schema3"
+        }
+      },
+      "required": [
+        "type",
+        "prefix",
+        "questionRange",
+        "suffix",
+        "isLeadingZeroesOptional",
+        "isCaseSensitive"
+      ],
+      "additionalProperties": false
+    },
+    "__schema47": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "searchIn": {
+          "$ref": "#/$defs/__schema6"
+        }
+      },
+      "required": [
+        "pattern",
+        "searchIn"
+      ],
+      "additionalProperties": false
+    },
+    "__schema48": {
+      "title": "Left coordinate to crop exactly to (optional)",
+      "description": "This is to crop the question exactly to the specified left coordinate.\nIf this is null or not specified, uses the leftmost boundary of the question start pattern's matched text as the left crop coordinate.",
+      "$ref": "#/$defs/__schema49"
+    },
+    "__schema49": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "__schema50": {
+      "title": "Right coordinate to crop exactly to",
+      "description": "This is to crop the question exactly to the specified right coordinate.\nThis is required and is also important to limit the crop of the question area to its column only.\nFor example for right coordinate, if there are two columns with column divided at 50%, then for column 1 this is around 50% and for column 2 this is around 100%.",
+      "$ref": "#/$defs/__schema8"
     }
   }
 }
