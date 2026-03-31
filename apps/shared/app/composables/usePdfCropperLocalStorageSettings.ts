@@ -24,6 +24,7 @@ export default () => {
           cropSelectionBgOpacity: 15, // in %
           cropSelectionSkipColor: '#8B0000', // dark red
           selectionThrottleInterval: 30, // in milliseconds
+          autoSkipBottomLineOnNextPage: true,
           // Cropped Region
           cropSelectedRegionColor: '#004D00', // dark variant of green
           cropSelectedRegionBgOpacity: 15, // in %

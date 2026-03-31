@@ -14,6 +14,7 @@ export type PdfCropperSettings = {
     scale: number
     splitterPanelSize: number
     pageBGColor: string
+    autoSkipBottomLineOnNextPage: boolean
     cropSelectionGuideColor: string
     cropSelectionBgOpacity: number
     cropSelectedRegionColor: string
