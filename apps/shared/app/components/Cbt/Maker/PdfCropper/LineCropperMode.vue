@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { pageZoomScaleKey, pdfPagesContainerDimsKey } from '../keys'
+import { pageZoomScaleKey, pdfPagesContainerDimsKey, pagesImgDataKey } from '../keys'
 
 const emit = defineEmits<{
   setCroppedRect: [data: PdfCroppedOverlayCoords]
@@ -11,6 +11,7 @@ const currentActiveLine = defineModel<keyof PdfCroppedOverlayCoords>(
   { required: true },
 )
 
+const pagesImgData = inject(pagesImgDataKey)!
 const pdfPagesContainerDims = inject(pdfPagesContainerDimsKey)!
 const pageZoomScale = inject(pageZoomScaleKey)!
 
@@ -24,6 +25,7 @@ const isHoldingCtrl = magicKeys['Ctrl']!
 const isHoldingShift = magicKeys['Shift']!
 
 const isSkipNextBottomLine = shallowRef(false)
+const isAutomaticSkipNextBottomLineOn = shallowRef(true)
 
 const skipNextBottomLine = computed({
   get: () => {
@@ -31,6 +33,34 @@ const skipNextBottomLine = computed({
   },
   set: v => isSkipNextBottomLine.value = v,
 })
+
+const currentPageBottomValue = computed(() => {
+  const t = currentCoords.value.t
+  const page = Object.values(pagesImgData)
+    .find(({ top, bottom }) => t >= top && t <= bottom)
+  return page?.bottom ?? Infinity
+})
+
+const skipBottomLineOnNextPageWatchHandle = watchThrottled(
+  [currentPageBottomValue, () => currentCoords.value.b],
+  () => {
+    if (isAutomaticSkipNextBottomLineOn.value) {
+      isSkipNextBottomLine.value = currentCoords.value.b > currentPageBottomValue.value
+    }
+  },
+  { throttle: () => settings.value.general.selectionThrottleInterval },
+)
+
+watch(
+  () => settings.value.general.autoSkipBottomLineOnNextPage,
+  (newValue) => {
+    if (newValue)
+      skipBottomLineOnNextPageWatchHandle.resume()
+    else
+      skipBottomLineOnNextPageWatchHandle.pause()
+  },
+  { immediate: true },
+)
 
 function undoLastLine() {
   const coords = currentCoords.value
@@ -58,21 +88,18 @@ function onPointerMove(e: PointerEvent) {
   e.preventDefault()
 
   const rect = svgElem.value.getBoundingClientRect()
-  const xRel = e.clientX - rect.left
-  const yRel = e.clientY - rect.top
 
   const line = currentActiveLine.value
-  const coords = currentCoords.value
   const scale = pageZoomScale.value
 
   switch (line) {
     case 'l':
     case 'r':
-      coords[line] = utilClampNumber(xRel, 0, pdfPagesContainerDims.w, scale)
+      currentCoords.value[line] = utilClampNumber(e.clientX - rect.left, 0, pdfPagesContainerDims.w, scale)
       break
     case 't':
     case 'b':
-      coords[line] = utilClampNumber(yRel, 0, pdfPagesContainerDims.h, scale)
+      currentCoords.value[line] = utilClampNumber(e.clientY - rect.top, 0, pdfPagesContainerDims.h, scale)
       break
   }
 }
@@ -106,6 +133,7 @@ function setLineCropperCoord() {
         emit('setCroppedRect', { l, r, t, b })
       }
       skipNextBottomLine.value = false
+      isAutomaticSkipNextBottomLineOn.value = true
       coords.t = coords.b
       break
     }
@@ -296,6 +324,7 @@ function onOpenContextMenu(e: PointerEvent) {
         v-model="skipNextBottomLine"
         inset
         :disabled="currentActiveLine !== 'b'"
+        @update:model-value="isAutomaticSkipNextBottomLineOn = false"
       >
         Skip Next Bottom Line
         <UiContextMenuShortcut>Shift</UiContextMenuShortcut>

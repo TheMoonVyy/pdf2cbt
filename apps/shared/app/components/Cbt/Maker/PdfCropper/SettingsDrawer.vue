@@ -47,7 +47,7 @@
               >
                 <BaseFloatLabel
                   class="w-full col-span-4"
-                  :label="item.label"
+                  :label="Array.isArray(item.label) ? item.label.join('\n') : item.label"
                   :label-id="item.labelId"
                   label-class="text-xs start-1/2! -translate-x-1/2"
                 >
@@ -68,24 +68,21 @@
               </div>
               <div
                 v-else-if="item.type === 'switch'"
-                class="grid grid-cols-4 gap-5"
+                class="flex items-center justify-center gap-5"
               >
-                <div class="flex items-center gap-3 text-nowrap justify-center col-span-4">
-                  <UiLabel
-                    :for="item.labelId"
-                    class="text-base font-semibold cursor-pointer"
-                  >
-                    {{ item.label }}
-                  </UiLabel>
-                  <UiSwitch
-                    :id="item.labelId"
-                    v-model="(settings.general[item.model] as boolean)"
-                    class="cursor-pointer"
-                  />
-                </div>
+                <UiLabel
+                  :for="item.labelId"
+                  class="text-base font-semibold cursor-pointer whitespace-pre-line"
+                >
+                  {{ Array.isArray(item.label) ? item.label.join('\n') : item.label }}
+                </UiLabel>
+                <UiSwitch
+                  :id="item.labelId"
+                  v-model="(settings.general[item.model] as boolean)"
+                  class="cursor-pointer"
+                />
                 <IconWithTooltip
                   v-if="tooltipContent[item.model]"
-                  class="justify-center"
                   :content="tooltipContent[item.model]!"
                   icon-size="1.5rem"
                 />
@@ -96,7 +93,7 @@
               >
                 <BaseFloatLabel
                   class="w-full col-span-3"
-                  :label="item.label"
+                  :label="Array.isArray(item.label) ? item.label.join('\n') : item.label"
                   :label-id="item.labelId"
                   label-class="text-xs start-1/2! -translate-x-1/2"
                 >
@@ -139,7 +136,7 @@ type ToolTipContent = {
 type SettingsBase = {
   model: keyof PdfCropperSettings['general']
   labelId: string
-  label: string
+  label: string | string[]
 }
 
 type InputNumberTypeSettings = SettingsBase & {
@@ -210,6 +207,12 @@ const settingsContent: SettingsContent = {
     },
   ],
   'Crop Selection': [
+    {
+      type: 'switch',
+      model: 'autoSkipBottomLineOnNextPage',
+      label: ['Auto-skip Bottom Line', 'On Next Page'],
+      labelId: useId(),
+    },
     {
       type: 'colorPicker',
       model: 'cropSelectionGuideColor',
@@ -321,6 +324,23 @@ const tooltipContent: ToolTipContent = {
     h('div', { class: 'space-y-2' }, [
       h('p', 'Minimum allowed width and height (in same units as coordinates section) for a valid crop selection.'),
       h('p', 'Ensures that the selected crop area is not too small, preventing accidental or invalid selections.'),
+    ]),
+  autoSkipBottomLineOnNextPage: () =>
+    h('div', { class: 'space-y-2' }, [
+      h('p', 'Applicable only in Line Crop Mode.'),
+      h('ul', { class: 'list-disc space-y-1 ml-6 [&>li]:mb-1' }, [
+        h('li', [
+          h('strong', 'when ON'),
+          ': Automatically turns on "Skip Next Bottom Line" when moving to next page. ',
+          'Useful for PDF that have footers/unwanted stuff at the end of each page as this will reduce the need to manually turn on "Skip Next Bottom Line" when moving to new page',
+        ]),
+        h('li', [
+          h('strong', 'when OFF'),
+          ': No automatic skipping is done. ',
+          'Useful for PDF that don\'t have footers at the end of each page (i.e. questions are truly continuous across pages).',
+        ]),
+      ]),
+      h('p', 'In version v2.0.0 to v2.2.0, cropper behaved the same as when this is "OFF". From version 2.3.0 onwards, this is set to "ON" by default.'),
     ]),
 }
 
