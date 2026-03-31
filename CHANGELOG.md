@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.2.0...v2.3.0) (2026-03-31)
+
+
+### Features
+
+* **test-maker:** add setting to auto skip next bottom line on next page when in line crop mode ([5c0ee21](https://github.com/TheMoonVyy/pdf2cbt/commit/5c0ee21e8109cb8032eff80b698d7a29ac314ded))
+
 ## [2.2.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.1.0...v2.2.0) (2026-03-20)
 
 
