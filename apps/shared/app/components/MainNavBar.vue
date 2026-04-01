@@ -29,13 +29,13 @@
             >
               <Icon
                 :name="item.icon"
-                class="text-2xl min-[59rem]:text-[1.3rem]"
+                class="text-2xl min-[61rem]:text-[1.3rem]"
                 :title="item.title"
               />
-              <span class="text-lg font-bold text-nowrap hidden min-[73.5rem]:inline">
+              <span class="text-lg font-bold text-nowrap hidden min-[75rem]:inline">
                 {{ item.title }}
               </span>
-              <span class="text-lg font-bold text-nowrap hidden min-[59rem]:inline min-[73.5rem]:hidden">
+              <span class="text-lg font-bold text-nowrap hidden min-[61rem]:inline min-[75rem]:hidden">
                 {{ item.shortTitle }}
               </span>
             </div>
@@ -45,6 +45,20 @@
           class="flex gap-2.5 sm:gap-3 xl:gap-4 items-center ml-auto min-[43rem]:ml-2 pr-4 xl:pr-8"
           :style="{ height: MAIN_NAV_BAR_HEIGHT.val }"
         >
+          <NuxtLink
+            to="/donate"
+            class="flex items-center justify-center"
+            tabindex="-1"
+          >
+            <BaseButton
+              variant="outline"
+              size="icon"
+              title="Donate"
+              icon-name="line-md:heart-filled"
+              icon-size="1.5rem"
+              icon-class="text-lime-500"
+            />
+          </NuxtLink>
           <NuxtLink
             to="https://github.com/TheMoonVyy/pdf2cbt"
             class="flex items-center justify-center"
@@ -152,7 +166,7 @@
             variant="outline"
             size="icon"
             title="Toggle Fullscreen"
-            class="text-green-500 hover:text-green-600"
+            class="text-green-500 hover:text-green-600 hidden sm:flex"
             icon-name="material-symbols:fullscreen"
             icon-size="1.5rem"
             @click="toggleFullscreen()"
