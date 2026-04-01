@@ -17,5 +17,5 @@
     "generate:web": "pnpm --filter ./apps/web generate",
     "prepare:web": "pnpm --filter ./apps/web prepare"
   },
-  "version": "2.3.0"
+  "version": "3.0.0"
 }
