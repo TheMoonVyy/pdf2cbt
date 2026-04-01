@@ -68,8 +68,7 @@ const dialogsState = shallowReactive({
   showQuestionDetails: false,
 })
 
-const _isBuildForWebsite = useRuntimeConfig().public.isBuildForWebsite as string | boolean
-const preferLoadingLocalMupdfScript = _isBuildForWebsite !== 'true' && _isBuildForWebsite !== true
+const preferLoadingLocalMupdfScript = !useIsBuildForWebsite()
 
 const patternModeState = shallowReactive({
   pdfPagesPatternModeData: null as null | PdfPagesPatternModeData,

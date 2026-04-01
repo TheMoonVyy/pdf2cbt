@@ -91,7 +91,7 @@
                 class="flex items-center gap-2"
               >
                 <span class="text-sm sm:text-lg">
-                  <template v-if="isBuildForWebsite === 'true'">
+                  <template v-if="isBuildForWebsite">
                     See what's new in
                     <span class="text-green-400">
                       v{{ updatesLSState.releases.version }}
@@ -376,7 +376,7 @@ const appSettings = useAppSettings()
 const updatesLSState = useUpdatesLocalStorageState()
 
 const publicRuntimeConfig = useRuntimeConfig().public
-const isBuildForWebsite = publicRuntimeConfig.isBuildForWebsite
+const isBuildForWebsite = useIsBuildForWebsite()
 const appVersion = publicRuntimeConfig.projectVersion
 
 const themeWriteableComputedRef = computed({
@@ -491,7 +491,7 @@ function notifyOfDevUpdate(newVersion: string) {
 async function checkForUpdates() {
   if (
     (
-      isBuildForWebsite === 'true'
+      isBuildForWebsite
       || (!notifySettings.releases.indicator && !notifySettings.releases.popup)
     )
     && !notifySettings.dev.popup
@@ -507,7 +507,7 @@ async function checkForUpdates() {
 
   try {
     // first check for releases
-    if (isBuildForWebsite !== 'true' // is not website build ==> local build
+    if (!isBuildForWebsite // is not website build ==> local build
       && (notifySettings.releases.indicator || notifySettings.releases.popup)
     ) {
       // use release-please manifest file to get the latest release version
@@ -549,7 +549,7 @@ onMounted(() => {
   setTimeout(
     () => {
       // for website build, appVersion is the latest version, no need to poll for updates
-      if (isBuildForWebsite === 'true'
+      if (isBuildForWebsite
         && (notifySettings.releases.indicator || notifySettings.releases.popup)
         && utilCompareVersion(appVersion, '>', updatesLSState.value.releases.version)
       ) {

@@ -631,8 +631,7 @@ const sheetElemState = shallowReactive({
   },
 })
 
-const _isBuildForWebsite = useRuntimeConfig().public.isBuildForWebsite as string | boolean
-const preferLoadingLocalMupdfScript = _isBuildForWebsite !== 'true' && _isBuildForWebsite !== true
+const preferLoadingLocalMupdfScript = !useIsBuildForWebsite()
 
 // the urls of questions which will be used for question preview
 const testQuestionsImgUrls = useCbtResultsTestQuestionsImgUrls()

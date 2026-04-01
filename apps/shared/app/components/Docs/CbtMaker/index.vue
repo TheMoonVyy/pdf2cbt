@@ -653,10 +653,7 @@ const image2Urls = [
 
 const isErrorLoadingUrl = shallowRef(false)
 
-const _isBuildForWebsite = useRuntimeConfig().public.isBuildForWebsite as string | boolean
-const isBuildForWebsite = _isBuildForWebsite === 'true' || _isBuildForWebsite === true
-
-if (!isBuildForWebsite) {
+if (!useIsBuildForWebsite()) {
   image1Urls.reverse()
   image2Urls.reverse()
 }
