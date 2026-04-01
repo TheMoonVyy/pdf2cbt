@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.3.0...v2.4.0) (2026-04-01)
+
+
+### Features
+
+* add donation page ([1fdad60](https://github.com/TheMoonVyy/pdf2cbt/commit/1fdad60d573614edace8818cbc130c223f9ba8cb))
+
 ## [2.3.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.2.0...v2.3.0) (2026-03-31)
 
 
