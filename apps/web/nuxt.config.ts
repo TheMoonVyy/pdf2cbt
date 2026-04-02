@@ -21,10 +21,6 @@ export default defineNuxtConfig({
       projectVersion: packageJson.version,
     },
   },
-  future: {
-    compatibilityVersion: 4,
-  },
-  compatibilityDate: '2025-03-17',
   vite: {
     define: {
       'import.meta.env.PROJECT_VERSION': `"${packageJson.version}"`,

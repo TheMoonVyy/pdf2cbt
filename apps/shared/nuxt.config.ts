@@ -45,7 +45,10 @@ export default defineNuxtConfig({
     '/pdf-cropper': { redirect: { to: '/cbt/maker', statusCode: 301 } },
   },
   future: {
-    compatibilityVersion: 4,
+    compatibilityVersion: 5,
+  },
+  experimental: {
+    payloadExtraction: true,
   },
   compatibilityDate: '2025-03-17',
   vite: {
