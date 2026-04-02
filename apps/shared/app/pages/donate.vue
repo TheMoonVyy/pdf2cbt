@@ -72,51 +72,52 @@
         Supporters 💚
       </h2>
 
-      <p
-        v-if="donations.length === 0"
-        class="text-sm text-gray-400 text-center"
-      >
-        No supporters yet.
-      </p>
+      <ClientOnly>
+        <p
+          v-if="!supporters?.length"
+          class="text-sm text-gray-400 text-center"
+        >
+          No supporters yet.
+        </p>
 
-      <div
-        v-else
-        class="overflow-x-auto border border-gray-700 rounded-xl"
-      >
-        <table class="w-full text-sm text-left text-gray-300">
-          <thead class="bg-gray-800 text-gray-400 text-center">
-            <tr>
-              <th class="px-3 py-2">
-                Name
-              </th>
-              <th class="px-3 py-2">
-                Amount
-              </th>
-              <th class="px-3 py-2">
-                Date
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(donation, index) in donations"
-              :key="index"
-              class="border-t border-gray-700"
-            >
-              <td class="px-3 py-2">
-                {{ donation.name }}
-              </td>
-              <td class="px-3 py-2 text-green-400 text-center">
-                ₹{{ donation.amount }}
-              </td>
-              <td class="px-3 py-2 text-center">
-                {{ formatDate(donation.date) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+        <div
+          v-else
+          class="overflow-x-auto border border-gray-700 rounded-xl"
+        >
+          <table class="w-full text-sm text-left text-gray-300">
+            <thead class="bg-gray-800 text-gray-400 text-center">
+              <tr>
+                <th class="px-3 py-2">
+                  Name
+                </th>
+                <th class="px-3 py-2">
+                  Amount
+                </th>
+                <th class="px-3 py-2">
+                  Date
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(donation, index) in supporters"
+                :key="index"
+                class="border-t border-gray-700 text-center"
+              >
+                <td class="px-3 py-2">
+                  {{ donation.name }}
+                </td>
+                <td class="px-3 py-2 text-green-400">
+                  ₹{{ donation.amount }}
+                </td>
+                <td class="px-3 py-2">
+                  {{ donation.date }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ClientOnly>
       <p class="text-sm text-gray-400 mt-3 text-center space-y-2">
         The supporters list is updated manually,
         so it may take some time for new contributions to appear.
@@ -127,15 +128,18 @@
 
 <script lang="ts" setup>
 import upiQr from '#layers/shared/app/assets/images/upi-qr.jpg?url'
+import supportersJsonLocalUrl from '../../../../supporters.json?url'
+
+type Supporters = {
+  name: string
+  date: string // yyyy-mm-dd
+  amount: number // in INR
+}[]
 
 const upiId = 'themoonvyy@upi'
 const openUpiUrl = 'upi://pay?pa=themoonvyy@upi&pn=TheMoonVyy'
 
-const donations: {
-  name: string
-  date: number // unix time (seconds) but only accurate upto date
-  amount: number // in rupees
-}[] = []
+const supporters = shallowRef<Supporters>([])
 
 const isUpiCopied = shallowRef(false)
 
@@ -148,14 +152,22 @@ const upiCopiedSignal = useTimeoutFn(
   },
 )
 
-function formatDate(timestamp: number) {
-  const date = new Date(timestamp * 1000)
+const SUPPORTERS_JSON_URL = 'https://cdn.jsdelivr.net/gh/TheMoonVyy/pdf2cbt@prod/supporters.json'
 
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
+async function loadSupportersList() {
+  try {
+    const freshList = await $fetch(SUPPORTERS_JSON_URL, { params: { t: Date.now() } })
+    if (!Array.isArray(freshList)) throw new Error()
 
-  return `${y}-${m}-${d}`
+    supporters.value = freshList
+  }
+  catch {
+    $fetch(supportersJsonLocalUrl)
+      .then((localList) => {
+        if (Array.isArray(localList))
+          supporters.value = localList
+      })
+  }
 }
 
 function copyUpi() {
@@ -169,4 +181,8 @@ function copyUpi() {
     })
     ?.catch(err => useErrorToast('Error copying UPI ID into clipboard!', err))
 }
+
+onBeforeMount(() => {
+  loadSupportersList()
+})
 </script>
