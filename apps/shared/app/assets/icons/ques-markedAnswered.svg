@@ -1,9 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
   <defs>
-    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="0" flood-color="black" />
-    </filter>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="20%" stop-color="#8160a6"/>
+      <stop offset="40%" stop-color="#7a589f"/>
+      <stop offset="60%" stop-color="#734f96"/>
+      <stop offset="80%" stop-color="#5f417c"/>
+      <stop offset="100%" stop-color="#4a3262"/>
+    </linearGradient>
   </defs>
-  <rect x="5" y="5" width="90" height="90" rx="20" fill="#734f96" filter="url(#shadow)" />
-  <circle cx="78" cy="80" r="13" fill="lightgreen" />
+
+  <circle cx="50" cy="50" r="48" fill="url(#g)" stroke="#3a254d" stroke-width="1" filter="url(#shadow)" />
+  
+  <circle cx="80" cy="80" r="15" fill="#26b226" />
+  <rect x="73" y="73" width="15" height="15" fill="none" stroke="white" stroke-width="2.5"/>
+  <line x1="77" y1="78" x2="84" y2="78" stroke="white" stroke-width="2.5"/>
+  <line x1="77" y1="83" x2="84" y2="83" stroke="white" stroke-width="2.5"/>
 </svg>

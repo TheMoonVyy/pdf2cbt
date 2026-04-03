@@ -1,8 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="0" flood-color="black" />
-    </filter>
+    <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="20%" stop-color="#f0652a"/>
+      <stop offset="40%" stop-color="#ec5a1c"/>
+      <stop offset="60%" stop-color="#E44507"/>
+      <stop offset="80%" stop-color="#c63b06"/>
+      <stop offset="100%" stop-color="#9e2e04"/>
+    </linearGradient>
   </defs>
-  <rect x="5" y="5" width="90" height="90" rx="20" fill="#E44507" filter="url(#shadow)" />
+
+  <path d="M5 10 L5 55 L35 90 L65 90 L95 55 L95 10 Z" fill="url(#g2)" stroke="#7a2303" stroke-width="2" stroke-linejoin="round"/>
 </svg>
