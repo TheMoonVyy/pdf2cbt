@@ -139,8 +139,8 @@ importers:
         specifier: 5.0.1
         version: 5.0.1
       to-words:
-        specifier: 5.3.0
-        version: 5.3.0
+        specifier: 5.4.0
+        version: 5.4.0
       tw-animate-css:
         specifier: 1.4.0
         version: 1.4.0
@@ -6417,8 +6417,8 @@ packages:
     resolution: {integrity: sha512-41wJyvKep3yT2tyPqX/4blcfybknGB4D+oETKLs7Q76UiPqRpUJK3hr1nxelyYO0PHKVzJwlu0aCeEAsGI6rpw==}
     engines: {node: '>=20'}
 
-  to-words@5.3.0:
-    resolution: {integrity: sha512-J0O3KU0FLldDPWJbAtKF/jv00E9rU0YkmQ1mdJQLgllGOUsolqX7Kb+0QFbx87wrgRl9sl2X1YT0v+Wyo4TzRg==}
+  to-words@5.4.0:
+    resolution: {integrity: sha512-ki+YWEP1vnDsDY1sHDdSdn71e/tF3nDZb7n9RyQnhgq1Cji/cMG3KqeCXxwZGIZttpYIfYCr5OcjjJp5SB7izg==}
     engines: {node: '>=20.0.0'}
     hasBin: true
 
@@ -14429,7 +14429,7 @@ snapshots:
       '@sindresorhus/base62': 1.0.0
       reserved-identifiers: 1.2.0
 
-  to-words@5.3.0: {}
+  to-words@5.4.0: {}
 
   toidentifier@1.0.1: {}
 
