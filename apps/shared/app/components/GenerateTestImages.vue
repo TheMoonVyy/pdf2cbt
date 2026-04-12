@@ -100,11 +100,24 @@ async function generateQuestionImages() {
   const processedCropperData = processCropperData(cropperData)
   const scale = pdfState.scale
 
-  const questionsBlobs = await mupdfWorker.generateQuestionImages(
+  const questionImgBuffers = await mupdfWorker.generateQuestionImages(
     processedCropperData,
     scale,
     true,
   )
+
+  const questionsBlobs: TestImageBlobs = {}
+  for (const [section, qImgsObj] of Object.entries(questionImgBuffers)) {
+    questionsBlobs[section] ??= {}
+
+    for (const [question, buffers] of Object.entries(qImgsObj)) {
+      for (const buff of buffers) {
+        const blob = new Blob([buff], { type: 'image/png' })
+        questionsBlobs[section][question] ??= []
+        questionsBlobs[section][question].push(blob)
+      }
+    }
+  }
 
   mupdfWorker.close()
 

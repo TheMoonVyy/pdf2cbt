@@ -1,4 +1,7 @@
-import { expose as comlinkExpose } from 'comlink'
+import {
+  expose as comlinkExpose,
+  transfer as comlinkTransfer,
+} from 'comlink'
 import type * as Mupdf from 'mupdf'
 import utilRange from '#layers/shared/app/utils/utilRange'
 import type {
@@ -160,6 +163,7 @@ export class MuPdfProcessor {
             pageVectorsAreaCoords.push(coords)
         },
       })
+      sText.destroy()
       page.destroy()
 
       const linesGroupedByY = pageChars.reduce(
@@ -228,6 +232,7 @@ export class MuPdfProcessor {
       transparent,
       true,
     )
+    page.destroy()
     return pixmap
   }
 
@@ -254,6 +259,8 @@ export class MuPdfProcessor {
         pageScale: 1,
       }
       top += height
+
+      page.destroy()
     }
 
     return pagesImgData
@@ -263,12 +270,18 @@ export class MuPdfProcessor {
     pageNum: number,
     scale: number,
     transparent: boolean = false,
-  ): Promise<Blob> {
+  ): Promise<ArrayBuffer> {
     if (!this.doc) throw new Error('PDF not loaded')
 
     const pixmap = await this.getPagePixmap(pageNum, scale, transparent)
 
-    return new Blob([pixmap.asPNG() as Uint8Array<ArrayBuffer>], { type: 'image/png' })
+    try {
+      const png = pixmap.asPNG() as Uint8Array<ArrayBuffer>
+      return comlinkTransfer(png.buffer, [png.buffer])
+    }
+    finally {
+      pixmap.destroy()
+    }
   }
 
   async generateQuestionImages(
@@ -279,34 +292,43 @@ export class MuPdfProcessor {
     if (!this.doc) throw new Error('PDF not loaded')
 
     let progressCount = 0
-    const imageBlobs: TestImageBlobs = {}
+    const sectionQImageBuffers: {
+      [section: string]: { [question: string | number]: ArrayBuffer[] }
+    } = {}
+    const images = new Set<ArrayBuffer>()
 
     for (const pageKey of Object.keys(processedCropperData)) {
-      const pageNum = parseInt(pageKey)
-      const pagePixmap = await this.getPagePixmap(pageNum, scale, transparent)
+      let pagePixmap: Mupdf.Pixmap | null = null
+      try {
+        const pageNum = parseInt(pageKey)
+        pagePixmap = await this.getPagePixmap(pageNum, scale, transparent)
+        const pageProcessedData = processedCropperData[pageKey]
 
-      const pageProcessedData = processedCropperData[pageKey]
+        if (!pageProcessedData) continue
 
-      if (!pageProcessedData) continue
+        for (const questionData of pageProcessedData) {
+          const { pdfData, section, question } = questionData
 
-      for (const questionData of pageProcessedData) {
-        const { pdfData, section, question } = questionData
+          if (!sectionQImageBuffers[section]?.[question]) {
+            progressCount++
+            self.postMessage({ type: 'progress', value: progressCount })
+          }
+          const buff = await this.getCroppedImg(pagePixmap, pdfData)
+          if (buff) {
+            sectionQImageBuffers[section] ??= {}
+            sectionQImageBuffers[section][question] ??= []
 
-        if (!imageBlobs[section]?.[question]) {
-          progressCount++
-          self.postMessage({ type: 'progress', value: progressCount })
+            sectionQImageBuffers[section][question].push(buff)
+            images.add(buff)
+          }
         }
-        const blob = await this.getCroppedImg(pagePixmap, pdfData)
-        if (blob) {
-          imageBlobs[section] ??= {}
-          imageBlobs[section][question] ??= []
-
-          imageBlobs[section][question].push(blob)
-        }
+      }
+      finally {
+        pagePixmap?.destroy()
       }
     }
 
-    return imageBlobs
+    return comlinkTransfer(sectionQImageBuffers, [...images])
   }
 
   async generateAndPostQuestionImagesIndividually(
@@ -326,22 +348,27 @@ export class MuPdfProcessor {
 
         pagePixmaps[pageNum] ??= await this.getPagePixmap(Number(pageNum), scale, transparent)
 
-        const imgBlob = await this.getCroppedImg(pagePixmaps[pageNum], pdfDataItem)
+        const imgBuffer = await this.getCroppedImg(pagePixmaps[pageNum], pdfDataItem)
         self.postMessage(
           {
             type: 'question-image',
             queId,
-            blob: imgBlob,
+            imgBuffer,
           },
+          [imgBuffer],
         )
       }
+    }
+
+    for (const pixmap of Object.values(pagePixmaps)) {
+      pixmap.destroy()
     }
   }
 
   private async getCroppedImg(pagePixmap: Mupdf.Pixmap, pdfData: PdfData) {
     const { x, y, w, h } = pdfData
 
-    const croppedPNG = pagePixmap.warp(
+    const croppedPixmap = pagePixmap.warp(
       [
         [x, y],
         [x + w, y],
@@ -350,9 +377,11 @@ export class MuPdfProcessor {
       ],
       w,
       h,
-    ).asPNG()
+    )
+    const png = croppedPixmap.asPNG() as Uint8Array<ArrayBuffer>
+    croppedPixmap.destroy()
 
-    return new Blob([croppedPNG as Uint8Array<ArrayBuffer>], { type: 'image/png' })
+    return png.buffer
   }
 
   close() {

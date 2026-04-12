@@ -1129,9 +1129,9 @@ async function renderPdftoImgs(questionsPdfData: QuestionsPdfData) {
 
     mupdfOgWorker.onmessage = (e) => {
       if (e.data.type === 'question-image') {
-        const { queId, blob } = e.data as { queId: number, blob: Blob }
+        const { queId, imgBuffer } = e.data as { queId: number, imgBuffer: ArrayBuffer }
 
-        const imgUrl = URL.createObjectURL(blob)
+        const imgUrl = URL.createObjectURL(new Blob([imgBuffer], { type: 'image/png' }))
         testQuestionsImgUrls.value[testId]![queId] ??= []
         testQuestionsImgUrls.value[testId]![queId].push(imgUrl)
       }
