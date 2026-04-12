@@ -496,7 +496,8 @@ async function renderPage(pageNum: number) {
         URL.revokeObjectURL(maybeExistingPage.url)
       }
 
-      const pageImgBlob = await mupdfWorker.getPageImage(pageNum, pageScale, true)
+      const pageImgBuffer = await mupdfWorker.getPageImage(pageNum, pageScale, true)
+      const pageImgBlob = new Blob([pageImgBuffer], { type: 'image/png' })
 
       const pageData = pagesImgData[pageNum]!
       pageData.url = URL.createObjectURL(pageImgBlob)
