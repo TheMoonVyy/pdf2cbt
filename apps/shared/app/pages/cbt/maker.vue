@@ -151,6 +151,39 @@ const downloadData = computed(() => {
   }
 })
 
+function onBeforeUnloadCallback(e: Event) {
+  e.preventDefault()
+}
+
+let removeNagivationGuard = () => {}
+
+watch(() => pdfLoadingState.isLoaded,
+  () => {
+    window.addEventListener('beforeunload', onBeforeUnloadCallback)
+    const router = useRouter()
+    removeNagivationGuard = router.beforeEach((_, __, next) => {
+      const confirmLeave = confirm(
+        'Are you sure you want to leave Test Maker?\n'
+        + 'Current test making progress may be lost if not saved/downloaded!',
+      )
+      if (confirmLeave) {
+        next()
+      }
+      else {
+        next(false)
+      }
+    })
+  },
+  { once: true },
+)
+
+const pageCleanUpCallback = () => {
+  window.removeEventListener('beforeunload', onBeforeUnloadCallback)
+  removeNagivationGuard()
+}
+
+onBeforeUnmount(pageCleanUpCallback)
+
 provide(outputZipFileNameKey, outputZipFileName)
 provide(downloadDataKey, downloadData)
 provide(testConfigKey, testConfig)
