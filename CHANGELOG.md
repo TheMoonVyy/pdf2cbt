@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.4.1...v2.5.0) (2026-05-18)
+
+
+### Features
+
+* **test-maker:** prevent accidental unload or page navigation during test creation ([#348](https://github.com/TheMoonVyy/pdf2cbt/issues/348)) ([ff7bee3](https://github.com/TheMoonVyy/pdf2cbt/commit/ff7bee38d48771f391ce6d04109ab29e7b2b295d))
+
 ## [2.4.1](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.4.0...v2.4.1) (2026-04-12)
 
 
