@@ -1083,8 +1083,6 @@ const resumePausedTestHandler = () => {
 
 function onBeforeUnloadCallback(e: Event) {
   e.preventDefault()
-  // @ts-expect-error compatibility for older browser versions
-  e.returnValue = ''
 }
 
 let removeNagivationGuard = () => {}
@@ -1093,7 +1091,7 @@ watch(testState,
   () => {
     window.addEventListener('beforeunload', onBeforeUnloadCallback)
     const router = useRouter()
-    removeNagivationGuard = router.beforeEach((to, from, next) => {
+    removeNagivationGuard = router.beforeEach((_, __, next) => {
       const confirmLeave = confirm(
         'Are you sure you want to go back?\nCurrent Test State may be lost if you do!',
       )
