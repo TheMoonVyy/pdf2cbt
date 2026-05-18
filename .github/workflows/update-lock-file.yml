@@ -3,10 +3,15 @@ name: Update pnpm lockfile
 on:
   workflow_dispatch:
 
+env:
+  NODE_VERSION: ${{ vars.NODE_VERSION }}
+  PNPM_VERSION: ${{ vars.PNPM_VERSION }}
+
 jobs:
   update-lockfile:
     name: Update pnpm-lock.yaml
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
       pull-requests: write
@@ -19,12 +24,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Enable corepack
-        run: corepack enable
+        run: |
+          corepack enable
+          corepack use pnpm@${PNPM_VERSION}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ vars.NODE_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
       - name: Update lockfile
@@ -36,15 +43,20 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git add pnpm-lock.yaml
+
           if git diff --staged --quiet; then
             echo "pnpm-lock.yaml is already up to date. Nothing to commit."
             exit 0
           fi
+
           BRANCH="chore/update-pnpm-lockfile"
+
           git checkout -b "$BRANCH"
           git commit -m "chore: update pnpm-lock.yaml"
           git push -f origin "$BRANCH"
+
           gh pr create \
             --base main \
             --head "$BRANCH" \
