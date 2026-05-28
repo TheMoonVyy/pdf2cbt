@@ -73,8 +73,8 @@ importers:
         specifier: 3.3.3
         version: 3.3.3
       echarts:
-        specifier: 6.0.0
-        version: 6.0.0
+        specifier: 6.1.0
+        version: 6.1.0
       fflate:
         specifier: 0.8.2
         version: 0.8.2
@@ -113,7 +113,7 @@ importers:
         version: 1.2.8(magicast@0.5.2)
       nuxt-echarts:
         specifier: 1.0.1
-        version: 1.0.1(echarts@6.0.0)(magicast@0.5.2)(vue-echarts@8.0.0-beta.1(echarts@6.0.0)(vue@3.5.32(typescript@5.9.3)))
+        version: 1.0.1(echarts@6.1.0)(magicast@0.5.2)(vue-echarts@8.0.0-beta.1(echarts@6.1.0)(vue@3.5.32(typescript@5.9.3)))
       nuxt-og-image:
         specifier: 6.3.9
         version: 6.3.9(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@nuxt/schema@4.4.2)(@resvg/resvg-js@2.6.2)(@unhead/vue@2.1.12(vue@3.5.32(typescript@5.9.3)))(fontless@0.2.1(db0@0.3.4)(ioredis@5.10.0)(vite@7.3.1(@types/node@24.12.2)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(yaml@2.8.3)))(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@24.12.2)(@vue/compiler-sfc@3.5.32)(cac@6.7.14)(db0@0.3.4)(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(optionator@0.9.4)(rollup-plugin-visualizer@6.0.11(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@24.12.2)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(yaml@2.8.3))(yaml@2.8.3))(satori@0.26.0)(sharp@0.34.5)(tailwindcss@4.2.2)(unifont@0.7.4)(unstorage@1.17.5(db0@0.3.4)(ioredis@5.10.0))(vite@7.3.1(@types/node@24.12.2)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))(zod@4.3.6)
@@ -3824,8 +3824,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  echarts@6.0.0:
-    resolution: {integrity: sha512-Tte/grDQRiETQP4xz3iZWSvoHrkCQtwqd6hs+mifXcjrCuo2iKWbajFObuLJVBlDIJlOzgQPd1hsaKt/3+OMkQ==}
+  echarts@6.1.0:
+    resolution: {integrity: sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA==}
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
@@ -7126,8 +7126,8 @@ packages:
   zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
-  zrender@6.0.0:
-    resolution: {integrity: sha512-41dFXEEXuJpNecuUQq6JlbybmnHaqqpGlbH1yxnA5V9MMP4SbohSVZsJIwz+zdjQXSSlR1Vc34EgH1zxyTDvhg==}
+  zrender@6.1.0:
+    resolution: {integrity: sha512-oEGMDB6pOP2S6OwRR4PdVv610zrjnA3Bh+JnSG12fYJlBKjtNAoEb5fSUoCOOINlH96I2fU38/A2UpRKs67xYQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -10865,10 +10865,10 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  echarts@6.0.0:
+  echarts@6.1.0:
     dependencies:
       tslib: 2.3.0
-      zrender: 6.0.0
+      zrender: 6.1.0
 
   ee-first@1.1.1: {}
 
@@ -12601,11 +12601,11 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  nuxt-echarts@1.0.1(echarts@6.0.0)(magicast@0.5.2)(vue-echarts@8.0.0-beta.1(echarts@6.0.0)(vue@3.5.32(typescript@5.9.3))):
+  nuxt-echarts@1.0.1(echarts@6.1.0)(magicast@0.5.2)(vue-echarts@8.0.0-beta.1(echarts@6.1.0)(vue@3.5.32(typescript@5.9.3))):
     dependencies:
       '@nuxt/kit': 4.1.3(magicast@0.5.2)
-      echarts: 6.0.0
-      vue-echarts: 8.0.0-beta.1(echarts@6.0.0)(vue@3.5.32(typescript@5.9.3))
+      echarts: 6.1.0
+      vue-echarts: 8.0.0-beta.1(echarts@6.1.0)(vue@3.5.32(typescript@5.9.3))
     transitivePeerDependencies:
       - magicast
 
@@ -14848,9 +14848,9 @@ snapshots:
 
   vue-devtools-stub@0.1.0: {}
 
-  vue-echarts@8.0.0-beta.1(echarts@6.0.0)(vue@3.5.32(typescript@5.9.3)):
+  vue-echarts@8.0.0-beta.1(echarts@6.1.0)(vue@3.5.32(typescript@5.9.3)):
     dependencies:
-      echarts: 6.0.0
+      echarts: 6.1.0
       vue: 3.5.32(typescript@5.9.3)
 
   vue-eslint-parser@10.4.0(eslint@10.2.0(jiti@2.6.1)):
@@ -15048,7 +15048,7 @@ snapshots:
 
   zod@4.3.6: {}
 
-  zrender@6.0.0:
+  zrender@6.1.0:
     dependencies:
       tslib: 2.3.0
 
