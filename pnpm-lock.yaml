@@ -67,8 +67,8 @@ importers:
         specifier: 4.4.2
         version: 4.4.2
       dexie:
-        specifier: 4.4.2
-        version: 4.4.2
+        specifier: 4.4.3
+        version: 4.4.3
       dompurify:
         specifier: 3.3.3
         version: 3.3.3
@@ -3769,8 +3769,8 @@ packages:
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
 
-  dexie@4.4.2:
-    resolution: {integrity: sha512-zMtV8q79EFE5U8FKZvt0Y/77PCU/Hr/RDxv1EDeo228L+m/HTbeN2AjoQm674rhQCX8n3ljK87lajt7UQuZfvw==}
+  dexie@4.4.3:
+    resolution: {integrity: sha512-N+3IGQ3HPlyO2YAkntGAwitm42BpBGV86MttzUMiRzWLa4NGh0pltVRcUVF4ybL/OnXjCrr9k7SDPIKkFYP2Lg==}
 
   didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
@@ -10815,7 +10815,7 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  dexie@4.4.2: {}
+  dexie@4.4.3: {}
 
   didyoumean@1.2.2: {}
 
