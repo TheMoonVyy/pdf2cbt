@@ -88,8 +88,8 @@ importers:
         specifier: 14.2.0
         version: 14.2.0
       markdown-it-attrs:
-        specifier: 4.2.0
-        version: 4.2.0(markdown-it@14.2.0)
+        specifier: 5.0.0
+        version: 5.0.0(markdown-it@14.2.0)
       markdown-it-block-embed:
         specifier: 0.0.3
         version: 0.0.3
@@ -4994,8 +4994,8 @@ packages:
   magicast@0.5.2:
     resolution: {integrity: sha512-E3ZJh4J3S9KfwdjZhe2afj6R9lGIN5Pher1pF39UGrXRqq/VDaGVIGN13BjHd2u8B61hArAGOnso7nBOouW3TQ==}
 
-  markdown-it-attrs@4.2.0:
-    resolution: {integrity: sha512-m7svtUBythvcGFFZAv9VjMEvs8UbHri2sojJ3juJumoOzv8sdkx9a7W3KxiHbXxAbvL3Xauak8TMwCnvigVPKw==}
+  markdown-it-attrs@5.0.0:
+    resolution: {integrity: sha512-7Wvp3Fc1YsHsj1oRKli1DGAMyGhozldtU99wEl4plc6OBsv1WZB+zT3Lgm1/49rVMvXWiYXbUU8rz3X6VVGKaQ==}
     engines: {node: '>=6'}
     peerDependencies:
       markdown-it: '>= 9.0.0'
@@ -12266,7 +12266,7 @@ snapshots:
       '@babel/types': 7.29.0
       source-map-js: 1.2.1
 
-  markdown-it-attrs@4.2.0(markdown-it@14.2.0):
+  markdown-it-attrs@5.0.0(markdown-it@14.2.0):
     dependencies:
       markdown-it: 14.2.0
 
