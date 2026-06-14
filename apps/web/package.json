@@ -39,7 +39,7 @@
         "dexie": "4.4.2",
         "dompurify": "3.3.3",
         "echarts": "6.1.0",
-        "fflate": "0.8.2",
+        "fflate": "0.8.3",
         "liquidjs": "10.25.5",
         "lucide-vue-next": "0.577.0",
         "markdown-it": "14.2.0",
