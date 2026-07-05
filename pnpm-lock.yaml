@@ -16,8 +16,8 @@ importers:
         specifier: 0.23.2
         version: 0.23.2(markdown-it@14.2.0)
       '@mdit/plugin-tasklist':
-        specifier: 0.23.2
-        version: 0.23.2(markdown-it@14.2.0)
+        specifier: 1.0.1
+        version: 1.0.1(markdown-it@14.2.0)
       '@nuxt/fonts':
         specifier: 0.14.0
         version: 0.14.0(db0@0.3.4)(ioredis@5.10.0)(magicast@0.5.2)(vite@7.3.1(@types/node@24.12.2)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(yaml@2.8.3))
@@ -1023,11 +1023,11 @@ packages:
       markdown-it:
         optional: true
 
-  '@mdit/plugin-tasklist@0.23.2':
-    resolution: {integrity: sha512-9vpH3ZG2JmB3SqYfXmRXk9mI5Q6U+KO30quNH1PN5lp5gQtW4kceWhfAPeQtSMemNV4KuCyns+6PRX8zD9Sajw==}
-    engines: {node: '>= 20'}
+  '@mdit/plugin-tasklist@1.0.1':
+    resolution: {integrity: sha512-Ks/Tihw5ibbkP2qOZzltkbiTk8RfpxDRvqdn4hl1wIs3VmeKITIQ36gN4DsuotSauA9SBe/mL0QJIfuSCrXqrw==}
+    engines: {node: '>=22'}
     peerDependencies:
-      markdown-it: ^14.1.0
+      markdown-it: ^14.2.0
     peerDependenciesMeta:
       markdown-it:
         optional: true
@@ -7838,7 +7838,7 @@ snapshots:
     optionalDependencies:
       markdown-it: 14.2.0
 
-  '@mdit/plugin-tasklist@0.23.2(markdown-it@14.2.0)':
+  '@mdit/plugin-tasklist@1.0.1(markdown-it@14.2.0)':
     dependencies:
       '@types/markdown-it': 14.1.2
     optionalDependencies:
