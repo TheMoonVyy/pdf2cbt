@@ -79,8 +79,8 @@ importers:
         specifier: 0.8.2
         version: 0.8.2
       liquidjs:
-        specifier: 10.25.5
-        version: 10.25.5
+        specifier: 10.27.2
+        version: 10.27.2
       lucide-vue-next:
         specifier: 0.577.0
         version: 0.577.0(vue@3.5.32(typescript@5.9.3))
@@ -4925,8 +4925,8 @@ packages:
   linkifyjs@4.3.2:
     resolution: {integrity: sha512-NT1CJtq3hHIreOianA8aSXn6Cw0JzYOuDQbOrSPe7gqFnCpKP++MQe3ODgO3oh2GJFORkAAdqredOa60z63GbA==}
 
-  liquidjs@10.25.5:
-    resolution: {integrity: sha512-GKiKeZjJDdVoQAu+S9rzkYsYnYhcep5W3WwZXgb5f+yq484P/k9JqamBbGYu+LBEixcUAXZr2jogdAIjB3ki1w==}
+  liquidjs@10.27.2:
+    resolution: {integrity: sha512-kvknfAEtOHjHkAAv7GxLEJh8ghpMQm3Fc4uWVyF7hERSTsSRsdC7saWs0p5aDG7GDcWsu5o+T4232O+8KZO55w==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -12179,7 +12179,7 @@ snapshots:
 
   linkifyjs@4.3.2: {}
 
-  liquidjs@10.25.5:
+  liquidjs@10.27.2:
     dependencies:
       commander: 10.0.1
 
