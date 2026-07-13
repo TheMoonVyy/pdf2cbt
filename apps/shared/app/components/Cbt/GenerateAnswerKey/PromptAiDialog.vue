@@ -435,7 +435,7 @@ onMounted(() => {
         </UiDialogDescription>
       </UiDialogHeader>
 
-      <UiScrollArea class="max-h-128 w-full pb-6">
+      <UiScrollArea class="max-h-60 w-full">
         <div class="flex flex-col gap-5 items-center">
           <div class="flex gap-8 px-4 w-full">
             <!-- Prompt textarea -->
@@ -459,7 +459,7 @@ onMounted(() => {
               <UiTextarea
                 v-model="promptInputState.text"
                 readonly
-                class="min-h-30 font-mono text-xs bg-accent/30"
+                class="min-h-30 font-mono text-xs bg-accent/30 field-sizing-fixed overflow-y-auto"
               />
             </div>
 
@@ -472,110 +472,110 @@ onMounted(() => {
               <UiTextarea
                 v-model="aiJsonOutputText"
                 placeholder="Paste the JSON returned by the AI here..."
-                class="min-h-30 font-mono text-xs"
+                class="min-h-30 font-mono text-xs field-sizing-fixed overflow-y-auto"
               />
             </div>
           </div>
-
-          <BaseButton
-            icon-name="material-symbols:check-circle-outline"
-            label="Validate Output"
-            :disabled="!aiJsonOutputText.trim()"
-            @click="validatePromptOutputJsonText"
-          />
         </div>
+      </UiScrollArea>
+      <BaseButton
+        icon-name="material-symbols:check-circle-outline"
+        label="Validate Output"
+        class="max-w-48 mx-auto mb-2"
+        :disabled="!aiJsonOutputText.trim()"
+        @click="validatePromptOutputJsonText"
+      />
 
-        <!-- Error Dialog -->
-        <UiDialog
-          v-model:open="errorsState.showDialog"
-          modal
-        >
-          <UiDialogContent class="max-w-full md:max-w-2xl py-3">
-            <UiDialogHeader>
-              <UiDialogTitle class="text-xl font-bold text-center">
-                Output is not in valid format!
-              </UiDialogTitle>
+      <!-- Error Dialog -->
+      <UiDialog
+        v-model:open="errorsState.showDialog"
+        modal
+      >
+        <UiDialogContent class="max-w-full md:max-w-2xl py-3">
+          <UiDialogHeader>
+            <UiDialogTitle class="text-xl font-bold text-center">
+              Output is not in valid format!
+            </UiDialogTitle>
 
-              <UiDialogDescription>
-                Click the copy button below to copy the prompt that describes the errors to AI.
-                Then go back (by closing this dialog) and paste the new output (by replacing the old one).
-              </UiDialogDescription>
-            </UiDialogHeader>
+            <UiDialogDescription>
+              Click the copy button below to copy the prompt that describes the errors to AI.
+              Then go back (by closing this dialog) and paste the new output (by replacing the old one).
+            </UiDialogDescription>
+          </UiDialogHeader>
 
-            <UiScrollArea class="max-h-128 w-full pb-6">
-              <div class="flex flex-col gap-5 items-center">
-                <div class="flex items-center gap-5 justify-center">
-                  <label class="text-base">
-                    Errors in Output
-                  </label>
+          <UiScrollArea class="max-h-128 w-full pb-6">
+            <div class="flex flex-col gap-5 items-center">
+              <div class="flex items-center gap-5 justify-center">
+                <label class="text-base">
+                  Errors in Output
+                </label>
 
-                  <BaseButton
-                    size="iconXs"
-                    variant="outline"
-                    icon-name="mdi:content-copy"
-                    icon-size="1rem"
-                    :class="errorsState.isCopied ? 'hover:text-green-400 text-green-400' : ''"
-                    title="Copy Prompt to clipboard"
-                    @click="copyErrorsPrompt"
-                  />
-                </div>
-
-                <p>
-                  <template
-                    v-for="(err, idx) in errorsState.errors"
-                    :key="idx"
-                  >
-                    <br v-if="!err.trim().startsWith('→')">{{ err }}
-                  </template>
-                </p>
+                <BaseButton
+                  size="iconXs"
+                  variant="outline"
+                  icon-name="mdi:content-copy"
+                  icon-size="1rem"
+                  :class="errorsState.isCopied ? 'hover:text-green-400 text-green-400' : ''"
+                  title="Copy Prompt to clipboard"
+                  @click="copyErrorsPrompt"
+                />
               </div>
-            </UiScrollArea>
-          </UiDialogContent>
-        </UiDialog>
 
-        <!-- Output Dialog -->
-        <UiDialog
-          v-model:open="promptOutputState.showDialog"
-          modal
-        >
-          <UiDialogContent class="max-w-full md:max-w-2xl py-3">
-            <UiDialogHeader>
-              <UiDialogTitle class="text-xl font-bold text-center">
-                Output is logically valid
-              </UiDialogTitle>
-            </UiDialogHeader>
-
-            <div class="text-base space-y-2">
               <p>
-                The Output is logically valid,
-                though that doesn't mean answers are 100% accurate.
-              </p>
-              <p>
-                For example, if a MCQ question has option "A" as answer but output is option B,
-                B is still logically correct but not the right answer!
-              </p>
-              <p>
-                To be fully sure, you can load the output to manually
-                check the answers and correct them if found incorrect.
+                <template
+                  v-for="(err, idx) in errorsState.errors"
+                  :key="idx"
+                >
+                  <br v-if="!err.trim().startsWith('→')">{{ err }}
+                </template>
               </p>
             </div>
+          </UiScrollArea>
+        </UiDialogContent>
+      </UiDialog>
 
-            <UiDialogFooter class="my-2 gap-x-8!">
-              <BaseButton
-                label="Manually Check"
-                icon-name="mdi:tab-find"
-                @click="onManuallyCheck"
-              />
-              <BaseButton
-                label="Generate anyway"
-                variant="warn"
-                icon-name="mdi:rocket-launch"
-                @click="onGenerateAnswerKey"
-              />
-            </UiDialogFooter>
-          </UiDialogContent>
-        </UiDialog>
-      </UiScrollArea>
+      <!-- Output Dialog -->
+      <UiDialog
+        v-model:open="promptOutputState.showDialog"
+        modal
+      >
+        <UiDialogContent class="max-w-full md:max-w-2xl py-3">
+          <UiDialogHeader>
+            <UiDialogTitle class="text-xl font-bold text-center">
+              Output is logically valid
+            </UiDialogTitle>
+          </UiDialogHeader>
+
+          <div class="text-base space-y-2">
+            <p>
+              The Output is logically valid,
+              though that doesn't mean answers are 100% accurate.
+            </p>
+            <p>
+              For example, if a MCQ question has option "A" as answer but output is option B,
+              B is still logically correct but not the right answer!
+            </p>
+            <p>
+              To be fully sure, you can load the output to manually
+              check the answers and correct them if found incorrect.
+            </p>
+          </div>
+
+          <UiDialogFooter class="my-2 gap-x-8!">
+            <BaseButton
+              label="Manually Check"
+              icon-name="mdi:tab-find"
+              @click="onManuallyCheck"
+            />
+            <BaseButton
+              label="Generate anyway"
+              variant="warn"
+              icon-name="mdi:rocket-launch"
+              @click="onGenerateAnswerKey"
+            />
+          </UiDialogFooter>
+        </UiDialogContent>
+      </UiDialog>
     </UiDialogContent>
   </UiDialog>
 </template>
