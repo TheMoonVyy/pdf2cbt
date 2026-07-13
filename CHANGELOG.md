@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.6.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.5.0...v2.6.0) (2026-07-13)
+
+
+### Features
+
+* **test-maker:** add a setting to pattern based cropper to split the page when new subject is found ([#392](https://github.com/TheMoonVyy/pdf2cbt/issues/392)) ([a1046d0](https://github.com/TheMoonVyy/pdf2cbt/commit/a1046d05951f193fcd7c0a732f07b26345f3f769))
+
+
+### Bug Fixes
+
+* **generate-answer-key:** keep validation button visible in prompt AI dialog ([5421c30](https://github.com/TheMoonVyy/pdf2cbt/commit/5421c305b849847467c0917b5cd306127c6f0b8b))
+* **test-maker:** retain PDF viewer scroll position when leaving pattern cropper config ([df26d88](https://github.com/TheMoonVyy/pdf2cbt/commit/df26d88d805e6900c45f407732d7a9fcaf8a1eaa))
+* **updates-page:** watch version query param changes ([#394](https://github.com/TheMoonVyy/pdf2cbt/issues/394)) ([0200b3e](https://github.com/TheMoonVyy/pdf2cbt/commit/0200b3e583359da72b9646bad0e246a006a1995f))
+
 ## [2.5.0](https://github.com/TheMoonVyy/pdf2cbt/compare/v2.4.1...v2.5.0) (2026-05-18)
 
 
