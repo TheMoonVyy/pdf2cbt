@@ -249,30 +249,40 @@ async function selectReleasesSubMenu(version?: string) {
 
 onMounted(() => {
   const route = useRoute()
-  // Prefer version param if both exist
-  const versionParam = route.query.release
-    || route.query.version
-    || route.query.v
 
-  if (versionParam && typeof versionParam === 'string') {
-    const match = versionParam.match(versionRegex)
-    if (match) {
-      const version = `${match[1]}.${match[2]}.${match[3]}`
-      if (releasesData.has(version)) {
-        selectedMenu.value = 'releases'
-        selectReleasesSubMenu(version)
+  watch(
+    () => route.query,
+    () => {
+      for (const key of ['release', 'version', 'v']) {
+        const param = route.query[key]
+        if (!param) continue
+
+        const value = Array.isArray(param) ? param[0] : param
+        if (!value) continue
+
+        const match = value.match(versionRegex)
+        if (!match) break
+
+        const version = `${match[1]}.${match[2]}.${match[3]}`
+        if (releasesData.has(version)) {
+          selectedMenu.value = 'releases'
+          selectReleasesSubMenu(version)
+          return
+        }
+
+        break
+      }
+
+      const devFlag = 'dev' in route.query
+      if (devFlag) {
+        selectMenu('dev')
         return
       }
-    }
-  }
 
-  const devFlag = 'dev' in route.query
-  if (devFlag) {
-    selectMenu('dev')
-    return
-  }
-
-  selectMenu('releases')
+      selectMenu('releases')
+    },
+    { immediate: true, deep: true },
+  )
 })
 </script>
 
