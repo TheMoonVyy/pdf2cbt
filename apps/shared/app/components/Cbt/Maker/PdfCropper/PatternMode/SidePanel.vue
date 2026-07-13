@@ -424,10 +424,8 @@ async function runCropper(patternModeRawDataForCropper: PdfPagesPatternModeData)
 
   const patternBasedCropper = initWorker()
 
-  const { subjects: subjectsConfig } = parsedConfigData
-
   const newCropperOverlays = await patternBasedCropper(
-    subjectsConfig,
+    parsedConfigData,
     patternModeRawDataForCropper,
     utilCloneJson(pagesImgData),
   )
@@ -457,6 +455,8 @@ async function runCropper(patternModeRawDataForCropper: PdfPagesPatternModeData)
     overlays,
     overlaysPerQuestionData,
   )
+
+  const { subjects: subjectsConfig } = parsedConfigData
 
   instructionsData.additionalData = {}
   for (const subjectConf of subjectsConfig) {

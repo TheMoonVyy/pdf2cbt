@@ -199,17 +199,15 @@ type QuestionsState = ParsedQuestionsConfig & {
 type SectionState = Omit<ParsedSectionConfig, 'questions'> & {
   questions: QuestionsState
 }
+type SubjectState = ParsedSubjectConfig & {
+  currentSection: SectionState | null
+}
 
 type State = {
   croppedOverlays: Map<string, PdfCroppedOverlayData>
   overlaysPerQuestionCount: Map<string, number>
   subjects: PatternModeParsedConfig['subjects']
-  currentSubject: null
-    | (
-      ParsedSubjectConfig & {
-        currentSection: SectionState | null
-      }
-    )
+  currentSubject: null | SubjectState
 }
 
 const updateParsedColumnDividers = (state: State, pageWidth: number) => {
@@ -916,14 +914,16 @@ const searchForQuestions = (
 }
 
 async function patternBasedCrop(
-  subjectsConfig: PatternModeParsedConfig['subjects'],
+  config: PatternModeParsedConfig,
   pdfPagesPatternModeData: PdfPagesPatternModeData,
   pagesData: PageImgData,
 ) {
+  const settings = config.settings
+
   const state: State = {
     croppedOverlays: new Map(),
     overlaysPerQuestionCount: new Map(),
-    subjects: subjectsConfig,
+    subjects: config.subjects,
     currentSubject: null,
   }
 
@@ -931,106 +931,143 @@ async function patternBasedCrop(
     const pageNum = parseInt(pageNumStr)
     const { width: pageWidth, height: pageHeight } = pagesData[pageNum]!
     const pageNumAndDims = { num: pageNum, w: pageWidth, h: pageHeight }
-    updateAreaCoordinatesInConfig(subjectsConfig, pageNumAndDims)
+    updateAreaCoordinatesInConfig(state.subjects, pageNumAndDims)
     updateParsedColumnDividers(state, pageWidth)
 
     const lines = pageTextData.lines
 
-    let columnIndex = 0
-    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-      const lineData = lines[lineIndex]!
+    let startY = 0
+    while (startY < pageHeight) {
+      let endY = pageHeight
+      let nextSubjectFoundData: {
+        firstMatchedChar: PageTextChar
+        subjectIndex: number
+      } | null = null
 
-      if (Array.isArray(state.currentSubject?.currentSection?.questions.columns)
-        && state.currentSubject?.currentSection?.questions.currentState?.column) {
-        const newColumn = state.currentSubject.currentSection.questions.columns[columnIndex]
-        if (newColumn) {
-          state.currentSubject.currentSection.questions.currentState.column = newColumn
+      let columnIndex = 0
+      for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+        const lineData = lines[lineIndex]!
+
+        let shouldEndColumn = false
+
+        if (lineData.maxY <= startY || lineData.minY >= endY) {
+          if (lineIndex >= lines.length - 1) shouldEndColumn = true
+          else continue
         }
-      }
-
-      // search for end of current subject
-      if (state.currentSubject?.end) {
-        const end = state.currentSubject.end
-        if (end.searchIn.pages.has(pageNum)) {
-          const searchAreaData = getTextCharsOfLineInSearchArea(
-            end.searchIn.area.parsed,
-            lineData,
-            pageWidth,
-          )
-          if (searchAreaData) {
-            if (end.pattern.test(searchAreaData.text)) {
-              const que = state.currentSubject?.currentSection?.questions.currentState?.que
-              if (que) {
-                const tCoords = searchAreaData.chars
-                  .filter(char => char.c.trim())
-                  .map(char => char.t)
-                const initialBottomCoord = Math.min(...tCoords)
-                endQuestion(state, pageTextData, initialBottomCoord, pageNumAndDims)
-              }
-              state.currentSubject = null
+        else {
+          if (Array.isArray(state.currentSubject?.currentSection?.questions.columns)
+            && state.currentSubject?.currentSection?.questions.currentState?.column) {
+            const newColumn = state.currentSubject.currentSection.questions.columns[columnIndex]
+            if (newColumn) {
+              state.currentSubject.currentSection.questions.currentState.column = newColumn
             }
           }
-        }
-      }
 
-      const subjectFoundData = searchForSubject(state, lineData, columnIndex, pageNumAndDims)
-      if (subjectFoundData) {
-        const { firstMatchedChar, subjectIndex } = subjectFoundData
-        const subject = state.subjects.splice(subjectIndex, 1)[0]!
-
-        endQuestion(state, pageTextData, firstMatchedChar.t, pageNumAndDims)
-
-        state.currentSubject = {
-          ...subject,
-          currentSection: null,
-        }
-        updateParsedColumnDividers(state, pageWidth)
-      }
-
-      if (state.currentSubject?.sections) {
-        const sectionFoundData = searchForSection(state, lineData, columnIndex, pageNumAndDims)
-        if (sectionFoundData) {
-          const { firstMatchedChar, sectionIndex } = sectionFoundData
-          const section = state.currentSubject.sections.splice(sectionIndex, 1)[0]!
-
-          endQuestion(state, pageTextData, firstMatchedChar.t, pageNumAndDims)
-
-          state.currentSubject.currentSection = {
-            ...section,
-            questions: {
-              ...section.questions,
-              currentState: {
-                que: null,
-                column: section.questions.columns[columnIndex] || section.questions.columns[0]!,
-                lastQNum: null,
-                mergeNextCrop: false,
-                paragraphQues: section.questions.paragraphQuestions
-                  ? {
-                      current: null,
-                      commonOverlayPdfDatas: null,
-                    }
-                  : null,
-              },
-            },
+          // search for end of current subject
+          if (state.currentSubject?.end) {
+            const end = state.currentSubject.end
+            if (end.searchIn.pages.has(pageNum)) {
+              const searchAreaData = getTextCharsOfLineInSearchArea(
+                end.searchIn.area.parsed,
+                lineData,
+                pageWidth,
+              )
+              if (searchAreaData) {
+                if (end.pattern.test(searchAreaData.text)) {
+                  const que = state.currentSubject?.currentSection?.questions.currentState?.que
+                  if (que) {
+                    const tCoords = searchAreaData.chars
+                      .filter(char => char.c.trim())
+                      .map(char => char.t)
+                    const initialBottomCoord = Math.min(...tCoords)
+                    endQuestion(state, pageTextData, initialBottomCoord, pageNumAndDims)
+                  }
+                  state.currentSubject = null
+                }
+              }
+            }
           }
+
+          let skipRestOfLine = false
+
+          if (!nextSubjectFoundData) {
+            const subjectFoundData = searchForSubject(state, lineData, columnIndex, pageNumAndDims)
+            if (subjectFoundData) {
+              if (settings.splitPageWhenSubjectIsFound) {
+                endY = subjectFoundData.firstMatchedChar.t
+                nextSubjectFoundData = subjectFoundData
+                skipRestOfLine = true
+              }
+              else {
+                const { firstMatchedChar, subjectIndex } = subjectFoundData
+                const subject = state.subjects.splice(subjectIndex, 1)[0]!
+
+                endQuestion(state, pageTextData, firstMatchedChar.t, pageNumAndDims)
+
+                state.currentSubject = {
+                  ...subject,
+                  currentSection: null,
+                }
+                updateParsedColumnDividers(state, pageWidth)
+              }
+            }
+          }
+
+          if (!skipRestOfLine) {
+            if (state.currentSubject?.sections) {
+              const sectionFoundData = searchForSection(state, lineData, columnIndex, pageNumAndDims)
+              if (sectionFoundData) {
+                const { firstMatchedChar, sectionIndex } = sectionFoundData
+                const section = state.currentSubject.sections.splice(sectionIndex, 1)[0]!
+
+                endQuestion(state, pageTextData, firstMatchedChar.t, pageNumAndDims)
+
+                state.currentSubject.currentSection = {
+                  ...section,
+                  questions: {
+                    ...section.questions,
+                    currentState: {
+                      que: null,
+                      column: section.questions.columns[columnIndex] || section.questions.columns[0]!,
+                      lastQNum: null,
+                      mergeNextCrop: false,
+                      paragraphQues: section.questions.paragraphQuestions
+                        ? {
+                            current: null,
+                            commonOverlayPdfDatas: null,
+                          }
+                        : null,
+                    },
+                  },
+                }
+              }
+            }
+
+            searchForQuestions(state, pageTextData, lineIndex, pageNumAndDims)
+          }
+
+          if (lineIndex >= lines.length - 1) shouldEndColumn = true
         }
-      }
 
-      searchForQuestions(state, pageTextData, lineIndex, pageNumAndDims)
+        if (!shouldEndColumn) continue
 
-      if (lineIndex >= lines.length - 1) { // if last line of page
         const questions = state.currentSubject?.currentSection?.questions
         const columns = questions?.columns
-        if (!questions || !columns) continue
+
+        if (!questions || !columns) break
 
         const columnDividers = state.currentSubject!.columnDividers.parsed
-        if ((columnIndex + 1) >= Math.min(questions.columns.length, columnDividers.length + 1))
-          continue
+        const isLastColumn = (columnIndex + 1) >= Math.min(
+          questions.columns.length,
+          columnDividers.length + 1,
+        )
+
+        if (isLastColumn && endY >= pageHeight) break // Let end-of-page logic handle it
 
         if (questions.currentState?.que) {
-          endQuestion(state, pageTextData, pageHeight, pageNumAndDims)
+          endQuestion(state, pageTextData, endY, pageNumAndDims)
 
-          if (questions.mergeQuestions.splitBy.has('columns')) {
+          if (!isLastColumn && questions.mergeQuestions.splitBy.has('columns')) {
             questions.currentState.que.t = 0
             questions.currentState.que.l = Math.max(
               questions.currentState.column.crop.exactlyTo.parsed.r,
@@ -1046,18 +1083,38 @@ async function patternBasedCrop(
         if (questions.currentState?.paragraphQues?.current) {
           endParagraphQuestionCommonOverlay(state, pageTextData, pageNumAndDims, {
             l: null,
-            b: pageHeight,
+            b: endY,
           })
 
-          if (questions.mergeQuestions.splitBy.has('columns')) {
+          if (!isLastColumn && questions.mergeQuestions.splitBy.has('columns')) {
             questions.currentState.paragraphQues.current = { t: 0, l: 0 }
             questions.currentState.mergeNextCrop = true
           }
         }
 
+        if (isLastColumn) break
+
         columnIndex++
         lineIndex = -1 // loop current page lines from start again for next column
       }
+
+      if (nextSubjectFoundData) {
+        const { subjectIndex } = nextSubjectFoundData
+        const subject = state.subjects.splice(subjectIndex, 1)[0]!
+
+        state.currentSubject = {
+          ...subject,
+          currentSection: null,
+        }
+        nextSubjectFoundData = null
+        updateParsedColumnDividers(state, pageWidth)
+      }
+
+      endY = Math.max(endY, startY)
+
+      if (endY >= pageHeight) break
+
+      startY = endY
     }
 
     const questions = state.currentSubject?.currentSection?.questions

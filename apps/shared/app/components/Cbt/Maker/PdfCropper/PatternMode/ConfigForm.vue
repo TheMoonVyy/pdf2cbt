@@ -11,6 +11,7 @@ import {
 import {
   yCoordinateGroupingRangeForLineTooltipContent,
   calculateCharacterBoundariesPreciselyTooltipContent,
+  splitPageWhenSubjectIsFound,
 } from '../tooltipContents'
 
 const { form } = usePatternModeFormData()
@@ -226,6 +227,19 @@ function addNewSubjectFromCurrentConfig(subjectIdx: number) {
                 <UiSwitch
                   id="accurate-bbox"
                   v-model="form!.settings.calculateCharacterBoundariesPrecisely"
+                />
+              </div>
+              <div class="flex items-center gap-3">
+                <IconWithTooltip :content="splitPageWhenSubjectIsFound" />
+                <UiLabel
+                  class="text-lg cursor-pointer"
+                  for="split-page-when-subject-is-found"
+                >
+                  Split PDF Page When Subject Is Found:
+                </UiLabel>
+                <UiSwitch
+                  id="split-page-when-subject-is-found"
+                  v-model="form!.settings.splitPageWhenSubjectIsFound"
                 />
               </div>
               <div class="flex items-center gap-3">

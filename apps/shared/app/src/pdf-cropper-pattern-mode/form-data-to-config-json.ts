@@ -2,6 +2,7 @@ import type {
   PatternModeConfigJson,
   PatternModeSubjectConfigJson,
   PatternModeQuestionsConfigJson,
+  PatternModeQuestionOptionsCounterTypeConfigJson,
   PatternModeSectionConfigJson,
   PatternModeQuestionsColumnConfigJson,
   OffsetBy,
@@ -89,6 +90,23 @@ function getQuestionsData(
 
   let details: PatternModeQuestionsConfigJson['details'] | null = null
   if (qDetails.type === 'mcq' || qDetails.type === 'msm' || qDetails.type === 'msq') {
+    type Primary = PatternModeQuestionOptionsCounterTypeConfigJson['primary']
+    type Secondary = PatternModeQuestionOptionsCounterTypeConfigJson['secondary']
+
+    const {
+      answerOptionsCounterTypePrimary,
+      answerOptionsCounterTypeSecondary,
+    } = qDetails
+
+    const answerOptionsCounterType: PatternModeQuestionOptionsCounterTypeConfigJson = {}
+    if (answerOptionsCounterTypePrimary !== 'default') {
+      answerOptionsCounterType.primary = answerOptionsCounterTypePrimary as Primary
+    }
+    if (answerOptionsCounterTypeSecondary !== 'default') {
+      answerOptionsCounterType.secondary = answerOptionsCounterTypeSecondary as Secondary
+    }
+
+    const isCounterTypeEmpty = Object.keys(answerOptionsCounterType).length === 0
     if (qDetails.type === 'msq') {
       details = {
         type: 'msq',
@@ -98,7 +116,7 @@ function getQuestionsData(
           pm: qDetails.marks.pm,
           im: qDetails.marks.im,
         },
-        answerOptionsCounterType: {},
+        answerOptionsCounterType: isCounterTypeEmpty ? undefined : answerOptionsCounterType,
       }
     }
     else {
@@ -109,27 +127,8 @@ function getQuestionsData(
           cm: qDetails.marks.cm,
           im: qDetails.marks.im,
         },
-        answerOptionsCounterType: {},
+        answerOptionsCounterType: isCounterTypeEmpty ? undefined : answerOptionsCounterType,
       }
-    }
-
-    const {
-      answerOptionsCounterTypePrimary,
-      answerOptionsCounterTypeSecondary,
-    } = qDetails
-
-    const answerOptionsCounterType = details.answerOptionsCounterType!
-    type AnswerOptionsCounterType = typeof answerOptionsCounterType.primary
-
-    if (answerOptionsCounterTypePrimary !== 'default') {
-      answerOptionsCounterType.primary = answerOptionsCounterTypePrimary as AnswerOptionsCounterType
-    }
-    if (answerOptionsCounterTypeSecondary !== 'default') {
-      answerOptionsCounterType.secondary = answerOptionsCounterTypeSecondary as AnswerOptionsCounterType
-    }
-
-    if (Object.keys(answerOptionsCounterType).length === 0) {
-      delete details.answerOptionsCounterType
     }
   }
   else {
@@ -187,7 +186,7 @@ function getQuestionsData(
 
   return {
     pages: questionsConfig.pages,
-    details,
+    details: details!,
     forBottomCoordinateUseBottom,
     forTopCoordinateLookUp,
     obtainedQuestionNum,

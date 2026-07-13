@@ -242,6 +242,7 @@ export function getConfigFormDataFromJson(patternModeConfig: PatternModeConfigJs
     settings: {
       ...settings,
       calculateCharacterBoundariesPrecisely: !!settings.calculateCharacterBoundariesPrecisely,
+      splitPageWhenSubjectIsFound: !!settings.splitPageWhenSubjectIsFound,
       linesToIgnore,
     },
     subjects: getSubjectsData(subjects),

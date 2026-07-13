@@ -682,6 +682,16 @@ const settingsSchema = z.strictObject({
         + 'in the document and they are getting in the way of the question area, '
         + 'these can be ignored by providing patterns to detect them.',
     }),
+  splitPageWhenSubjectIsFound: z.boolean().optional()
+    .meta({
+      title: 'Split Page When Subject Is Found?',
+      description: 'When true, if a new subject is found, '
+        + 'the page is split horizontally at that point into 2 parts.\n'
+        + 'Useful when there are multiple columns and '
+        + 'a new subject is found in the middle of a page '
+        + 'where the top part in all columns has previous subject questions and '
+        + 'the bottom has new subject questions.\n',
+    }),
 })
 
 export const patternModeConfigSchema = z.strictObject({
@@ -701,6 +711,11 @@ export type PatternModeSubjectConfigJson = PatternModeConfigJson['subjects'][num
 
 export type PatternModeSectionConfigJson = z.infer<typeof sectionSchema>
 export type PatternModeQuestionsConfigJson = PatternModeSectionConfigJson['questions']
+export type PatternModeQuestionOptionsCounterTypeConfigJson = NonNullable<
+  z.infer<typeof mcqQuestionTypeSchema>['answerOptionsCounterType']
+  | z.infer<typeof msqQuestionTypeSchema>['answerOptionsCounterType']
+  | z.infer<typeof msmQuestionTypeSchema>['answerOptionsCounterType']
+>
 export type PatternModeQuestionsColumnConfigJson = PatternModeQuestionsConfigJson['columns'][number]
 
 console.log(JSON.stringify(z.toJSONSchema(_patternModeJsonSchema, { io: 'input', reused: 'ref' }), null, 2))
