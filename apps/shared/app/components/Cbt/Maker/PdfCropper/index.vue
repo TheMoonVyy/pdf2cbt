@@ -721,16 +721,16 @@ provide(cropperModeKey, cropperMode)
         <slot v-if="!pdfLoadingState.isLoaded" />
 
         <UiScrollArea
+          v-show="pdfLoadingState.isLoaded && !(
+            cropperMode.isPattern
+            && patternModeState.showEditConfigPanel
+          )"
           ref="pdfContainerScrollAreaRef"
           type="auto"
           scroll-bar-class="-right-3.5! w-3.5"
           :style="{ '--reka-scroll-area-thumb-width': '14px' }"
         >
           <div
-            v-show="pdfLoadingState.isLoaded && !(
-              cropperMode.isPattern
-              && patternModeState.showEditConfigPanel
-            )"
             class="relative"
             :class="{
               'blur-cropped': settings.general.blurCroppedRegion,
