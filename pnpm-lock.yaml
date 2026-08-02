@@ -13,8 +13,8 @@ importers:
   apps/web:
     dependencies:
       '@mdit/plugin-img-size':
-        specifier: 1.0.1
-        version: 1.0.1(markdown-it@14.3.0)
+        specifier: 1.0.2
+        version: 1.0.2(markdown-it@14.3.0)
       '@mdit/plugin-tasklist':
         specifier: 1.0.1
         version: 1.0.1(markdown-it@14.3.0)
@@ -1249,8 +1249,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@mdit/plugin-img-size@1.0.1':
-    resolution: {integrity: sha512-9NBklpT1DZqcdQ9vL3bveA/XN9GxDwaFpXp8Udy6i2i1dctydLSzvxFOIuO3X5kAym3/XpZfXSTen15mj35tHQ==}
+  '@mdit/plugin-img-size@1.0.2':
+    resolution: {integrity: sha512-E6Q4GIPUdawjvTdgFoteMWr9PGq57Ktk/Wl0O+YH2WD5IMzjyhhe1tjt6iMmZao/iaxJhQeLD2HYa00IMfPedw==}
     engines: {node: '>=22'}
     peerDependencies:
       markdown-it: ^14.2.0
@@ -4464,8 +4464,8 @@ packages:
       picomatch:
         optional: true
 
-  fflate@0.7.4:
-    resolution: {integrity: sha512-5u2V/CDW15QM1XbbgS+0DfPxVB+jUKhWEKuuFuHncbk3tEEqzmoXL+2KyOFuKGqOnmdIy0/davWF1CkuwtibCw==}
+  fflate@0.7.5:
+    resolution: {integrity: sha512-QieYf//cis6ywHNi5qW1+PXPQ4bC+XVJAtS4AXIML8P76GroEiOxm/oQtn1f02UkJY1+KsXMJcC+R2v/Eg4G3g==}
 
   fflate@0.8.3:
     resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
@@ -8144,7 +8144,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@mdit/plugin-img-size@1.0.1(markdown-it@14.3.0)':
+  '@mdit/plugin-img-size@1.0.2(markdown-it@14.3.0)':
     dependencies:
       '@types/markdown-it': 14.1.2
     optionalDependencies:
@@ -9578,7 +9578,7 @@ snapshots:
 
   '@shuding/opentype.js@1.4.0-beta.0':
     dependencies:
-      fflate: 0.7.4
+      fflate: 0.7.5
       string.prototype.codepointat: 0.2.1
     optional: true
 
@@ -11463,7 +11463,7 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.5
 
-  fflate@0.7.4:
+  fflate@0.7.5:
     optional: true
 
   fflate@0.8.3: {}
