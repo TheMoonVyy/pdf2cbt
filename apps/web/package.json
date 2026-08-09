@@ -39,7 +39,7 @@
         "dompurify": "3.4.12",
         "echarts": "6.1.0",
         "fflate": "0.8.3",
-        "liquidjs": "10.27.2",
+        "liquidjs": "10.28.0",
         "lucide-vue-next": "1.0.0",
         "markdown-it": "14.3.0",
         "markdown-it-attrs": "5.0.0",
