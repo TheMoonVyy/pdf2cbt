@@ -46,8 +46,8 @@ importers:
         specifier: 4.3.2
         version: 4.3.2(vite@7.3.6(@types/node@26.1.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.0)(yaml@2.9.0))
       '@tanstack/vue-table':
-        specifier: 8.21.3
-        version: 8.21.3(vue@3.5.39(typescript@6.0.3))
+        specifier: 9.1.2
+        version: 9.1.2(vue@3.5.39(typescript@6.0.3))
       '@vueuse/core':
         specifier: 14.3.0
         version: 14.3.0(vue@3.5.39(typescript@6.0.3))
@@ -2972,16 +2972,19 @@ packages:
       csstype:
         optional: true
 
-  '@tanstack/table-core@8.21.3':
-    resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
-    engines: {node: '>=12'}
+  '@tanstack/store@0.11.1':
+    resolution: {integrity: sha512-mzTOBhypOuDJAy/D8n2MfUZ1HFkXnmSETviRyhqEC8LUE7/IZQExOTxMANj3KjTofYTkFNpBY67qaVrT41YccA==}
+
+  '@tanstack/table-core@9.1.2':
+    resolution: {integrity: sha512-ONpWQeass1sfg80CWF1NSwQ8r3GiqxA2lT/EdqIcrDEPZ0Z+0mM94eQoFYLPN0Kztzj8TQVb2+PrSZSItqA61g==}
+    engines: {node: '>=20'}
 
   '@tanstack/virtual-core@3.13.23':
     resolution: {integrity: sha512-zSz2Z2HNyLjCplANTDyl3BcdQJc2k1+yyFoKhNRmCr7V7dY8o8q5m8uFTI1/Pg1kL+Hgrz6u3Xo6eFUB7l66cg==}
 
-  '@tanstack/vue-table@8.21.3':
-    resolution: {integrity: sha512-rusRyd77c5tDPloPskctMyPLFEQUeBzxdQ+2Eow4F7gDPlPOB1UnnhzfpdvqZ8ZyX2rRNGmqNnQWm87OI2OQPw==}
-    engines: {node: '>=12'}
+  '@tanstack/vue-table@9.1.2':
+    resolution: {integrity: sha512-CJNFrB0ehPT/iQYpl+bAx0ddbGTZGum91nEtqLhX5DMYeROSfcn7gIHAMs98ACBI+4OoZTHHrqZN1UzhKjz+Eg==}
+    engines: {node: '>=20'}
     peerDependencies:
       vue: '>=3.2'
 
@@ -4464,8 +4467,8 @@ packages:
       picomatch:
         optional: true
 
-  fflate@0.7.4:
-    resolution: {integrity: sha512-5u2V/CDW15QM1XbbgS+0DfPxVB+jUKhWEKuuFuHncbk3tEEqzmoXL+2KyOFuKGqOnmdIy0/davWF1CkuwtibCw==}
+  fflate@0.7.5:
+    resolution: {integrity: sha512-QieYf//cis6ywHNi5qW1+PXPQ4bC+XVJAtS4AXIML8P76GroEiOxm/oQtn1f02UkJY1+KsXMJcC+R2v/Eg4G3g==}
 
   fflate@0.8.3:
     resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
@@ -9578,7 +9581,7 @@ snapshots:
 
   '@shuding/opentype.js@1.4.0-beta.0':
     dependencies:
-      fflate: 0.7.4
+      fflate: 0.7.5
       string.prototype.codepointat: 0.2.1
     optional: true
 
@@ -9731,13 +9734,18 @@ snapshots:
       - preact
       - react
 
-  '@tanstack/table-core@8.21.3': {}
+  '@tanstack/store@0.11.1': {}
+
+  '@tanstack/table-core@9.1.2':
+    dependencies:
+      '@tanstack/store': 0.11.1
 
   '@tanstack/virtual-core@3.13.23': {}
 
-  '@tanstack/vue-table@8.21.3(vue@3.5.39(typescript@6.0.3))':
+  '@tanstack/vue-table@9.1.2(vue@3.5.39(typescript@6.0.3))':
     dependencies:
-      '@tanstack/table-core': 8.21.3
+      '@tanstack/store': 0.11.1
+      '@tanstack/table-core': 9.1.2
       vue: 3.5.39(typescript@6.0.3)
 
   '@tanstack/vue-virtual@3.13.23(vue@3.5.39(typescript@6.0.3))':
@@ -11463,7 +11471,7 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.5
 
-  fflate@0.7.4:
+  fflate@0.7.5:
     optional: true
 
   fflate@0.8.3: {}
