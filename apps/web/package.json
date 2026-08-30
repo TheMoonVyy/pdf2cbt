@@ -29,7 +29,7 @@
         "@regle/rules": "1.28.3",
         "@tailwindcss/typography": "0.5.20",
         "@tailwindcss/vite": "4.3.2",
-        "@tanstack/vue-table": "8.21.3",
+        "@tanstack/vue-table": "9.2.3",
         "@vueuse/core": "14.3.0",
         "@vueuse/nuxt": "14.3.0",
         "class-variance-authority": "0.7.1",
